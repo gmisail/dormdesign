@@ -1,15 +1,15 @@
 import React from 'react';
 import NavigationBar from "./components/navbar";
-import { Container, Row, Col, Button } from "react-bootstrap";
+import { Container } from "react-bootstrap";
 
 import {
   BrowserRouter as Router,
-  Switch, 
-  Route, 
-  Link
+  Route
 } from "react-router-dom";
 
 import "../node_modules/bootstrap/dist/css/bootstrap.min.css";
+import ListRoute from './routes/list.route';
+import EditorRoute from './routes/editor.route';
 
 function App() {
   return (
@@ -17,21 +17,14 @@ function App() {
       <NavigationBar></NavigationBar>
       <Container>
         <div className="mt-3">
-          <Row >
-          <Col>
-            <h2>Dorm planning, simplified.</h2>
-            <p>
-              DormDesign takes the miscommunication out of planning for college by offering
-              free, real-time tools that simplify...
-            </p>
-          </Col>
-
-          <Col>
-            <Button>Create Room</Button>
-          </Col>
-        </Row>
+          <Route path="/my-list">
+            <ListRoute></ListRoute>
+          </Route>
+          <Route path="/my-room">
+            <EditorRoute></EditorRoute>
+          </Route>
         </div>
-      </Container>
+     </Container>
     </Router>
   );
 }

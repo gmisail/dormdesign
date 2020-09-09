@@ -1,2 +1,0 @@
-2020/09/08 18:06:39 Micro started
-2020/09/08 18:06:39 gotham-colors is not a plugin

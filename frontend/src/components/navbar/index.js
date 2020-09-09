@@ -1,22 +1,32 @@
 import React, { Component } from "react";
-import { Nav, Navbar } from "react-bootstrap";
+import { Link } from "react-router-dom";
+import { Nav, Navbar, NavItem } from "react-bootstrap";
+import { LinkContainer } from "react-router-bootstrap";
 
 class NavigationBar extends Component {
 
     render() {
         return (
             <Navbar bg="primary" variant="dark" expand="lg">
-                <Navbar.Brand href="#home">
-                    <div className="menu-bar">
-                        DormDesign
-                    </div>
+                <Navbar.Brand>
+                    <LinkContainer to="/">
+                        <div className="menu-bar">
+                            DormDesign
+                        </div>
+                    </LinkContainer>
+                    
                 </Navbar.Brand>
                 
                 <Navbar.Toggle aria-controls="basic-navbar-nav" />
                 <Navbar.Collapse id="navbar-nav">
                     <Nav className="mr-auto">
-                        <Nav.Link href="#home">My Room</Nav.Link>
-                        <Nav.Link href="#link">My List</Nav.Link>
+                        <LinkContainer to="/my-room">
+                            <Nav.Link>My Room</Nav.Link>
+                        </LinkContainer>
+
+                        <LinkContainer to="/my-list">
+                            <Nav.Link>My List</Nav.Link>
+                        </LinkContainer>
                     </Nav>
                 </Navbar.Collapse>
             </Navbar>
