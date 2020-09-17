@@ -18,5 +18,6 @@ func SetupServer(e *echo.Echo) {
 		middleware goes here
 	*/
 	
+	SetupDatabase("localhost:8000")
 	SetupRoutes(e)
 }
