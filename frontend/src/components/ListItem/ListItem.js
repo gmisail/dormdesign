@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Container, Row, ListGroupItem, Button } from "react-bootstrap";
+import { ListGroupItem, Button } from "react-bootstrap";
 
 const ListItem = props => {
     const { itemName, itemQty, claimedName } = props;
