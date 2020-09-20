@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import { Card, ListGroup, Button } from "react-bootstrap";
+import ListItem from "../components/ListItem/ListItem";
 
 class ListRoute extends Component {
 
@@ -8,32 +9,9 @@ class ListRoute extends Component {
             <h2>My List</h2>
             <div className="mb-3">
                 <ListGroup>
-                    <ListGroup.Item>
-                        <b>Soundbar or Speakers</b>
-                        <div className="float-right">
-                            <Button variant="secondary">Claim</Button>
-                        </div>
-                    </ListGroup.Item>
-                    <ListGroup.Item>
-                        <b>Television</b>
-                        <i className="float-right">Johnny Appleseed</i>
-                    </ListGroup.Item>
-                    <ListGroup.Item>
-                        <b>Floor lamp</b>
-                        <i className="float-right">John Smith</i>
-                    </ListGroup.Item>
-                    <ListGroup.Item>
-                        <span><b>Power strip</b> (2)</span>
-                        <div className="float-right">
-                            <Button variant="secondary">Claim</Button>
-                        </div>
-                    </ListGroup.Item>
-                    <ListGroup.Item>
-                        <span><b>LED strips</b> (4)</span>
-                        <div className="float-right">
-                            <Button variant="secondary">Claim</Button>
-                        </div>
-                    </ListGroup.Item>
+                    <ListItem itemName="Soundbar" itemQty={1} />
+                    <ListItem itemName="Floor lamp" claimedName="John Smith" />
+                    <ListItem itemName="LED Strips" itemQty={4} />
                 </ListGroup>
             </div>
         </div>
