@@ -60,7 +60,7 @@ class SceneController {
     const cube = new RoomRectObject ({
       scene: this,
       id: 1,
-      position: new Point(50, 50),
+      position: new Point(0, 0),
       roomFloor: floor,
       dimensions: {
         w: 5,
@@ -70,6 +70,7 @@ class SceneController {
       opacity: 0.5,
       text: "This is a name",
     });
+    cube.position = { x: this.canvas.width/2 - cube.width/2, y: this.canvas.height/2 - cube.height/2 };
     //cube.selected = true;
     this.state.objects.push(cube);
   }

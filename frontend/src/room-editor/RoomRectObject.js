@@ -47,6 +47,11 @@ class RoomRectObject extends SceneObject {
     if (this.scene.resized) {
       this._calculateSize();
     }
+    
+    // Restrict to room borders
+    const floorBbox = this.roomFloor.getBoundingBox();
+    this.position.x = Math.min(floorBbox.p2.x - this.width, Math.max(floorBbox.p1.x, this.position.x));
+    this.position.y = Math.min(floorBbox.p2.y - this.height, Math.max(floorBbox.p1.y, this.position.y));
   }
   
   _calculateSize() {
