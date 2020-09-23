@@ -9,7 +9,7 @@ class RoomRectObject extends SceneObject {
     dimensions,
     color,
     opacity,
-    text,
+    nameText,
     staticObject,
   }) {
     super(scene, id, position, 0, 0, staticObject);
@@ -24,22 +24,13 @@ class RoomRectObject extends SceneObject {
     // Get draw width and height using room's pixels per foot
     this._calculateSize();
 
-    this._originalText = text;
-    this._fitText = this._getEditedText(text);
+    this.nameText = nameText;
 
     this.selected = false;
     // [Line dash length, space length]
     this._selectionLineWidth = 2 * window.devicePixelRatio;
     this._selectionLineDash = [6 * window.devicePixelRatio, 8 * window.devicePixelRatio]; 
     this._selectionOutlineOffset = 0;
-  }
-
-  get text() {
-    return this._originalText;
-  }
-  set text(value) {
-    this._fitText = this._getEditedText(value);
-    this._originalText = value;
   }
 
   update() {
@@ -78,15 +69,21 @@ class RoomRectObject extends SceneObject {
     ctx.globalAlpha = 1.0; // Reset opacity
 
     // Draw text on top of object
-    if (this._fitText) {
-      this._setContextTextStyle();
-      const bbox = this.getBoundingBox();
-      ctx.fillText(
-        this._fitText,
-        bbox.p1.x + this.width / 2,
-        bbox.p1.y + this.height / 2
-      );
-    }
+    this._setContextTextStyle();
+    const bbox = this.getBoundingBox();
+    const lineOffset = Math.max(0.15 * this.roomFloor.pixelsPerFoot, 5 * window.devicePixelRatio);
+    const fitNameText = this._getEditedText(this.nameText);
+    ctx.fillText(
+      fitNameText,
+      bbox.p1.x + this.width / 2,
+      bbox.p1.y + this.height / 2 - lineOffset
+    );
+    const fitDimensionsText = this._getEditedText(`${this.dimensions.w}' x ${this.dimensions.h}'`);
+    ctx.fillText(
+      fitDimensionsText,
+      bbox.p1.x + this.width / 2,
+      bbox.p1.y + this.height / 2 + lineOffset
+    );
 
     // Draw dotted selection outline
     if (this.selected) {
@@ -104,7 +101,9 @@ class RoomRectObject extends SceneObject {
   }
 
   _setContextTextStyle() {
-    const fontSize = Math.min(this.scene.ctx.canvas.width/40, 13 * devicePixelRatio);
+    // Font size range
+    const fontSize = Math.min(13 * window.devicePixelRatio, Math.max(this.roomFloor.pixelsPerFoot * 0.25, 8 * window.devicePixelRatio));
+    
     this.scene.ctx.font = `bold ${fontSize}px sans-serif`;
     this.scene.ctx.textBaseline = "middle";
     this.scene.ctx.textAlign = "center";
@@ -112,7 +111,6 @@ class RoomRectObject extends SceneObject {
   }
 
   // Trims text so it fits in size of object. If the available width is less than the width of '...', returns empty string
-  // TODO (maybe) - Implement multiline text?
   _getEditedText(text) {
     this._setContextTextStyle();
     const textPadding = 5;

@@ -9,14 +9,11 @@ class RoomFloorObject extends SceneObject {
     gridLineColor,
     opacity,
     boundaryPoints,
-    boundaryOffset,
   }) {
     super(scene, id, new Point(0, 0), 0, 0, true);
 
     // Points that define room boundary (measured in feet)
     this.boundaryPoints = boundaryPoints;
-    // Padding from edge of canvas for room outline
-    this.boundaryOffset = boundaryOffset * window.devicePixelRatio;
 
     this._fitFloorToCanvas();
 
@@ -28,6 +25,9 @@ class RoomFloorObject extends SceneObject {
   }
 
   _fitFloorToCanvas() {
+    // Padding from edge of canvas for room outline
+    this.boundaryOffset = this.scene.canvas.width * 0.05;
+    
     // Find canvas pixels per foot
     let maxWidth;
     let maxHeight;
@@ -129,13 +129,15 @@ class RoomFloorObject extends SceneObject {
       ctx.fillText(
         captionText,
         bbox.p1.x + this.width / 2,
-        bbox.p1.y + this.height + (15 * window.devicePixelRatio)
+        bbox.p1.y + this.height + (0.25 * this.pixelsPerFoot)
       );
     }
   }
 
   _setContextTextStyle() {
-    const fontSize = Math.min(this.scene.ctx.canvas.width/40, 13 * devicePixelRatio);
+    // Font size range 
+    const fontSize = Math.min(13 * window.devicePixelRatio, Math.max(this.pixelsPerFoot * 0.25, 7 * window.devicePixelRatio));
+    
     this.scene.ctx.font = `bold ${fontSize}px sans-serif`;
     this.scene.ctx.textBaseline = "middle";
     this.scene.ctx.textAlign = "center";

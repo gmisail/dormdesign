@@ -53,7 +53,6 @@ class SceneController {
       gridLineColor: "#aaa",
       opacity: 1.0,
       boundaryPoints: boundaryPoints,
-      boundaryOffset: 50,
     });
     this.state.objects.push(floor);
 
@@ -68,7 +67,7 @@ class SceneController {
       },
       color: "#ff0000",
       opacity: 0.5,
-      text: "This is a name",
+      nameText: "Object Name",
     });
     cube.position = { x: this.canvas.width/2 - cube.width/2, y: this.canvas.height/2 - cube.height/2 };
     //cube.selected = true;
