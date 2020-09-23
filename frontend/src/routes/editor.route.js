@@ -1,13 +1,16 @@
 import React, { Component } from "react";
-import RoomCanvas from "../components/RoomCanvas/RoomCanvas"
+import { Container, Row } from "react-bootstrap";
+import RoomCanvas from "../components/RoomCanvas/RoomCanvas";
 
 class EditorRoute extends Component {
 
     render() {
-        return <>
-            <h2>My Room</h2>
-            <RoomCanvas />
-        </>
+        return (
+            <Container className="p-0">
+                <Row className="justify-content-center"><h2>My Room</h2></Row>
+                <RoomCanvas />
+            </Container>
+        )
     }
 
 }
