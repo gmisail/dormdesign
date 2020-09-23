@@ -7,9 +7,9 @@ type ListItem struct {
 }
 
 type List struct {
-	Id string
-	Name string
-	Items []ListItem
+	id string
+	name string
+	items []ListItem
 }
 
 func CreateList(id string, name string) *List {
