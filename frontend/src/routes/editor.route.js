@@ -1,11 +1,13 @@
 import React, { Component } from "react";
+import RoomCanvas from "../components/RoomCanvas/RoomCanvas"
 
 class EditorRoute extends Component {
 
     render() {
-        return <div>
+        return <>
             <h2>My Room</h2>
-        </div>
+            <RoomCanvas />
+        </>
     }
 
 }
