@@ -3,6 +3,7 @@ import { Container, Row, Col, ListGroup, Button } from "react-bootstrap";
 import Modal from 'react-bootstrap/Modal'
 import Form from 'react-bootstrap/Form'
 import ListItem from "../components/ListItem/ListItem";
+import ButtonGroup from "../components/ButtonGroup";
 
 const TEST_ITEMS = [
     {

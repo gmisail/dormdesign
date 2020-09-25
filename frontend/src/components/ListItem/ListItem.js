@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React from "react";
 import { ListGroupItem, Button } from "react-bootstrap";
 
 const ListItem = props => {
@@ -9,7 +9,7 @@ const ListItem = props => {
             <div className="d-flex justify-content-between align-items-center">
                 <span><strong>{itemName}</strong>{itemQty > 1 ? ` (${itemQty})` : null}</span>
 
-                {claimedName == undefined ?
+                {claimedName === undefined ?
                     (
                         <Button variant="secondary" size="sm" onClick={() => { console.log(`Claim button clicked for ${itemName}`)}}>Claim</Button>
                     ) :
