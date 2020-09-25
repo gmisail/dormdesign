@@ -89,7 +89,7 @@ class ListRoute extends Component {
     
     render() {
         return (
-            <>
+            <div>
                 <Container>
                     <Row className="mb-3 justify-content-between">
                         <h2 className="m-0">My List</h2>
@@ -103,7 +103,7 @@ class ListRoute extends Component {
                     </Row>
                 </Container>
                 {this.renderModal()}
-            </>
+            </div>
         );
     }
 }

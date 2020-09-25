@@ -13,6 +13,5 @@ type List struct {
 }
 
 func CreateList(id string, name string) *List {
-	list := List{Id: id, Name: name, Items: []ListItem{} }
-	return &list
+	// create list within database
 }
