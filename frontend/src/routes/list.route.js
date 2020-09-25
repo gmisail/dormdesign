@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import { Container, Row, Col, ListGroup, Button } from "react-bootstrap";
 import Modal from 'react-bootstrap/Modal';
 import ListItem from "../components/ListItem/ListItem";
-import ListItemForm from "../components/AddItemForm/ListItemForm";
+import ListItemForm from "../components/ListItemForm/ListItemForm";
 
 let TEST_ID_COUNTER = 0;
 const TEST_ITEMS = [
