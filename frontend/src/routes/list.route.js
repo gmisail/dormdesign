@@ -1,9 +1,9 @@
 import React, { Component } from "react";
 import { Container, Row, Col, ListGroup, Button } from "react-bootstrap";
 import Modal from 'react-bootstrap/Modal';
+
 import ListItem from "../components/ListItem/ListItem";
 import ListItemForm from "../components/ListItemForm/ListItemForm";
-
 import ListController from "../controllers/list.controller";
 
 class ListRoute extends Component {
@@ -36,7 +36,7 @@ class ListRoute extends Component {
     renderItems() {
         return (
             <ListGroup>
-                {!this.state.items.length ? (
+                {!this.state.items.length ? ( 
                     <h6>No items have been added yet</h6>
                 ) : (
                     this.state.items.map(item => {
