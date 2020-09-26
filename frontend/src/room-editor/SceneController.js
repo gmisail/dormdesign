@@ -54,9 +54,7 @@ class SceneController {
   findClickedObject(position) {
     const objects = this.state.objects;
     for (let i = 0; i < objects.length; i++) {
-      if (!Object.prototype.hasOwnProperty.call(objects[i], "selected"))
-        continue;
-      const bbox = objects[i].getBoundingBox();
+      const bbox = objects[i].getGlobalBoundingBox();
       if (Collisions.pointInRect(position, bbox)) {
         this.state.selectedObject = objects[i];
         objects[i].selected = true;

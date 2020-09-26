@@ -4,50 +4,69 @@ class SceneObject {
   constructor({ scene, parent, position, size, scale, staticObject }) {
     this.scene = scene;
     this.id = scene.idCounter++;
-    this.position = position ?? new Vector2(0, 0);
-    this.scale = scale ?? new Vector2(1, 1);
+    this._position = position ?? new Vector2(0, 0);
+    this._scale = scale ?? new Vector2(1, 1);
     this.staticObject = staticObject ?? false;
     this.parent = parent;
     this.children = [];
-    this.size = size;
+    this._size = size;
+
+    this._transformMatrix = this._calculateTransform();
   }
 
-  getBoundingBox() {
-    return {
-      p1: undefined,
-      p2: undefined,
-      // p1: new Point(this.position.x, this.position.y),
-      // p2: new Point(
-      //   this.position.x + this.width,
-      //   this.position.y + this.height
-      // ),
-    };
-  }
-
-  getTransform() {
+  _calculateTransform() {
     let parentTransform = undefined;
     if (this.parent) {
-      parentTransform = this.parent.getTransform();
+      // Make a copy of parent matrix
+      parentTransform = DOMMatrix.fromMatrix(this.parent.transformMatrix);
     } else {
       parentTransform = new DOMMatrix([1, 0, 0, 1, 0, 0]);
     }
-    // console.log("Parent", parentTransform)
     let transform = new DOMMatrix([this.scale.x, 0, 0, this.scale.y, this.position.x, this.position.y]);
-    //let transform = new DOMMatrix([3, 0, 0, 3, 4, 3]);
-    // console.log("Before", transform);
     return parentTransform.multiplySelf(transform);
-    // console.log("After", transform);
-    // parentTransform = parentTransform.scaleSelf(scale.x, scale.y);
-    // parentTransform = parentTransform.
-
   }
 
-  getWidth() {
-    return this.size.x * this.scale.x;
+  get transformMatrix() {
+    return this._transformMatrix;
+  }
+  get position() {
+    return this._position;
+  }
+  get scale() {
+    return this._scale;
+  }
+  get size() {
+    return this._size;
   }
 
-  getHeight() {
-    return this.size.y * this.scale.y;
+  set position(vector) {
+    this._position = vector;
+    this._transformMatrix = this._calculateTransform();
+  }
+  set scale(vector) {
+    this._scale = vector;
+    this._transformMatrix = this._calculateTransform();
+  }
+  set size(vector) {
+    this._size = vector;
+  }
+
+  getGlobalBoundingBox() {
+    const globalPosition = this.getGlobalPosition();
+    const globalSize = this.getGlobalSize();
+    return {
+      p1: new Vector2(globalPosition.x, globalPosition.y),
+      p2: new Vector2(globalPosition.x + globalSize.x, globalPosition.y + globalSize.y),
+    };
+  }
+
+  getGlobalPosition() {
+    const transform = this._transformMatrix;
+    return new Vector2(transform.e, transform.f);
+  }
+
+  getGlobalSize() {
+    return new Vector2(this.size.x * this._transformMatrix.a, this.size.y * this._transformMatrix.d);
   }
 
   update() {

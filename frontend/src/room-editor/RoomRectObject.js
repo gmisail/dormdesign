@@ -62,7 +62,7 @@ class RoomRectObject extends SceneObject {
 
   draw() {
     const ctx = this.scene.ctx;
-    ctx.setTransform(this.getTransform());
+    ctx.setTransform(this.transformMatrix);
     ctx.fillStyle = this.color;
     ctx.globalAlpha = this.opacity;
     ctx.fillRect(0, 0, this.size.x, this.size.y);

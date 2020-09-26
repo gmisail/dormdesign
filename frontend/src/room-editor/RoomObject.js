@@ -9,7 +9,7 @@ class RoomObject extends SceneObject {
       scene: scene,
       parent: undefined,
       position: new Vector2(0, 0),
-      size: { x: 0, y: 0 },
+      size: new Vector2( 0, 0 ),
       scale: new Vector2(1, 1),
       staticObject: true,
     });
@@ -94,9 +94,10 @@ class RoomObject extends SceneObject {
 
     this.size.x = maxWidth;
     this.size.y = maxHeight;
+    const globalSize = this.getGlobalSize();
     this.position = new Vector2(
-      this.scene.canvas.width / 2 - this.getWidth() / 2,
-      this.scene.canvas.height / 2 - this.getHeight() / 2
+      this.scene.canvas.width / 2 - globalSize.x / 2,
+      this.scene.canvas.height / 2 - globalSize.y / 2
     );
   }
 
@@ -120,9 +121,10 @@ class RoomObject extends SceneObject {
 
   draw() {
     const ctx = this.scene.ctx;
+    const globalSize = this.getGlobalSize();
     //const bbox = this.getBoundingBox();
 
-    ctx.setTransform(this.getTransform());
+    ctx.setTransform(this.transformMatrix);
     // console.log(ctx.getTransform());
     //console.log("POS", this.position.x, this.position.y, "SIZE", this.size.x, this.size.y, "SCALE", this.scale.x, this.scale.y);
     ctx.fillStyle = this.floorColor;
@@ -134,7 +136,7 @@ class RoomObject extends SceneObject {
     const captionText = "1 cell = 1 square foot";
     this._setContextTextStyle();
     const textWidth = ctx.measureText(captionText).width;
-    if (textWidth < this.getWidth()) {
+    if (textWidth < globalSize.x) {
       ctx.fillText(
         captionText,
         this.size.x / 2,
@@ -147,7 +149,7 @@ class RoomObject extends SceneObject {
 
     super.draw();
 
-    ctx.setTransform(this.getTransform());
+    ctx.setTransform(this.transformMatrix);
 
     // Draw border
     ctx.strokeStyle = this.borderColor;

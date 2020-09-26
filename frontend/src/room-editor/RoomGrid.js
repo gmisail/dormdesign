@@ -21,7 +21,7 @@ class RoomGrid extends SceneObject {
 
   draw() {
     const ctx = this.scene.ctx;
-    ctx.setTransform(this.getTransform());
+    ctx.setTransform(this.transformMatrix);
 
     // Draw grid (each cell represents 1 sq ft)
     const numLinesX = Math.floor(this.size.x);
@@ -39,14 +39,14 @@ class RoomGrid extends SceneObject {
       ctx.beginPath();
       const currX = startX + i;
       ctx.moveTo(currX, this.position.y);
-      ctx.lineTo(currX, this.position.y + this.getHeight());
+      ctx.lineTo(currX, this.position.y + this.size.y);
       ctx.stroke();
     }
     for (let i = 0; i < numLinesY + 1; i++) {
       ctx.beginPath();
       const currY = startY + i;
       ctx.moveTo(this.position.x, currY);
-      ctx.lineTo(this.position.x + this.getWidth(), currY);
+      ctx.lineTo(this.position.x + this.size.x, currY);
       ctx.stroke();
     }
 
