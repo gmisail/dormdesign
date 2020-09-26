@@ -11,10 +11,10 @@ const ListItem = props => {
 
                 {claimedName === undefined ?
                     (
-                        <Button variant="secondary" onClick={() => { console.log(`Claim button clicked for ${itemName}`)}}>Claim</Button>
+                        <Button variant="secondary" size="sm" onClick={() => { console.log(`Claim button clicked for ${itemName}`)}}>Claim</Button>
                     ) :
                     (
-                        <i>{claimedName}</i>
+                        <i>Claimed by {claimedName}</i>
                     )
                 }
             </div>
