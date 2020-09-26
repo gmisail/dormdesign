@@ -1,7 +1,6 @@
-import Point from "./Point";
+import Vector2 from "./Vector2";
 import MouseController from "./MouseController"
-import RoomRectObject from "./RoomRectObject"
-import RoomFloorObject from "./RoomFloorObject"
+import RoomObject from "./RoomObject"
 import Collisions from "./Collisions";
 
 class SceneController {
@@ -9,6 +8,8 @@ class SceneController {
     this.canvas = canvas;
     this.resizeCanvas(canvas)
     this.ctx = canvas.getContext("2d");
+
+    this.idCounter = 0;
 
     this.mouseController = new MouseController({
       watchedElement: this.canvas,
@@ -40,38 +41,14 @@ class SceneController {
 
   _testSetup() {
     const boundaryPoints = [
-      new Point(0, 0),
-      new Point(10, 0),
-      new Point(10, 10),
-      new Point(0, 10),
-      new Point(0, 0),
+      new Vector2(0, 0),
+      new Vector2(10.8, 0),
+      new Vector2(10.8, 13),
+      new Vector2(0, 13),
+      new Vector2(0, 0),
     ];
-    const floor = new RoomFloorObject({
-      scene: this,
-      id: 0,
-      floorColor: "#ddd",
-      gridLineColor: "#aaa",
-      opacity: 1.0,
-      boundaryPoints: boundaryPoints,
-    });
-    this.state.objects.push(floor);
-
-    const cube = new RoomRectObject ({
-      scene: this,
-      id: 1,
-      position: new Point(0, 0),
-      roomFloor: floor,
-      dimensions: {
-        w: 5,
-        h: 6
-      },
-      color: "#ff0000",
-      opacity: 0.5,
-      nameText: "Object Name",
-    });
-    cube.position = { x: this.canvas.width/2 - cube.width/2, y: this.canvas.height/2 - cube.height/2 };
-    //cube.selected = true;
-    this.state.objects.push(cube);
+    const room = new RoomObject({ scene: this, boundaryPoints: boundaryPoints });
+    this.state.objects.push(room);
   }
 
   findClickedObject(position) {

@@ -3,26 +3,29 @@ import SceneObject from "./SceneObject"
 class RoomRectObject extends SceneObject {
   constructor({
     scene,
-    id,
+    parent,
     position,
-    roomFloor,
-    dimensions,
+    size,
     color,
     opacity,
     nameText,
     staticObject,
   }) {
-    super(scene, id, position, 0, 0, staticObject);
+    super({ 
+      scene: scene, 
+      parent: parent,
+      position: position, 
+      size: size, 
+      staticObject: staticObject, 
+    });
 
-    this.roomFloor = roomFloor
-    this.dimensions = dimensions // Dimensions measured in feet
     this.color = color;
     this.textColor = "#222";
     this.selectionColor = "#555";
     this.opacity = opacity ?? 1.0;
 
     // Get draw width and height using room's pixels per foot
-    this._calculateSize();
+    // this._calculateSize();
 
     this.nameText = nameText;
 
@@ -31,6 +34,7 @@ class RoomRectObject extends SceneObject {
     this._selectionLineWidth = 2 * window.devicePixelRatio;
     this._selectionLineDash = [6 * window.devicePixelRatio, 8 * window.devicePixelRatio]; 
     this._selectionOutlineOffset = 0;
+
   }
 
   update() {
@@ -39,15 +43,10 @@ class RoomRectObject extends SceneObject {
       this._calculateSize();
     }
     
-    // Restrict to room borders
-    const floorBbox = this.roomFloor.getBoundingBox();
-    this.position.x = Math.min(floorBbox.p2.x - this.width, Math.max(floorBbox.p1.x, this.position.x));
-    this.position.y = Math.min(floorBbox.p2.y - this.height, Math.max(floorBbox.p1.y, this.position.y));
-  }
-  
-  _calculateSize() {
-    this.width = this.dimensions.w * this.roomFloor.pixelsPerFoot;
-    this.height = this.dimensions.h * this.roomFloor.pixelsPerFoot;
+    // // Restrict to room borders
+    // const floorBbox = this.roomFloor.getBoundingBox();
+    // this.position.x = Math.min(floorBbox.p2.x - this.width, Math.max(floorBbox.p1.x, this.position.x));
+    // this.position.y = Math.min(floorBbox.p2.y - this.height, Math.max(floorBbox.p1.y, this.position.y));
   }
 
   _animateSelection() {
@@ -63,27 +62,30 @@ class RoomRectObject extends SceneObject {
 
   draw() {
     const ctx = this.scene.ctx;
+    ctx.setTransform(this.getTransform());
     ctx.fillStyle = this.color;
     ctx.globalAlpha = this.opacity;
-    ctx.fillRect(this.position.x, this.position.y, this.width, this.height);
+    ctx.fillRect(0, 0, this.size.x, this.size.y);
     ctx.globalAlpha = 1.0; // Reset opacity
 
-    // Draw text on top of object
-    this._setContextTextStyle();
-    const bbox = this.getBoundingBox();
-    const lineOffset = Math.max(0.15 * this.roomFloor.pixelsPerFoot, 5 * window.devicePixelRatio);
-    const fitNameText = this._getEditedText(this.nameText);
-    ctx.fillText(
-      fitNameText,
-      bbox.p1.x + this.width / 2,
-      bbox.p1.y + this.height / 2 - lineOffset
-    );
-    const fitDimensionsText = this._getEditedText(`${this.dimensions.w}' x ${this.dimensions.h}'`);
-    ctx.fillText(
-      fitDimensionsText,
-      bbox.p1.x + this.width / 2,
-      bbox.p1.y + this.height / 2 + lineOffset
-    );
+    ctx.resetTransform();
+
+    // // Draw text on top of object
+    // this._setContextTextStyle();
+    // const bbox = this.getBoundingBox();
+    // const lineOffset = Math.max(0.15 * this.roomFloor.pixelsPerFoot, 5 * window.devicePixelRatio);
+    // const fitNameText = this._getEditedText(this.nameText);
+    // ctx.fillText(
+    //   fitNameText,
+    //   bbox.p1.x + this.width / 2,
+    //   bbox.p1.y + this.height / 2 - lineOffset
+    // );
+    // const fitDimensionsText = this._getEditedText(`${this.dimensions.w}' x ${this.dimensions.h}'`);
+    // ctx.fillText(
+    //   fitDimensionsText,
+    //   bbox.p1.x + this.width / 2,
+    //   bbox.p1.y + this.height / 2 + lineOffset
+    // );
 
     // Draw dotted selection outline
     if (this.selected) {
@@ -93,7 +95,7 @@ class RoomRectObject extends SceneObject {
       ctx.lineWidth = this._selectionLineWidth;
       ctx.lineCap = "round";
       ctx.lineJoin = "round";
-      ctx.strokeRect(this.position.x, this.position.y, this.width, this.height);
+      ctx.strokeRect(0, 0, this.size.x, this.size.y);
 
       // Rest ctx values
       ctx.setLineDash([]);
@@ -103,7 +105,7 @@ class RoomRectObject extends SceneObject {
   _setContextTextStyle() {
     // Font size range
     const fontSize = Math.min(13 * window.devicePixelRatio, Math.max(this.roomFloor.pixelsPerFoot * 0.25, 8 * window.devicePixelRatio));
-    
+
     this.scene.ctx.font = `bold ${fontSize}px sans-serif`;
     this.scene.ctx.textBaseline = "middle";
     this.scene.ctx.textAlign = "center";

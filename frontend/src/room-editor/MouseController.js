@@ -1,4 +1,4 @@
-import Point from "./Point";
+import Vector2 from "./Vector2";
 
 class MouseController {
   constructor({ watchedElement, onMouseDown, onMouseMove, onMouseUp }) {
@@ -8,7 +8,7 @@ class MouseController {
 
     this.watchedElement.addEventListener("mousedown", (e) => {
       //const position = this._getCursorPosition(this.watchedElement, e);
-      const position = new Point(e.offsetX * window.devicePixelRatio, e.offsetY * window.devicePixelRatio);
+      const position = new Vector2(e.offsetX * window.devicePixelRatio, e.offsetY * window.devicePixelRatio);
       this.pressed = true;
       this._position = position;
       onMouseDown(position);
@@ -16,11 +16,11 @@ class MouseController {
 
     this.watchedElement.addEventListener("mousemove", (e) => {
       if (this.pressed) {
-        const delta = {
-          x: e.offsetX * window.devicePixelRatio - this._position.x,
-          y: e.offsetY * window.devicePixelRatio - this._position.y,
-        };
-        this._position = new Point(e.offsetX * window.devicePixelRatio, e.offsetY * window.devicePixelRatio);
+        const delta = new Vector2(
+          e.offsetX * window.devicePixelRatio - this._position.x,
+          e.offsetY * window.devicePixelRatio - this._position.y,
+        );
+        this._position = new Vector2(e.offsetX * window.devicePixelRatio, e.offsetY * window.devicePixelRatio);
         onMouseMove(delta);
       }
     });
