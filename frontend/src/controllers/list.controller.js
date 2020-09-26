@@ -30,7 +30,10 @@ class ListController {
 
     static addListItem(item, done) {
         item.id = TEST_ID_COUNTER++;
-        
+        if (item.name.length === 0) {
+            item.name = "New Item";
+        }
+         
         TEST_ITEMS.push(item);
         
         done(TEST_ITEMS);

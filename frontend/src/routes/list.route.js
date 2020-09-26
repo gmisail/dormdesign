@@ -25,14 +25,12 @@ class ListRoute extends Component {
     }
 
     addNewItem = (item) => {
-        item.id = TEST_ID_COUNTER++;
-        if (item.name.length === 0) {
-            item.name = "New Item";
-        }
-        this.setState({
-            items: [...this.state.items, item]
-        })
-        this.toggleModal();
+        ListController.addListItem(item, (list) => {
+            this.setState({
+                items: list
+            })
+            this.toggleModal();
+        });
     }
     
     renderItems() {
