@@ -4,27 +4,7 @@ import Modal from 'react-bootstrap/Modal';
 import ListItem from "../components/ListItem/ListItem";
 import ListItemForm from "../components/ListItemForm/ListItemForm";
 
-let TEST_ID_COUNTER = 0;
-const TEST_ITEMS = [
-    {
-        id: TEST_ID_COUNTER++,
-        name: "Fridge",
-        quantity: 4,
-        claimedBy: undefined,
-    },
-    {
-        id: TEST_ID_COUNTER++,
-        name: "Soundbar",
-        quantity: 1,
-        claimedBy: "John Smith",
-    },
-    {
-        id: TEST_ID_COUNTER++,
-        name: "Microwave",
-        quantity: 10,
-        claimedBy: undefined,
-    },
-]
+import ListController from "../controllers/list.controller";
 
 class ListRoute extends Component {
 
@@ -32,18 +12,25 @@ class ListRoute extends Component {
         super();
 
         this.state = { 
-            items: TEST_ITEMS,
+            items: [],
             showModal: false,
             modalType: "none",
         };
     }
 
+    componentDidMount() {
+        ListController.getList((list) => {
+            this.setState({ items: list });
+        });
+    }
+
     addNewItem = (item) => {
-        item.id = TEST_ID_COUNTER++;
-        this.setState({
-            items: [...this.state.items, item]
-        })
-        this.toggleModal();
+        ListController.addListItem(item, (list) => {
+            this.setState({
+                items: list
+            })
+            this.toggleModal();
+        });
     }
     
     renderItems() {
