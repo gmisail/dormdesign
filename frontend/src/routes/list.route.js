@@ -40,6 +40,9 @@ class ListRoute extends Component {
 
     addNewItem = (item) => {
         item.id = TEST_ID_COUNTER++;
+        if (item.name.length === 0) {
+            item.name = "New Item";
+        }
         this.setState({
             items: [...this.state.items, item]
         })
@@ -78,7 +81,7 @@ class ListRoute extends Component {
                             <Modal.Title>Add an Item</Modal.Title>
                         </Modal.Header>
                         <Modal.Body>
-                            <ListItemForm onSave={this.addNewItem} />
+                            <ListItemForm onSubmit={this.addNewItem} />
                         </Modal.Body>
                     </Modal>
                 );
