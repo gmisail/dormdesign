@@ -1,18 +1,22 @@
-@import url('https://fonts.googleapis.com/css2?family=Arvo:wght@700&family=Source+Sans+Pro&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Arvo:wght@700&family=Source+Sans+Pro&display=swap");
 
 * {
   margin: 0;
-  font-family: 'Source Sans Pro', sans-serif;
+  font-family: "Source Sans Pro", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-h1, h2, h3, h4, h5 {
-  font-family: 'Arvo', serif;
+h1,
+h2,
+h3,
+h4,
+h5 {
+  font-family: "Arvo", serif;
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
     monospace;
 }
 
@@ -21,5 +25,5 @@ code {
 */
 
 .menu-bar {
-  font-family: 'Arvo', serif;
+  font-family: "Arvo", serif;
 }

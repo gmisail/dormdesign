@@ -2,7 +2,15 @@ import SceneObject from "./SceneObject";
 import Vector2 from "./Vector2";
 
 class RoomGrid extends SceneObject {
-  constructor({ scene, parent, position, size, opacity, lineColor, lineWidth }) {
+  constructor({
+    scene,
+    parent,
+    position,
+    size,
+    opacity,
+    lineColor,
+    lineWidth,
+  }) {
     super({
       scene: scene,
       parent: parent,
@@ -28,10 +36,8 @@ class RoomGrid extends SceneObject {
     const numLinesX = Math.floor(this.size.x);
     const numLinesY = Math.floor(this.size.y);
     // Offsets to make sure grid is centered
-    const startX =
-      this.position.x + ((this.size.x - numLinesX) / 2);
-    const startY =
-      this.position.y + ((this.size.y - numLinesY) / 2);
+    const startX = this.position.x + (this.size.x - numLinesX) / 2;
+    const startY = this.position.y + (this.size.y - numLinesY) / 2;
 
     ctx.strokeStyle = this.lineColor;
     ctx.lineWidth = this.lineWidth;
