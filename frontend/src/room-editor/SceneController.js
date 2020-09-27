@@ -13,8 +13,6 @@ class SceneController {
       objects: [],
     };
 
-    const targetFps = 60;
-    this._fpsInterval = 1000 / targetFps;
     this._lastFrameTime = undefined;
     this.deltaTime = undefined; // Time since last frame
 
@@ -46,15 +44,10 @@ class SceneController {
     if (!this._lastFrameTime) this._lastFrameTime = currentTime;
     const deltaMilliSeconds = Math.max(0, (currentTime - this._lastFrameTime));
     this.deltaTime = deltaMilliSeconds / 1000; // Convert to seconds
-    
-
-    // Limit fps to desired rate
-    if (deltaMilliSeconds > this._fpsInterval) {
+    this._lastFrameTime = currentTime;
       
-      this.update();
-      this.render();
-      this._lastFrameTime = currentTime;
-    }
+    this.update();
+    this.render();
   }
 
   addObject(obj) {

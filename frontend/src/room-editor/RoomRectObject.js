@@ -32,8 +32,9 @@ class RoomRectObject extends SceneObject {
 
     this.selected = false;
     // [Line dash length, space length]
-    this._selectionLineWidth = 0.035 * window.devicePixelRatio;
-    this._selectionLineDash = [0.06 * window.devicePixelRatio, 0.08 * window.devicePixelRatio]; 
+    this._selectionLineSpeed = 0.3;
+    this._selectionLineWidth = 0.05 * window.devicePixelRatio;
+    this._selectionLineDash = [0.08 * window.devicePixelRatio, 0.12 * window.devicePixelRatio]; 
 
     this._selectionOutlineOffset = 0;
 
@@ -51,7 +52,7 @@ class RoomRectObject extends SceneObject {
 
   // Animates the selection border
   _animateSelection() {
-    const speed = 0.01;
+    const speed = this._selectionLineSpeed * this.scene.deltaTime;
     this._selectionOutlineOffset += speed;
     if (
       this._selectionOutlineOffset >
