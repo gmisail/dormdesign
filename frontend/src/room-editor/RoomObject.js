@@ -141,7 +141,7 @@ class RoomObject extends SceneObject {
   // Configures the context to draw text with these styles
   _setContextTextStyle() {
     // Font size range 
-    const fontSize = 0.14 * window.devicePixelRatio;//Math.min(13 * window.devicePixelRatio, Math.max(this.pixelsPerFoot * 0.25, 7 * window.devicePixelRatio));
+    const fontSize = 0.24;//Math.min(13 * window.devicePixelRatio, Math.max(this.pixelsPerFoot * 0.25, 7 * window.devicePixelRatio));
     
     this.scene.ctx.font = `bold ${fontSize}px sans-serif`;
     this.scene.ctx.textBaseline = "middle";

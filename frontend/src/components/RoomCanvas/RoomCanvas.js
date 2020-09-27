@@ -39,7 +39,6 @@ class RoomCanvas extends Component {
     }
 
     addItemToScene = (item) => {
-        console.log(item);
         this.state.roomObject.addItemToRoom({
             name: item.name,
             feetWidth: item.dimensions.w,

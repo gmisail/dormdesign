@@ -32,9 +32,9 @@ class RoomRectObject extends SceneObject {
 
     this.selected = false;
     // [Line dash length, space length]
-    this._selectionLineSpeed = 0.3;
-    this._selectionLineWidth = 0.05 * window.devicePixelRatio;
-    this._selectionLineDash = [0.08 * window.devicePixelRatio, 0.12 * window.devicePixelRatio]; 
+    this._selectionLineSpeed = 0.4;
+    this._selectionLineWidth = 0.06;
+    this._selectionLineDash = [0.10, 0.18]; 
 
     this._selectionOutlineOffset = 0;
 
@@ -72,21 +72,8 @@ class RoomRectObject extends SceneObject {
     ctx.fillRect(0, 0, this.size.x, this.size.y);
     ctx.globalAlpha = 1.0; // Reset opacity
 
-    // Draw text on top of object
-    this._setContextTextStyle();
-    const lineOffset = 0.15;
-    const fitNameText = this._getEditedText(this.nameText);
-    ctx.fillText(
-      fitNameText,
-      this.size.x/2,
-      this.size.y/2 - lineOffset
-    );
-    const fitDimensionsText = this._getEditedText(`${this.size.x}' x ${this.size.y}'`);
-    ctx.fillText(
-      fitDimensionsText,
-      this.size.x/2,
-      this.size.y/2 + lineOffset
-    );
+    // console.log(this.transformMatrix.e, this.transformMatrix.f, this.size.x/2 * this.transformMatrix.a, this.size.y/2 * this.transformMatrix.d, lineOffset);
+    // console.log(this.getGlobalPosition());
 
     // Draw dotted selection outline
     if (this.selected) {
@@ -104,12 +91,31 @@ class RoomRectObject extends SceneObject {
 
     // Reset transformation matrix so it doesn't interfere with other draws
     ctx.resetTransform();
+
+    
+    // Draw text on top of object - For some reason the context using the transformation matrix seems to draw the text differently on firefox and chrome resulting in it being offset. So its being drawn by manually scaling the necessary values.
+    const fontSize = 0.28;
+    this._setContextTextStyle(fontSize);
+    const lineOffset = 0.18 * this.transformMatrix.a;
+    const fitNameText = this._getEditedText(this.nameText);
+    const fitDimensionsText = this._getEditedText(`${this.size.x}' x ${this.size.y}'`);
+    ctx.font = `bold ${fontSize * this.transformMatrix.a}px sans-serif`;
+    ctx.fillText(
+      fitNameText,
+      this.transformMatrix.e + this.size.x/2 * this.transformMatrix.a,
+      this.transformMatrix.f + this.size.y/2 * this.transformMatrix.a - lineOffset
+    );
+    
+    ctx.fillText(
+      fitDimensionsText,
+      this.transformMatrix.e + this.size.x/2 * this.transformMatrix.a,
+      this.transformMatrix.f + this.size.y/2 * this.transformMatrix.a + lineOffset
+    );
+    // console.log(this.transformMatrix.e + this.size.x/2 * this.transformMatrix.a, this.transformMatrix.f + this.size.y/2 * this.transformMatrix.a);
   }
 
-  // Configures the context to draw text with these styles
-  _setContextTextStyle() {
-    const fontSize = 0.3;
-
+  // Takes font size and configures the context to draw text with these styles
+  _setContextTextStyle(fontSize) {
     this.scene.ctx.font = `bold ${fontSize}px sans-serif`;
     this.scene.ctx.textBaseline = "middle";
     this.scene.ctx.textAlign = "center";
