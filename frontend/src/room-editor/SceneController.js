@@ -1,8 +1,7 @@
-
 class SceneController {
   constructor(canvas) {
     this.canvas = canvas;
-    this.resizeCanvas(canvas)
+    this.resizeCanvas(canvas);
     this.ctx = canvas.getContext("2d");
 
     this.idCounter = 0;
@@ -22,7 +21,7 @@ class SceneController {
   }
 
   init() {
-    this.mainLoop();  // Start main update/render loop
+    this.mainLoop(); // Start main update/render loop
   }
 
   getAllChildObjects(object) {
@@ -30,7 +29,9 @@ class SceneController {
     let children = [];
     for (let i = 0; i < object.children.length; i++) {
       children.push(object.children[i]);
-      children = children.concat(this._recursiveGetAllObjects(object.children[i]));
+      children = children.concat(
+        this._recursiveGetAllObjects(object.children[i])
+      );
     }
     // console.log(children);
     return children;
@@ -42,16 +43,16 @@ class SceneController {
     // Calculate time since last frame. Measured in seconds
     if (!currentTime) currentTime = performance.now(); // Needed because currentTime is undefined on first frame
     if (!this._lastFrameTime) this._lastFrameTime = currentTime;
-    const deltaMilliSeconds = Math.max(0, (currentTime - this._lastFrameTime));
+    const deltaMilliSeconds = Math.max(0, currentTime - this._lastFrameTime);
     this.deltaTime = deltaMilliSeconds / 1000; // Convert to seconds
     this._lastFrameTime = currentTime;
-      
+
     this.update();
     this.render();
   }
 
   addObject(obj) {
-    this.state.objects.push(obj)
+    this.state.objects.push(obj);
   }
 
   update() {
