@@ -55,7 +55,7 @@ class RoomObject extends SceneObject {
     this.children.push(floorGrid);
     this.state.floorGrid = floorGrid
 
-    this.addItemToRoom({});
+    //this.addItemToRoom({});
   }
 
   _fitRoomToCanvas() {
