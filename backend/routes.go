@@ -1,6 +1,7 @@
 package main
 
 import (
+	"os"
 	"net/http"
 	"github.com/labstack/echo/v4"
 )
@@ -18,6 +19,8 @@ func SetupServer(e *echo.Echo) {
 		middleware goes here
 	*/
 	
-	SetupDatabase("localhost:8000")
+	databaseAddress := os.Getenv("DATABASE_ADDRESS")
+
+	SetupDatabase(databaseAddress)
 	SetupRoutes(e)
 }
