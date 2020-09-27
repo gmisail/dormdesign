@@ -23,7 +23,7 @@ class ListItemForm extends Component {
       item: item,
       nameInputValue: item.name,
       qtyInputValue: item.quantity,
-      ownerInputValue: item.claimedBy ?? "",
+      ownerInputValue: item.claimedBy,
       widthInputValue: item.dimensions.w ?? "",
       lengthInputValue: item.dimensions.l ?? "",
       validated: false,

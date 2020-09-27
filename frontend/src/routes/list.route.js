@@ -24,6 +24,7 @@ class ListRoute extends Component {
   }
 
   addNewItem = (item) => {
+    console.log(item);
     ListController.addListItem(item, (list) => {
       this.setState({
         items: list,
