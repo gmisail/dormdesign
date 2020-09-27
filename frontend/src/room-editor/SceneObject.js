@@ -11,9 +11,10 @@ class SceneObject {
     this.children = [];
     this._size = size;
 
-    this._transformMatrix = this._calculateTransform();
+    this._updateTransform();
   }
 
+  // Calculates and returns the transformation matrix for this object using the parent's transformation matrix (if it has a parent. Otherwise uses identity). 
   _calculateTransform() {
     let parentTransform = undefined;
     if (this.parent) {
@@ -26,6 +27,15 @@ class SceneObject {
     return parentTransform.multiplySelf(transform);
   }
 
+  // Updates the transformation matrix for this object and its children.
+  _updateTransform() {
+    this._transformMatrix = this._calculateTransform();
+    for (let i = 0; i < this.children.length; i++) {
+      this.children[i]._updateTransform();
+    }
+  }
+
+  // Getters / Setters for SceneObjects. Note that for any of these values, you can't set individual properties. i.e. don't do position.x = 2; position.y = 3. Instead do position = new Vector2(2, 3);
   get transformMatrix() {
     return this._transformMatrix;
   }
@@ -41,16 +51,17 @@ class SceneObject {
 
   set position(vector) {
     this._position = vector;
-    this._transformMatrix = this._calculateTransform();
+    this._updateTransform();
   }
   set scale(vector) {
     this._scale = vector;
-    this._transformMatrix = this._calculateTransform();
+    this._updateTransform();
   }
   set size(vector) {
     this._size = vector;
   }
 
+  // Returns 2 points that specifcy the corners a rect containing this object (in global coordinate system)
   getGlobalBoundingBox() {
     const globalPosition = this.getGlobalPosition();
     const globalSize = this.getGlobalSize();
@@ -67,6 +78,18 @@ class SceneObject {
 
   getGlobalSize() {
     return new Vector2(this.size.x * this._transformMatrix.a, this.size.y * this._transformMatrix.d);
+  }
+
+  // Translates a global position into this objects local coordinate system (hasn't been test much)
+  globalToLocalPosition(position) {
+    let parentGlobalPos = new Vector2(0, 0);
+    if (this.parent) {
+      parentGlobalPos = this.parent.getGlobalPosition();
+    } 
+    const offset = new Vector2(position.x - parentGlobalPos.x, position.y - parentGlobalPos.y);
+    const scaled = new Vector2(offset.x / this.transformMatrix.a, offset.y / this.transformMatrix.d);
+    console.log(offset, this.transformMatrix.a, this.transformMatrix.d, scaled);
+    return scaled;
   }
 
   update() {

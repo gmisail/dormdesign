@@ -1,4 +1,6 @@
 import SceneObject from "./SceneObject";
+import MouseController from "./MouseController";
+import Collisions from "./Collisions";
 import RoomRectObject from "./RoomRectObject";
 import RoomGrid from "./RoomGrid";
 import Vector2 from "./Vector2";
@@ -23,11 +25,22 @@ class RoomObject extends SceneObject {
     this.borderWidth = 0.08;
     this.opacity = opacity ?? 1.0;
 
-    this.roomObjects = [];
-
     this._fitRoomToCanvas();
 
-    const grid = new RoomGrid({
+    this.mouseController = new MouseController({
+      watchedElement: this.scene.canvas,
+      onMouseDown: this.onMouseDown.bind(this),
+      onMouseMove: this.onMouseMove.bind(this),
+      onMouseUp: this.onMouseUp.bind(this),
+    });
+
+    this.state = {
+      grid: undefined,
+      roomObjects: [],
+      selectedObject: undefined,
+    }
+
+    const floorGrid = new RoomGrid({
       scene: this.scene,
       parent: this,
       position: new Vector2(0, 0),
@@ -39,26 +52,10 @@ class RoomObject extends SceneObject {
       staticObject: true,
     })
 
-    this.children.push(grid);
+    this.children.push(floorGrid);
+    this.state.floorGrid = floorGrid
 
-    const cube = new RoomRectObject ({
-      scene: this.scene,
-      position: new Vector2(0, 0),
-      parent: this,
-      size: new Vector2(3, 6),
-      color: "#ff0000",
-      opacity: 0.5,
-      nameText: "Object Name",
-      staticObject: false,
-    });
-    // console.log(this.size);
-    cube.position = new Vector2(this.size.x/2 - cube.size.x/2, this.size.y/2 - cube.size.y/2);
-    // console.log(this.getWidth(), this.getHeight());
-    // console.log(cube.getWidth(), cube.getHeight());
-    // console.log(cube.position);
-    //cube.selected = true;
-    this.roomObjects.push(cube);
-    this.children.push(cube);
+    this.addItemToRoom({});
   }
 
   _fitRoomToCanvas() {
@@ -101,6 +98,47 @@ class RoomObject extends SceneObject {
     );
   }
 
+  // Mouse callbacks that are passed to mouse controller 
+  onMouseDown(position) {
+    if (this.state.selectedObject) {
+      this.state.selectedObject.selected = false;
+      this.state.selectedObject = undefined;
+    }
+    const clicked = this._getChildrenAtPosition(position);
+    if (clicked.length > 0) {
+      for (let i = 0; i < clicked.length; i++) {
+        const obj = clicked[i];
+        if ('selected' in obj) {
+          obj.selected = true;
+          this.state.selectedObject = obj;
+          break;
+        }
+      }
+    }
+  }
+  onMouseMove(delta) {
+    if (this.state.selectedObject && !this.state.selectedObject.staticObject) {
+      const selectedObject = this.state.selectedObject;
+      const scaledDelta = new Vector2(delta.x / selectedObject.transformMatrix.a, delta.y / selectedObject.transformMatrix.d);
+      selectedObject.position = new Vector2(selectedObject.position.x + scaledDelta.x, selectedObject.position.y + scaledDelta.y);
+    }
+  }
+  onMouseUp() {}
+
+  // Finds all (direct) children that the given point lies within
+  _getChildrenAtPosition(position) {
+    const objects = this.children;
+    let found = [];
+    for (let i = 0; i < objects.length; i++) {
+      const bbox = objects[i].getGlobalBoundingBox();
+      if (Collisions.pointInRect(position, bbox)) {
+        found.push(objects[i]);
+      }
+    }
+    return found;
+  }
+
+  // Configures the context to draw text with these styles
   _setContextTextStyle() {
     // Font size range 
     const fontSize = 0.14 * window.devicePixelRatio;//Math.min(13 * window.devicePixelRatio, Math.max(this.pixelsPerFoot * 0.25, 7 * window.devicePixelRatio));
@@ -109,6 +147,25 @@ class RoomObject extends SceneObject {
     this.scene.ctx.textBaseline = "middle";
     this.scene.ctx.textAlign = "center";
     this.scene.ctx.fillStyle = this.textColor;
+  }
+
+  // Takes name, dimensions, color and adds a new item to the room object/scene. 
+  addItemToRoom({ name, feetWidth, feetHeight, color }) {
+    const randomColor = `#${Math.floor(Math.random()*16777215).toString(16)}`;
+    const obj = new RoomRectObject ({
+      scene: this.scene,
+      position: new Vector2(0, 0),
+      parent: this,
+      size: new Vector2(feetWidth ?? 1, feetHeight ?? 1),
+      color: color ?? randomColor,
+      opacity: 0.5,
+      nameText: name ?? "New Item",
+      staticObject: false,
+    });
+    obj.position = new Vector2(this.size.x/2 - obj.size.x/2, this.size.y/2 - obj.size.y/2);
+    
+    this.state.roomObjects.push(obj);
+    this.children.push(obj);
   }
 
   update() {
@@ -122,11 +179,10 @@ class RoomObject extends SceneObject {
   draw() {
     const ctx = this.scene.ctx;
     const globalSize = this.getGlobalSize();
-    //const bbox = this.getBoundingBox();
 
+    // Set context transform to this objects transformation matrix
     ctx.setTransform(this.transformMatrix);
-    // console.log(ctx.getTransform());
-    //console.log("POS", this.position.x, this.position.y, "SIZE", this.size.x, this.size.y, "SCALE", this.scale.x, this.scale.y);
+
     ctx.fillStyle = this.floorColor;
     ctx.globalAlpha = this.opacity;
     ctx.fillRect(0, 0, this.size.x, this.size.y);
@@ -147,10 +203,10 @@ class RoomObject extends SceneObject {
       this.children[i].draw();
     }
 
+    // SceneObject draw func draws children
     super.draw();
 
     ctx.setTransform(this.transformMatrix);
-
     // Draw border
     ctx.strokeStyle = this.borderColor;
     ctx.lineWidth = this.borderWidth;
@@ -164,6 +220,7 @@ class RoomObject extends SceneObject {
     ctx.lineTo(0, 0);
     ctx.stroke();
 
+    // Reset transformation matrix so it doesn't interfere with other draws
     ctx.resetTransform();
   }
 }

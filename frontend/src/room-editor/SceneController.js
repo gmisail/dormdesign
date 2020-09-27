@@ -1,7 +1,3 @@
-import Vector2 from "./Vector2";
-import MouseController from "./MouseController"
-import RoomObject from "./RoomObject"
-import Collisions from "./Collisions";
 
 class SceneController {
   constructor(canvas) {
@@ -11,77 +7,33 @@ class SceneController {
 
     this.idCounter = 0;
 
-    this.mouseController = new MouseController({
-      watchedElement: this.canvas,
-      onMouseDown: this.onMouseDown.bind(this),
-      onMouseMove: this.onMouseMove.bind(this),
-      onMouseUp: this.onMouseUp.bind(this),
-    });
-
     this.canvasBackgroundColor = "#f0f0f0";
 
     this.state = {
       objects: [],
-      selectedObject: undefined,
     };
 
     this._lastFrameTime = undefined;
-    this.deltaTime = undefined;
-    this.resized = false;
+    this.deltaTime = undefined; // Time since last frame
+
+    this.resized = false; // Set to true when if canvas has been resized this frame
 
     this.init();
   }
 
   init() {
-    this._testSetup();
-
-    //this._lastFrameTime = performance.now();
-    this.mainLoop();
+    this.mainLoop();  // Start main update/render loop
   }
 
-  _testSetup() {
-    const boundaryPoints = [
-      new Vector2(0, 0),
-      new Vector2(10.8, 0),
-      new Vector2(10.8, 13),
-      new Vector2(0, 13),
-      new Vector2(0, 0),
-    ];
-    const room = new RoomObject({ scene: this, boundaryPoints: boundaryPoints });
-    this.state.objects.push(room);
-  }
-
-  findClickedObject(position) {
-    const objects = this.state.objects;
-    for (let i = 0; i < objects.length; i++) {
-      const bbox = objects[i].getGlobalBoundingBox();
-      if (Collisions.pointInRect(position, bbox)) {
-        this.state.selectedObject = objects[i];
-        objects[i].selected = true;
-      }
+  getAllChildObjects(object) {
+    // console.log(object);
+    let children = [];
+    for (let i = 0; i < object.children.length; i++) {
+      children.push(object.children[i]);
+      children = children.concat(this._recursiveGetAllObjects(object.children[i]));
     }
-  }
-
-  onMouseDown(position) {
-    //console.log("MOUSE DOWN", position);
-    if (this.state.selectedObject) {
-      this.state.selectedObject.selected = false;
-      this.state.selectedObject = undefined;
-    }
-    this.findClickedObject(position);
-  }
-
-  onMouseMove(delta) {
-    // console.log("MOUSE MOVED", delta);
-    if (this.state.selectedObject && !this.state.selectedObject.staticObject) {
-      const selectedObject = this.state.selectedObject;
-      selectedObject.position.x += delta.x;
-      selectedObject.position.y += delta.y;
-    }
-  }
-
-  onMouseUp() {
-    // console.log("MOUSE UP");
+    // console.log(children);
+    return children;
   }
 
   mainLoop(currentTime) {
@@ -92,10 +44,13 @@ class SceneController {
     if (!this._lastFrameTime) this._lastFrameTime = currentTime;
     this.deltaTime = Math.max(0, (currentTime - this._lastFrameTime) / 1000);
     this._lastFrameTime = currentTime;
-    // console.log(this.deltaTime, currentTime, this._lastFrameTime);
 
     this.update();
     this.render();
+  }
+
+  addObject(obj) {
+    this.state.objects.push(obj)
   }
 
   update() {

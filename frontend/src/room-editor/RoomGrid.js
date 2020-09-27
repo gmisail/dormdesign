@@ -21,6 +21,7 @@ class RoomGrid extends SceneObject {
 
   draw() {
     const ctx = this.scene.ctx;
+    // Set context transform to this objects transformation matrix
     ctx.setTransform(this.transformMatrix);
 
     // Draw grid (each cell represents 1 sq ft)
@@ -50,6 +51,7 @@ class RoomGrid extends SceneObject {
       ctx.stroke();
     }
 
+    // Reset transformation matrix so it doesn't interfere with other draws
     ctx.resetTransform();
   }
 }
