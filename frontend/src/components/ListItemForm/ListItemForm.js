@@ -63,8 +63,10 @@ class ListItemForm extends Component {
             item.name = this.state.nameInputValue;
             item.quantity = parseInt(this.state.qtyInputValue);
             item.claimedBy = this.state.ownerInputValue;
-            item.dimensions.w = parseFloat(this.state.widthInputValue);
-            item.dimensions.l = parseFloat(this.state.lengthInputValue);
+            const width = parseFloat(this.state.widthInputValue);
+            const length = parseFloat(this.state.lengthInputValue);
+            item.dimensions.w = isNaN(width) ? undefined : width;
+            item.dimensions.l = isNaN(length) ? undefined : length;
             this.props.onSubmit(item);
         }
     }
