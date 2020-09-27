@@ -12,12 +12,12 @@ class RoomRectObject extends SceneObject {
     nameText,
     staticObject,
   }) {
-    super({ 
-      scene: scene, 
+    super({
+      scene: scene,
       parent: parent,
-      position: position, 
-      size: size, 
-      staticObject: staticObject, 
+      position: position,
+      size: size,
+      staticObject: staticObject,
     });
 
     this.color = color;
@@ -33,18 +33,26 @@ class RoomRectObject extends SceneObject {
     this.selected = false;
     // [Line dash length, space length]
     this._selectionLineWidth = 0.035 * window.devicePixelRatio;
-    this._selectionLineDash = [0.06 * window.devicePixelRatio, 0.08 * window.devicePixelRatio]; 
+    this._selectionLineDash = [
+      0.06 * window.devicePixelRatio,
+      0.08 * window.devicePixelRatio,
+    ];
 
     this._selectionOutlineOffset = 0;
-
   }
 
   update() {
-    this._animateSelection(); 
+    this._animateSelection();
     // Restrict to parent (room) borders
     if (this.parent) {
-      const xLimit = Math.min(this.parent.size.x - this.size.x, Math.max(0, this.position.x));
-      const yLimit = Math.min(this.parent.size.y - this.size.y, Math.max(0, this.position.y));
+      const xLimit = Math.min(
+        this.parent.size.x - this.size.x,
+        Math.max(0, this.position.x)
+      );
+      const yLimit = Math.min(
+        this.parent.size.y - this.size.y,
+        Math.max(0, this.position.y)
+      );
       this.position = new Vector2(xLimit, yLimit);
     }
   }
@@ -75,16 +83,14 @@ class RoomRectObject extends SceneObject {
     this._setContextTextStyle();
     const lineOffset = 0.15;
     const fitNameText = this._getEditedText(this.nameText);
-    ctx.fillText(
-      fitNameText,
-      this.size.x/2,
-      this.size.y/2 - lineOffset
+    ctx.fillText(fitNameText, this.size.x / 2, this.size.y / 2 - lineOffset);
+    const fitDimensionsText = this._getEditedText(
+      `${this.size.x}' x ${this.size.y}'`
     );
-    const fitDimensionsText = this._getEditedText(`${this.size.x}' x ${this.size.y}'`);
     ctx.fillText(
       fitDimensionsText,
-      this.size.x/2,
-      this.size.y/2 + lineOffset
+      this.size.x / 2,
+      this.size.y / 2 + lineOffset
     );
 
     // Draw dotted selection outline
@@ -118,7 +124,7 @@ class RoomRectObject extends SceneObject {
   // Trims text so it fits in size of object. If the available width is less than the width of '...', returns empty string
   _getEditedText(text) {
     this._setContextTextStyle();
-    const textPadding = this.size.x/20;
+    const textPadding = this.size.x / 20;
     text = text.trim();
     while (
       this.scene.ctx.measureText(text).width >

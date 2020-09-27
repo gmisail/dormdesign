@@ -8,7 +8,10 @@ class MouseController {
 
     this.watchedElement.addEventListener("mousedown", (e) => {
       //const position = this._getCursorPosition(this.watchedElement, e);
-      const position = new Vector2(e.offsetX * window.devicePixelRatio, e.offsetY * window.devicePixelRatio);
+      const position = new Vector2(
+        e.offsetX * window.devicePixelRatio,
+        e.offsetY * window.devicePixelRatio
+      );
       this.pressed = true;
       this._position = position;
       onMouseDown(position);
@@ -18,9 +21,12 @@ class MouseController {
       if (this.pressed) {
         const delta = new Vector2(
           e.offsetX * window.devicePixelRatio - this._position.x,
-          e.offsetY * window.devicePixelRatio - this._position.y,
+          e.offsetY * window.devicePixelRatio - this._position.y
         );
-        this._position = new Vector2(e.offsetX * window.devicePixelRatio, e.offsetY * window.devicePixelRatio);
+        this._position = new Vector2(
+          e.offsetX * window.devicePixelRatio,
+          e.offsetY * window.devicePixelRatio
+        );
         onMouseMove(delta);
       }
     });

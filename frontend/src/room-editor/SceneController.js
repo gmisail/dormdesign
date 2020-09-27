@@ -1,8 +1,7 @@
-
 class SceneController {
   constructor(canvas) {
     this.canvas = canvas;
-    this.resizeCanvas(canvas)
+    this.resizeCanvas(canvas);
     this.ctx = canvas.getContext("2d");
 
     this.idCounter = 0;
@@ -22,7 +21,7 @@ class SceneController {
   }
 
   init() {
-    this.mainLoop();  // Start main update/render loop
+    this.mainLoop(); // Start main update/render loop
   }
 
   getAllChildObjects(object) {
@@ -30,7 +29,9 @@ class SceneController {
     let children = [];
     for (let i = 0; i < object.children.length; i++) {
       children.push(object.children[i]);
-      children = children.concat(this._recursiveGetAllObjects(object.children[i]));
+      children = children.concat(
+        this._recursiveGetAllObjects(object.children[i])
+      );
     }
     // console.log(children);
     return children;
@@ -50,7 +51,7 @@ class SceneController {
   }
 
   addObject(obj) {
-    this.state.objects.push(obj)
+    this.state.objects.push(obj);
   }
 
   update() {

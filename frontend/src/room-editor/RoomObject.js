@@ -11,7 +11,7 @@ class RoomObject extends SceneObject {
       scene: scene,
       parent: undefined,
       position: new Vector2(0, 0),
-      size: new Vector2( 0, 0 ),
+      size: new Vector2(0, 0),
       scale: new Vector2(1, 1),
       staticObject: true,
     });
@@ -38,7 +38,7 @@ class RoomObject extends SceneObject {
       grid: undefined,
       roomObjects: [],
       selectedObject: undefined,
-    }
+    };
 
     const floorGrid = new RoomGrid({
       scene: this.scene,
@@ -50,10 +50,10 @@ class RoomObject extends SceneObject {
       lineColor: "#888",
       lineWidth: 0.03,
       staticObject: true,
-    })
+    });
 
     this.children.push(floorGrid);
-    this.state.floorGrid = floorGrid
+    this.state.floorGrid = floorGrid;
 
     //this.addItemToRoom({});
   }
@@ -61,7 +61,7 @@ class RoomObject extends SceneObject {
   _fitRoomToCanvas() {
     // Padding from edge of canvas for room outline
     this.boundaryOffset = this.scene.canvas.width * 0.05;
-    
+
     // Find canvas pixels per foot
     let maxWidth;
     let maxHeight;
@@ -73,20 +73,24 @@ class RoomObject extends SceneObject {
         maxHeight = this.boundaryPoints[i].y;
       }
     }
-    const usableCanvasWidth =
-      this.scene.canvas.width - 2 * this.boundaryOffset;
+    const usableCanvasWidth = this.scene.canvas.width - 2 * this.boundaryOffset;
     const usableCanvasHeight =
       this.scene.canvas.height - 2 * this.boundaryOffset;
 
     let roomAspect = maxWidth / maxHeight;
-    let canvasAspect =
-      this.scene.canvas.width / this.scene.canvas.height;
+    let canvasAspect = this.scene.canvas.width / this.scene.canvas.height;
 
     // Compare canvas aspect ratio to room aspect ratio in to make sure room will fit in canvas
     if (roomAspect > canvasAspect) {
-      this.scale = new Vector2(usableCanvasWidth / maxWidth, usableCanvasWidth / maxWidth);
+      this.scale = new Vector2(
+        usableCanvasWidth / maxWidth,
+        usableCanvasWidth / maxWidth
+      );
     } else {
-      this.scale = new Vector2(usableCanvasHeight / maxHeight, usableCanvasHeight / maxHeight);
+      this.scale = new Vector2(
+        usableCanvasHeight / maxHeight,
+        usableCanvasHeight / maxHeight
+      );
     }
 
     this.size.x = maxWidth;
@@ -98,7 +102,7 @@ class RoomObject extends SceneObject {
     );
   }
 
-  // Mouse callbacks that are passed to mouse controller 
+  // Mouse callbacks that are passed to mouse controller
   onMouseDown(position) {
     if (this.state.selectedObject) {
       this.state.selectedObject.selected = false;
@@ -108,7 +112,7 @@ class RoomObject extends SceneObject {
     if (clicked.length > 0) {
       for (let i = 0; i < clicked.length; i++) {
         const obj = clicked[i];
-        if ('selected' in obj) {
+        if ("selected" in obj) {
           obj.selected = true;
           this.state.selectedObject = obj;
           break;
@@ -119,8 +123,14 @@ class RoomObject extends SceneObject {
   onMouseMove(delta) {
     if (this.state.selectedObject && !this.state.selectedObject.staticObject) {
       const selectedObject = this.state.selectedObject;
-      const scaledDelta = new Vector2(delta.x / selectedObject.transformMatrix.a, delta.y / selectedObject.transformMatrix.d);
-      selectedObject.position = new Vector2(selectedObject.position.x + scaledDelta.x, selectedObject.position.y + scaledDelta.y);
+      const scaledDelta = new Vector2(
+        delta.x / selectedObject.transformMatrix.a,
+        delta.y / selectedObject.transformMatrix.d
+      );
+      selectedObject.position = new Vector2(
+        selectedObject.position.x + scaledDelta.x,
+        selectedObject.position.y + scaledDelta.y
+      );
     }
   }
   onMouseUp() {}
@@ -140,19 +150,19 @@ class RoomObject extends SceneObject {
 
   // Configures the context to draw text with these styles
   _setContextTextStyle() {
-    // Font size range 
-    const fontSize = 0.14 * window.devicePixelRatio;//Math.min(13 * window.devicePixelRatio, Math.max(this.pixelsPerFoot * 0.25, 7 * window.devicePixelRatio));
-    
+    // Font size range
+    const fontSize = 0.14 * window.devicePixelRatio; //Math.min(13 * window.devicePixelRatio, Math.max(this.pixelsPerFoot * 0.25, 7 * window.devicePixelRatio));
+
     this.scene.ctx.font = `bold ${fontSize}px sans-serif`;
     this.scene.ctx.textBaseline = "middle";
     this.scene.ctx.textAlign = "center";
     this.scene.ctx.fillStyle = this.textColor;
   }
 
-  // Takes name, dimensions, color and adds a new item to the room object/scene. 
+  // Takes name, dimensions, color and adds a new item to the room object/scene.
   addItemToRoom({ name, feetWidth, feetHeight, color }) {
-    const randomColor = `#${Math.floor(Math.random()*16777215).toString(16)}`;
-    const obj = new RoomRectObject ({
+    const randomColor = `#${Math.floor(Math.random() * 16777215).toString(16)}`;
+    const obj = new RoomRectObject({
       scene: this.scene,
       position: new Vector2(0, 0),
       parent: this,
@@ -162,8 +172,11 @@ class RoomObject extends SceneObject {
       nameText: name ?? "New Item",
       staticObject: false,
     });
-    obj.position = new Vector2(this.size.x/2 - obj.size.x/2, this.size.y/2 - obj.size.y/2);
-    
+    obj.position = new Vector2(
+      this.size.x / 2 - obj.size.x / 2,
+      this.size.y / 2 - obj.size.y / 2
+    );
+
     this.state.roomObjects.push(obj);
     this.children.push(obj);
   }
@@ -193,11 +206,7 @@ class RoomObject extends SceneObject {
     this._setContextTextStyle();
     const textWidth = ctx.measureText(captionText).width;
     if (textWidth < globalSize.x) {
-      ctx.fillText(
-        captionText,
-        this.size.x / 2,
-        this.size.y + 0.3,
-      );
+      ctx.fillText(captionText, this.size.x / 2, this.size.y + 0.3);
     }
     for (let i = 0; i < this.children.length; i++) {
       this.children[i].draw();
@@ -226,4 +235,3 @@ class RoomObject extends SceneObject {
 }
 
 export default RoomObject;
-

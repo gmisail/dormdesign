@@ -1,19 +1,16 @@
-import React from 'react';
+import React from "react";
 import NavigationBar from "./components/navbar";
 import { Container } from "react-bootstrap";
 
-import {
-  BrowserRouter as Router,
-  Route
-} from "react-router-dom";
+import { BrowserRouter as Router, Route } from "react-router-dom";
 
 import "../node_modules/bootstrap/dist/css/bootstrap.min.css";
-import ListRoute from './routes/list.route';
-import EditorRoute from './routes/editor.route';
+import ListRoute from "./routes/list.route";
+import EditorRoute from "./routes/editor.route";
 
 function App() {
   return (
-    <Router>  
+    <Router>
       <NavigationBar></NavigationBar>
       <Container>
         <div className="mt-3">
@@ -24,7 +21,7 @@ function App() {
             <EditorRoute></EditorRoute>
           </Route>
         </div>
-     </Container>
+      </Container>
     </Router>
   );
 }
