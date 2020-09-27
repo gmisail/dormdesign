@@ -1,0 +1,9 @@
+.room-canvas {
+  width: 100%;
+  display: block;
+}
+
+.room-canvas-container {
+  padding: 0;
+  max-width: 85vh;
+}
