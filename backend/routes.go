@@ -4,11 +4,15 @@ import (
 	"os"
 	"net/http"
 	"github.com/labstack/echo/v4"
+	"github.com/go-redis/redis/v8"
+	"github.com/gmisail/dormdesign/models"
 )
 
 // SetupRoutes: configures the API endpoints
-func SetupRoutes(e *echo.Echo) {
+func SetupRoutes(e *echo.Echo, database *redis.Client) {
 	e.GET("/", func(c echo.Context) error {
+		models.CreateList(database, "testtesttest", "graham")
+
 		return c.String(http.StatusOK, "Hello from DormDesign")
 	})
 }
@@ -20,7 +24,7 @@ func SetupServer(e *echo.Echo) {
 	*/
 	
 	databaseAddress := os.Getenv("DATABASE_ADDRESS")
+	database := SetupDatabase(databaseAddress)
 
-	SetupDatabase(databaseAddress)
-	SetupRoutes(e)
+	SetupRoutes(e, database)
 }

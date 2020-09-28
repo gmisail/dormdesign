@@ -1,17 +1,15 @@
 package models
 
-type ListItem struct {
-	Name string
-	ClaimedBy string
-	Quantity int
-}
+import (
+	"fmt"
+	"context"
+	"github.com/go-redis/redis/v8"
+)
 
-type List struct {
-	id string
-	name string
-	items []ListItem
-}
+func CreateList(database *redis.Client, id string, name string) {
+	err := database.Set(context.Background(), id, "hello", 0)
 
-func CreateList(id string, name string) *List {
-	// create list within database
+	if err != nil {
+		fmt.Println(err)
+	}
 }
