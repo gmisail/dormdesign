@@ -20,6 +20,9 @@ class RoomGrid extends SceneObject {
       staticObject: true,
     });
 
+    this.borderColor = "#555";
+    this.borderWidth = 0.08;
+
     this.lineColor = lineColor ?? "#888";
     this.lineWidth = lineWidth ?? 0.3;
     this.opacity = opacity ?? 1.0;
@@ -56,6 +59,23 @@ class RoomGrid extends SceneObject {
       ctx.lineTo(this.position.x + this.size.x, currY);
       ctx.stroke();
     }
+
+    // Draw border
+    ctx.strokeStyle = this.borderColor;
+    ctx.lineWidth = this.borderWidth;
+    ctx.lineJoin = "round";
+    ctx.beginPath();
+
+    // Offset it by half the borderWidth so that the line doesn't overlap into the room itself
+    ctx.moveTo(-this.borderWidth / 2, -this.borderWidth / 2);
+    ctx.lineTo(this.size.x + this.borderWidth / 2, -this.borderWidth / 2);
+    ctx.lineTo(
+      this.size.x + this.borderWidth / 2,
+      this.size.y + this.borderWidth / 2
+    );
+    ctx.lineTo(-this.borderWidth / 2, this.size.y + this.borderWidth / 2);
+    ctx.lineTo(-this.borderWidth / 2, -this.borderWidth / 2);
+    ctx.stroke();
 
     // Reset transformation matrix so it doesn't interfere with other draws
     ctx.resetTransform();

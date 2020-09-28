@@ -119,6 +119,7 @@ class RoomObject extends SceneObject {
           obj.selected = true;
           this.state.selectedObject = obj;
           // Move the selected object to the back of the children array so its drawn last (on top)
+          console.log(this.children.length);
           this.children.push(this.children.splice(clicked[i], 1)[0]);
           break;
         }
@@ -221,18 +222,6 @@ class RoomObject extends SceneObject {
     super.draw();
 
     ctx.setTransform(this.transformMatrix);
-    // Draw border
-    ctx.strokeStyle = this.borderColor;
-    ctx.lineWidth = this.borderWidth;
-    ctx.lineJoin = "round";
-    ctx.beginPath();
-
-    ctx.moveTo(0, 0);
-    ctx.lineTo(this.size.x, 0);
-    ctx.lineTo(this.size.x, this.size.y);
-    ctx.lineTo(0, this.size.y);
-    ctx.lineTo(0, 0);
-    ctx.stroke();
 
     // Reset transformation matrix so it doesn't interfere with other draws
     ctx.resetTransform();

@@ -22,7 +22,7 @@ class RoomRectObject extends SceneObject {
 
     this.color = color;
     this.textColor = "#222";
-    this.selectionColor = "#555";
+    this.selectionColor = "#3f00e0";
     this.opacity = opacity ?? 1.0;
 
     // Get draw width and height using room's pixels per foot
@@ -33,8 +33,8 @@ class RoomRectObject extends SceneObject {
     this.selected = false;
     // [Line dash length, space length]
     this._selectionLineSpeed = 0.4;
-    this._selectionLineWidth = 0.06;
-    this._selectionLineDash = [0.1, 0.18];
+    this._selectionLineWidth = 0.07;
+    this._selectionLineDash = [0.22, 0.18];
 
     this._selectionOutlineOffset = 0;
   }
