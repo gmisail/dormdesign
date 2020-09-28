@@ -107,7 +107,6 @@ class SceneObject {
       offset.x / this.transformMatrix.a,
       offset.y / this.transformMatrix.d
     );
-    console.log(offset, this.transformMatrix.a, this.transformMatrix.d, scaled);
     return scaled;
   }
 
@@ -118,6 +117,7 @@ class SceneObject {
   }
 
   draw() {
+    this.scene.ctx.resetTransform();
     for (let i = 0; i < this.children.length; i++) {
       this.children[i].draw();
     }

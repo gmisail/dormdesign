@@ -11,6 +11,8 @@ class RoomRectObject extends SceneObject {
     opacity,
     nameText,
     staticObject,
+    snapPosition,
+    snapOffset,
   }) {
     super({
       scene: scene,
@@ -22,27 +24,60 @@ class RoomRectObject extends SceneObject {
 
     this.color = color;
     this.textColor = "#222";
-    this.selectionColor = "#555";
+    this.selectionColor = "#444";
     this.opacity = opacity ?? 1.0;
-
-    // Get draw width and height using room's pixels per foot
-    // this._calculateSize();
 
     this.nameText = nameText;
 
     this.selected = false;
-    // [Line dash length, space length]
-    this._selectionLineWidth = 0.035 * window.devicePixelRatio;
-    this._selectionLineDash = [
-      0.06 * window.devicePixelRatio,
-      0.08 * window.devicePixelRatio,
-    ];
+    this._selectionLineSpeed = 0.4;
+    this._selectionLineWidth = 0.07;
+    this._selectionLineDash = [0.22, 0.18]; // [Line dash length, space length]
 
     this._selectionOutlineOffset = 0;
+
+    this.snapPosition = snapPosition ?? false;
+    this.snapOffset = snapOffset ?? 0.1;
+    console.log(this.snapOffset);
+    this._unsnappedPosition = undefined;
+    this.setPosition(position);
+  }
+
+  // Set position function that handles position snapping. If snapping is disabled, just sets position normally
+  setPosition(pos) {
+    let x = pos.x;
+    let y = pos.y;
+    if (this.snapPosition) {
+      this._unsnappedPosition = pos;
+      x = this._roundToNearestMultipleOf(
+        this._unsnappedPosition.x,
+        this.snapOffset
+      );
+      y = this._roundToNearestMultipleOf(
+        this._unsnappedPosition.y,
+        this.snapOffset
+      );
+    }
+    this.position = new Vector2(x, y);
+  }
+
+  // Returns the unsnapped position. If position snapping is disabled, returns normal position
+  getUnsnappedPosition() {
+    return this._unsnappedPosition ?? this.position;
+  }
+
+  // Rounds num to the nearest multiple of given a number
+  _roundToNearestMultipleOf(num, multipleOf) {
+    const remainder = num % multipleOf;
+    const divided = num / multipleOf;
+    const rounded =
+      remainder >= multipleOf / 2 ? Math.ceil(divided) : Math.floor(divided);
+    return multipleOf * rounded;
   }
 
   update() {
     this._animateSelection();
+
     // Restrict to parent (room) borders
     if (this.parent) {
       const xLimit = Math.min(
@@ -59,7 +94,7 @@ class RoomRectObject extends SceneObject {
 
   // Animates the selection border
   _animateSelection() {
-    const speed = 0.01;
+    const speed = this._selectionLineSpeed * this.scene.deltaTime;
     this._selectionOutlineOffset += speed;
     if (
       this._selectionOutlineOffset >
@@ -79,20 +114,6 @@ class RoomRectObject extends SceneObject {
     ctx.fillRect(0, 0, this.size.x, this.size.y);
     ctx.globalAlpha = 1.0; // Reset opacity
 
-    // Draw text on top of object
-    this._setContextTextStyle();
-    const lineOffset = 0.15;
-    const fitNameText = this._getEditedText(this.nameText);
-    ctx.fillText(fitNameText, this.size.x / 2, this.size.y / 2 - lineOffset);
-    const fitDimensionsText = this._getEditedText(
-      `${this.size.x}' x ${this.size.y}'`
-    );
-    ctx.fillText(
-      fitDimensionsText,
-      this.size.x / 2,
-      this.size.y / 2 + lineOffset
-    );
-
     // Draw dotted selection outline
     if (this.selected) {
       ctx.strokeStyle = this.selectionColor;
@@ -109,12 +130,35 @@ class RoomRectObject extends SceneObject {
 
     // Reset transformation matrix so it doesn't interfere with other draws
     ctx.resetTransform();
+
+    // Draw text on top of object - For some reason the context using the transformation matrix seems to draw the text differently on firefox and chrome resulting in it being offset. So its being drawn by manually scaling the necessary values.
+    const fontSize = 0.28;
+    this._setContextTextStyle(fontSize);
+    const lineOffset = 0.18 * this.transformMatrix.a;
+    const fitNameText = this._getEditedText(this.nameText);
+    const fitDimensionsText = this._getEditedText(
+      `${this.size.x}' x ${this.size.y}'`
+    );
+    ctx.font = `bold ${fontSize * this.transformMatrix.a}px sans-serif`;
+    ctx.fillText(
+      fitNameText,
+      this.transformMatrix.e + (this.size.x / 2) * this.transformMatrix.a,
+      this.transformMatrix.f +
+        (this.size.y / 2) * this.transformMatrix.a -
+        lineOffset
+    );
+
+    ctx.fillText(
+      fitDimensionsText,
+      this.transformMatrix.e + (this.size.x / 2) * this.transformMatrix.a,
+      this.transformMatrix.f +
+        (this.size.y / 2) * this.transformMatrix.a +
+        lineOffset
+    );
   }
 
-  // Configures the context to draw text with these styles
-  _setContextTextStyle() {
-    const fontSize = 0.3;
-
+  // Takes font size and configures the context to draw text with these styles
+  _setContextTextStyle(fontSize) {
     this.scene.ctx.font = `bold ${fontSize}px sans-serif`;
     this.scene.ctx.textBaseline = "middle";
     this.scene.ctx.textAlign = "center";

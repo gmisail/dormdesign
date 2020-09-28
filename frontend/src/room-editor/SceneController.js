@@ -43,7 +43,8 @@ class SceneController {
     // Calculate time since last frame. Measured in seconds
     if (!currentTime) currentTime = performance.now(); // Needed because currentTime is undefined on first frame
     if (!this._lastFrameTime) this._lastFrameTime = currentTime;
-    this.deltaTime = Math.max(0, (currentTime - this._lastFrameTime) / 1000);
+    const deltaMilliSeconds = Math.max(0, currentTime - this._lastFrameTime);
+    this.deltaTime = deltaMilliSeconds / 1000; // Convert to seconds
     this._lastFrameTime = currentTime;
 
     this.update();
