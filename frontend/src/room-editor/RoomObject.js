@@ -108,13 +108,18 @@ class RoomObject extends SceneObject {
       this.state.selectedObject.selected = false;
       this.state.selectedObject = undefined;
     }
-    const clicked = this._getChildrenAtPosition(position);
+    // Get the object indices that were under the click and sort them in descending order so that the one on top is selected
+    const clicked = this._getChildrenIndicesAtPosition(position).sort(
+      (a, b) => b - a
+    );
     if (clicked.length > 0) {
       for (let i = 0; i < clicked.length; i++) {
-        const obj = clicked[i];
+        const obj = this.children[clicked[i]];
         if ("selected" in obj) {
           obj.selected = true;
           this.state.selectedObject = obj;
+          // Move the selected object to the back of the children array so its drawn last (on top)
+          this.children.push(this.children.splice(clicked[i], 1)[0]);
           break;
         }
       }
@@ -136,13 +141,13 @@ class RoomObject extends SceneObject {
   onMouseUp() {}
 
   // Finds all (direct) children that the given point lies within
-  _getChildrenAtPosition(position) {
+  _getChildrenIndicesAtPosition(position) {
     const objects = this.children;
     let found = [];
     for (let i = 0; i < objects.length; i++) {
       const bbox = objects[i].getGlobalBoundingBox();
       if (Collisions.pointInRect(position, bbox)) {
-        found.push(objects[i]);
+        found.push(i);
       }
     }
     return found;

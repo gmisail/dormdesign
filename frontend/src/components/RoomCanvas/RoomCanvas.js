@@ -78,14 +78,16 @@ class RoomCanvas extends Component {
   render() {
     return (
       <div>
-        <Container className="room-canvas-container">
-          <Button
-            className="ml-2"
-            name="addItemToCanvas"
-            onClick={() => this.toggleModal("add")}
-          >
-            Add Object
-          </Button>
+        <Container className="room-canvas-container mb-4">
+          <div className="d-flex justify-content-end mb-2">
+            <Button
+              className="ml-2"
+              name="addItemToCanvas"
+              onClick={() => this.toggleModal("add")}
+            >
+              Add Object
+            </Button>
+          </div>
           <canvas
             ref={(ref) => (this.canvas = ref)}
             className="room-canvas"
