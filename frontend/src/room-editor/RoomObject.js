@@ -105,6 +105,16 @@ class RoomObject extends SceneObject {
     );
   }
 
+  // Rounds num to the nearest multiple of given a number
+  _roundToNearestMultipleOf(num, multipleOf) {
+    const remainder = num % multipleOf;
+    const divided = num / multipleOf;
+    const rounded =
+      remainder >= multipleOf / 2 ? Math.ceil(divided) : Math.floor(divided);
+    console.log(num, remainder, divided, rounded);
+    return multipleOf * rounded;
+  }
+
   // Mouse callbacks that are passed to mouse controller
   onMouseDown(position) {
     if (this.state.selectedObject) {
@@ -135,9 +145,12 @@ class RoomObject extends SceneObject {
         delta.x / selectedObject.transformMatrix.a,
         delta.y / selectedObject.transformMatrix.d
       );
-      selectedObject.position = new Vector2(
-        selectedObject.position.x + scaledDelta.x,
-        selectedObject.position.y + scaledDelta.y
+      const unsnappedPos = selectedObject.getUnsnappedPosition();
+      selectedObject.setPosition(
+        new Vector2(
+          unsnappedPos.x + scaledDelta.x,
+          unsnappedPos.y + scaledDelta.y
+        )
       );
     }
   }
@@ -159,7 +172,7 @@ class RoomObject extends SceneObject {
   // Configures the context to draw text with these styles
   _setContextTextStyle() {
     // Font size range
-    const fontSize = 0.24; //Math.min(13 * window.devicePixelRatio, Math.max(this.pixelsPerFoot * 0.25, 7 * window.devicePixelRatio));
+    const fontSize = 0.24;
 
     this.scene.ctx.font = `bold ${fontSize}px sans-serif`;
     this.scene.ctx.textBaseline = "middle";
@@ -169,7 +182,6 @@ class RoomObject extends SceneObject {
 
   // Takes name, dimensions, color and adds a new item to the room object/scene.
   addItemToRoom({ name, feetWidth, feetHeight }) {
-    // const randomColor = `#${Math.floor(Math.random() * 16777215).toString(16)}`;
     const color = this.objectColors[this.state.objectColorCounter];
     this.state.objectColorCounter++;
     if (this.state.objectColorCounter === this.objectColors.length) {
@@ -184,10 +196,14 @@ class RoomObject extends SceneObject {
       opacity: 0.4,
       nameText: name ?? "New Item",
       staticObject: false,
+      snapPosition: true,
+      snapOffset: 0.2,
     });
-    obj.position = new Vector2(
-      this.size.x / 2 - obj.size.x / 2,
-      this.size.y / 2 - obj.size.y / 2
+    obj.setPosition(
+      new Vector2(
+        this.size.x / 2 - obj.size.x / 2,
+        this.size.y / 2 - obj.size.y / 2
+      )
     );
 
     this.state.roomObjects.push(obj);

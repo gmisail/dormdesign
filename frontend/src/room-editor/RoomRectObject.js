@@ -11,6 +11,8 @@ class RoomRectObject extends SceneObject {
     opacity,
     nameText,
     staticObject,
+    snapPosition,
+    snapOffset,
   }) {
     super({
       scene: scene,
@@ -25,22 +27,57 @@ class RoomRectObject extends SceneObject {
     this.selectionColor = "#444";
     this.opacity = opacity ?? 1.0;
 
-    // Get draw width and height using room's pixels per foot
-    // this._calculateSize();
-
     this.nameText = nameText;
 
     this.selected = false;
-    // [Line dash length, space length]
     this._selectionLineSpeed = 0.4;
     this._selectionLineWidth = 0.07;
-    this._selectionLineDash = [0.22, 0.18];
+    this._selectionLineDash = [0.22, 0.18]; // [Line dash length, space length]
 
     this._selectionOutlineOffset = 0;
+
+    this.snapPosition = snapPosition ?? false;
+    this.snapOffset = snapOffset ?? 0.1;
+    console.log(this.snapOffset);
+    this._unsnappedPosition = undefined;
+    this.setPosition(position);
+  }
+
+  // Set position function that handles position snapping. If snapping is disabled, just sets position normally
+  setPosition(pos) {
+    let x = pos.x;
+    let y = pos.y;
+    if (this.snapPosition) {
+      this._unsnappedPosition = pos;
+      x = this._roundToNearestMultipleOf(
+        this._unsnappedPosition.x,
+        this.snapOffset
+      );
+      y = this._roundToNearestMultipleOf(
+        this._unsnappedPosition.y,
+        this.snapOffset
+      );
+    }
+    this.position = new Vector2(x, y);
+  }
+
+  // Returns the unsnapped position. If position snapping is disabled, returns normal position
+  getUnsnappedPosition() {
+    return this._unsnappedPosition ?? this.position;
+  }
+
+  // Rounds num to the nearest multiple of given a number
+  _roundToNearestMultipleOf(num, multipleOf) {
+    const remainder = num % multipleOf;
+    const divided = num / multipleOf;
+    const rounded =
+      remainder >= multipleOf / 2 ? Math.ceil(divided) : Math.floor(divided);
+    return multipleOf * rounded;
   }
 
   update() {
     this._animateSelection();
+
     // Restrict to parent (room) borders
     if (this.parent) {
       const xLimit = Math.min(
@@ -76,9 +113,6 @@ class RoomRectObject extends SceneObject {
     ctx.globalAlpha = this.opacity;
     ctx.fillRect(0, 0, this.size.x, this.size.y);
     ctx.globalAlpha = 1.0; // Reset opacity
-
-    // console.log(this.transformMatrix.e, this.transformMatrix.f, this.size.x/2 * this.transformMatrix.a, this.size.y/2 * this.transformMatrix.d, lineOffset);
-    // console.log(this.getGlobalPosition());
 
     // Draw dotted selection outline
     if (this.selected) {
@@ -121,7 +155,6 @@ class RoomRectObject extends SceneObject {
         (this.size.y / 2) * this.transformMatrix.a +
         lineOffset
     );
-    // console.log(this.transformMatrix.e + this.size.x/2 * this.transformMatrix.a, this.transformMatrix.f + this.size.y/2 * this.transformMatrix.a);
   }
 
   // Takes font size and configures the context to draw text with these styles
