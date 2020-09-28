@@ -22,7 +22,7 @@ class RoomRectObject extends SceneObject {
 
     this.color = color;
     this.textColor = "#222";
-    this.selectionColor = "#3f00e0";
+    this.selectionColor = "#444";
     this.opacity = opacity ?? 1.0;
 
     // Get draw width and height using room's pixels per foot

@@ -82,6 +82,15 @@ class RoomCanvas extends Component {
           <div className="d-flex justify-content-end mb-2">
             <Button
               className="ml-2"
+              variant="secondary"
+              name="editCanvasItem"
+              disabled={true}
+              onClick={() => this.toggleModal("edit")}
+            >
+              Edit
+            </Button>
+            <Button
+              className="ml-2"
               name="addItemToCanvas"
               onClick={() => this.toggleModal("add")}
             >

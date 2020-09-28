@@ -38,6 +38,7 @@ class RoomObject extends SceneObject {
       grid: undefined,
       roomObjects: [],
       selectedObject: undefined,
+      objectColorCounter: 0,
     };
 
     const floorGrid = new RoomGrid({
@@ -54,6 +55,8 @@ class RoomObject extends SceneObject {
 
     this.children.push(floorGrid);
     this.state.floorGrid = floorGrid;
+
+    this.objectColors = ["#0043E0", "#C400E0", "#E03016", "#7EE016", "#0BE07B"];
 
     //this.addItemToRoom({});
   }
@@ -119,7 +122,6 @@ class RoomObject extends SceneObject {
           obj.selected = true;
           this.state.selectedObject = obj;
           // Move the selected object to the back of the children array so its drawn last (on top)
-          console.log(this.children.length);
           this.children.push(this.children.splice(clicked[i], 1)[0]);
           break;
         }
@@ -166,15 +168,20 @@ class RoomObject extends SceneObject {
   }
 
   // Takes name, dimensions, color and adds a new item to the room object/scene.
-  addItemToRoom({ name, feetWidth, feetHeight, color }) {
-    const randomColor = `#${Math.floor(Math.random() * 16777215).toString(16)}`;
+  addItemToRoom({ name, feetWidth, feetHeight }) {
+    // const randomColor = `#${Math.floor(Math.random() * 16777215).toString(16)}`;
+    const color = this.objectColors[this.state.objectColorCounter];
+    this.state.objectColorCounter++;
+    if (this.state.objectColorCounter === this.objectColors.length) {
+      this.state.objectColorCounter = 0;
+    }
     const obj = new RoomRectObject({
       scene: this.scene,
       position: new Vector2(0, 0),
       parent: this,
       size: new Vector2(feetWidth ?? 1, feetHeight ?? 1),
-      color: color ?? randomColor,
-      opacity: 0.5,
+      color: color,
+      opacity: 0.4,
       nameText: name ?? "New Item",
       staticObject: false,
     });
