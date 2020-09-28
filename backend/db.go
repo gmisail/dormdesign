@@ -24,7 +24,5 @@ func SetupDatabase(url string) *redis.Client {
 		fmt.Println("⇨ connected to database")
 	}
 
-
-
 	return client
 }
