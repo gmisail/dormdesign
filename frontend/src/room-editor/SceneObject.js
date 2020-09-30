@@ -1,7 +1,15 @@
 import Vector2 from "./Vector2";
 
 class SceneObject {
-  constructor({ scene, parent, position, size, scale, staticObject }) {
+  constructor({
+    scene,
+    parent,
+    position,
+    size,
+    scale,
+    canvasLayer,
+    staticObject,
+  }) {
     this.scene = scene;
     this.id = scene.idCounter++;
     this._position = position ?? new Vector2(0, 0);
@@ -10,6 +18,7 @@ class SceneObject {
     this.parent = parent;
     this.children = [];
     this._size = size;
+    this.canvasLayer = canvasLayer ?? 0;
 
     this._updateTransform();
   }
@@ -117,7 +126,7 @@ class SceneObject {
   }
 
   draw() {
-    this.scene.ctx.resetTransform();
+    this.scene.ctx[this.canvasLayer].resetTransform();
     for (let i = 0; i < this.children.length; i++) {
       this.children[i].draw();
     }

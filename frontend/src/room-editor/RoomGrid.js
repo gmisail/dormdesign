@@ -10,6 +10,7 @@ class RoomGrid extends SceneObject {
     opacity,
     lineColor,
     lineWidth,
+    canvasLayer,
   }) {
     super({
       scene: scene,
@@ -18,6 +19,7 @@ class RoomGrid extends SceneObject {
       size: size,
       scale: new Vector2(1, 1),
       staticObject: true,
+      canvasLayer: canvasLayer,
     });
 
     this.borderColor = "#555";
@@ -31,7 +33,7 @@ class RoomGrid extends SceneObject {
   update() {}
 
   draw() {
-    const ctx = this.scene.ctx;
+    const ctx = this.scene.ctx[this.canvasLayer];
     // Set context transform to this objects transformation matrix
     ctx.setTransform(this.transformMatrix);
 

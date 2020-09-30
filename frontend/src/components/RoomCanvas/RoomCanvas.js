@@ -20,7 +20,7 @@ class RoomCanvas extends Component {
   }
 
   componentDidMount() {
-    const scene = new SceneController(this.canvas);
+    const scene = new SceneController([this.canvas1, this.canvas2]);
     // Points defining the edges of the room (in feet)
     const testBoundaryPoints = [
       new Vector2(0, 0),
@@ -32,6 +32,7 @@ class RoomCanvas extends Component {
     const room = new RoomObject({
       scene: scene,
       boundaryPoints: testBoundaryPoints,
+      canvasLayer: 1,
     });
     scene.addObject(room);
 
@@ -78,7 +79,7 @@ class RoomCanvas extends Component {
   render() {
     return (
       <div>
-        <Container className="room-canvas-container mb-4">
+        <Container className="room-editor-container p-0">
           <div className="d-flex justify-content-end mb-2">
             <Button
               className="ml-2"
@@ -97,10 +98,18 @@ class RoomCanvas extends Component {
               Add Object
             </Button>
           </div>
-          <canvas
-            ref={(ref) => (this.canvas = ref)}
-            className="room-canvas"
-          ></canvas>
+          <div className="room-canvas-container">
+            <canvas
+              ref={(ref) => (this.canvas1 = ref)}
+              className="room-canvas"
+              style={{ zIndex: 1 }}
+            ></canvas>
+            <canvas
+              ref={(ref) => (this.canvas2 = ref)}
+              className="room-canvas"
+              style={{ zIndex: 2 }}
+            ></canvas>
+          </div>
         </Container>
         {this.renderModal()}
       </div>

@@ -6,7 +6,7 @@ import RoomGrid from "./RoomGrid";
 import Vector2 from "./Vector2";
 
 class RoomObject extends SceneObject {
-  constructor({ scene, boundaryPoints, opacity }) {
+  constructor({ scene, boundaryPoints, opacity, canvasLayer }) {
     super({
       scene: scene,
       parent: undefined,
@@ -14,6 +14,7 @@ class RoomObject extends SceneObject {
       size: new Vector2(0, 0),
       scale: new Vector2(1, 1),
       staticObject: true,
+      canvasLayer: canvasLayer,
     });
 
     // Points that define room boundary (measured in feet)
@@ -28,7 +29,7 @@ class RoomObject extends SceneObject {
     this._fitRoomToCanvas();
 
     this.mouseController = new MouseController({
-      watchedElement: this.scene.canvas,
+      watchedElement: this.scene.canvasArray[this.canvasLayer],
       onMouseDown: this.onMouseDown.bind(this),
       onMouseMove: this.onMouseMove.bind(this),
       onMouseUp: this.onMouseUp.bind(this),
@@ -51,6 +52,7 @@ class RoomObject extends SceneObject {
       lineColor: "#888",
       lineWidth: 0.03,
       staticObject: true,
+      canvasLayer: 0,
     });
 
     this.children.push(floorGrid);
@@ -62,8 +64,10 @@ class RoomObject extends SceneObject {
   }
 
   _fitRoomToCanvas() {
+    const ctx = this.scene.ctx[this.canvasLayer];
+
     // Padding from edge of canvas for room outline
-    this.boundaryOffset = this.scene.canvas.width * 0.05;
+    this.boundaryOffset = ctx.canvas.width * 0.05;
 
     // Find canvas pixels per foot
     let maxWidth;
@@ -76,12 +80,11 @@ class RoomObject extends SceneObject {
         maxHeight = this.boundaryPoints[i].y;
       }
     }
-    const usableCanvasWidth = this.scene.canvas.width - 2 * this.boundaryOffset;
-    const usableCanvasHeight =
-      this.scene.canvas.height - 2 * this.boundaryOffset;
+    const usableCanvasWidth = ctx.canvas.width - 2 * this.boundaryOffset;
+    const usableCanvasHeight = ctx.canvas.height - 2 * this.boundaryOffset;
 
     let roomAspect = maxWidth / maxHeight;
-    let canvasAspect = this.scene.canvas.width / this.scene.canvas.height;
+    let canvasAspect = ctx.canvas.width / ctx.canvas.height;
 
     // Compare canvas aspect ratio to room aspect ratio in to make sure room will fit in canvas
     if (roomAspect > canvasAspect) {
@@ -100,8 +103,8 @@ class RoomObject extends SceneObject {
     this.size.y = maxHeight;
     const globalSize = this.getGlobalSize();
     this.position = new Vector2(
-      this.scene.canvas.width / 2 - globalSize.x / 2,
-      this.scene.canvas.height / 2 - globalSize.y / 2
+      ctx.canvas.width / 2 - globalSize.x / 2,
+      ctx.canvas.height / 2 - globalSize.y / 2
     );
   }
 
@@ -111,7 +114,6 @@ class RoomObject extends SceneObject {
     const divided = num / multipleOf;
     const rounded =
       remainder >= multipleOf / 2 ? Math.ceil(divided) : Math.floor(divided);
-    console.log(num, remainder, divided, rounded);
     return multipleOf * rounded;
   }
 
@@ -170,14 +172,14 @@ class RoomObject extends SceneObject {
   }
 
   // Configures the context to draw text with these styles
-  _setContextTextStyle() {
+  _setContextTextStyle(ctx) {
     // Font size range
     const fontSize = 0.24;
 
-    this.scene.ctx.font = `bold ${fontSize}px sans-serif`;
-    this.scene.ctx.textBaseline = "middle";
-    this.scene.ctx.textAlign = "center";
-    this.scene.ctx.fillStyle = this.textColor;
+    ctx.font = `bold ${fontSize}px sans-serif`;
+    ctx.textBaseline = "middle";
+    ctx.textAlign = "center";
+    ctx.fillStyle = this.textColor;
   }
 
   // Takes name, dimensions, color and adds a new item to the room object/scene.
@@ -198,6 +200,7 @@ class RoomObject extends SceneObject {
       staticObject: false,
       snapPosition: true,
       snapOffset: 0.2,
+      canvasLayer: this.canvasLayer,
     });
     obj.setPosition(
       new Vector2(
@@ -219,20 +222,20 @@ class RoomObject extends SceneObject {
   }
 
   draw() {
-    const ctx = this.scene.ctx;
+    const ctx = this.scene.ctx[this.canvasLayer];
     const globalSize = this.getGlobalSize();
 
     // Set context transform to this objects transformation matrix
     ctx.setTransform(this.transformMatrix);
 
-    ctx.fillStyle = this.floorColor;
-    ctx.globalAlpha = this.opacity;
-    ctx.fillRect(0, 0, this.size.x, this.size.y);
-    ctx.globalAlpha = 1.0; // Reset opacity
+    // ctx.fillStyle = this.floorColor;
+    // ctx.globalAlpha = this.opacity;
+    // ctx.fillRect(0, 0, this.size.x, this.size.y);
+    // ctx.globalAlpha = 1.0; // Reset opacity
 
     // Draw caption text
     const captionText = "1 cell = 1 square foot";
-    this._setContextTextStyle();
+    this._setContextTextStyle(ctx);
     const textWidth = ctx.measureText(captionText).width;
     if (textWidth < globalSize.x) {
       ctx.fillText(captionText, this.size.x / 2, this.size.y + 0.3);

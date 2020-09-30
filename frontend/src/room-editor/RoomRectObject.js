@@ -13,6 +13,7 @@ class RoomRectObject extends SceneObject {
     staticObject,
     snapPosition,
     snapOffset,
+    canvasLayer,
   }) {
     super({
       scene: scene,
@@ -20,6 +21,7 @@ class RoomRectObject extends SceneObject {
       position: position,
       size: size,
       staticObject: staticObject,
+      canvasLayer: canvasLayer,
     });
 
     this.color = color;
@@ -38,7 +40,6 @@ class RoomRectObject extends SceneObject {
 
     this.snapPosition = snapPosition ?? false;
     this.snapOffset = snapOffset ?? 0.1;
-    console.log(this.snapOffset);
     this._unsnappedPosition = undefined;
     this.setPosition(position);
   }
@@ -105,7 +106,7 @@ class RoomRectObject extends SceneObject {
   }
 
   draw() {
-    const ctx = this.scene.ctx;
+    const ctx = this.scene.ctx[this.canvasLayer];
     // Set context transform to this objects transformation matrix
     ctx.setTransform(this.transformMatrix);
 
@@ -133,10 +134,11 @@ class RoomRectObject extends SceneObject {
 
     // Draw text on top of object - For some reason the context using the transformation matrix seems to draw the text differently on firefox and chrome resulting in it being offset. So its being drawn by manually scaling the necessary values.
     const fontSize = 0.28;
-    this._setContextTextStyle(fontSize);
+    this._setContextTextStyle(ctx, fontSize);
     const lineOffset = 0.18 * this.transformMatrix.a;
-    const fitNameText = this._getEditedText(this.nameText);
+    const fitNameText = this._getEditedText(ctx, this.nameText);
     const fitDimensionsText = this._getEditedText(
+      ctx,
       `${this.size.x}' x ${this.size.y}'`
     );
     ctx.font = `bold ${fontSize * this.transformMatrix.a}px sans-serif`;
@@ -158,22 +160,19 @@ class RoomRectObject extends SceneObject {
   }
 
   // Takes font size and configures the context to draw text with these styles
-  _setContextTextStyle(fontSize) {
-    this.scene.ctx.font = `bold ${fontSize}px sans-serif`;
-    this.scene.ctx.textBaseline = "middle";
-    this.scene.ctx.textAlign = "center";
-    this.scene.ctx.fillStyle = this.textColor;
+  _setContextTextStyle(ctx, fontSize) {
+    ctx.font = `bold ${fontSize}px sans-serif`;
+    ctx.textBaseline = "middle";
+    ctx.textAlign = "center";
+    ctx.fillStyle = this.textColor;
   }
 
   // Trims text so it fits in size of object. If the available width is less than the width of '...', returns empty string
-  _getEditedText(text) {
-    this._setContextTextStyle();
+  _getEditedText(ctx, text) {
+    this._setContextTextStyle(ctx);
     const textPadding = this.size.x / 20;
     text = text.trim();
-    while (
-      this.scene.ctx.measureText(text).width >
-      this.size.x - 2 * textPadding
-    ) {
+    while (ctx.measureText(text).width > this.size.x - 2 * textPadding) {
       if (text.length <= 3) return "";
       text = text.substring(0, text.length - 4) + "...";
     }

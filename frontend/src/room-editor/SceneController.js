@@ -1,11 +1,14 @@
 class SceneController {
-  constructor(canvas) {
-    this.canvas = canvas;
-    this.resizeCanvas(canvas);
-    this.ctx = canvas.getContext("2d");
+  constructor(canvases) {
+    this.canvasArray = canvases;
+    this.resizeCanvases(canvases);
+
+    this.ctx = [];
+    for (let i = 0; i < canvases.length; i++) {
+      this.ctx.push(canvases[i].getContext("2d"));
+    }
 
     this.idCounter = 0;
-
     this.canvasBackgroundColor = "#f0f0f0";
 
     this.state = {
@@ -64,16 +67,41 @@ class SceneController {
 
   render() {
     // Resize canvas if screen size has changed
-    this.resized = this.resizeCanvas(this.canvas);
+    this.resized = this.resizeCanvases(this.canvasArray);
 
     // Clear canvas
-    this.ctx.fillStyle = this.canvasBackgroundColor;
-    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+    this._clearCanvases(this.ctx);
 
     const objects = this.state.objects;
     for (let i = 0; i < objects.length; i++) {
       objects[i].draw();
     }
+  }
+
+  _clearCanvases(contexts) {
+    for (let i = 0; i < contexts.length; i++) {
+      // contexts[i].fillStyle = this.canvasBackgroundColor;
+      contexts[i].clearRect(
+        0,
+        0,
+        contexts[i].canvas.width,
+        contexts[i].canvas.height
+      );
+    }
+  }
+
+  resizeCanvases(canvasArray) {
+    let resized = false;
+    for (let i = 0; i < canvasArray.length; i++) {
+      if (this.resizeCanvas(canvasArray[i])) {
+        // Set parent div to size of canvas (since canvas has position absolute)
+        canvasArray[i].parentElement.style.width = `${canvasArray[i].width}px`;
+        canvasArray[i].parentElement.style.height = `${canvasArray[i].width}px`;
+        resized = true;
+      }
+    }
+    return resized;
   }
 
   resizeCanvas(canvas) {
@@ -88,7 +116,12 @@ class SceneController {
     if (canvas.width !== displayWidth || canvas.height !== displayWidth) {
       // Make the canvas the same size
       canvas.width = displayWidth;
-      canvas.height = displayWidth; //displayHeight;
+      canvas.height = displayWidth;
+
+      // Set parent div to size of canvas (since canvas has position absolute)
+      canvas.parentElement.style.width = `${displayWidth}px`;
+      canvas.parentElement.style.height = `${displayWidth}px`;
+
       // Return true if canvas was reszied
       return true;
     }
