@@ -1,13 +1,13 @@
 .room-canvas {
   position: absolute;
-  width: 100%;
   display: block;
 }
 
 .room-canvas-container {
   position: relative;
+  width: 100%;
 }
 
 .room-editor-container {
-  max-width: 85vh;
+  max-width: 82vh;
 }

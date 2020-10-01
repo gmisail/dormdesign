@@ -6,7 +6,13 @@ import RoomGridObject from "./RoomGridObject";
 import Vector2 from "./Vector2";
 
 class RoomObject extends SceneObject {
-  constructor({ scene, boundaryPoints, opacity, canvasLayer }) {
+  constructor({
+    scene,
+    boundaryPoints,
+    opacity,
+    canvasLayer,
+    backgroundColor,
+  }) {
     super({
       scene: scene,
       parent: undefined,
@@ -21,10 +27,10 @@ class RoomObject extends SceneObject {
     this.boundaryPoints = boundaryPoints;
     this._offsetPoints = [];
 
-    this.backgroundColor = "#eee";
+    this.backgroundColor = backgroundColor ?? "#fff";
     this.textColor = "#222";
     this.borderColor = "#555";
-    this.borderWidth = 0.08;
+    this.borderWidth = 0.07;
     this.opacity = opacity ?? 1.0;
 
     this._fitRoomToCanvas();
@@ -50,7 +56,7 @@ class RoomObject extends SceneObject {
       position: new Vector2(0, 0),
       size: new Vector2(this.size.x, this.size.y),
       scale: new Vector2(1, 1),
-      opacity: 1.0,
+      opacity: 0.4,
       lineColor: "#888",
       lineWidth: 0.03,
       staticObject: true,
@@ -99,7 +105,7 @@ class RoomObject extends SceneObject {
     const ctx = this.scene.ctx[this.canvasLayer];
 
     // Padding from edge of canvas for room outline
-    this.boundaryOffset = ctx.canvas.width * 0.05;
+    this.boundaryOffset = ctx.canvas.width * 0.04;
 
     // Find canvas pixels per foot
     let maxWidth;
@@ -241,7 +247,6 @@ class RoomObject extends SceneObject {
       )
     );
 
-    this.state.roomObjects.push(obj);
     this.children.push(obj);
   }
 
@@ -262,10 +267,6 @@ class RoomObject extends SceneObject {
     if (textWidth < globalSize.x) {
       ctx.fillText(captionText, this.size.x / 2, this.size.y + 0.3);
     }
-    for (let i = 0; i < this.children.length; i++) {
-      this.children[i].draw();
-    }
-
     // Fill the area outside of the room with the background color.
     ctx.beginPath();
     // First outline this objects border path - Clockwise order

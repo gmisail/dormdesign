@@ -22,6 +22,7 @@ class RoomGridObject extends SceneObject {
       canvasLayer: canvasLayer,
     });
 
+    this.floorColor = "#fff";
     this.borderColor = "#555";
     this.borderWidth = 0.08;
 
@@ -40,6 +41,11 @@ class RoomGridObject extends SceneObject {
     const startX = this.position.x + (this.size.x - numLinesX) / 2;
     const startY = this.position.y + (this.size.y - numLinesY) / 2;
 
+    ctx.fillStyle = this.floorColor;
+    ctx.fillRect(0, 0, this.size.x, this.size.y);
+
+    ctx.globalAlpha = this.opacity;
+
     ctx.strokeStyle = this.lineColor;
     ctx.lineWidth = this.lineWidth;
     ctx.lineCap = "round";
@@ -57,6 +63,8 @@ class RoomGridObject extends SceneObject {
       ctx.lineTo(this.position.x + this.size.x, currY);
       ctx.stroke();
     }
+
+    ctx.globalAlpha = 1.0;
   }
 }
 

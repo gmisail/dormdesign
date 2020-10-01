@@ -9,16 +9,15 @@ class SceneController {
     }
 
     this.idCounter = 0;
-    this.canvasBackgroundColor = "#f0f0f0";
+    this.backgroundColor = "#fff";
 
-    this.state = {
-      objects: [],
-    };
+    this.objects = [];
 
     this._lastFrameTime = undefined;
     this.deltaTime = undefined; // Time since last frame
 
     this.resized = false; // Set to true when if canvas has been resized this frame
+    this._updateBackground = true;
 
     this.init();
   }
@@ -43,6 +42,12 @@ class SceneController {
   mainLoop(currentTime) {
     requestAnimationFrame(this.mainLoop.bind(this));
 
+    // Resize canvas if screen size has changed
+    this.resized = this.resizeCanvases(this.canvasArray);
+    if (this.resized) {
+      this._updateBackground = true;
+    }
+
     // Calculate time since last frame. Measured in seconds
     if (!currentTime) currentTime = performance.now(); // Needed because currentTime is undefined on first frame
     if (!this._lastFrameTime) this._lastFrameTime = currentTime;
@@ -55,32 +60,40 @@ class SceneController {
   }
 
   addObject(obj) {
-    this.state.objects.push(obj);
+    this.objects.push(obj);
   }
 
   update() {
-    const objects = this.state.objects;
+    const objects = this.objects;
     for (let i = 0; i < objects.length; i++) {
       objects[i].update();
     }
   }
 
   render() {
-    // Resize canvas if screen size has changed
-    this.resized = this.resizeCanvases(this.canvasArray);
+    if (this._updateBackground) {
+      this.ctx[0].fillStyle = this.backgroundColor;
+      this.ctx[0].fillRect(
+        0,
+        0,
+        this.ctx[0].canvas.width,
+        this.ctx[0].canvas.height
+      );
+    }
 
     // Clear canvas
+    this._clearForegroundCanvases(this.ctx);
 
-    this._clearCanvases(this.ctx);
-
-    const objects = this.state.objects;
+    const objects = this.objects;
     for (let i = 0; i < objects.length; i++) {
       objects[i].draw();
     }
+
+    this._updateBackground = false;
   }
 
-  _clearCanvases(contexts) {
-    for (let i = 0; i < contexts.length; i++) {
+  _clearForegroundCanvases(contexts) {
+    for (let i = 1; i < contexts.length; i++) {
       // contexts[i].fillStyle = this.canvasBackgroundColor;
       contexts[i].clearRect(
         0,
@@ -96,7 +109,7 @@ class SceneController {
     for (let i = 0; i < canvasArray.length; i++) {
       if (this.resizeCanvas(canvasArray[i])) {
         // Set parent div to size of canvas (since canvas has position absolute)
-        canvasArray[i].parentElement.style.width = `${canvasArray[i].width}px`;
+        // canvasArray[i].parentElement.style.width = `${canvasArray[i].width}px`;
         canvasArray[i].parentElement.style.height = `${canvasArray[i].width}px`;
         resized = true;
       }
@@ -109,7 +122,13 @@ class SceneController {
     // Lookup the size the browser is displaying the canvas in CSS pixels
     // and compute a size needed to make our drawingbuffer match it in
     // device pixels.
-    const displayWidth = Math.floor(canvas.clientWidth * realToCSSPixels);
+    const displayWidth = Math.floor(
+      canvas.parentElement.clientWidth * realToCSSPixels
+    );
+    // const displayHeight = Math.floor(
+    //   canvas.parentElement.clientHeight * realToCSSPixels
+    // );
+    // console.log(displayWidth, displayHeight);
     //var displayHeight = Math.floor(canvas.clientHeight * realToCSSPixels);
 
     // Check if the canvas is not the same size.
@@ -119,8 +138,8 @@ class SceneController {
       canvas.height = displayWidth;
 
       // Set parent div to size of canvas (since canvas has position absolute)
-      canvas.parentElement.style.width = `${displayWidth}px`;
-      canvas.parentElement.style.height = `${displayWidth}px`;
+      // canvas.parentElement.style.width = `${displayWidth}px`;
+      // canvas.parentElement.style.height = `${displayWidth}px`;
 
       // Return true if canvas was reszied
       return true;

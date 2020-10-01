@@ -21,6 +21,7 @@ class RoomCanvas extends Component {
 
   componentDidMount() {
     const scene = new SceneController([this.canvas1, this.canvas2]);
+    scene.backgroundColor = "#ccc";
     // Points defining the edges of the room (in feet)
     const testBoundaryPath = [
       new Vector2(0, 0),
@@ -40,6 +41,7 @@ class RoomCanvas extends Component {
       scene: scene,
       boundaryPoints: testBoundaryPath,
       canvasLayer: 1,
+      backgroundColor: "#ccc",
     });
     scene.addObject(room);
 
@@ -86,7 +88,7 @@ class RoomCanvas extends Component {
   render() {
     return (
       <div>
-        <Container className="room-editor-container p-0">
+        <Container fluid className="room-editor-container p-0 mb-4">
           <div className="d-flex justify-content-end mb-2">
             <Button
               className="ml-2"

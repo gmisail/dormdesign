@@ -19,6 +19,9 @@ class SceneObject {
     this.children = [];
     this._size = size;
     this.canvasLayer = canvasLayer ?? 0;
+    if (canvasLayer === 0) {
+      this.scene._updateBackground = true;
+    }
     this._updateTransform();
   }
 
@@ -119,7 +122,10 @@ class SceneObject {
   }
 
   update() {
-    this._update();
+    // Only update if not on background layer or background needs to be redrawn
+    if (this.canvasLayer > 0 || this.scene._updateBackground) {
+      this._update();
+    }
 
     for (let i = 0; i < this.children.length; i++) {
       this.children[i].update();
@@ -128,13 +134,17 @@ class SceneObject {
 
   draw() {
     const ctx = this.scene.ctx[this.canvasLayer];
+    // Only draw if not on background layer or background needs to be redrawn
+    if (this.canvasLayer > 0 || this.scene._updateBackground) {
+      if (this.scene._updateBackground) {
+        console.log("update background");
+      }
 
-    // Set context transform to this objects transformation matrix
-    ctx.setTransform(this.transformMatrix);
+      // Set context transform to this objects transformation matrix
+      ctx.setTransform(this.transformMatrix);
 
-    this._draw(ctx);
-
-    this.scene.ctx[this.canvasLayer].resetTransform();
+      this._draw(ctx);
+    }
     for (let i = 0; i < this.children.length; i++) {
       this.children[i].draw();
     }
