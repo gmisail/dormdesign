@@ -22,16 +22,23 @@ class RoomCanvas extends Component {
   componentDidMount() {
     const scene = new SceneController([this.canvas1, this.canvas2]);
     // Points defining the edges of the room (in feet)
-    const testBoundaryPoints = [
+    const testBoundaryPath = [
       new Vector2(0, 0),
-      new Vector2(8, 0),
+      new Vector2(7.3, 0),
+      new Vector2(7.3, 1.2),
+      new Vector2(8, 1.2),
+      new Vector2(8, 5),
+      new Vector2(9, 5),
+      new Vector2(9, 6),
+      new Vector2(8, 6),
       new Vector2(8, 13),
-      new Vector2(0, 13),
-      new Vector2(0, 0),
+      new Vector2(4, 13),
+      new Vector2(4, 6.5),
+      new Vector2(0, 6.5),
     ];
     const room = new RoomObject({
       scene: scene,
-      boundaryPoints: testBoundaryPoints,
+      boundaryPoints: testBoundaryPath,
       canvasLayer: 1,
     });
     scene.addObject(room);

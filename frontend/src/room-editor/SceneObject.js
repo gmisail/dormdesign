@@ -19,7 +19,6 @@ class SceneObject {
     this.children = [];
     this._size = size;
     this.canvasLayer = canvasLayer ?? 0;
-
     this._updateTransform();
   }
 
@@ -120,16 +119,28 @@ class SceneObject {
   }
 
   update() {
+    this._update();
+
     for (let i = 0; i < this.children.length; i++) {
       this.children[i].update();
     }
   }
 
   draw() {
+    const ctx = this.scene.ctx[this.canvasLayer];
+
+    // Set context transform to this objects transformation matrix
+    ctx.setTransform(this.transformMatrix);
+
+    this._draw(ctx);
+
     this.scene.ctx[this.canvasLayer].resetTransform();
     for (let i = 0; i < this.children.length; i++) {
       this.children[i].draw();
     }
+
+    // Reset transformation matrix so it doesn't interfere with other draws
+    ctx.resetTransform();
   }
 }
 

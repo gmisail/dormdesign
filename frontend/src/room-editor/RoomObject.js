@@ -2,7 +2,7 @@ import SceneObject from "./SceneObject";
 import MouseController from "./MouseController";
 import Collisions from "./Collisions";
 import RoomRectObject from "./RoomRectObject";
-import RoomGrid from "./RoomGrid";
+import RoomGridObject from "./RoomGridObject";
 import Vector2 from "./Vector2";
 
 class RoomObject extends SceneObject {
@@ -17,16 +17,18 @@ class RoomObject extends SceneObject {
       canvasLayer: canvasLayer,
     });
 
-    // Points that define room boundary (measured in feet)
+    // Points that define room boundary (measured in feet). Must be in clockwise order
     this.boundaryPoints = boundaryPoints;
+    this._offsetPoints = [];
 
-    this.floorColor = "#ddd";
+    this.backgroundColor = "#eee";
     this.textColor = "#222";
     this.borderColor = "#555";
     this.borderWidth = 0.08;
     this.opacity = opacity ?? 1.0;
 
     this._fitRoomToCanvas();
+    this._calculateOffsetPoints();
 
     this.mouseController = new MouseController({
       watchedElement: this.scene.canvasArray[this.canvasLayer],
@@ -42,7 +44,7 @@ class RoomObject extends SceneObject {
       objectColorCounter: 0,
     };
 
-    const floorGrid = new RoomGrid({
+    const floorGrid = new RoomGridObject({
       scene: this.scene,
       parent: this,
       position: new Vector2(0, 0),
@@ -59,8 +61,38 @@ class RoomObject extends SceneObject {
     this.state.floorGrid = floorGrid;
 
     this.objectColors = ["#0043E0", "#C400E0", "#E03016", "#7EE016", "#0BE07B"];
+  }
 
-    //this.addItemToRoom({});
+  // Calculates and sets offset points (used so that when drawing room border the lines won't overlap into the room)
+  _calculateOffsetPoints() {
+    const offset = this.borderWidth / 2;
+    this._offsetPoints = [];
+    for (let i = 0; i < this.boundaryPoints.length; i++) {
+      this._offsetPoints.push(
+        new Vector2(this.boundaryPoints[i].x, this.boundaryPoints[i].y)
+      );
+    }
+    this._offsetPoints.push(
+      new Vector2(this.boundaryPoints[0].x, this.boundaryPoints[0].y)
+    );
+    for (let i = 0; i < this._offsetPoints.length - 1; i++) {
+      const p1 = this._offsetPoints[i];
+      const p2 = this._offsetPoints[i + 1];
+
+      if (Vector2.floatEquals(p1.x, p2.x)) {
+        // Vertical line
+        const direction =
+          Math.ceil(p2.y - p1.y) / Math.ceil(Math.abs(p2.y - p1.y));
+        p1.x = p1.x + offset * direction;
+        p2.x = p2.x + offset * direction;
+      } else {
+        // Horizontal line
+        const direction = (p2.x - p1.x) / Math.abs(p2.x - p1.x);
+        p1.y = p1.y - offset * direction;
+        p2.y = p2.y - offset * direction;
+      }
+      // console.log(p1, p2);
+    }
   }
 
   _fitRoomToCanvas() {
@@ -213,25 +245,15 @@ class RoomObject extends SceneObject {
     this.children.push(obj);
   }
 
-  update() {
+  _update() {
     // Resize if the canvas has been resized
     if (this.scene.resized) {
       this._fitRoomToCanvas();
     }
-    super.update();
   }
 
-  draw() {
-    const ctx = this.scene.ctx[this.canvasLayer];
+  _draw(ctx) {
     const globalSize = this.getGlobalSize();
-
-    // Set context transform to this objects transformation matrix
-    ctx.setTransform(this.transformMatrix);
-
-    // ctx.fillStyle = this.floorColor;
-    // ctx.globalAlpha = this.opacity;
-    // ctx.fillRect(0, 0, this.size.x, this.size.y);
-    // ctx.globalAlpha = 1.0; // Reset opacity
 
     // Draw caption text
     const captionText = "1 cell = 1 square foot";
@@ -244,13 +266,49 @@ class RoomObject extends SceneObject {
       this.children[i].draw();
     }
 
-    // SceneObject draw func draws children
-    super.draw();
+    // Fill the area outside of the room with the background color.
+    ctx.beginPath();
+    // First outline this objects border path - Clockwise order
+    const offset = this.borderWidth;
+    ctx.moveTo(-offset, -offset);
+    ctx.lineTo(this.size.x + offset, -offset);
+    ctx.lineTo(this.size.x + offset, this.size.y + offset);
+    ctx.lineTo(-offset, this.size.y + offset);
+    ctx.lineTo(-offset, -offset);
+    ctx.closePath();
 
-    ctx.setTransform(this.transformMatrix);
+    // Now outline the room border path using the given points - Counter clockwise order (reverse of the clockwise order they are given in)
+    for (let i = this.boundaryPoints.length - 1; i > 0; i--) {
+      const p1 = this.boundaryPoints[i];
+      const p2 = this.boundaryPoints[i - 1];
 
-    // Reset transformation matrix so it doesn't interfere with other draws
-    ctx.resetTransform();
+      if (i === this.boundaryPoints.length - 1) {
+        ctx.moveTo(p1.x, p1.y);
+      }
+      ctx.lineTo(p2.x, p2.y);
+    }
+    ctx.closePath();
+
+    ctx.fillStyle = this.backgroundColor;
+    ctx.fill();
+
+    // Now actually draw the room borders
+    ctx.beginPath();
+    for (let i = 0; i < this._offsetPoints.length - 1; i++) {
+      const p1 = this._offsetPoints[i];
+      const p2 = this._offsetPoints[i + 1];
+
+      if (i === 0) {
+        ctx.moveTo(p1.x, p1.y);
+      }
+      ctx.lineTo(p2.x, p2.y);
+    }
+    ctx.closePath();
+    ctx.strokeStyle = this.borderColor;
+    ctx.lineWidth = this.borderWidth;
+    ctx.lineJoin = "round";
+    ctx.lineCap = "round";
+    ctx.stroke();
   }
 }
 

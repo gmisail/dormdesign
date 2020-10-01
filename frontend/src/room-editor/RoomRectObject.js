@@ -76,7 +76,7 @@ class RoomRectObject extends SceneObject {
     return multipleOf * rounded;
   }
 
-  update() {
+  _update() {
     this._animateSelection();
 
     // Restrict to parent (room) borders
@@ -105,11 +105,7 @@ class RoomRectObject extends SceneObject {
     }
   }
 
-  draw() {
-    const ctx = this.scene.ctx[this.canvasLayer];
-    // Set context transform to this objects transformation matrix
-    ctx.setTransform(this.transformMatrix);
-
+  _draw(ctx) {
     ctx.fillStyle = this.color;
     ctx.globalAlpha = this.opacity;
     ctx.fillRect(0, 0, this.size.x, this.size.y);

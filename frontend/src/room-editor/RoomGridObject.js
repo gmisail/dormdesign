@@ -1,7 +1,7 @@
 import SceneObject from "./SceneObject";
 import Vector2 from "./Vector2";
 
-class RoomGrid extends SceneObject {
+class RoomGridObject extends SceneObject {
   constructor({
     scene,
     parent,
@@ -30,13 +30,9 @@ class RoomGrid extends SceneObject {
     this.opacity = opacity ?? 1.0;
   }
 
-  update() {}
+  _update() {}
 
-  draw() {
-    const ctx = this.scene.ctx[this.canvasLayer];
-    // Set context transform to this objects transformation matrix
-    ctx.setTransform(this.transformMatrix);
-
+  _draw(ctx) {
     // Draw grid (each cell represents 1 sq ft)
     const numLinesX = Math.floor(this.size.x);
     const numLinesY = Math.floor(this.size.y);
@@ -61,27 +57,7 @@ class RoomGrid extends SceneObject {
       ctx.lineTo(this.position.x + this.size.x, currY);
       ctx.stroke();
     }
-
-    // Draw border
-    ctx.strokeStyle = this.borderColor;
-    ctx.lineWidth = this.borderWidth;
-    ctx.lineJoin = "round";
-    ctx.beginPath();
-
-    // Offset it by half the borderWidth so that the line doesn't overlap into the room itself
-    ctx.moveTo(-this.borderWidth / 2, -this.borderWidth / 2);
-    ctx.lineTo(this.size.x + this.borderWidth / 2, -this.borderWidth / 2);
-    ctx.lineTo(
-      this.size.x + this.borderWidth / 2,
-      this.size.y + this.borderWidth / 2
-    );
-    ctx.lineTo(-this.borderWidth / 2, this.size.y + this.borderWidth / 2);
-    ctx.lineTo(-this.borderWidth / 2, -this.borderWidth / 2);
-    ctx.stroke();
-
-    // Reset transformation matrix so it doesn't interfere with other draws
-    ctx.resetTransform();
   }
 }
 
-export default RoomGrid;
+export default RoomGridObject;
