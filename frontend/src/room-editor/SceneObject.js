@@ -136,10 +136,6 @@ class SceneObject {
     const ctx = this.scene.ctx[this.canvasLayer];
     // Only draw if not on background layer or background needs to be redrawn
     if (this.canvasLayer > 0 || this.scene._updateBackground) {
-      if (this.scene._updateBackground) {
-        console.log("update background");
-      }
-
       // Set context transform to this objects transformation matrix
       ctx.setTransform(this.transformMatrix);
 

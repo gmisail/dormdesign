@@ -1,5 +1,6 @@
 import SceneObject from "./SceneObject";
 import Vector2 from "./Vector2";
+import Collisions from "./Collisions";
 
 class RoomRectObject extends SceneObject {
   constructor({
@@ -31,10 +32,13 @@ class RoomRectObject extends SceneObject {
 
     this.nameText = nameText;
 
+    this.outOfBounds = false;
+    this.outOfBoundsColor = "#ff0000";
+
     this.selected = false;
     this._selectionLineSpeed = 0.4;
-    this._selectionLineWidth = 0.07;
-    this._selectionLineDash = [0.22, 0.18]; // [Line dash length, space length]
+    this._selectionLineWidth = 0.05;
+    this._selectionLineDash = [0.18, 0.15]; // [Line dash length, space length]
 
     this._selectionOutlineOffset = 0;
 
@@ -77,10 +81,11 @@ class RoomRectObject extends SceneObject {
   }
 
   _update() {
+    // Animates the dashed selection outline
     this._animateSelection();
 
-    // Restrict to parent (room) borders
     if (this.parent) {
+      // Restrict position to parent borders
       const xLimit = Math.min(
         this.parent.size.x - this.size.x,
         Math.max(0, this.position.x)
@@ -90,6 +95,27 @@ class RoomRectObject extends SceneObject {
         Math.max(0, this.position.y)
       );
       this.position = new Vector2(xLimit, yLimit);
+
+      // Check for intersections with RoomObject boundary boxes to detect if its in
+      const offset = 0.01; // Small "error" allows for things such as a 1' x 1' obj fitting in a 1' x 1' space without counting as collision
+      const corner1 = new Vector2(
+        this.position.x + offset,
+        this.position.y + offset
+      );
+      const corner2 = new Vector2(
+        this.position.x + this.size.x * this.scale.x - offset,
+        this.position.y + this.size.y * this.scale.y - offset
+      );
+      this.outOfBounds = false;
+      for (let i = 0; i < this.parent.boundaryBoxes.length; i++) {
+        this.outOfBounds = Collisions.rectInRect(
+          corner1,
+          corner2,
+          this.parent.boundaryBoxes[i].p1,
+          this.parent.boundaryBoxes[i].p2
+        );
+        if (this.outOfBounds) break;
+      }
     }
   }
 
@@ -106,7 +132,7 @@ class RoomRectObject extends SceneObject {
   }
 
   _draw(ctx) {
-    ctx.fillStyle = this.color;
+    ctx.fillStyle = this.outOfBounds ? this.outOfBoundsColor : this.color;
     ctx.globalAlpha = this.opacity;
     ctx.fillRect(0, 0, this.size.x, this.size.y);
     ctx.globalAlpha = 1.0; // Reset opacity

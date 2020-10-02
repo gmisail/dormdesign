@@ -36,6 +36,10 @@ class RoomObject extends SceneObject {
     this._fitRoomToCanvas();
     this._calculateOffsetPoints();
 
+    // Boxes occupying area outside of room. Used for detecting when an object is outside of room bounds
+    this.boundaryBoxes = this._getOutOfBoundsBoxes();
+    this.drawBoundaryBoxes = false; // When set to true these boxes will be drawn (for debugging)
+
     this.mouseController = new MouseController({
       watchedElement: this.scene.canvasArray[this.canvasLayer],
       onMouseDown: this.onMouseDown.bind(this),
@@ -69,6 +73,35 @@ class RoomObject extends SceneObject {
     this.objectColors = ["#0043E0", "#C400E0", "#E03016", "#7EE016", "#0BE07B"];
   }
 
+  // Fills any area between the boundary of the room and the bounding box of the RoomObject itself with a box. Returns that list of boxes
+  _getOutOfBoundsBoxes() {
+    const boxes = [];
+    // Loop over boundary edges
+    for (let i = 0; i < this.boundaryPoints.length; i++) {
+      const p1 = this.boundaryPoints[i];
+      const p2 = this.boundaryPoints[
+        i === this.boundaryPoints.length - 1 ? 0 : i + 1
+      ];
+      // Check if edge is a vertical line - Only need to make boxes for either all vertical lines or all horizontal lines, not both
+      if (Vector2.floatEquals(p1.x, p2.x)) {
+        // Check if edge is lined up with corresponding edge of RoomObject. If not, create a box
+        const direction = p2.y > p1.y ? 1 : -1;
+        if (direction > 0 && !Vector2.floatEquals(p1.x, this.size.x)) {
+          boxes.push({
+            p1: new Vector2(p1.x, p1.y),
+            p2: new Vector2(this.size.x, p2.y),
+          });
+        } else if (direction < 0 && !Vector2.floatEquals(p1.x, 0)) {
+          boxes.push({
+            p1: new Vector2(0, p2.y),
+            p2: new Vector2(p1.x, p1.y),
+          });
+        }
+      }
+    }
+    return boxes;
+  }
+
   // Calculates and sets offset points (used so that when drawing room border the lines won't overlap into the room)
   _calculateOffsetPoints() {
     const offset = this.borderWidth / 2;
@@ -87,17 +120,15 @@ class RoomObject extends SceneObject {
 
       if (Vector2.floatEquals(p1.x, p2.x)) {
         // Vertical line
-        const direction =
-          Math.ceil(p2.y - p1.y) / Math.ceil(Math.abs(p2.y - p1.y));
+        const direction = p2.y > p1.y ? 1 : -1;
         p1.x = p1.x + offset * direction;
         p2.x = p2.x + offset * direction;
       } else {
         // Horizontal line
-        const direction = (p2.x - p1.x) / Math.abs(p2.x - p1.x);
+        const direction = p2.x > p1.x ? 1 : -1;
         p1.y = p1.y - offset * direction;
         p2.y = p2.y - offset * direction;
       }
-      // console.log(p1, p2);
     }
   }
 
@@ -236,7 +267,7 @@ class RoomObject extends SceneObject {
       opacity: 0.4,
       nameText: name ?? "New Item",
       staticObject: false,
-      snapPosition: true,
+      snapPosition: false,
       snapOffset: 0.2,
       canvasLayer: this.canvasLayer,
     });
@@ -310,6 +341,20 @@ class RoomObject extends SceneObject {
     ctx.lineJoin = "round";
     ctx.lineCap = "round";
     ctx.stroke();
+
+    if (this.drawBoundaryBoxes) {
+      for (let i = 0; i < this.boundaryBoxes.length; i++) {
+        ctx.globalAlpha = 0.5;
+        ctx.fillStyle = "#ff0000";
+        ctx.fillRect(
+          this.boundaryBoxes[i].p1.x,
+          this.boundaryBoxes[i].p1.y,
+          this.boundaryBoxes[i].p2.x - this.boundaryBoxes[i].p1.x,
+          this.boundaryBoxes[i].p2.y - this.boundaryBoxes[i].p1.y
+        );
+        ctx.globalAlpha = 1.0;
+      }
+    }
   }
 }
 
