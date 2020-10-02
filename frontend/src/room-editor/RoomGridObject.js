@@ -1,7 +1,7 @@
 import SceneObject from "./SceneObject";
 import Vector2 from "./Vector2";
 
-class RoomGrid extends SceneObject {
+class RoomGridObject extends SceneObject {
   constructor({
     scene,
     parent,
@@ -10,6 +10,7 @@ class RoomGrid extends SceneObject {
     opacity,
     lineColor,
     lineWidth,
+    canvasLayer,
   }) {
     super({
       scene: scene,
@@ -18,8 +19,10 @@ class RoomGrid extends SceneObject {
       size: size,
       scale: new Vector2(1, 1),
       staticObject: true,
+      canvasLayer: canvasLayer,
     });
 
+    this.floorColor = "#fff";
     this.borderColor = "#555";
     this.borderWidth = 0.08;
 
@@ -28,19 +31,20 @@ class RoomGrid extends SceneObject {
     this.opacity = opacity ?? 1.0;
   }
 
-  update() {}
+  _update() {}
 
-  draw() {
-    const ctx = this.scene.ctx;
-    // Set context transform to this objects transformation matrix
-    ctx.setTransform(this.transformMatrix);
-
+  _draw(ctx) {
     // Draw grid (each cell represents 1 sq ft)
     const numLinesX = Math.floor(this.size.x);
     const numLinesY = Math.floor(this.size.y);
     // Offsets to make sure grid is centered
     const startX = this.position.x + (this.size.x - numLinesX) / 2;
     const startY = this.position.y + (this.size.y - numLinesY) / 2;
+
+    ctx.fillStyle = this.floorColor;
+    ctx.fillRect(0, 0, this.size.x, this.size.y);
+
+    ctx.globalAlpha = this.opacity;
 
     ctx.strokeStyle = this.lineColor;
     ctx.lineWidth = this.lineWidth;
@@ -60,26 +64,8 @@ class RoomGrid extends SceneObject {
       ctx.stroke();
     }
 
-    // Draw border
-    ctx.strokeStyle = this.borderColor;
-    ctx.lineWidth = this.borderWidth;
-    ctx.lineJoin = "round";
-    ctx.beginPath();
-
-    // Offset it by half the borderWidth so that the line doesn't overlap into the room itself
-    ctx.moveTo(-this.borderWidth / 2, -this.borderWidth / 2);
-    ctx.lineTo(this.size.x + this.borderWidth / 2, -this.borderWidth / 2);
-    ctx.lineTo(
-      this.size.x + this.borderWidth / 2,
-      this.size.y + this.borderWidth / 2
-    );
-    ctx.lineTo(-this.borderWidth / 2, this.size.y + this.borderWidth / 2);
-    ctx.lineTo(-this.borderWidth / 2, -this.borderWidth / 2);
-    ctx.stroke();
-
-    // Reset transformation matrix so it doesn't interfere with other draws
-    ctx.resetTransform();
+    ctx.globalAlpha = 1.0;
   }
 }
 
-export default RoomGrid;
+export default RoomGridObject;

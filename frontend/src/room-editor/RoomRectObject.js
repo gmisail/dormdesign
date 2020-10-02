@@ -1,5 +1,6 @@
 import SceneObject from "./SceneObject";
 import Vector2 from "./Vector2";
+import Collisions from "./Collisions";
 
 class RoomRectObject extends SceneObject {
   constructor({
@@ -13,6 +14,7 @@ class RoomRectObject extends SceneObject {
     staticObject,
     snapPosition,
     snapOffset,
+    canvasLayer,
   }) {
     super({
       scene: scene,
@@ -20,6 +22,7 @@ class RoomRectObject extends SceneObject {
       position: position,
       size: size,
       staticObject: staticObject,
+      canvasLayer: canvasLayer,
     });
 
     this.color = color;
@@ -29,16 +32,18 @@ class RoomRectObject extends SceneObject {
 
     this.nameText = nameText;
 
+    this.outOfBounds = false;
+    this.outOfBoundsColor = "#ff0000";
+
     this.selected = false;
     this._selectionLineSpeed = 0.4;
-    this._selectionLineWidth = 0.07;
-    this._selectionLineDash = [0.22, 0.18]; // [Line dash length, space length]
+    this._selectionLineWidth = 0.05;
+    this._selectionLineDash = [0.18, 0.15]; // [Line dash length, space length]
 
     this._selectionOutlineOffset = 0;
 
     this.snapPosition = snapPosition ?? false;
     this.snapOffset = snapOffset ?? 0.1;
-    console.log(this.snapOffset);
     this._unsnappedPosition = undefined;
     this.setPosition(position);
   }
@@ -75,11 +80,12 @@ class RoomRectObject extends SceneObject {
     return multipleOf * rounded;
   }
 
-  update() {
+  _update() {
+    // Animates the dashed selection outline
     this._animateSelection();
 
-    // Restrict to parent (room) borders
     if (this.parent) {
+      // Restrict position to parent borders
       const xLimit = Math.min(
         this.parent.size.x - this.size.x,
         Math.max(0, this.position.x)
@@ -89,6 +95,27 @@ class RoomRectObject extends SceneObject {
         Math.max(0, this.position.y)
       );
       this.position = new Vector2(xLimit, yLimit);
+
+      // Check for intersections with RoomObject boundary boxes to detect if its in
+      const offset = 0.01; // Small "error" allows for things such as a 1' x 1' obj fitting in a 1' x 1' space without counting as collision
+      const corner1 = new Vector2(
+        this.position.x + offset,
+        this.position.y + offset
+      );
+      const corner2 = new Vector2(
+        this.position.x + this.size.x * this.scale.x - offset,
+        this.position.y + this.size.y * this.scale.y - offset
+      );
+      this.outOfBounds = false;
+      for (let i = 0; i < this.parent.boundaryBoxes.length; i++) {
+        this.outOfBounds = Collisions.rectInRect(
+          corner1,
+          corner2,
+          this.parent.boundaryBoxes[i].p1,
+          this.parent.boundaryBoxes[i].p2
+        );
+        if (this.outOfBounds) break;
+      }
     }
   }
 
@@ -104,12 +131,8 @@ class RoomRectObject extends SceneObject {
     }
   }
 
-  draw() {
-    const ctx = this.scene.ctx;
-    // Set context transform to this objects transformation matrix
-    ctx.setTransform(this.transformMatrix);
-
-    ctx.fillStyle = this.color;
+  _draw(ctx) {
+    ctx.fillStyle = this.outOfBounds ? this.outOfBoundsColor : this.color;
     ctx.globalAlpha = this.opacity;
     ctx.fillRect(0, 0, this.size.x, this.size.y);
     ctx.globalAlpha = 1.0; // Reset opacity
@@ -133,10 +156,11 @@ class RoomRectObject extends SceneObject {
 
     // Draw text on top of object - For some reason the context using the transformation matrix seems to draw the text differently on firefox and chrome resulting in it being offset. So its being drawn by manually scaling the necessary values.
     const fontSize = 0.28;
-    this._setContextTextStyle(fontSize);
+    this._setContextTextStyle(ctx, fontSize);
     const lineOffset = 0.18 * this.transformMatrix.a;
-    const fitNameText = this._getEditedText(this.nameText);
+    const fitNameText = this._getEditedText(ctx, this.nameText);
     const fitDimensionsText = this._getEditedText(
+      ctx,
       `${this.size.x}' x ${this.size.y}'`
     );
     ctx.font = `bold ${fontSize * this.transformMatrix.a}px sans-serif`;
@@ -158,22 +182,19 @@ class RoomRectObject extends SceneObject {
   }
 
   // Takes font size and configures the context to draw text with these styles
-  _setContextTextStyle(fontSize) {
-    this.scene.ctx.font = `bold ${fontSize}px sans-serif`;
-    this.scene.ctx.textBaseline = "middle";
-    this.scene.ctx.textAlign = "center";
-    this.scene.ctx.fillStyle = this.textColor;
+  _setContextTextStyle(ctx, fontSize) {
+    ctx.font = `bold ${fontSize}px sans-serif`;
+    ctx.textBaseline = "middle";
+    ctx.textAlign = "center";
+    ctx.fillStyle = this.textColor;
   }
 
   // Trims text so it fits in size of object. If the available width is less than the width of '...', returns empty string
-  _getEditedText(text) {
-    this._setContextTextStyle();
+  _getEditedText(ctx, text) {
+    this._setContextTextStyle(ctx);
     const textPadding = this.size.x / 20;
     text = text.trim();
-    while (
-      this.scene.ctx.measureText(text).width >
-      this.size.x - 2 * textPadding
-    ) {
+    while (ctx.measureText(text).width > this.size.x - 2 * textPadding) {
       if (text.length <= 3) return "";
       text = text.substring(0, text.length - 4) + "...";
     }

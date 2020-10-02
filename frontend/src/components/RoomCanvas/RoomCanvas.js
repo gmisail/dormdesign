@@ -20,18 +20,28 @@ class RoomCanvas extends Component {
   }
 
   componentDidMount() {
-    const scene = new SceneController(this.canvas);
+    const scene = new SceneController([this.canvas1, this.canvas2]);
+    scene.backgroundColor = "#ccc";
     // Points defining the edges of the room (in feet)
-    const testBoundaryPoints = [
+    const testBoundaryPath = [
       new Vector2(0, 0),
-      new Vector2(8, 0),
+      new Vector2(7.3, 0),
+      new Vector2(7.3, 1.2),
+      new Vector2(8, 1.2),
+      new Vector2(8, 5),
+      new Vector2(9, 5),
+      new Vector2(9, 6),
+      new Vector2(8, 6),
       new Vector2(8, 13),
-      new Vector2(0, 13),
-      new Vector2(0, 0),
+      new Vector2(4, 13),
+      new Vector2(4, 6.5),
+      new Vector2(0, 6.5),
     ];
     const room = new RoomObject({
       scene: scene,
-      boundaryPoints: testBoundaryPoints,
+      boundaryPoints: testBoundaryPath,
+      canvasLayer: 1,
+      backgroundColor: "#ccc",
     });
     scene.addObject(room);
 
@@ -78,7 +88,7 @@ class RoomCanvas extends Component {
   render() {
     return (
       <div>
-        <Container className="room-canvas-container mb-4">
+        <Container fluid className="room-editor-container p-0 mb-4">
           <div className="d-flex justify-content-end mb-2">
             <Button
               className="ml-2"
@@ -97,10 +107,18 @@ class RoomCanvas extends Component {
               Add Object
             </Button>
           </div>
-          <canvas
-            ref={(ref) => (this.canvas = ref)}
-            className="room-canvas"
-          ></canvas>
+          <div className="room-canvas-container">
+            <canvas
+              ref={(ref) => (this.canvas1 = ref)}
+              className="room-canvas"
+              style={{ zIndex: 1 }}
+            ></canvas>
+            <canvas
+              ref={(ref) => (this.canvas2 = ref)}
+              className="room-canvas"
+              style={{ zIndex: 2 }}
+            ></canvas>
+          </div>
         </Container>
         {this.renderModal()}
       </div>

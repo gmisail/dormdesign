@@ -1,7 +1,15 @@
 import Vector2 from "./Vector2";
 
 class SceneObject {
-  constructor({ scene, parent, position, size, scale, staticObject }) {
+  constructor({
+    scene,
+    parent,
+    position,
+    size,
+    scale,
+    canvasLayer,
+    staticObject,
+  }) {
     this.scene = scene;
     this.id = scene.idCounter++;
     this._position = position ?? new Vector2(0, 0);
@@ -10,7 +18,10 @@ class SceneObject {
     this.parent = parent;
     this.children = [];
     this._size = size;
-
+    this.canvasLayer = canvasLayer ?? 0;
+    if (canvasLayer === 0) {
+      this.scene._updateBackground = true;
+    }
     this._updateTransform();
   }
 
@@ -111,16 +122,31 @@ class SceneObject {
   }
 
   update() {
+    // Only update if not on background layer or background needs to be redrawn
+    if (this.canvasLayer > 0 || this.scene._updateBackground) {
+      this._update();
+    }
+
     for (let i = 0; i < this.children.length; i++) {
       this.children[i].update();
     }
   }
 
   draw() {
-    this.scene.ctx.resetTransform();
+    const ctx = this.scene.ctx[this.canvasLayer];
+    // Only draw if not on background layer or background needs to be redrawn
+    if (this.canvasLayer > 0 || this.scene._updateBackground) {
+      // Set context transform to this objects transformation matrix
+      ctx.setTransform(this.transformMatrix);
+
+      this._draw(ctx);
+    }
     for (let i = 0; i < this.children.length; i++) {
       this.children[i].draw();
     }
+
+    // Reset transformation matrix so it doesn't interfere with other draws
+    ctx.resetTransform();
   }
 }
 
