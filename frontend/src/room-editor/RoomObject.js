@@ -70,7 +70,7 @@ class RoomObject extends SceneObject {
     this.children.push(floorGrid);
     this.state.floorGrid = floorGrid;
 
-    this.objectColors = ["#0043E0", "#C400E0", "#E03016", "#7EE016", "#0BE07B"];
+    this.objectColors = ["#0043E0", "#f28a00", "#C400E0", "#7EE016", "#0BE07B"];
   }
 
   // Fills any area between the boundary of the room and the bounding box of the RoomObject itself with a box. Returns that list of boxes
@@ -264,7 +264,7 @@ class RoomObject extends SceneObject {
       parent: this,
       size: new Vector2(feetWidth ?? 1, feetHeight ?? 1),
       color: color,
-      opacity: 0.4,
+      opacity: 0.5,
       nameText: name ?? "New Item",
       staticObject: false,
       snapPosition: false,
