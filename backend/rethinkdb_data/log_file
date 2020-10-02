@@ -1,0 +1,46 @@
+2020-10-02T17:05:00.501442956 0.024245s notice: Recursively removing directory /home/gmisail/Documents/Development/dormdesign/backend/rethinkdb_data/tmp
+2020-10-02T17:05:00.521913795 0.044718s notice: Initializing directory /home/gmisail/Documents/Development/dormdesign/backend/rethinkdb_data
+2020-10-02T17:05:00.522391996 0.045194s info: Creating a default database for your convenience. (This is because you ran 'rethinkdb' without 'create', 'serve', or '--join', and the directory '/home/gmisail/Documents/Development/dormdesign/backend/rethinkdb_data' did not already exist or is empty.)
+2020-10-02T17:05:00.522427383 0.045229s notice: Running rethinkdb 2.4.1~0focal (CLANG 10.0.0 )...
+2020-10-02T17:05:00.524650712 0.047453s notice: Running on Linux 5.4.0-7642-generic x86_64
+2020-10-02T17:05:00.524678504 0.047480s notice: Loading data from directory /home/gmisail/Documents/Development/dormdesign/backend/rethinkdb_data
+2020-10-02T17:05:00.544204453 0.067007s info: Automatically using cache size of 5631 MB
+2020-10-02T17:05:00.546598694 0.069401s notice: Listening for intracluster connections on port 29015
+2020-10-02T17:05:00.550278076 0.073080s notice: Listening for client driver connections on port 28015
+2020-10-02T17:05:00.550298394 0.073100s notice: Listening for administrative HTTP connections on port 8080
+2020-10-02T17:05:00.550299496 0.073101s notice: Listening on cluster addresses: 127.0.0.1, ::1
+2020-10-02T17:05:00.550300378 0.073102s notice: Listening on driver addresses: 127.0.0.1, ::1
+2020-10-02T17:05:00.550301330 0.073103s notice: Listening on http addresses: 127.0.0.1, ::1
+2020-10-02T17:05:00.550302271 0.073104s notice: To fully expose RethinkDB on the network, bind to all addresses by running rethinkdb with the `--bind all` command line option.
+2020-10-02T17:05:00.550303243 0.073105s notice: Server ready, "gmisail_il1" 9756d9b7-9142-4777-b45d-bac508cc2aed
+2020-10-02T17:11:32.143304356 391.666107s info: Table a0a5140e-be6e-48a7-be0e-e052c1c7751a: Starting a new Raft election for term 1.
+2020-10-02T17:11:32.143416989 391.666219s info: Table a0a5140e-be6e-48a7-be0e-e052c1c7751a: Added replica on this server.
+2020-10-02T17:11:32.145135685 391.667938s info: Table a0a5140e-be6e-48a7-be0e-e052c1c7751a: This server is Raft leader for term 1. Latest log index is 0.
+2020-10-02T17:11:38.365507961 397.888310s info: Table 5d36bbe7-35cd-49f3-88c6-dbe6febcf446: Starting a new Raft election for term 1.
+2020-10-02T17:11:38.365700684 397.888503s info: Table 5d36bbe7-35cd-49f3-88c6-dbe6febcf446: Added replica on this server.
+2020-10-02T17:11:38.367422508 397.890225s info: Table 5d36bbe7-35cd-49f3-88c6-dbe6febcf446: This server is Raft leader for term 1. Latest log index is 0.
+2020-10-02T17:12:48.861208618 468.384011s notice: Removing file /home/gmisail/Documents/Development/dormdesign/backend/rethinkdb_data/5d36bbe7-35cd-49f3-88c6-dbe6febcf446
+2020-10-02T17:12:48.861215882 468.384018s info: Table 5d36bbe7-35cd-49f3-88c6-dbe6febcf446: Deleted the table.
+2020-10-02T17:12:48.868991545 468.391794s notice: Removing file /home/gmisail/Documents/Development/dormdesign/backend/rethinkdb_data/a0a5140e-be6e-48a7-be0e-e052c1c7751a
+2020-10-02T17:12:48.868996164 468.391798s info: Table a0a5140e-be6e-48a7-be0e-e052c1c7751a: Deleted the table.
+2020-10-02T17:13:15.451979735 494.974782s info: Table af2921b0-ae93-47af-abf8-329171431873: Starting a new Raft election for term 1.
+2020-10-02T17:13:15.452109830 494.974912s info: Table af2921b0-ae93-47af-abf8-329171431873: Added replica on this server.
+2020-10-02T17:13:15.453987136 494.976789s info: Table af2921b0-ae93-47af-abf8-329171431873: This server is Raft leader for term 1. Latest log index is 0.
+2020-10-02T17:13:19.290843968 498.813646s info: Table 638d665f-a395-4361-8020-7ab87700d361: Starting a new Raft election for term 1.
+2020-10-02T17:13:19.290981016 498.813783s info: Table 638d665f-a395-4361-8020-7ab87700d361: Added replica on this server.
+2020-10-02T17:13:19.292834507 498.815637s info: Table 638d665f-a395-4361-8020-7ab87700d361: This server is Raft leader for term 1. Latest log index is 0.
+2020-10-02T17:46:59.632149254 2519.154952s notice: Removing file /home/gmisail/Documents/Development/dormdesign/backend/rethinkdb_data/af2921b0-ae93-47af-abf8-329171431873
+2020-10-02T17:46:59.632154404 2519.154956s info: Table af2921b0-ae93-47af-abf8-329171431873: Deleted the table.
+2020-10-02T17:47:04.558725874 2524.081528s info: Table 24d5257b-d6d7-4c46-946e-0004a1f6a492: Starting a new Raft election for term 1.
+2020-10-02T17:47:04.558854667 2524.081657s info: Table 24d5257b-d6d7-4c46-946e-0004a1f6a492: Added replica on this server.
+2020-10-02T17:47:04.560728976 2524.083531s info: Table 24d5257b-d6d7-4c46-946e-0004a1f6a492: This server is Raft leader for term 1. Latest log index is 0.
+2020-10-02T18:08:13.818591217 3793.341394s notice: Removing file /home/gmisail/Documents/Development/dormdesign/backend/rethinkdb_data/24d5257b-d6d7-4c46-946e-0004a1f6a492
+2020-10-02T18:08:13.818599312 3793.341401s info: Table 24d5257b-d6d7-4c46-946e-0004a1f6a492: Deleted the table.
+2020-10-02T18:08:18.759749053 3798.282551s info: Table d8106f15-98b4-4066-97f9-19e7664412fc: Starting a new Raft election for term 1.
+2020-10-02T18:08:18.759876543 3798.282679s info: Table d8106f15-98b4-4066-97f9-19e7664412fc: Added replica on this server.
+2020-10-02T18:08:18.761726770 3798.284529s info: Table d8106f15-98b4-4066-97f9-19e7664412fc: This server is Raft leader for term 1. Latest log index is 0.
+2020-10-02T18:09:52.561711940 3892.084514s notice: Server got SIGINT from pid 0, uid 0; shutting down...
+2020-10-02T18:09:52.561893953 3892.084696s notice: Shutting down client connections...
+2020-10-02T18:09:52.561975767 3892.084778s notice: All client connections closed.
+2020-10-02T18:09:52.561977661 3892.084780s notice: Shutting down storage engine... (This may take a while if you had a lot of unflushed data in the writeback cache.)
+2020-10-02T18:09:52.570008174 3892.092810s notice: Storage engine shut down.

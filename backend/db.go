@@ -2,27 +2,18 @@ package main
 
 import (
 	"log"
-	"fmt"
-	"context"
-	"github.com/go-redis/redis/v8"
+	
+	rdb "gopkg.in/rethinkdb/rethinkdb-go.v6"
 )
 
-var ctx = context.Background()
-
-func SetupDatabase(url string) *redis.Client {
-	client := redis.NewClient(&redis.Options{
-		Addr: url,
-		Password: "",
-		DB: 0,
+func SetupDatabase(url string) *rdb.Session {
+	session, err := rdb.Connect(rdb.ConnectOpts{
+		Address: url,
 	})
 
-	_, err := client.Ping(ctx).Result()
-
 	if err != nil {
-		log.Fatal(err)
-	} else {
-		fmt.Println("⇨ connected to database")
+		log.Fatalln(err)
 	}
 
-	return client
+	return session
 }

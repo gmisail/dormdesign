@@ -4,13 +4,14 @@ import (
 	"os"
 	"net/http"
 	"github.com/labstack/echo/v4"
-	"github.com/go-redis/redis/v8"
 	"github.com/gmisail/dormdesign/models"
 	"github.com/gmisail/dormdesign/routes"
+
+	rdb "gopkg.in/rethinkdb/rethinkdb-go.v6"
 )
 
 // SetupRoutes: configures the API endpoints
-func SetupRoutes(e *echo.Echo, database *redis.Client) {
+func SetupRoutes(e *echo.Echo, database *rdb.Session) {
 	e.GET("/", func(c echo.Context) error {
 		models.CreateList(database, "testtesttest")
 		models.AddListItem(database, "testtesttest", models.ListItem{ Name: "Another", Quantity: 3, ClaimedBy: "graham" })
