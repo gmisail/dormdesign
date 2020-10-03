@@ -14,6 +14,10 @@ type ListRoute struct {
 	Database *rdb.Session
 }
 
+type ListResponse struct {
+	err string
+}
+
 /*
 
 Creates an empty list for a given ID.
@@ -27,8 +31,8 @@ func (route *ListRoute) OnCreateList(c echo.Context) error {
 	id := c.FormValue("id")
 
 	models.CreateList(route.Database, id)
-
-	return c.String(http.StatusOK, "new list")
+ 
+	return c.JSON(http.StatusOK, ListResponse{ err: "" })
 }
 
 /*
@@ -56,5 +60,5 @@ func (route *ListRoute) OnAddListItem(c echo.Context) error {
 
 	models.AddListItem(route.Database, id, models.ListItem{ Name: name, Quantity: quantity, ClaimedBy: claimedBy })
 
-	return c.String(http.StatusOK, "added item to list")
+	return c.JSON(http.StatusOK, ListResponse{ err: "" })
 }
