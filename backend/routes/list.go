@@ -1,6 +1,8 @@
 package routes
 
 import (
+	"fmt"
+	"strconv"
 	"net/http"
 	"github.com/labstack/echo/v4"
 	"github.com/gmisail/dormdesign/models"
@@ -29,6 +31,8 @@ func (route *ListRoute) OnCreateList(c echo.Context) error {
 
 /*
 
+Queries should be in the following format:
+
 {
 	id: string
 	name: string
@@ -38,7 +42,17 @@ func (route *ListRoute) OnCreateList(c echo.Context) error {
 
 */
 func (route *ListRoute) OnAddListItem(c echo.Context) error {
-	models.AddListItem(route.Database, "testtest", models.ListItem{ Name: "Another", Quantity: 3, ClaimedBy: "graham" })
+	id := c.FormValue("id")
+	name := c.FormValue("name")
+	quantity, convErr := strconv.Atoi(c.FormValue("quantity"))
+
+	if convErr != nil {
+		fmt.Println(convErr)
+	}
+
+	claimedBy := c.FormValue("claimedBy")
+
+	models.AddListItem(route.Database, id, models.ListItem{ Name: name, Quantity: quantity, ClaimedBy: claimedBy })
 
 	return c.String(http.StatusOK, "added item to list")
 }
