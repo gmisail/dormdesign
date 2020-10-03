@@ -15,7 +15,7 @@ type ListItem struct {
 
 type List struct {
 	Id string `rethinkdb:"id"`
-	Items []ListItem 
+	Items []ListItem `rethinkdb:"Items"`
 }
 
 /*
@@ -33,32 +33,22 @@ func CreateList(database *rdb.Session, id string) {
 	Add a list item to the list at the given ID
 */
 func AddListItem(database *rdb.Session, id string, item ListItem) {
-	fmt.Println(rdb.DB("dd-data").Table("lists").Get(id).Exec(database))
+	res, err := rdb.DB("dd-data").Table("lists").Get(id).Run(database)
 
-/*	listData, dbErr := database.Get(context.Background(), id).Result()
+	var data List
+	res.One(&data)
 
-	if dbErr != nil {
-		fmt.Println(dbErr)
+	if err != nil {
+		fmt.Println(err)
 	}
 
-	var list List
-	listRawData := []byte(listData)
-	listErr := json.Unmarshal(listRawData, &list)
+	defer res.Close()
 
-	if listErr != nil {
-		fmt.Println(listErr)
+	data.Items = append(data.Items, item)
+
+	updateErr := rdb.DB("dd-data").Table("lists").Get(id).Update(data).Exec(database)
+
+	if updateErr != nil {
+		fmt.Println(updateErr)
 	}
-
-	list.Items = append(list.Items, item)
-	listJson, listJsonErr := json.Marshal(list)
-
-	if listJsonErr != nil {
-		fmt.Println(listJsonErr)
-	}
-
-	dbErr = database.Set(context.Background(), id, listJson, 0).Err()
-
-	if dbErr != nil {
-		fmt.Println(dbErr)
-	}*/
 }
