@@ -24,7 +24,9 @@ Creates an empty list for a given ID.
 
 */
 func (route *ListRoute) OnCreateList(c echo.Context) error {
-	models.CreateList(route.Database, "testtest")
+	id := c.FormValue("id")
+
+	models.CreateList(route.Database, id)
 
 	return c.String(http.StatusOK, "new list")
 }
