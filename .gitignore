@@ -1,1 +1,5 @@
 *.rdb
+backend/rethinkdb_data
+
+log.txt
+backend/log.txt
