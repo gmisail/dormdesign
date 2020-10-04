@@ -1,23 +1,26 @@
+import DormItem from "../models/DormItem";
+
 let TEST_ID_COUNTER = 0;
 var TEST_ITEMS = [
-  {
+  new DormItem({
     id: TEST_ID_COUNTER++,
     name: "Fridge",
     quantity: 4,
-    claimedBy: undefined,
-  },
-  {
+  }),
+  new DormItem({
     id: TEST_ID_COUNTER++,
     name: "Soundbar",
     quantity: 1,
     claimedBy: "John Smith",
-  },
-  {
+  }),
+  new DormItem({
     id: TEST_ID_COUNTER++,
     name: "Microwave",
-    quantity: 10,
-    claimedBy: undefined,
-  },
+    quantity: 100,
+    width: 10,
+    length: 4,
+    height: 2.5,
+  }),
 ];
 
 /**
