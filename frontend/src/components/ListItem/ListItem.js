@@ -7,15 +7,14 @@ const ListItem = (props) => {
 
   return (
     <ListGroupItem>
-      <div className="d-flex">
-        <div className="align-self-start mr-auto">
+      <div className="d-flex justify-content-between align-items-center">
+        <div className="mr-auto">
           <span>
             <strong>{itemName}</strong>
             {itemQty > 1 ? ` (${itemQty})` : null}
           </span>
         </div>
-
-        <div className="align-self-right">
+        <div>
           {claimedName === undefined ? (
             <Button
               variant="secondary"
@@ -29,7 +28,6 @@ const ListItem = (props) => {
           ) : (
             <i>Claimed by {claimedName}</i>
           )}
-
           <Button
             className="ml-2"
             size="sm"
