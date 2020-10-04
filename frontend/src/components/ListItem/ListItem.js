@@ -1,4 +1,5 @@
 import React from "react";
+import { BsPencilSquare } from "react-icons/bs";
 import { ListGroupItem, Button } from "react-bootstrap";
 
 const ListItem = (props) => {
@@ -6,25 +7,40 @@ const ListItem = (props) => {
 
   return (
     <ListGroupItem>
-      <div className="d-flex justify-content-between align-items-center">
-        <span>
-          <strong>{itemName}</strong>
-          {itemQty > 1 ? ` (${itemQty})` : null}
-        </span>
+      <div className="d-flex">
+        <div className="align-self-start mr-auto">
+          <span>
+            <strong>{itemName}</strong>
+            {itemQty > 1 ? ` (${itemQty})` : null}
+          </span>
+        </div>
 
-        {claimedName === undefined ? (
+        <div className="align-self-right">
+          {claimedName === undefined ? (
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => {
+                console.log(`Claim button clicked for ${itemName}`);
+              }}
+            >
+              Claim
+            </Button>
+          ) : (
+            <i>Claimed by {claimedName}</i>
+          )}
+
           <Button
-            variant="secondary"
+            className="ml-2"
             size="sm"
+            variant="secondary"
             onClick={() => {
-              console.log(`Claim button clicked for ${itemName}`);
+              console.log(`Edit button clicked for ${itemName}`);
             }}
           >
-            Claim
+            <BsPencilSquare />
           </Button>
-        ) : (
-          <i>Claimed by {claimedName}</i>
-        )}
+        </div>
       </div>
     </ListGroupItem>
   );

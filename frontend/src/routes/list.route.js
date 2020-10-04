@@ -84,13 +84,7 @@ class ListRoute extends Component {
         <Container>
           <Row className="mb-3 justify-content-between">
             <h2 className="m-0">My List</h2>
-            <Button
-              className="ml-auto"
-              name="editItemButton"
-              onClick={() => console.log("Edit button clicked")}
-            >
-              Edit
-            </Button>
+
             <Button
               className="ml-2"
               name="addItemButton"
