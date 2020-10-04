@@ -1,31 +1,31 @@
 import React, { Component } from "react";
 import { Button, Col } from "react-bootstrap";
 import Form from "react-bootstrap/Form";
+import DormItem from "../../models/DormItem";
 
 class ListItemForm extends Component {
   constructor(props) {
     super(props);
     let item = props.item;
+    const name = item ? item.name : "";
     if (!item) {
-      item = {
-        id: undefined,
-        name: "",
-        quantity: 1,
-        claimedBy: undefined,
-        dimensions: {
-          w: undefined,
-          l: undefined,
-          h: undefined,
-        },
-      };
+      item = new DormItem();
     }
+
+    let width = "",
+      length = "";
+    if (item.dimensions) {
+      width = item.dimensions.w ?? "";
+      length = item.dimensions.l ?? "";
+    }
+
     this.state = {
       item: item,
-      nameInputValue: item.name,
+      nameInputValue: name,
       qtyInputValue: item.quantity,
-      ownerInputValue: item.claimedBy,
-      widthInputValue: item.dimensions.w ?? "",
-      lengthInputValue: item.dimensions.l ?? "",
+      ownerInputValue: item.claimedBy ?? "",
+      widthInputValue: width,
+      lengthInputValue: length,
       validated: false,
     };
   }
@@ -61,7 +61,10 @@ class ListItemForm extends Component {
       let item = this.state.item;
       item.name = this.state.nameInputValue;
       item.quantity = parseInt(this.state.qtyInputValue);
-      item.claimedBy = this.state.ownerInputValue;
+      item.claimedBy =
+        this.state.ownerInputValue.length === 0
+          ? undefined
+          : this.state.ownerInputValue;
       const width = parseFloat(this.state.widthInputValue);
       const length = parseFloat(this.state.lengthInputValue);
       item.dimensions.w = isNaN(width) ? undefined : width;
@@ -77,7 +80,7 @@ class ListItemForm extends Component {
         validated={this.state.validated}
         onSubmit={this.onFormSubmit}
       >
-        <Form.Group controlId="formItemName" controlId="validationCustomName">
+        <Form.Group controlId="formItemName">
           <Form.Label>Name*</Form.Label>
           <Form.Control
             name="nameInputValue"
@@ -90,10 +93,7 @@ class ListItemForm extends Component {
             Please choose an item name.
           </Form.Control.Feedback>
         </Form.Group>
-        <Form.Group
-          controlId="formItemQuantity"
-          controlId="validationCustomQty"
-        >
+        <Form.Group controlId="formItemQuantity">
           <Form.Label>Quantity*</Form.Label>
           <Form.Control
             name="qtyInputValue"
@@ -111,7 +111,7 @@ class ListItemForm extends Component {
             Please specificy item quantity.
           </Form.Control.Feedback>
         </Form.Group>
-        <Form.Group controlId="formItemOwner" controlId="validationCustomOwner">
+        <Form.Group controlId="formItemOwner">
           <Form.Label>Name of Owner</Form.Label>
           <Form.Control
             name="ownerInputValue"
@@ -120,10 +120,7 @@ class ListItemForm extends Component {
             onChange={this.handleInputChange}
           />
         </Form.Group>
-        <Form.Group
-          controlId="formItemQuantity"
-          controlId="validationCustomQty"
-        >
+        <Form.Group controlId="formItemDimensions">
           <Form.Label>Dimensions</Form.Label>
           <Form.Row>
             <Col>

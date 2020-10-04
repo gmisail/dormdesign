@@ -3,37 +3,37 @@ import { BsPencilSquare } from "react-icons/bs";
 import { ListGroupItem, Button } from "react-bootstrap";
 
 const ListItem = (props) => {
-  const { itemName, itemQty, claimedName } = props;
+  const { item, onEdit } = props;
 
   return (
     <ListGroupItem>
       <div className="d-flex justify-content-between align-items-center">
         <div>
           <span>
-            <strong>{itemName}</strong>
-            {itemQty > 1 ? ` (${itemQty})` : null}
+            <strong>{item.name}</strong>
+            {item.quantity > 1 ? ` (${item.quantity})` : null}
           </span>
         </div>
-        <div>
-          {claimedName === undefined ? (
+        <div className="">
+          {item.claimedBy === undefined ? (
             <Button
               variant="secondary"
               size="sm"
               onClick={() => {
-                console.log(`Claim button clicked for ${itemName}`);
+                console.log(`Claim button clicked for ${item.name}`);
               }}
             >
               Claim
             </Button>
           ) : (
-            <i>Claimed by {claimedName}</i>
+            <i className="align-middle">Claimed by {item.claimedBy}</i>
           )}
           <Button
-            className="ml-2"
+            className="ml-3"
             size="sm"
             variant="secondary"
             onClick={() => {
-              console.log(`Edit button clicked for ${itemName}`);
+              onEdit(item);
             }}
           >
             <BsPencilSquare />

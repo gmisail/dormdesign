@@ -14,6 +14,7 @@ class ListRoute extends Component {
       items: [],
       showModal: false,
       modalType: "none",
+      editingItem: undefined,
     };
   }
 
@@ -22,6 +23,16 @@ class ListRoute extends Component {
       this.setState({ items: list });
     });
   }
+
+  itemEditButtonClicked = (item) => {
+    this.setState({ editingItem: item });
+    this.toggleModal("edit");
+  };
+
+  saveEditedItem = () => {
+    this.setState({ editingItem: undefined });
+    this.toggleModal();
+  };
 
   addNewItem = (item) => {
     ListController.addListItem(item, (list) => {
@@ -38,13 +49,12 @@ class ListRoute extends Component {
         {!this.state.items.length ? (
           <h6>No items have been added yet</h6>
         ) : (
-          this.state.items.map((item) => {
+          this.state.items.map((item, index) => {
             return (
               <ListItem
                 key={item.id}
-                itemName={item.name}
-                itemQty={item.quantity}
-                claimedName={item.claimedBy}
+                item={item}
+                onEdit={this.itemEditButtonClicked}
               />
             );
           })
@@ -70,6 +80,20 @@ class ListRoute extends Component {
             </Modal.Header>
             <Modal.Body>
               <ListItemForm onSubmit={this.addNewItem} />
+            </Modal.Body>
+          </Modal>
+        );
+      case "edit":
+        return (
+          <Modal show={this.state.showModal} onHide={this.toggleModal}>
+            <Modal.Header closeButton>
+              <Modal.Title>Edit Item</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+              <ListItemForm
+                item={this.state.editingItem}
+                onSubmit={this.saveEditedItem}
+              />
             </Modal.Body>
           </Modal>
         );
