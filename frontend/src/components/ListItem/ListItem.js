@@ -14,7 +14,8 @@ const ListItem = (props) => {
             {item.quantity > 1 ? ` (${item.quantity})` : null}
           </span>
         </div>
-        <div className="">
+
+        <div>
           {item.claimedBy === undefined ? (
             <Button
               variant="secondary"
@@ -26,10 +27,10 @@ const ListItem = (props) => {
               Claim
             </Button>
           ) : (
-            <i className="align-middle">Claimed by {item.claimedBy}</i>
+            <i className="align-middle mr-1">Claimed by {item.claimedBy}</i>
           )}
           <Button
-            className="ml-3"
+            className="ml-2"
             size="sm"
             variant="secondary"
             onClick={() => {
