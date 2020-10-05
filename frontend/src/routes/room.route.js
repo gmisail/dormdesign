@@ -101,7 +101,6 @@ class EditorRoute extends Component {
               <Row className="justify-content-between align-items-center m-0 mb-3">
                 <h5>Dorm Items</h5>
                 <Button
-                  className=""
                   name="addItemButton"
                   onClick={() => this.toggleModal("add")}
                 >
