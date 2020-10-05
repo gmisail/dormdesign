@@ -1,12 +1,12 @@
 import React, { Component } from "react";
-import { Container, Row, Col, ListGroup, Button } from "react-bootstrap";
+import { Container, Row, Col, Button } from "react-bootstrap";
 import Modal from "react-bootstrap/Modal";
-
-import ListItem from "../components/ListItem/ListItem";
+import RoomCanvas from "../components/RoomCanvas/RoomCanvas";
+import DormItemList from "../components/DormItemList/DormItemList";
 import ListItemForm from "../components/ListItemForm/ListItemForm";
 import ListController from "../controllers/list.controller";
 
-class ListRoute extends Component {
+class RoomRoute extends Component {
   constructor() {
     super();
 
@@ -24,7 +24,7 @@ class ListRoute extends Component {
     });
   }
 
-  itemEditButtonClicked = (item) => {
+  editItem = (item) => {
     this.setState({ editingItem: item });
     this.toggleModal("edit");
   };
@@ -42,26 +42,6 @@ class ListRoute extends Component {
       this.toggleModal();
     });
   };
-
-  renderItems() {
-    return (
-      <ListGroup>
-        {!this.state.items.length ? (
-          <h6>No items have been added yet</h6>
-        ) : (
-          this.state.items.map((item, index) => {
-            return (
-              <ListItem
-                key={item.id}
-                item={item}
-                onEdit={this.itemEditButtonClicked}
-              />
-            );
-          })
-        )}
-      </ListGroup>
-    );
-  }
 
   toggleModal = (type) => {
     if (type) {
@@ -104,27 +84,41 @@ class ListRoute extends Component {
 
   render() {
     return (
-      <div>
-        <Container>
-          <Row className="mb-3 justify-content-between">
-            <h2 className="m-0">My List</h2>
-
-            <Button
-              className="ml-2"
-              name="addItemButton"
-              onClick={() => this.toggleModal("add")}
-            >
-              Add
-            </Button>
+      <>
+        <Container fluid className="px-3 pr-xl-5 pl-xl-5 room-container">
+          <Row className="p-3 align-items-center">
+            <h2 className="m-0">Dorm Name - Room #</h2>
           </Row>
-          <Row>
-            <Col className="p-0">{this.renderItems()}</Col>
+          <Row className="mt-auto">
+            <Col xs={12} lg={7}>
+              <RoomCanvas
+                items={this.state.items.filter((item) => {
+                  return item.editor.included;
+                })}
+              />
+            </Col>
+            <Col lg={5}>
+              <Row className="justify-content-between align-items-center m-0 mb-3">
+                <h5>Dorm Items</h5>
+                <Button
+                  name="addItemButton"
+                  onClick={() => this.toggleModal("add")}
+                >
+                  Add Item
+                </Button>
+              </Row>
+
+              <DormItemList
+                items={this.state.items}
+                onEditItem={this.editItem}
+              ></DormItemList>
+            </Col>
           </Row>
         </Container>
         {this.renderModal()}
-      </div>
+      </>
     );
   }
 }
 
-export default ListRoute;
+export default RoomRoute;

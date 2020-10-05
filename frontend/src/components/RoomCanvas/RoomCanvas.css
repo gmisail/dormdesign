@@ -5,9 +5,5 @@
 
 .room-canvas-container {
   position: relative;
-  width: 100%;
-}
-
-.room-editor-container {
   max-width: 82vh;
 }
