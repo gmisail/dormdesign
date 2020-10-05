@@ -85,7 +85,7 @@ class RoomRoute extends Component {
   render() {
     return (
       <>
-        <Container fluid className="px-3 pr-xl-5 pl-xl-5">
+        <Container fluid className="px-3 pr-xl-5 pl-xl-5 room-container">
           <Row className="p-3 align-items-center">
             <h2 className="m-0">Dorm Name - Room #</h2>
           </Row>

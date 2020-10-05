@@ -29,7 +29,6 @@ code {
 }
 
 .room-container {
-  display: flex;
   margin-left: auto;
   margin-right: auto;
   padding-top: 56px;

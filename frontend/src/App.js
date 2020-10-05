@@ -10,11 +10,9 @@ function App() {
   return (
     <Router>
       <NavigationBar></NavigationBar>
-      <div className="room-container">
-        <Route path="/my-room">
-          <RoomRoute></RoomRoute>
-        </Route>
-      </div>
+      <Route path="/my-room">
+        <RoomRoute></RoomRoute>
+      </Route>
     </Router>
   );
 }
