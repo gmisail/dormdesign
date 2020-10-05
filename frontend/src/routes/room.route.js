@@ -90,7 +90,7 @@ class RoomRoute extends Component {
             <h2 className="m-0">Dorm Name - Room #</h2>
           </Row>
           <Row className="mt-auto">
-            <Col xs={12} lg={7}>
+            <Col xs={12} lg={7} className="mb-3">
               <RoomCanvas
                 items={this.state.items.filter((item) => {
                   return item.editor.included;
