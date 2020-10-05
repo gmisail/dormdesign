@@ -81,21 +81,17 @@ class RoomCanvas extends Component {
 
   render() {
     return (
-      <div>
-        <Container fluid className="room-editor-container p-0 mb-4">
-          <div className="room-canvas-container">
-            <canvas
-              ref={(ref) => (this.canvas1 = ref)}
-              className="room-canvas"
-              style={{ zIndex: 1 }}
-            ></canvas>
-            <canvas
-              ref={(ref) => (this.canvas2 = ref)}
-              className="room-canvas"
-              style={{ zIndex: 2 }}
-            ></canvas>
-          </div>
-        </Container>
+      <div className="room-canvas-container mx-auto">
+        <canvas
+          ref={(ref) => (this.canvas1 = ref)}
+          className="room-canvas"
+          style={{ zIndex: 1 }}
+        ></canvas>
+        <canvas
+          ref={(ref) => (this.canvas2 = ref)}
+          className="room-canvas"
+          style={{ zIndex: 2 }}
+        ></canvas>
       </div>
     );
   }

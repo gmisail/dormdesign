@@ -6,7 +6,7 @@ import DormItemList from "../components/DormItemList/DormItemList";
 import ListItemForm from "../components/ListItemForm/ListItemForm";
 import ListController from "../controllers/list.controller";
 
-class EditorRoute extends Component {
+class RoomRoute extends Component {
   constructor() {
     super();
 
@@ -90,7 +90,7 @@ class EditorRoute extends Component {
             <h2 className="m-0">Dorm Name - Room #</h2>
           </Row>
           <Row className="mt-auto">
-            <Col lg={7}>
+            <Col xs={12} lg={7}>
               <RoomCanvas
                 items={this.state.items.filter((item) => {
                   return item.editor.included;
@@ -121,4 +121,4 @@ class EditorRoute extends Component {
   }
 }
 
-export default EditorRoute;
+export default RoomRoute;

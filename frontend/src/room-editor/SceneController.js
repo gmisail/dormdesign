@@ -131,7 +131,7 @@ class SceneController {
       // Make the canvas the same size
       canvas.width = displayWidth;
       canvas.height = displayWidth;
-
+      console.log(displayWidth);
       // Return true if canvas was reszied
       return true;
     }

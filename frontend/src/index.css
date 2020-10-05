@@ -34,6 +34,14 @@ code {
   margin-right: auto;
   padding-top: 56px;
   height: 100vh;
+  max-width: 1500px;
+}
+
+/* For bootstrap md breakpoint and below */
+@media (max-width: 991px) {
+  .room-container {
+    max-width: 620px;
+  }
 }
 
 /* For bootstrap md breakpoint and below */
