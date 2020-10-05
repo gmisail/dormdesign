@@ -11,6 +11,10 @@ class DormItem {
       length: length,
       height: height,
     };
+    this.editor = {
+      included: true,
+      position: undefined,
+    };
   }
 }
 

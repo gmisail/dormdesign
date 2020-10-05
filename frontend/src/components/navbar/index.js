@@ -5,7 +5,7 @@ import { LinkContainer } from "react-router-bootstrap";
 class NavigationBar extends Component {
   render() {
     return (
-      <Navbar bg="primary" variant="dark" expand="lg">
+      <Navbar fixed="top" bg="primary" variant="dark" expand="lg">
         <Navbar.Brand>
           <LinkContainer to="/">
             <div className="menu-bar">DormDesign</div>

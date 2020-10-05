@@ -1,21 +1,17 @@
 import React, { Component } from "react";
 import "./RoomCanvas.css";
-import ListItemForm from "../ListItemForm/ListItemForm";
-import { Container, Button } from "react-bootstrap";
-import Modal from "react-bootstrap/Modal";
+import { Container } from "react-bootstrap";
 import SceneController from "../../room-editor/SceneController";
 import RoomObject from "../../room-editor/RoomObject";
 import Vector2 from "../../room-editor/Vector2";
 
 class RoomCanvas extends Component {
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
 
     this.state = {
       scene: undefined,
       roomObject: undefined,
-      showModal: false,
-      modalType: "none",
     };
   }
 
@@ -51,62 +47,42 @@ class RoomCanvas extends Component {
     });
   }
 
+  componentDidUpdate(prevProps) {
+    // Find which items need to be added/removed. Use maps with item ids as keys to make lookup faster
+    const oldMap = new Map(prevProps.items.map((item) => [item.id, item]));
+    const newMap = new Map(this.props.items.map((item) => [item.id, item]));
+    // Remove items in old but not new
+    for (let [oldId, oldItem] of oldMap) {
+      if (!newMap.has(oldId)) {
+        this.removeItemFromScene(oldItem);
+      }
+    }
+    // Add items in new but not old
+    for (let [newId, newItem] of newMap) {
+      if (!oldMap.has(newId)) {
+        this.addItemToScene(newItem);
+      }
+    }
+  }
+
   addItemToScene = (item) => {
     this.state.roomObject.addItemToRoom({
+      id: item.id,
       name: item.name,
       feetWidth: item.dimensions.w,
       feetHeight: item.dimensions.l,
+      position: item.editor.position,
     });
-    this.toggleModal();
   };
 
-  toggleModal = (type) => {
-    if (type) {
-      this.setState({ modalType: type });
-    }
-    this.setState({ showModal: !this.state.showModal });
+  removeItemFromScene = (item) => {
+    this.state.roomObject.removeItemFromRoom(item.id);
   };
-
-  renderModal() {
-    switch (this.state.modalType) {
-      case "add":
-        return (
-          <Modal show={this.state.showModal} onHide={this.toggleModal}>
-            <Modal.Header closeButton>
-              <Modal.Title>Add an Item</Modal.Title>
-            </Modal.Header>
-            <Modal.Body>
-              <ListItemForm onSubmit={this.addItemToScene} />
-            </Modal.Body>
-          </Modal>
-        );
-      default:
-        return;
-    }
-  }
 
   render() {
     return (
       <div>
         <Container fluid className="room-editor-container p-0 mb-4">
-          <div className="d-flex justify-content-end mb-2">
-            <Button
-              className="ml-2"
-              variant="secondary"
-              name="editCanvasItem"
-              disabled={true}
-              onClick={() => this.toggleModal("edit")}
-            >
-              Edit
-            </Button>
-            <Button
-              className="ml-2"
-              name="addItemToCanvas"
-              onClick={() => this.toggleModal("add")}
-            >
-              Add Object
-            </Button>
-          </div>
           <div className="room-canvas-container">
             <canvas
               ref={(ref) => (this.canvas1 = ref)}
@@ -120,7 +96,6 @@ class RoomCanvas extends Component {
             ></canvas>
           </div>
         </Container>
-        {this.renderModal()}
       </div>
     );
   }

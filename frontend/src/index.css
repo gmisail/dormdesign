@@ -27,3 +27,18 @@ code {
 .menu-bar {
   font-family: "Arvo", serif;
 }
+
+.room-container {
+  display: flex;
+  margin-left: auto;
+  margin-right: auto;
+  padding-top: 56px;
+  height: 100vh;
+}
+
+/* For bootstrap md breakpoint and below */
+@media (max-width: 991px) {
+  .room-container {
+    max-width: 620px;
+  }
+}

@@ -26,13 +26,14 @@ class ListItemForm extends Component {
       ownerInputValue: item.claimedBy ?? "",
       widthInputValue: width,
       lengthInputValue: length,
+      includeInEditorValue: item.editor.included,
       validated: false,
     };
   }
 
   handleInputChange = (event) => {
     const target = event.target;
-    let value = target.value;
+    let value = target.type === "checkbox" ? target.checked : target.value;
     const name = target.name;
 
     // Limit values for inputs
@@ -69,6 +70,7 @@ class ListItemForm extends Component {
       const length = parseFloat(this.state.lengthInputValue);
       item.dimensions.w = isNaN(width) ? undefined : width;
       item.dimensions.l = isNaN(length) ? undefined : length;
+      item.editor.included = this.state.includeInEditorValue;
       this.props.onSubmit(item);
     }
   };
@@ -148,6 +150,14 @@ class ListItemForm extends Component {
               />
             </Col>
           </Form.Row>
+        </Form.Group>
+        <Form.Group>
+          <Form.Check
+            label="Add to Room Editor"
+            name="includeInEditorValue"
+            checked={this.state.includeInEditorValue}
+            onChange={this.handleInputChange}
+          />
         </Form.Group>
         <div className="text-right">
           <Button variant="primary" type="submit">

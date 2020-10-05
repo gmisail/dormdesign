@@ -125,21 +125,12 @@ class SceneController {
     const displayWidth = Math.floor(
       canvas.parentElement.clientWidth * realToCSSPixels
     );
-    // const displayHeight = Math.floor(
-    //   canvas.parentElement.clientHeight * realToCSSPixels
-    // );
-    // console.log(displayWidth, displayHeight);
-    //var displayHeight = Math.floor(canvas.clientHeight * realToCSSPixels);
 
     // Check if the canvas is not the same size.
     if (canvas.width !== displayWidth || canvas.height !== displayWidth) {
       // Make the canvas the same size
       canvas.width = displayWidth;
       canvas.height = displayWidth;
-
-      // Set parent div to size of canvas (since canvas has position absolute)
-      // canvas.parentElement.style.width = `${displayWidth}px`;
-      // canvas.parentElement.style.height = `${displayWidth}px`;
 
       // Return true if canvas was reszied
       return true;

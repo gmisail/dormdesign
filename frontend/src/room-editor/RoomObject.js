@@ -252,15 +252,16 @@ class RoomObject extends SceneObject {
   }
 
   // Takes name, dimensions, color and adds a new item to the room object/scene.
-  addItemToRoom({ name, feetWidth, feetHeight }) {
+  addItemToRoom({ id, name, feetWidth, feetHeight, position }) {
     const color = this.objectColors[this.state.objectColorCounter];
     this.state.objectColorCounter++;
     if (this.state.objectColorCounter === this.objectColors.length) {
       this.state.objectColorCounter = 0;
     }
     const obj = new RoomRectObject({
+      itemId: id,
       scene: this.scene,
-      position: new Vector2(0, 0),
+      position: position ?? new Vector2(0, 0),
       parent: this,
       size: new Vector2(feetWidth ?? 1, feetHeight ?? 1),
       color: color,
@@ -279,6 +280,22 @@ class RoomObject extends SceneObject {
     );
 
     this.children.push(obj);
+  }
+
+  // Remove object matching given itemId from room
+  removeItemFromRoom(itemId) {
+    let end = 0;
+    for (let i = 0; i < this.children.length; i++) {
+      const obj = this.children[i];
+      // Only keep objects that either dont have an itemId properity (i.e. aren't RoomRectObjects) or don't have an itemId matching the one passed in
+      if (
+        !Object.prototype.hasOwnProperty.call(obj, "itemId") ||
+        obj.itemId !== itemId
+      ) {
+        this.children[end++] = obj;
+      }
+    }
+    this.children.length = end;
   }
 
   _update() {
