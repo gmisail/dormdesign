@@ -4,8 +4,7 @@ import NavigationBar from "./components/navbar";
 import { BrowserRouter as Router, Route } from "react-router-dom";
 
 import "../node_modules/bootstrap/dist/css/bootstrap.min.css";
-import ListRoute from "./routes/list.route";
-import EditorRoute from "./routes/editor.route";
+import RoomRoute from "./routes/room.route";
 
 function App() {
   return (
@@ -13,11 +12,8 @@ function App() {
       <NavigationBar></NavigationBar>
 
       <div className="room-container">
-        <Route path="/my-list">
-          <ListRoute></ListRoute>
-        </Route>
         <Route path="/my-room">
-          <EditorRoute></EditorRoute>
+          <RoomRoute></RoomRoute>
         </Route>
       </div>
     </Router>
