@@ -12,13 +12,10 @@ import (
 
 // SetupRoutes: configures the API endpoints
 func SetupRoutes(e *echo.Echo, database *rdb.Session) {
-	e.GET("/", func(c echo.Context) error {
-		models.CreateList(database, "testtesttest")
-		models.AddListItem(database, "testtesttest", models.ListItem{ Name: "Another", Quantity: 3, ClaimedBy: "graham" })
-
-		return c.String(http.StatusOK, "Hello from DormDesign")
-	})
-
+	
+	
+	e.GET("/ws", )
+	
 	listRoute := routes.ListRoute{ Database: database }
 
 	e.POST("/list/create", listRoute.OnCreateList)
