@@ -12,10 +12,6 @@ type Sockets struct {
 	Rooms map[string]Room
 }
 
-type Message struct {
-	data []byte
-}
-
 /*
 	Represents the users working on a single room
 */
@@ -27,17 +23,26 @@ type Room struct {
 	Data type for each user, contains the outgoing message channel
 */
 type Client struct {
-	Channel chan *Message
+	Channel chan []byte
 }
 
+/*
+	Add client to specified room
+*/
 func (s *Sockets) AddClient(id string, socket *websocket.Conn) {
 	s.Rooms[id][socket] = &Client{ Channel: make(chan *Message) }
 }
 
+/*
+	Remove client from specified room
+*/
 func (s *Sockets) RemoveClient(id string, socket *websocket.Conn) {
 	delete(s.Rooms[id][socket])
 }
 
+/*
+	Remove the room and each of its clients, if they exist
+*/
 func (s *Sockets) RemoveRoom(id string) {
 	if len(s.Rooms[id] > 0) {
 		for socket, client := range s.Rooms[id] {
@@ -48,10 +53,16 @@ func (s *Sockets) RemoveRoom(id string) {
 	delete(s.Rooms[id])
 }
 
+/*
+	Send data to a client within a room
+*/
 func (s *Sockets) SendToClient(id string, socket *websocket.Conn, data []byte) {
-	// push data to channel
+	s.Rooms[id][socket].Channel <- data
 }
 
+/*
+	Send data to each of the users in a room
+*/
 func (s *Sockets) SendToRoom(id string, data []byte) {
 	if len(s.Rooms[id] > 0) {
 		for socket, client := range s.Rooms[id] {
