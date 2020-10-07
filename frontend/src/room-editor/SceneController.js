@@ -26,19 +26,6 @@ class SceneController {
     this.mainLoop(); // Start main update/render loop
   }
 
-  getAllChildObjects(object) {
-    // console.log(object);
-    let children = [];
-    for (let i = 0; i < object.children.length; i++) {
-      children.push(object.children[i]);
-      children = children.concat(
-        this._recursiveGetAllObjects(object.children[i])
-      );
-    }
-    // console.log(children);
-    return children;
-  }
-
   mainLoop(currentTime) {
     requestAnimationFrame(this.mainLoop.bind(this));
 
@@ -61,6 +48,14 @@ class SceneController {
 
   addObject(obj) {
     this.objects.set(obj.id, obj);
+  }
+
+  removeObject(obj) {
+    this.objects.delete(obj.id);
+    for (let i = 0; i < obj.children.length; i++) {
+      obj.children[i].parent = undefined;
+    }
+    obj.parent.removeChild(obj);
   }
 
   update() {

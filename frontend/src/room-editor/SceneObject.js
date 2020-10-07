@@ -1,9 +1,9 @@
 import Vector2 from "./Vector2";
 
 class SceneObject {
-  constructor({ scene, position, size, scale, canvasLayer, staticObject }) {
+  constructor({ scene, id, position, size, scale, canvasLayer, staticObject }) {
     this.scene = scene;
-    this.id = scene.idCounter++;
+    this.id = id ?? scene.idCounter++;
     this._position = position ?? new Vector2(0, 0);
     this._scale = scale ?? new Vector2(1, 1);
     this.staticObject = staticObject ?? false;
@@ -80,6 +80,19 @@ class SceneObject {
     this._children.push(obj);
     obj.parent = this;
     obj._updateTransform();
+  }
+
+  removeChild(object) {
+    object.parent = undefined;
+    let end = 0;
+    for (let i = 0; i < this._children.length; i++) {
+      const obj = this._children[i];
+      // Only keep objects that either dont have an id properity (i.e. aren't RoomRectObjects) or don't have an id matching the one passed in
+      if (obj.id !== object.id) {
+        this._children[end++] = obj;
+      }
+    }
+    this._children.length = end;
   }
 
   // Returns 2 points that specifcy the corners a rect containing this object (in global coordinate system)

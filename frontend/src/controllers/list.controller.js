@@ -1,6 +1,6 @@
 import DormItem from "../models/DormItem";
 
-let TEST_ID_COUNTER = 0;
+let TEST_ID_COUNTER = 600;
 var TEST_ITEMS = [
   new DormItem({
     id: TEST_ID_COUNTER++,

@@ -8,6 +8,7 @@ import Vector2 from "./Vector2";
 class RoomObject extends SceneObject {
   constructor({
     scene,
+    id,
     boundaryPoints,
     opacity,
     canvasLayer,
@@ -16,6 +17,7 @@ class RoomObject extends SceneObject {
   }) {
     super({
       scene: scene,
+      id: id,
       parent: undefined,
       position: new Vector2(0, 0),
       size: new Vector2(0, 0),
@@ -223,6 +225,8 @@ class RoomObject extends SceneObject {
           unsnappedPos.y + scaledDelta.y
         )
       );
+
+      this.onObjectMoved(selectedObject);
     }
   }
   onMouseUp() {}
@@ -259,7 +263,7 @@ class RoomObject extends SceneObject {
       this.state.objectColorCounter = 0;
     }
     const obj = new RoomRectObject({
-      itemId: id,
+      id: id,
       scene: this.scene,
       position: position ?? new Vector2(0, 0),
       size: new Vector2(feetWidth ?? 1, feetHeight ?? 1),
@@ -283,20 +287,11 @@ class RoomObject extends SceneObject {
     this.addChild(obj);
   }
 
-  // Remove object matching given itemId from room
-  removeItemFromRoom(itemId) {
-    let end = 0;
-    for (let i = 0; i < this.children.length; i++) {
-      const obj = this.children[i];
-      // Only keep objects that either dont have an itemId properity (i.e. aren't RoomRectObjects) or don't have an itemId matching the one passed in
-      if (
-        !Object.prototype.hasOwnProperty.call(obj, "itemId") ||
-        obj.itemId !== itemId
-      ) {
-        this.children[end++] = obj;
-      }
+  removeItemFromRoom(id) {
+    const obj = this.scene.objects.get(id);
+    if (obj) {
+      this.scene.removeObject(obj);
     }
-    this.children.length = end;
   }
 
   _update() {

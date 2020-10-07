@@ -1,7 +1,6 @@
 import React, { Component } from "react";
 import "./RoomCanvas.css";
 import SceneController from "../../room-editor/SceneController";
-import SceneUpdater from "../../room-editor/SceneUpdater";
 import RoomObject from "../../room-editor/RoomObject";
 import Vector2 from "../../room-editor/Vector2";
 
@@ -18,8 +17,6 @@ class RoomCanvas extends Component {
   componentDidMount() {
     const scene = new SceneController([this.canvas1, this.canvas2]);
     scene.backgroundColor = "#ccc";
-
-    const sceneUpdater = new SceneUpdater(scene);
 
     // Points defining the edges of the room (in feet)
     const testBoundaryPath = [
@@ -41,14 +38,13 @@ class RoomCanvas extends Component {
       boundaryPoints: testBoundaryPath,
       canvasLayer: 1,
       backgroundColor: "#ccc",
-      onObjectMoved: this.roomObjectPositionUpdate,
+      onObjectMoved: this.roomObjectUpdated,
     });
     scene.addObject(room);
 
     this.setState({
       scene: scene,
       roomObject: room,
-      sceneUpdater: sceneUpdater,
     });
   }
 
@@ -70,13 +66,31 @@ class RoomCanvas extends Component {
     }
   }
 
-  roomObjectPositionUpdate = (itemId, pos) => {
-    for (let i = 0; i < this.props.length; i++) {
-      if (this.props[i].id === itemId) {
-        this.props[i].editor.position = pos;
+  /*
+  Takes in array of object updates with format:
+  {
+    id,
+    position
+  }
+  */
+  updateRoomObjects(updatedObjects) {
+    for (let i = 0; i < updatedObjects.length; i++) {
+      const updated = updatedObjects[i];
+      const obj = this.state.scene.objects.get(updated.id);
+      if (obj) {
+        obj.position = updated.position;
       }
     }
-  };
+  }
+
+  // Called when object is moved in room
+  roomObjectUpdated(obj) {
+    const updated = {
+      id: obj.id,
+      position: obj.position,
+    };
+    console.log(updated);
+  }
 
   addItemToScene = (item) => {
     this.state.roomObject.addItemToRoom({
