@@ -9,7 +9,6 @@ class DormItem {
       length,
       height,
       includeInEditor,
-      editorPosition,
     } = values ?? {};
     this.id = id;
     this.name = name ?? "New Item";
@@ -20,10 +19,7 @@ class DormItem {
       length: length,
       height: height,
     };
-    this.editor = {
-      included: includeInEditor ?? true,
-      position: editorPosition,
-    };
+    this.includeInEditor = includeInEditor ?? true;
   }
 }
 

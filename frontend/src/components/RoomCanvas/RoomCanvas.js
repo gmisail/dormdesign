@@ -89,7 +89,6 @@ class RoomCanvas extends Component {
       id: obj.id,
       position: obj.position,
     };
-    console.log(updated);
   }
 
   addItemToScene = (item) => {
@@ -98,9 +97,6 @@ class RoomCanvas extends Component {
       name: item.name,
       feetWidth: item.dimensions.w,
       feetHeight: item.dimensions.l,
-      position: item.editor.position
-        ? new Vector2(item.editor.position.x, item.editor.position.y)
-        : undefined,
     });
   };
 

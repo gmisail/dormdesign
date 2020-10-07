@@ -93,7 +93,7 @@ class RoomRoute extends Component {
             <Col xs={12} lg={7} className="mb-3">
               <RoomCanvas
                 items={this.state.items.filter((item) => {
-                  return item.editor.included;
+                  return item.includeInEditor;
                 })}
               />
             </Col>
