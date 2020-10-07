@@ -18,10 +18,6 @@ class NavigationBar extends Component {
             <LinkContainer to="/my-room">
               <Nav.Link>My Room</Nav.Link>
             </LinkContainer>
-
-            <LinkContainer to="/my-list">
-              <Nav.Link>My List</Nav.Link>
-            </LinkContainer>
           </Nav>
         </Navbar.Collapse>
       </Navbar>
