@@ -12,6 +12,7 @@ class RoomObject extends SceneObject {
     opacity,
     canvasLayer,
     backgroundColor,
+    onObjectMoved,
   }) {
     super({
       scene: scene,
@@ -33,6 +34,8 @@ class RoomObject extends SceneObject {
     this.borderWidth = 0.07;
     this.opacity = opacity ?? 1.0;
 
+    this.onObjectMoved = onObjectMoved;
+
     this._fitRoomToCanvas();
     this._calculateOffsetPoints();
 
@@ -49,14 +52,12 @@ class RoomObject extends SceneObject {
 
     this.state = {
       grid: undefined,
-      roomObjects: [],
       selectedObject: undefined,
       objectColorCounter: 0,
     };
 
     const floorGrid = new RoomGridObject({
       scene: this.scene,
-      parent: this,
       position: new Vector2(0, 0),
       size: new Vector2(this.size.x, this.size.y),
       scale: new Vector2(1, 1),
@@ -66,8 +67,7 @@ class RoomObject extends SceneObject {
       staticObject: true,
       canvasLayer: 0,
     });
-
-    this.children.push(floorGrid);
+    this.addChild(floorGrid);
     this.state.floorGrid = floorGrid;
 
     this.objectColors = ["#0043E0", "#f28a00", "#C400E0", "#7EE016", "#0BE07B"];
@@ -262,7 +262,6 @@ class RoomObject extends SceneObject {
       itemId: id,
       scene: this.scene,
       position: position ?? new Vector2(0, 0),
-      parent: this,
       size: new Vector2(feetWidth ?? 1, feetHeight ?? 1),
       color: color,
       opacity: 0.5,
@@ -272,14 +271,16 @@ class RoomObject extends SceneObject {
       snapOffset: 0.2,
       canvasLayer: this.canvasLayer,
     });
-    obj.setPosition(
-      new Vector2(
-        this.size.x / 2 - obj.size.x / 2,
-        this.size.y / 2 - obj.size.y / 2
-      )
-    );
+    if (!position) {
+      obj.setPosition(
+        new Vector2(
+          this.size.x / 2 - obj.size.x / 2,
+          this.size.y / 2 - obj.size.y / 2
+        )
+      );
+    }
 
-    this.children.push(obj);
+    this.addChild(obj);
   }
 
   // Remove object matching given itemId from room

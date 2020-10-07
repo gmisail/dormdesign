@@ -1,22 +1,14 @@
 import Vector2 from "./Vector2";
 
 class SceneObject {
-  constructor({
-    scene,
-    parent,
-    position,
-    size,
-    scale,
-    canvasLayer,
-    staticObject,
-  }) {
+  constructor({ scene, position, size, scale, canvasLayer, staticObject }) {
     this.scene = scene;
     this.id = scene.idCounter++;
     this._position = position ?? new Vector2(0, 0);
     this._scale = scale ?? new Vector2(1, 1);
     this.staticObject = staticObject ?? false;
-    this.parent = parent;
-    this.children = [];
+    this.parent = undefined;
+    this._children = [];
     this._size = size;
     this.canvasLayer = canvasLayer ?? 0;
     if (canvasLayer === 0) {
@@ -48,8 +40,8 @@ class SceneObject {
   // Updates the transformation matrix for this object and its children.
   _updateTransform() {
     this._transformMatrix = this._calculateTransform();
-    for (let i = 0; i < this.children.length; i++) {
-      this.children[i]._updateTransform();
+    for (let i = 0; i < this._children.length; i++) {
+      this._children[i]._updateTransform();
     }
   }
 
@@ -67,6 +59,10 @@ class SceneObject {
     return this._size;
   }
 
+  get children() {
+    return this._children;
+  }
+
   set position(vector) {
     this._position = vector;
     this._updateTransform();
@@ -77,6 +73,13 @@ class SceneObject {
   }
   set size(vector) {
     this._size = vector;
+  }
+
+  addChild(obj) {
+    this.scene.addObject(obj);
+    this._children.push(obj);
+    obj.parent = this;
+    obj._updateTransform();
   }
 
   // Returns 2 points that specifcy the corners a rect containing this object (in global coordinate system)
@@ -126,10 +129,6 @@ class SceneObject {
     if (this.canvasLayer > 0 || this.scene._updateBackground) {
       this._update();
     }
-
-    for (let i = 0; i < this.children.length; i++) {
-      this.children[i].update();
-    }
   }
 
   draw() {
@@ -140,9 +139,6 @@ class SceneObject {
       ctx.setTransform(this.transformMatrix);
 
       this._draw(ctx);
-    }
-    for (let i = 0; i < this.children.length; i++) {
-      this.children[i].draw();
     }
 
     // Reset transformation matrix so it doesn't interfere with other draws

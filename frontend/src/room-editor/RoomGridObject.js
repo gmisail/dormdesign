@@ -4,7 +4,6 @@ import Vector2 from "./Vector2";
 class RoomGridObject extends SceneObject {
   constructor({
     scene,
-    parent,
     position,
     size,
     opacity,
@@ -14,7 +13,6 @@ class RoomGridObject extends SceneObject {
   }) {
     super({
       scene: scene,
-      parent: parent,
       position: position,
       size: size,
       scale: new Vector2(1, 1),

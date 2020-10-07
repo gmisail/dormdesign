@@ -5,7 +5,6 @@ import Collisions from "./Collisions";
 class RoomRectObject extends SceneObject {
   constructor({
     scene,
-    parent,
     position,
     size,
     color,
@@ -19,7 +18,6 @@ class RoomRectObject extends SceneObject {
   }) {
     super({
       scene: scene,
-      parent: parent,
       position: position,
       size: size,
       staticObject: staticObject,

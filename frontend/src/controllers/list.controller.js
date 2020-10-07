@@ -6,6 +6,8 @@ var TEST_ITEMS = [
     id: TEST_ID_COUNTER++,
     name: "Fridge",
     quantity: 4,
+    includeInEditor: true,
+    editorPosition: { x: 1, y: 2 },
   }),
   new DormItem({
     id: TEST_ID_COUNTER++,
@@ -20,6 +22,8 @@ var TEST_ITEMS = [
     width: 10,
     length: 4,
     height: 2.5,
+    includeInEditor: true,
+    editorPosition: { x: 1, y: 2 },
   }),
 ];
 

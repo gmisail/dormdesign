@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import "./RoomCanvas.css";
-import { Container } from "react-bootstrap";
 import SceneController from "../../room-editor/SceneController";
+import SceneUpdater from "../../room-editor/SceneUpdater";
 import RoomObject from "../../room-editor/RoomObject";
 import Vector2 from "../../room-editor/Vector2";
 
@@ -18,6 +18,9 @@ class RoomCanvas extends Component {
   componentDidMount() {
     const scene = new SceneController([this.canvas1, this.canvas2]);
     scene.backgroundColor = "#ccc";
+
+    const sceneUpdater = new SceneUpdater(scene);
+
     // Points defining the edges of the room (in feet)
     const testBoundaryPath = [
       new Vector2(0, 0),
@@ -38,12 +41,14 @@ class RoomCanvas extends Component {
       boundaryPoints: testBoundaryPath,
       canvasLayer: 1,
       backgroundColor: "#ccc",
+      onObjectMoved: this.roomObjectPositionUpdate,
     });
     scene.addObject(room);
 
     this.setState({
       scene: scene,
       roomObject: room,
+      sceneUpdater: sceneUpdater,
     });
   }
 
@@ -65,13 +70,23 @@ class RoomCanvas extends Component {
     }
   }
 
+  roomObjectPositionUpdate = (itemId, pos) => {
+    for (let i = 0; i < this.props.length; i++) {
+      if (this.props[i].id === itemId) {
+        this.props[i].editor.position = pos;
+      }
+    }
+  };
+
   addItemToScene = (item) => {
     this.state.roomObject.addItemToRoom({
       id: item.id,
       name: item.name,
       feetWidth: item.dimensions.w,
       feetHeight: item.dimensions.l,
-      position: item.editor.position,
+      position: item.editor.position
+        ? new Vector2(item.editor.position.x, item.editor.position.y)
+        : undefined,
     });
   };
 

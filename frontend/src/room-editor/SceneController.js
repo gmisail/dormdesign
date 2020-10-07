@@ -11,7 +11,7 @@ class SceneController {
     this.idCounter = 0;
     this.backgroundColor = "#fff";
 
-    this.objects = [];
+    this.objects = new Map();
 
     this._lastFrameTime = undefined;
     this.deltaTime = undefined; // Time since last frame
@@ -60,13 +60,12 @@ class SceneController {
   }
 
   addObject(obj) {
-    this.objects.push(obj);
+    this.objects.set(obj.id, obj);
   }
 
   update() {
-    const objects = this.objects;
-    for (let i = 0; i < objects.length; i++) {
-      objects[i].update();
+    for (let obj of this.objects.values()) {
+      obj.update();
     }
   }
 
@@ -84,9 +83,8 @@ class SceneController {
     // Clear canvas
     this._clearForegroundCanvases(this.ctx);
 
-    const objects = this.objects;
-    for (let i = 0; i < objects.length; i++) {
-      objects[i].draw();
+    for (let obj of this.objects.values()) {
+      obj.draw();
     }
 
     this._updateBackground = false;
@@ -131,7 +129,6 @@ class SceneController {
       // Make the canvas the same size
       canvas.width = displayWidth;
       canvas.height = displayWidth;
-      console.log(displayWidth);
       // Return true if canvas was reszied
       return true;
     }
