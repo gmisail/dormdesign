@@ -2,19 +2,27 @@ package main
 
 import (
 	"os"
-	"net/http"
 	"github.com/labstack/echo/v4"
-	"github.com/gmisail/dormdesign/models"
 	"github.com/gmisail/dormdesign/routes"
+	"github.com/gmisail/dormdesign/sockets"
 
 	rdb "gopkg.in/rethinkdb/rethinkdb-go.v6"
 )
 
+func SetupSockets(e *echo.Echo) {
+	hub := sockets.CreateHub()
+	go hub.Run()
+
+	e.GET("/ws", func(c echo.Context) error {
+		sockets.ServeSockets(hub, c)
+
+		return nil
+	})
+}
+
 // SetupRoutes: configures the API endpoints
 func SetupRoutes(e *echo.Echo, database *rdb.Session) {
-	
-	
-	e.GET("/ws", )
+	SetupSockets(e)
 	
 	listRoute := routes.ListRoute{ Database: database }
 
