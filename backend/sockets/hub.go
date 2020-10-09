@@ -42,7 +42,7 @@ func (h *Hub) AddClient(id string, client *Client) {
 /*
 	Remove client from specified room
 */
-func (h *Hub) RemoveClient(id string, client *Client) {
+func (h *Hub) RemoveClient(id string, client *Client) {	
 	room := h.rooms[id]
 	
 	if room != nil {
@@ -60,6 +60,10 @@ func (h *Hub) RemoveClient(id string, client *Client) {
 */
 func (h *Hub) RemoveRoom(id string) {
 	delete(h.rooms, id)
+}
+
+func (h *Hub) Send(message Message) {
+	h.broadcast <- message
 }
 
 /*
