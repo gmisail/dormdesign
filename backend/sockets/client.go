@@ -3,7 +3,6 @@ package sockets
 import (
 	"log"
 	"time"
-	"fmt"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -56,7 +55,7 @@ func (c *Client) readPump() {
 			}
 			break
 		}
-	
+
 		c.hub.Send(Message{ room: c.id, data: message })
 	}
 }
@@ -110,9 +109,6 @@ func ServeSockets(hub *Hub, c echo.Context) {
 	}
 
 	id := c.FormValue("id")
-
-	fmt.Println("client connected at: ")
-	fmt.Println(id)
 
 	client := &Client{id: id, hub: hub, conn: conn, send: make(chan []byte, 256)}
 	client.hub.register <- client
