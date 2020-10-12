@@ -1,5 +1,5 @@
 class DormItem {
-  constructor(values) {
+  constructor(data) {
     const {
       id,
       name,
@@ -9,7 +9,7 @@ class DormItem {
       length,
       height,
       includeInEditor,
-    } = values ?? {};
+    } = data ?? {};
     this.id = id;
     this.name = name ?? "New Item";
     this.quantity = quantity ?? 1;

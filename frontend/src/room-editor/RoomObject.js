@@ -257,6 +257,10 @@ class RoomObject extends SceneObject {
 
   // Takes name, dimensions, color and adds a new item to the room object/scene.
   addItemToRoom({ id, name, feetWidth, feetHeight, position }) {
+    // Don't add object if another already exists with given id
+    if (id && this.scene.objects.has(id)) {
+      return undefined;
+    }
     const color = this.objectColors[this.state.objectColorCounter];
     this.state.objectColorCounter++;
     if (this.state.objectColorCounter === this.objectColors.length) {
@@ -285,6 +289,22 @@ class RoomObject extends SceneObject {
     }
 
     this.addChild(obj);
+    return obj;
+  }
+
+  // Updates object in room. Returns true if successful false if not
+  updateRoomItem(id, { position, name, width, height }) {
+    const obj = this.scene.objects.get(id);
+    if (!obj) return false;
+    if (position) {
+      obj.setPosition(new Vector2(position.x, position.y));
+    }
+    if (name) {
+      obj.nameText = name;
+    }
+    if (width && height) {
+      obj.size = new Vector2(width, height);
+    }
   }
 
   removeItemFromRoom(id) {
