@@ -5,13 +5,12 @@ import Collisions from "./Collisions";
 class RoomRectObject extends SceneObject {
   constructor({
     scene,
-    parent,
+    id,
     position,
     size,
     color,
     opacity,
     nameText,
-    itemId,
     staticObject,
     snapPosition,
     snapOffset,
@@ -19,7 +18,7 @@ class RoomRectObject extends SceneObject {
   }) {
     super({
       scene: scene,
-      parent: parent,
+      id: id,
       position: position,
       size: size,
       staticObject: staticObject,
@@ -32,7 +31,6 @@ class RoomRectObject extends SceneObject {
     this.opacity = opacity ?? 1.0;
 
     this.nameText = nameText;
-    this.itemId = itemId;
 
     this.outOfBounds = false;
     this.outOfBoundsColor = "#ff0000";

@@ -1,7 +1,15 @@
 class DormItem {
-  constructor(values) {
-    const { id, name, quantity, claimedBy, width, length, height } =
-      values ?? {};
+  constructor(data) {
+    const {
+      id,
+      name,
+      quantity,
+      claimedBy,
+      width,
+      length,
+      height,
+      includeInEditor,
+    } = data ?? {};
     this.id = id;
     this.name = name ?? "New Item";
     this.quantity = quantity ?? 1;
@@ -11,10 +19,7 @@ class DormItem {
       length: length,
       height: height,
     };
-    this.editor = {
-      included: true,
-      position: undefined,
-    };
+    this.includeInEditor = includeInEditor ?? true;
   }
 }
 

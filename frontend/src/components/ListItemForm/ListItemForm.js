@@ -26,7 +26,7 @@ class ListItemForm extends Component {
       ownerInputValue: item.claimedBy ?? "",
       widthInputValue: width,
       lengthInputValue: length,
-      includeInEditorValue: item.editor.included,
+      includeInEditorValue: item.includeInEditor,
       validated: false,
     };
   }
@@ -70,7 +70,7 @@ class ListItemForm extends Component {
       const length = parseFloat(this.state.lengthInputValue);
       item.dimensions.w = isNaN(width) ? undefined : width;
       item.dimensions.l = isNaN(length) ? undefined : length;
-      item.editor.included = this.state.includeInEditorValue;
+      item.includeInEditor = this.state.includeInEditorValue;
       this.props.onSubmit(item);
     }
   };

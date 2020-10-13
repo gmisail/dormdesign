@@ -11,7 +11,7 @@ class SceneController {
     this.idCounter = 0;
     this.backgroundColor = "#fff";
 
-    this.objects = [];
+    this.objects = new Map();
 
     this._lastFrameTime = undefined;
     this.deltaTime = undefined; // Time since last frame
@@ -24,19 +24,6 @@ class SceneController {
 
   init() {
     this.mainLoop(); // Start main update/render loop
-  }
-
-  getAllChildObjects(object) {
-    // console.log(object);
-    let children = [];
-    for (let i = 0; i < object.children.length; i++) {
-      children.push(object.children[i]);
-      children = children.concat(
-        this._recursiveGetAllObjects(object.children[i])
-      );
-    }
-    // console.log(children);
-    return children;
   }
 
   mainLoop(currentTime) {
@@ -60,13 +47,20 @@ class SceneController {
   }
 
   addObject(obj) {
-    this.objects.push(obj);
+    this.objects.set(obj.id, obj);
+  }
+
+  removeObject(obj) {
+    this.objects.delete(obj.id);
+    for (let i = 0; i < obj.children.length; i++) {
+      obj.children[i].parent = undefined;
+    }
+    obj.parent.removeChild(obj);
   }
 
   update() {
-    const objects = this.objects;
-    for (let i = 0; i < objects.length; i++) {
-      objects[i].update();
+    for (let obj of this.objects.values()) {
+      obj.update();
     }
   }
 
@@ -84,9 +78,8 @@ class SceneController {
     // Clear canvas
     this._clearForegroundCanvases(this.ctx);
 
-    const objects = this.objects;
-    for (let i = 0; i < objects.length; i++) {
-      objects[i].draw();
+    for (let obj of this.objects.values()) {
+      obj.draw();
     }
 
     this._updateBackground = false;
@@ -131,7 +124,6 @@ class SceneController {
       // Make the canvas the same size
       canvas.width = displayWidth;
       canvas.height = displayWidth;
-      console.log(displayWidth);
       // Return true if canvas was reszied
       return true;
     }

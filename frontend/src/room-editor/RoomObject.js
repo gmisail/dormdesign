@@ -8,13 +8,16 @@ import Vector2 from "./Vector2";
 class RoomObject extends SceneObject {
   constructor({
     scene,
+    id,
     boundaryPoints,
     opacity,
     canvasLayer,
     backgroundColor,
+    onObjectMoved,
   }) {
     super({
       scene: scene,
+      id: id,
       parent: undefined,
       position: new Vector2(0, 0),
       size: new Vector2(0, 0),
@@ -33,6 +36,8 @@ class RoomObject extends SceneObject {
     this.borderWidth = 0.07;
     this.opacity = opacity ?? 1.0;
 
+    this.onObjectMoved = onObjectMoved;
+
     this._fitRoomToCanvas();
     this._calculateOffsetPoints();
 
@@ -49,14 +54,12 @@ class RoomObject extends SceneObject {
 
     this.state = {
       grid: undefined,
-      roomObjects: [],
       selectedObject: undefined,
       objectColorCounter: 0,
     };
 
     const floorGrid = new RoomGridObject({
       scene: this.scene,
-      parent: this,
       position: new Vector2(0, 0),
       size: new Vector2(this.size.x, this.size.y),
       scale: new Vector2(1, 1),
@@ -66,8 +69,7 @@ class RoomObject extends SceneObject {
       staticObject: true,
       canvasLayer: 0,
     });
-
-    this.children.push(floorGrid);
+    this.addChild(floorGrid);
     this.state.floorGrid = floorGrid;
 
     this.objectColors = ["#0043E0", "#f28a00", "#C400E0", "#7EE016", "#0BE07B"];
@@ -223,6 +225,8 @@ class RoomObject extends SceneObject {
           unsnappedPos.y + scaledDelta.y
         )
       );
+
+      this.onObjectMoved(selectedObject);
     }
   }
   onMouseUp() {}
@@ -253,16 +257,19 @@ class RoomObject extends SceneObject {
 
   // Takes name, dimensions, color and adds a new item to the room object/scene.
   addItemToRoom({ id, name, feetWidth, feetHeight, position }) {
+    // Don't add object if another already exists with given id
+    if (id && this.scene.objects.has(id)) {
+      return undefined;
+    }
     const color = this.objectColors[this.state.objectColorCounter];
     this.state.objectColorCounter++;
     if (this.state.objectColorCounter === this.objectColors.length) {
       this.state.objectColorCounter = 0;
     }
     const obj = new RoomRectObject({
-      itemId: id,
+      id: id,
       scene: this.scene,
       position: position ?? new Vector2(0, 0),
-      parent: this,
       size: new Vector2(feetWidth ?? 1, feetHeight ?? 1),
       color: color,
       opacity: 0.5,
@@ -272,30 +279,39 @@ class RoomObject extends SceneObject {
       snapOffset: 0.2,
       canvasLayer: this.canvasLayer,
     });
-    obj.setPosition(
-      new Vector2(
-        this.size.x / 2 - obj.size.x / 2,
-        this.size.y / 2 - obj.size.y / 2
-      )
-    );
+    if (!position) {
+      obj.setPosition(
+        new Vector2(
+          this.size.x / 2 - obj.size.x / 2,
+          this.size.y / 2 - obj.size.y / 2
+        )
+      );
+    }
 
-    this.children.push(obj);
+    this.addChild(obj);
+    return obj;
   }
 
-  // Remove object matching given itemId from room
-  removeItemFromRoom(itemId) {
-    let end = 0;
-    for (let i = 0; i < this.children.length; i++) {
-      const obj = this.children[i];
-      // Only keep objects that either dont have an itemId properity (i.e. aren't RoomRectObjects) or don't have an itemId matching the one passed in
-      if (
-        !Object.prototype.hasOwnProperty.call(obj, "itemId") ||
-        obj.itemId !== itemId
-      ) {
-        this.children[end++] = obj;
-      }
+  // Updates object in room. Returns true if successful false if not
+  updateRoomItem(id, { position, name, width, height }) {
+    const obj = this.scene.objects.get(id);
+    if (!obj) return false;
+    if (position) {
+      obj.setPosition(new Vector2(position.x, position.y));
     }
-    this.children.length = end;
+    if (name) {
+      obj.nameText = name;
+    }
+    if (width && height) {
+      obj.size = new Vector2(width, height);
+    }
+  }
+
+  removeItemFromRoom(id) {
+    const obj = this.scene.objects.get(id);
+    if (obj) {
+      this.scene.removeObject(obj);
+    }
   }
 
   _update() {
