@@ -26,6 +26,9 @@ class RoomObject extends SceneObject {
       canvasLayer: canvasLayer,
     });
 
+    // Map of item ids that have been added to room
+    this.roomItems = new Set();
+
     // Points that define room boundary (measured in feet). Must be in clockwise order
     this.boundaryPoints = boundaryPoints;
     this._offsetPoints = [];
@@ -287,7 +290,7 @@ class RoomObject extends SceneObject {
         )
       );
     }
-
+    this.roomItems.add(obj.id);
     this.addChild(obj);
     return obj;
   }
@@ -312,6 +315,7 @@ class RoomObject extends SceneObject {
     if (obj) {
       this.scene.removeObject(obj);
     }
+    this.roomItems.delete(id);
   }
 
   _update() {

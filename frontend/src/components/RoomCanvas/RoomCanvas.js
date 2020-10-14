@@ -49,36 +49,32 @@ class RoomCanvas extends Component {
   }
 
   componentDidUpdate(prevProps) {
-    // Find which items need to be added/removed. Use maps with item ids as keys to make lookup faster
-    const oldMap = prevProps.editorData.objects ?? new Map();
-    const newMap = this.props.editorData.objects ?? new Map();
+    // Filter out items not included in editor
+    const includedItems = [...this.props.itemMap.values()].filter(
+      (item) => item.includeInEditor
+    );
 
-    // Remove items in old but not new
-    for (let [oldId, oldItemData] of oldMap) {
-      if (!newMap.has(oldId)) {
-        this.removeItemFromScene(oldItemData);
-      }
-    }
-    // Add items in new but not old
-    for (let [newId, newItemData] of newMap) {
-      if (!oldMap.has(newId) || !this.state.scene.objects.has(newId)) {
-        // Add new item
-        const item = this.props.itemMap.get(newId);
-        if (item) {
-          this.addItemToScene(item, newItemData);
-        } else {
-          console.error(
-            `Error adding item to scene. Couldn't get item data for id ${newId}`
-          );
-        }
+    // Sort included items and currently added objects by id
+    const items = includedItems.sort((a, b) => {
+      return a.id - b.id;
+    });
+    const addedObjects = [...this.state.roomObject.roomItems].sort();
+
+    // Iterate through both sorted lists simultaneously and find objects that need to be added/removed
+    let i = 0;
+    let j = 0;
+    while (i < items.length || j < addedObjects.length) {
+      const a = i < items.length ? items[i].id : undefined;
+      const b = j < addedObjects.length ? addedObjects[j] : undefined;
+      if (!b || a < b) {
+        this.addItemToScene(items[i]);
+        i++;
+      } else if (!a || a > b) {
+        this.removeItemFromScene(b);
+        j++;
       } else {
-        // Update existing items' data
-        const item = this.props.itemMap.get(newId);
-        this.updateRoomObject({
-          id: newId,
-          item: item,
-          itemEditorData: newItemData,
-        });
+        i++;
+        j++;
       }
     }
   }
@@ -103,42 +99,43 @@ class RoomCanvas extends Component {
     });
   }
 
-  // Called when object is moved in room.
+  // Called when object is moved in room. Updates item's position and calls callback function
   roomObjectUpdated = (obj) => {
     const updated = {
       id: obj.id,
       position: obj.position,
     };
 
-    /* TODO: Make call to server either through data controller or sockets */
+    const item = this.props.itemMap.get(updated.id);
+    if (item) {
+      item.editorPosition = updated.position;
+    }
 
-    // For testing just update local object map with new position
-    this.props.editorData.objects.set(updated.id, updated.position);
+    if (this.props.onItemUpdate) {
+      this.props.onItemUpdate(item);
+    }
   };
 
   // Adds item to editor. Takes in item reference and reference to editor data for item
-  addItemToScene = (item, itemData) => {
+  addItemToScene = (item) => {
     const newObj = this.state.roomObject.addItemToRoom({
       id: item.id,
       name: item.name,
       feetWidth: item.dimensions.w,
       feetHeight: item.dimensions.l,
-      position: itemData.position,
+      position: item.editorPosition,
     });
-
-    // Update editor data with new position set by the room (should be in center of room by default)
-
-    /* TODO: Make call to server either through data controller or sockets */
-
-    // For testing just update local object map with new position
-    this.props.editorData.objects.set(newObj.id, newObj.position);
+    // If item had no position, update item data with new position set by the room (should be in center of room by default)
+    if (!item.editorPosition) {
+      item.editorPosition = newObj.position;
+    }
 
     return newObj;
   };
 
   // Removed item from editor. Just takes in item reference
-  removeItemFromScene = (item) => {
-    this.state.roomObject.removeItemFromRoom(item.id);
+  removeItemFromScene = (id) => {
+    this.state.roomObject.removeItemFromRoom(id);
   };
 
   render() {
