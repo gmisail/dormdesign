@@ -8,6 +8,7 @@ var TEST_ITEMS_DATA = [
     name: "Fridge",
     quantity: 4,
     includeInEditor: true,
+    editorPosition: { x: 1, y: 2 },
   },
   {
     id: TEST_ID_COUNTER++,
@@ -15,6 +16,7 @@ var TEST_ITEMS_DATA = [
     quantity: 1,
     claimedBy: "John Smith",
     includeInEditor: false,
+    editorPosition: false,
   },
   {
     id: TEST_ID_COUNTER++,
@@ -24,6 +26,7 @@ var TEST_ITEMS_DATA = [
     length: 4,
     height: 2.5,
     includeInEditor: true,
+    editorPosition: { x: 5, y: 2 },
   },
 ];
 

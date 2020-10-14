@@ -12,7 +12,6 @@ class RoomRoute extends Component {
 
     this.state = {
       itemMap: undefined,
-      editorData: undefined,
       showModal: false,
       modalType: "none",
       editingItemIndex: undefined,
@@ -24,7 +23,7 @@ class RoomRoute extends Component {
 
   componentDidMount() {
     this.getItemMap();
-    this.getEditorData();
+    // this.getEditorData();
   }
 
   getItemMap = async () => {
@@ -55,10 +54,15 @@ class RoomRoute extends Component {
     this.state.itemMap.set(newItem.id, newItem);
 
     /* For testing, just add the item to the editor data locally. */
-    if (newItem.includeInEditor) {
-      this.state.editorData.objects.set(newItem.id, { position: undefined });
-    }
+    // if (newItem.includeInEditor) {
+    //   this.state.editorData.objects.set(newItem.id, { position: undefined });
+    // }
     this.toggleModal();
+  };
+
+  // Callback passed to RoomCanvas for when item is updated
+  itemUpdatedInEditor = (item) => {
+    console.log("ITEM", item.id, "UPDATED");
   };
 
   toggleModal = (type) => {
@@ -109,7 +113,7 @@ class RoomRoute extends Component {
           </Row>
           <Row className="mt-auto">
             <Col xs={12} lg={7} className="mb-3">
-              {this.state.editorData === undefined ? (
+              {this.state.itemMap === undefined ? (
                 <div className="text-center mt-5">
                   <Spinner animation="border" role="status">
                     <span className="sr-only">Loading...</span>
@@ -118,7 +122,7 @@ class RoomRoute extends Component {
               ) : (
                 <RoomCanvas
                   itemMap={this.state.itemMap}
-                  editorData={this.state.editorData}
+                  onItemUpdate={this.itemUpdatedInEditor}
                 />
               )}
             </Col>
