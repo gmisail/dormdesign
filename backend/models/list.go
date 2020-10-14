@@ -11,6 +11,7 @@ type ListItem struct {
 	Name string
 	Quantity int
 	ClaimedBy string
+	Properties map[string]string
 }
 
 type List struct {
