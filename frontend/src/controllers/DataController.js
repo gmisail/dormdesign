@@ -1,8 +1,7 @@
 import DormItem from "../models/DormItem";
-import RoomEditorData from "../models/RoomEditorData";
 
 let TEST_ID_COUNTER = 600;
-var TEST_ITEMS_DATA = [
+const TEST_ITEMS_DATA = [
   {
     id: TEST_ID_COUNTER++,
     name: "Fridge",
@@ -29,13 +28,6 @@ var TEST_ITEMS_DATA = [
     editorPosition: { x: 5, y: 2 },
   },
 ];
-
-var TEST_EDITOR_DATA = {
-  objects: [
-    { id: 600, position: { x: 1, y: 2 } },
-    { id: 602, position: { x: 5, y: 2 } },
-  ],
-};
 
 /**
  *  Data creation / modification handler.
@@ -79,13 +71,6 @@ class DataController {
     */
   static async removeListItem(item) {
     return true;
-  }
-
-  /* 
-    Gets editor data from server
-  */
-  static async GET_TEST_EDITOR_DATA() {
-    return new RoomEditorData(TEST_EDITOR_DATA);
   }
 }
 

@@ -23,17 +23,11 @@ class RoomRoute extends Component {
 
   componentDidMount() {
     this.getItemMap();
-    // this.getEditorData();
   }
 
   getItemMap = async () => {
     const itemMap = await DataController.getItemMap();
     this.setState({ itemMap: itemMap });
-  };
-
-  getEditorData = async () => {
-    const editorData = await DataController.GET_TEST_EDITOR_DATA();
-    this.setState({ editorData: editorData });
   };
 
   editItem = (item) => {
@@ -53,10 +47,6 @@ class RoomRoute extends Component {
     let newItem = await DataController.addListItem(item);
     this.state.itemMap.set(newItem.id, newItem);
 
-    /* For testing, just add the item to the editor data locally. */
-    // if (newItem.includeInEditor) {
-    //   this.state.editorData.objects.set(newItem.id, { position: undefined });
-    // }
     this.toggleModal();
   };
 
