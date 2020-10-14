@@ -11,6 +11,7 @@ type ListItem struct {
 	Name string
 	Quantity int
 	ClaimedBy string
+	Editable bool
 	Properties map[string]string
 }
 
