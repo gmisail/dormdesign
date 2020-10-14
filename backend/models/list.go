@@ -1,13 +1,12 @@
 package models
 
 import (
-	/*"fmt"
-	"context"*/
 	"fmt"
 	rdb "gopkg.in/rethinkdb/rethinkdb-go.v6"
 )
 
 type ListItem struct {
+	Id string
 	Name string
 	Quantity int
 	ClaimedBy string
