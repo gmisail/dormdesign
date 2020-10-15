@@ -6,8 +6,8 @@ import (
 	"github.com/labstack/echo/v4"
 	"net/http"
 	"strconv"
-	"time"
 
+	"github.com/google/uuid"
 	rdb "gopkg.in/rethinkdb/rethinkdb-go.v6"
 )
 
@@ -34,19 +34,15 @@ func (route *ListRoute) OnGetList(c echo.Context) error {
 
 /*
 
-Creates an empty list for a given ID.
-
-{
-	id: string
-}
+Creates an empty list and returns the ID
 
 */
 func (route *ListRoute) OnCreateList(c echo.Context) error {
-	id := c.FormValue("id")
+	id := uuid.New().String()
 
 	models.CreateList(route.Database, id)
  
-	return c.JSON(http.StatusOK, ListResponse{ err: "", data: "" })
+	return c.JSON(http.StatusOK, id)
 }
 
 /*
@@ -74,7 +70,7 @@ func (route *ListRoute) OnAddListItem(c echo.Context) error {
 		fmt.Println(convErr)
 	}
 
-	itemId := strconv.FormatInt(time.Now().UTC().Unix(), 10)
+	itemId := uuid.New().String()
 	claimedBy := c.FormValue("claimedBy")
 	editable, _ := strconv.ParseBool(c.FormValue("editable"))
 

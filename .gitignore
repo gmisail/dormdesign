@@ -9,3 +9,4 @@ log.txt
 backend/log.txt
 rethinkdb_data/metadata
 rethinkdb_data/log_file
+rethinkdb_data/log_file
