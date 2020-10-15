@@ -26,6 +26,7 @@ func SetupRoutes(e *echo.Echo, database *rdb.Session) {
 	
 	listRoute := routes.ListRoute{ Database: database }
 
+	e.GET("/list/get", listRoute.OnGetList)
 	e.POST("/list/create", listRoute.OnCreateList)
 	e.POST("/list/add", listRoute.OnAddListItem)
 }

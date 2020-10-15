@@ -31,6 +31,28 @@ func CreateList(database *rdb.Session, id string) {
 }
 
 /*
+	Returns a specific list
+*/
+func GetList(database *rdb.Session, id string) (List, error) {
+	res, err := rdb.DB("dd-data").Table("lists").Get(id).Run(database)
+
+	if err != nil {
+		return List{}, err
+	}
+
+	var data List
+	res.One(&data)
+
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	defer res.Close()
+
+	return data, nil
+}
+
+/*
 	Add a list item to the list at the given ID
 */
 func AddListItem(database *rdb.Session, id string, item ListItem) {

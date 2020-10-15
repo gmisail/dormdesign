@@ -2,10 +2,10 @@ package routes
 
 import (
 	"fmt"
-	"strconv"
-	"net/http"
-	"github.com/labstack/echo/v4"
 	"github.com/gmisail/dormdesign/models"
+	"github.com/labstack/echo/v4"
+	"net/http"
+	"strconv"
 	"time"
 
 	rdb "gopkg.in/rethinkdb/rethinkdb-go.v6"
@@ -17,6 +17,19 @@ type ListRoute struct {
 
 type ListResponse struct {
 	err string
+	data string
+}
+
+func (route *ListRoute) OnGetList(c echo.Context) error {
+	id := c.FormValue("id")
+
+	list, err := models.GetList(route.Database, id)
+
+	if err != nil {
+		return c.JSON(http.StatusNotFound, ListResponse{err: err.Error(), data: "" })
+	}
+
+	return c.JSON(http.StatusOK, list)
 }
 
 /*
@@ -33,7 +46,7 @@ func (route *ListRoute) OnCreateList(c echo.Context) error {
 
 	models.CreateList(route.Database, id)
  
-	return c.JSON(http.StatusOK, ListResponse{ err: "" })
+	return c.JSON(http.StatusOK, ListResponse{ err: "", data: "" })
 }
 
 /*
@@ -74,5 +87,5 @@ func (route *ListRoute) OnAddListItem(c echo.Context) error {
 		Properties: nil,
 	})
 
-	return c.JSON(http.StatusOK, ListResponse{ err: "" })
+	return c.JSON(http.StatusOK, ListResponse{ err: "", data: "" })
 }
