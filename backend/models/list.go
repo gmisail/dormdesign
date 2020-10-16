@@ -1,16 +1,17 @@
 package models
 
 import (
-	/*"fmt"
-	"context"*/
 	"fmt"
 	rdb "gopkg.in/rethinkdb/rethinkdb-go.v6"
 )
 
 type ListItem struct {
+	Id string
 	Name string
 	Quantity int
 	ClaimedBy string
+	Editable bool
+	Properties map[string]string
 }
 
 type List struct {
@@ -27,6 +28,28 @@ func CreateList(database *rdb.Session, id string) {
 	if err != nil {
 		fmt.Println(err)
 	}
+}
+
+/*
+	Returns a specific list
+*/
+func GetList(database *rdb.Session, id string) (List, error) {
+	res, err := rdb.DB("dd-data").Table("lists").Get(id).Run(database)
+
+	if err != nil {
+		return List{}, err
+	}
+
+	var data List
+	res.One(&data)
+
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	defer res.Close()
+
+	return data, nil
 }
 
 /*

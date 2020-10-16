@@ -1,5 +1,12 @@
 *.rdb
+rethinkdb_data/
 backend/rethinkdb_data
+backend/rethinkdb_data/log_file
+backend/rethinkdb_data/metadata
+backend/.idea
 
 log.txt
 backend/log.txt
+rethinkdb_data/metadata
+rethinkdb_data/log_file
+rethinkdb_data/log_file
