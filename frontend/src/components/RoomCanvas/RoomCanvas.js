@@ -51,7 +51,7 @@ class RoomCanvas extends Component {
   componentDidUpdate(prevProps) {
     // Filter out items not included in editor
     const includedItems = [...this.props.itemMap.values()].filter(
-      (item) => item.includeInEditor
+      (item) => item.editable
     );
 
     // Sort included items and currently added objects by id

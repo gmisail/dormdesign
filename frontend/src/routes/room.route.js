@@ -26,7 +26,7 @@ class RoomRoute extends Component {
   }
 
   getItemMap = async () => {
-    const itemMap = await DataController.getItemMap();
+    const itemMap = await DataController.getList();
     this.setState({ itemMap: itemMap });
   };
 
