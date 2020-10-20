@@ -26,7 +26,7 @@ class ListItemForm extends Component {
       ownerInputValue: item.claimedBy ?? "",
       widthInputValue: width,
       lengthInputValue: length,
-      includeInEditorValue: item.includeInEditor,
+      editableValue: item.editable,
       validated: false,
     };
   }
@@ -70,7 +70,7 @@ class ListItemForm extends Component {
       const length = parseFloat(this.state.lengthInputValue);
       item.dimensions.w = isNaN(width) ? undefined : width;
       item.dimensions.l = isNaN(length) ? undefined : length;
-      item.includeInEditor = this.state.includeInEditorValue;
+      item.editable = this.state.editableValue;
       this.props.onSubmit(item);
     }
   };
@@ -154,8 +154,8 @@ class ListItemForm extends Component {
         <Form.Group>
           <Form.Check
             label="Add to Room Editor"
-            name="includeInEditorValue"
-            checked={this.state.includeInEditorValue}
+            name="editableValue"
+            checked={this.state.editableValue}
             onChange={this.handleInputChange}
           />
         </Form.Group>

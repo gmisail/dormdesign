@@ -5,7 +5,6 @@ import (
 	"github.com/gmisail/dormdesign/models"
 	"github.com/labstack/echo/v4"
 	"net/http"
-	"strconv"
 
 	"github.com/google/uuid"
 	rdb "gopkg.in/rethinkdb/rethinkdb-go.v6"
@@ -15,18 +14,28 @@ type ListRoute struct {
 	Database *rdb.Session
 }
 
-type ListResponse struct {
-	err string
-	data string
+// Generalized ItemForm for incoming item add/edit requests. Works with JSON or urlencoded form.
+type ItemForm struct {
+	ListID string `json:"listID" form:"listID"`
+	ItemID string `json:"id" form:"id"`
+	Name string `json:"name" form:"name"`
+	Quantity int `json:"quantity" form:"quantity"`
+	Editable bool `json:"editable" form:"editable"`
 }
 
 func (route *ListRoute) OnGetList(c echo.Context) error {
-	id := c.FormValue("id")
+	id := c.QueryParam("id")
+	
+	// No ID parameter in request, return 400 - Bad Request
+	if id == "" {
+		return echo.NewHTTPError(http.StatusBadRequest, "Missing list ID parameter in request")
+	}
 
 	list, err := models.GetList(route.Database, id)
 
-	if err != nil {
-		return c.JSON(http.StatusNotFound, ListResponse{err: err.Error(), data: "" })
+	// Server failed to fetch list from DB, return 500 - Internal Server Error
+	if err != nil {	
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
 	return c.JSON(http.StatusOK, list)
@@ -41,6 +50,8 @@ func (route *ListRoute) OnCreateList(c echo.Context) error {
 	id := uuid.New().String()
 
 	models.CreateList(route.Database, id)
+
+	fmt.Println("Created list with id:", id);
  
 	return c.JSON(http.StatusOK, id)
 }
@@ -50,7 +61,7 @@ func (route *ListRoute) OnCreateList(c echo.Context) error {
 Queries should be in the following format:
 
 {
-	id: string
+	listID: string
 	name: string
 	quantity: int
 	claimedBy: string
@@ -62,26 +73,33 @@ the room editor.
 
 */
 func (route *ListRoute) OnAddListItem(c echo.Context) error {
-	id := c.FormValue("id")
-	name := c.FormValue("name")
-	quantity, convErr := strconv.Atoi(c.FormValue("quantity"))
 
-	if convErr != nil {
-		fmt.Println(convErr)
+	form := new(ItemForm);
+
+	// Failed to bind ItemForm to Echo context, return 400 - Bad Request
+	err := c.Bind(form);
+	if err != nil {
+		fmt.Println(err);
+		return echo.NewHTTPError(http.StatusBadRequest, "Error processing request data")
 	}
 
-	itemId := uuid.New().String()
-	claimedBy := c.FormValue("claimedBy")
-	editable, _ := strconv.ParseBool(c.FormValue("editable"))
+	// Form Validation
+	listID := form.ListID;
+	if listID == "" {
+		return echo.NewHTTPError(http.StatusNotFound, "Missing list id")
+	}
 
-	models.AddListItem(route.Database, id, models.ListItem{
-		Id: itemId,
-		Name: name,
-		Quantity: quantity,
-		ClaimedBy: claimedBy,
-		Editable: editable,
+	itemID := uuid.New().String()
+	item := models.ListItem{
+		ID: itemID,
+		Name: form.Name,					// If not provided in form, will be ""
+		Quantity: form.Quantity,	// If not provided in form, will be 0
+		Editable: form.Editable,	// If not provided in form, will be false
 		Properties: nil,
-	})
+	}
+	fmt.Println("Added item:", item)
 
-	return c.JSON(http.StatusOK, ListResponse{ err: "", data: "" })
+	models.AddListItem(route.Database, listID, item)
+
+	return c.JSON(http.StatusOK, item)
 }
