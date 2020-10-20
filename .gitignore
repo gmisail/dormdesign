@@ -1,12 +1,11 @@
 *.rdb
 rethinkdb_data/
-backend/rethinkdb_data
-backend/rethinkdb_data/log_file
-backend/rethinkdb_data/metadata
-backend/.idea
+rethinkdb_data/log_file
+rethinkdb_data/metadata
+
+.idea
+.env
 
 log.txt
-backend/log.txt
-rethinkdb_data/metadata
-rethinkdb_data/log_file
-rethinkdb_data/log_file
+
+dormdesign
