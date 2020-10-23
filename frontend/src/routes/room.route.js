@@ -5,6 +5,7 @@ import RoomCanvas from "../components/RoomCanvas/RoomCanvas";
 import DormItemList from "../components/DormItemList/DormItemList";
 import ListItemForm from "../components/ListItemForm/ListItemForm";
 import DataController from "../controllers/DataController";
+import SocketConnection from "../controllers/SocketConnection";
 
 class RoomRoute extends Component {
   constructor() {
@@ -15,18 +16,31 @@ class RoomRoute extends Component {
       showModal: false,
       modalType: "none",
       editingItemIndex: undefined,
+      socketConnection: undefined,
     };
-
-    this.addNewItem.bind(this);
-    this.saveEditedItem.bind(this);
   }
 
   componentDidMount() {
     this.getItemMap();
   }
 
+  onReceiveSocketMessage = (message) => {
+    console.log("RECEIVED", message);
+  };
+
+  onSocketConnectionClosed = (message) => {
+    console.log("SOCKET CLOSED", message);
+  };
+
   getItemMap = async () => {
-    const itemMap = await DataController.getList();
+    const listID = await DataController.CREATE_TEST_LIST();
+
+    const connection = new SocketConnection(listID);
+    connection.onMessage = this.onReceiveSocketMessage;
+    connection.onClose = this.onSocketConnectionClosed;
+
+    this.setState({ socketConnection: connection });
+    const itemMap = await DataController.getList(listID);
     this.setState({ itemMap: itemMap });
   };
 
@@ -53,6 +67,14 @@ class RoomRoute extends Component {
   // Callback passed to RoomCanvas for when item is updated
   itemUpdatedInEditor = (item) => {
     console.log("ITEM", item.id, "UPDATED");
+    this.state.socketConnection.send({
+      event: "itemUpdated",
+      data: {
+        itemID: item.id,
+        property: "editorPosition",
+        value: item.editorPosition,
+      },
+    });
   };
 
   toggleModal = (type) => {

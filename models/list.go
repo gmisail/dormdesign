@@ -12,7 +12,10 @@ type ListItem struct {
 	Quantity int `json:"quantity"`
 	ClaimedBy string `json:"claimedBy"`
 	Editable bool `json:"editable"`
-	Properties map[string]string `json:"properties"`
+	EditorPosition *struct {
+		X float32 `json:"x"`
+		Y float32 `json:"y"`
+	} `json:"editorPosition"`
 }
 
 type List struct {

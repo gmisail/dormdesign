@@ -34,16 +34,20 @@ const TEST_ITEMS_DATA = [
  */
 class DataController {
   //Retrieves the List's data from the server.
-  static async getList() {
-    const testListId = await DataController.CREATE_TEST_LIST();
+  static async getList(id) {
+    if (!id) {
+      console.error("Failed to fetch list. Room ID is undefined");
+      return;
+    }
 
-    const response = await fetch(`/list/get?id=${testListId}`);
+    const response = await fetch(`/list/get?id=${id}`);
     if (!response.ok) {
       const data = await response.json();
       const message = `${response.status} Error fetching list: ${data.message}`;
       throw new Error(message);
     }
     const data = await response.json();
+
     const itemMap = new Map(
       data.Items.map((item) => [item.id, new DormItem(item)])
     );
