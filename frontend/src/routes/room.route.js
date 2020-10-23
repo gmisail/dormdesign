@@ -68,7 +68,7 @@ class RoomRoute extends Component {
   itemUpdatedInEditor = (item) => {
     console.log("ITEM", item.id, "UPDATED");
     this.state.socketConnection.send({
-      event: "test",
+      event: "itemUpdated",
       data: {
         itemID: item.id,
         property: "editorPosition",

@@ -2,13 +2,8 @@ package sockets
 
 type Message struct {
 	room string
-	data []byte
-}
-
-type MessageJSON struct {
-	Room string `json:"room"`
-	Event string `json:"event"`
-	Data string `json:"data"`
+	sender *Client
+	content []byte
 }
 
 type Room struct {
@@ -88,7 +83,7 @@ func (h *Hub) Run() {
 			if room != nil {
 				for client := range room.Clients {
 					select {
-					case client.send <- message.data:
+					case client.send <- message.content:
 					default:
 						h.RemoveClient(client.id, client)
 					}

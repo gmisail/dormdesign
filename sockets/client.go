@@ -5,6 +5,7 @@ import (
 	"time"
 	"net/http"
 	"encoding/json"
+	"errors"
 
 	"github.com/labstack/echo/v4"
 	"github.com/gorilla/websocket"
@@ -40,6 +41,16 @@ type Client struct {
 	send chan []byte
 }
 
+/*
+	Reads incoming data. Data should be in JSON with format:
+	{
+		room (room ID)
+		event (e.g. "itemAdded")
+		data {
+			Data relevant to event
+		}
+	}
+*/
 func (c *Client) readPump() {
 	defer func() {
 		c.hub.unregister <- c
@@ -56,28 +67,65 @@ func (c *Client) readPump() {
 			}
 			break
 		}
-		var message interface{}
-		// Decode JSON data
-		err = json.Unmarshal(byteMessage, &message)
+		
+		message, err := translateMessage(byteMessage)
 		if err != nil {
 			log.Println(err)
+		} else {	// Only forward message to hub if its valid
+			message.sender = c
+			c.hub.Send(message)
 		}
-		// Make 
-		if messageMap, ok := message.(map[string]interface{}); ok {
-			switch messageMap["event"] {
-			case "update":
-				data := messageMap["data"].(map[string]interface{})
-				log.Println(data)
-			default:
-				log.Println("Error: Unknown or missing event in received socket message:", message)
-			}
-		} else {
-			log.Println("Error: received socket message in incorrect format: ", message)
-		}
-		
-		
-		
-		// c.hub.Send(Message{ room: c.id, data: message })
+	}
+}
+
+// Takes in raw message data and returns a Message object if its valid. Otherwise, returns error.
+func translateMessage(byteMessage []byte) (Message, error) {
+	var message interface{}
+
+	// Decode JSON data
+	err := json.Unmarshal(byteMessage, &message)
+	if err != nil {
+		return Message{}, err
+	}
+
+	// Assert that data is a map
+	messageMap, ok := message.(map[string]interface{})
+	if !ok {
+		return Message{}, errors.New("Incorrect message format")
+	}
+
+	roomID, ok := messageMap["room"].(string)
+	_ = roomID 	// TODO: Remove this line when implementation has been added - its only being used to silence variable unused error
+	if !ok {
+		return Message{}, errors.New("Unable to decode room ID from message data")
+	}
+
+	data, ok := messageMap["data"].(map[string]interface{})
+	_ = data  // TODO: Remove this line - its only being used to silence variable unused error
+	if !ok {
+		return Message{}, errors.New("Message missing required \"data\" field")
+	}
+
+	// Handle different message events based on value of "event" field in message JSON
+	switch messageMap["event"] {
+	case "itemAdded":
+		/*
+			Create new ListItem model
+		*/
+		return Message{}, errors.New("Event not supported yet")
+	case "itemUpdated":	
+		/*
+			Update property/properties of existing ListItem
+		*/
+		return Message{}, errors.New("Event1 not supported yet")
+
+	case "itemDeleted":
+		/*
+			Delete ListItem
+		*/
+		return Message{}, errors.New("Event not supported yet")
+	default:
+		return Message{}, errors.New("Error: Unknown or missing event in message")
 	}
 }
 
