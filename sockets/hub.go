@@ -63,7 +63,12 @@ func (h *Hub) RemoveRoom(id string) {
 }
 
 func (h *Hub) Send(message Message) {
-	h.broadcast <- message
+	id := message.room
+	room := h.rooms[id]
+
+	for client := range room.Clients {
+		client.send <- message.data
+	}
 }
 
 /*
@@ -78,7 +83,7 @@ func (h *Hub) Run() {
 			h.RemoveClient(client.id, client)
 		case message := <- h.broadcast:
 			room := h.rooms[message.room]
-
+			
 			if room != nil {
 				for client := range room.Clients {
 					select {
