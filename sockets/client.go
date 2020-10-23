@@ -4,6 +4,7 @@ import (
 	"log"
 	"time"
 	"net/http"
+	"encoding/json"
 
 	"github.com/labstack/echo/v4"
 	"github.com/gorilla/websocket"
@@ -26,7 +27,7 @@ const (
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
-	CheckOrigin: func(r *http.Request) bool {
+	CheckOrigin: func(r *http.Request) bool {		// Allows connections from any origin
 		return true	
 	},
 }
@@ -48,15 +49,35 @@ func (c *Client) readPump() {
 	c.conn.SetReadDeadline(time.Now().Add(pongWait))
 	c.conn.SetPongHandler(func(string) error { c.conn.SetReadDeadline(time.Now().Add(pongWait)); return nil })
 	for {
-		_, message, err := c.conn.ReadMessage()
+		_, byteMessage, err := c.conn.ReadMessage()
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
 				log.Printf("error: %v", err)
 			}
 			break
 		}
-
-		c.hub.Send(Message{ room: c.id, data: message })
+		var message interface{}
+		// Decode JSON data
+		err = json.Unmarshal(byteMessage, &message)
+		if err != nil {
+			log.Println(err)
+		}
+		// Make 
+		if messageMap, ok := message.(map[string]interface{}); ok {
+			switch messageMap["event"] {
+			case "update":
+				data := messageMap["data"].(map[string]interface{})
+				log.Println(data)
+			default:
+				log.Println("Error: Unknown or missing event in received socket message:", message)
+			}
+		} else {
+			log.Println("Error: received socket message in incorrect format: ", message)
+		}
+		
+		
+		
+		// c.hub.Send(Message{ room: c.id, data: message })
 	}
 }
 

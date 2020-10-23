@@ -95,7 +95,7 @@ func (route *ListRoute) OnAddListItem(c echo.Context) error {
 		Name: form.Name,					// If not provided in form, will be ""
 		Quantity: form.Quantity,	// If not provided in form, will be 0
 		Editable: form.Editable,	// If not provided in form, will be false
-		Properties: nil,
+		EditorPosition: nil,
 	}
 	fmt.Println("Added item:", item)
 

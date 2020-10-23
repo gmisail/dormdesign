@@ -5,6 +5,12 @@ type Message struct {
 	data []byte
 }
 
+type MessageJSON struct {
+	Room string `json:"room"`
+	Event string `json:"event"`
+	Data string `json:"data"`
+}
+
 type Room struct {
 	Clients map[*Client]bool
 }
