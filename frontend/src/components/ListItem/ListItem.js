@@ -16,7 +16,7 @@ const ListItem = (props) => {
         </div>
 
         <div>
-          {item.claimedBy === undefined ? (
+          {item.claimedBy === undefined || item.claimedBy.length === 0 ? (
             <Button
               variant="secondary"
               size="sm"
