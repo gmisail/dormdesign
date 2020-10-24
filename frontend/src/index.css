@@ -24,14 +24,17 @@ code {
   custom classes
 */
 
-.menu-bar {
+.navbar-brand-logo {
   font-family: "Arvo", serif;
+}
+
+.main-content-container {
+  padding-top: 56px; /* Offsets content of page from navbar (which is fixed to top) */
 }
 
 .room-container {
   margin-left: auto;
   margin-right: auto;
-  padding-top: 56px;
   height: 100vh;
   max-width: 1500px;
 }

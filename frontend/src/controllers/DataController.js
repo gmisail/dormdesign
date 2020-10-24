@@ -1,38 +1,52 @@
 import DormItem from "../models/DormItem";
 
-let TEST_ID_COUNTER = 600;
-const TEST_ITEMS_DATA = [
-  {
-    id: TEST_ID_COUNTER++,
-    name: "Fridge",
-    quantity: 4,
-    editable: true,
-    editorPosition: { x: 1, y: 2 },
-  },
-  {
-    id: TEST_ID_COUNTER++,
-    name: "Soundbar",
-    quantity: 1,
-    claimedBy: "John Smith",
-    editable: false,
-    editorPosition: false,
-  },
-  {
-    id: TEST_ID_COUNTER++,
-    name: "Microwave",
-    quantity: 100,
-    width: 10,
-    length: 4,
-    height: 2.5,
-    editable: true,
-    editorPosition: { x: 5, y: 2 },
-  },
-];
+// let TEST_ID_COUNTER = 600;
+// const TEST_ITEMS_DATA = [
+//   {
+//     id: TEST_ID_COUNTER++,
+//     name: "Fridge",
+//     quantity: 4,
+//     editable: true,
+//     editorPosition: { x: 1, y: 2 },
+//   },
+//   {
+//     id: TEST_ID_COUNTER++,
+//     name: "Soundbar",
+//     quantity: 1,
+//     claimedBy: "John Smith",
+//     editable: false,
+//     editorPosition: false,
+//   },
+//   {
+//     id: TEST_ID_COUNTER++,
+//     name: "Microwave",
+//     quantity: 100,
+//     width: 10,
+//     length: 4,
+//     height: 2.5,
+//     editable: true,
+//     editorPosition: { x: 5, y: 2 },
+//   },
+// ];
 
 /**
  *  Data creation / modification handler.
  */
 class DataController {
+  // Creates a new room and returns room ID sent back from server
+  static async createRoom() {
+    const response = await fetch("/list/create", {
+      method: "POST",
+    });
+    if (!response.ok) {
+      const data = await response.json();
+      const message = `${response.status} Error creating room: ${data.message}`;
+      console.error(message);
+    }
+    const roomID = await response.json();
+    return roomID;
+  }
+
   //Retrieves the List's data from the server.
   static async getList(id) {
     if (!id) {
@@ -65,8 +79,7 @@ class DataController {
         (with new, server-assigned properties such as id)
     */
   static async addListItem(item) {
-    item.id = TEST_ID_COUNTER++;
-
+    // /* TODO: send call to server */
     if (item.name.length === 0) {
       item.name = "New Item";
     }
@@ -89,16 +102,8 @@ class DataController {
   }
 
   // Sends request to create a list, adds some items to it, and returns the id of the list.
-  static async CREATE_TEST_LIST() {
-    const response = await fetch("/list/create", {
-      method: "POST",
-    });
-    if (!response.ok) {
-      const data = await response.json();
-      const message = `${response.status} Error fetching list: ${data.message}`;
-      console.error(message);
-    }
-    const listID = await response.json();
+  static async CREATE_TEST_ROOM() {
+    const roomID = await DataController.createRoom();
 
     const itemResponse1 = await fetch("/list/add", {
       method: "POST",
@@ -106,7 +111,7 @@ class DataController {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        listID: listID,
+        listID: roomID,
         name: "Fridge",
         quantity: 4,
         editable: false,
@@ -114,10 +119,9 @@ class DataController {
     });
     if (!itemResponse1.ok) {
       const data = await itemResponse1.json();
-      const message = `${itemResponse1.status} Error adding item1 to test list: ${data.message}`;
+      const message = `${itemResponse1.status} Error adding item1 to test room: ${data.message}`;
       console.error(message);
     }
-    //const itemData1 = await itemResponse1.json();
 
     const itemResponse2 = await fetch("/list/add", {
       method: "POST",
@@ -125,7 +129,7 @@ class DataController {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        listID: listID,
+        listID: roomID,
         name: "Microwave",
         quantity: 1,
         editable: true,
@@ -133,12 +137,11 @@ class DataController {
     });
     if (!itemResponse2.ok) {
       const data = await itemResponse2.json();
-      const message = `${itemResponse2.status} Error adding item2 to test list: ${data.message}`;
+      const message = `${itemResponse2.status} Error adding item2 to test room: ${data.message}`;
       console.error(message);
     }
-    //const itemData2 = await itemResponse2.json();
 
-    return listID;
+    return roomID;
   }
 }
 

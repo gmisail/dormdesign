@@ -1,24 +1,18 @@
 import React, { Component } from "react";
 import { Nav, Navbar } from "react-bootstrap";
-import { LinkContainer } from "react-router-bootstrap";
+import { Link } from "react-router-dom";
 
 class NavigationBar extends Component {
   render() {
     return (
       <Navbar fixed="top" bg="primary" variant="dark" expand="lg">
-        <Navbar.Brand>
-          <LinkContainer to="/">
-            <div className="menu-bar">DormDesign</div>
-          </LinkContainer>
+        <Navbar.Brand className="navbar-brand-logo" as={Link} to="/">
+          DormDesign
         </Navbar.Brand>
 
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse id="navbar-nav">
-          <Nav className="mr-auto">
-            <LinkContainer to="/my-room">
-              <Nav.Link>My Room</Nav.Link>
-            </LinkContainer>
-          </Nav>
+          <Nav className="mr-auto"></Nav>
         </Navbar.Collapse>
       </Navbar>
     );

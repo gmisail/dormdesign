@@ -101,7 +101,7 @@ class SceneController {
     let resized = false;
     for (let i = 0; i < canvasArray.length; i++) {
       if (this.resizeCanvas(canvasArray[i])) {
-        // Set parent div to size of canvas (since canvas has position absolute)
+        // Update size of parent element manually (since canvas has position absolute)
         // canvasArray[i].parentElement.style.width = `${canvasArray[i].width}px`;
         canvasArray[i].parentElement.style.height = `${canvasArray[i].width}px`;
         resized = true;
@@ -112,18 +112,16 @@ class SceneController {
 
   resizeCanvas(canvas) {
     const realToCSSPixels = window.devicePixelRatio;
-    // Lookup the size the browser is displaying the canvas in CSS pixels
-    // and compute a size needed to make our drawingbuffer match it in
-    // device pixels.
-    const displayWidth = Math.floor(
+
+    const parentWidth = Math.floor(
       canvas.parentElement.clientWidth * realToCSSPixels
     );
 
     // Check if the canvas is not the same size.
-    if (canvas.width !== displayWidth || canvas.height !== displayWidth) {
+    if (canvas.width !== parentWidth || canvas.height !== parentWidth) {
       // Make the canvas the same size
-      canvas.width = displayWidth;
-      canvas.height = displayWidth;
+      canvas.width = parentWidth;
+      canvas.height = parentWidth;
       // Return true if canvas was reszied
       return true;
     }
