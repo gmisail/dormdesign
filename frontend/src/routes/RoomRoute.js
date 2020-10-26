@@ -33,14 +33,16 @@ class RoomRoute extends Component {
   };
 
   getItemMap = async () => {
-    const listID = await DataController.CREATE_TEST_LIST();
+    // const listID = await DataController.CREATE_TEST_LIST();
+    const roomID = this.props.match.params.id;
+    console.log("ROOM ID", roomID);
 
-    const connection = new SocketConnection(listID);
+    const connection = new SocketConnection(roomID);
     connection.onMessage = this.onReceiveSocketMessage;
     connection.onClose = this.onSocketConnectionClosed;
 
     this.setState({ socketConnection: connection });
-    const itemMap = await DataController.getList(listID);
+    const itemMap = await DataController.getList(roomID);
     this.setState({ itemMap: itemMap });
   };
 
