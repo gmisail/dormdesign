@@ -107,6 +107,7 @@ class RoomCanvas extends Component {
     };
 
     const item = this.props.itemMap.get(updated.id);
+
     if (item) {
       item.editorPosition = updated.position;
     }

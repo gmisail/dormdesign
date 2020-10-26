@@ -12,9 +12,10 @@ class DormItem {
       editorPosition,
     } = data ?? {};
     this.id = id;
-    this.name = name.length === 0 || name === undefined ? "New Item" : name;
+    this.name = name === undefined || name.length === 0 ? "New Item" : name;
     this.quantity = quantity === 0 ? undefined : quantity;
-    this.claimedBy = claimedBy.length === 0 ? undefined : claimedBy;
+    this.claimedBy =
+      claimedBy === undefined || claimedBy.length === 0 ? undefined : claimedBy;
     this.dimensions = {
       width: width,
       length: length,
