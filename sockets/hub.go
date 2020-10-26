@@ -1,5 +1,9 @@
 package sockets
 
+import (
+	rdb "gopkg.in/rethinkdb/rethinkdb-go.v6"
+)
+
 type Message struct {
 	room string
 	sender *Client
@@ -11,14 +15,16 @@ type Room struct {
 }
 
 type Hub struct {
+	database *rdb.Session
 	rooms map[string]*Room
 	broadcast chan Message
 	register chan *Client
 	unregister chan *Client
 }
 
-func CreateHub() *Hub {
+func CreateHub(database *rdb.Session) *Hub {
 	return &Hub{
+		database: database,
 		broadcast: make(chan Message),
 		register: make(chan *Client),
 		unregister: make(chan *Client),

@@ -9,8 +9,8 @@ import (
 	rdb "gopkg.in/rethinkdb/rethinkdb-go.v6"
 )
 
-func SetupSockets(e *echo.Echo) {
-	hub := sockets.CreateHub()
+func SetupSockets(e *echo.Echo, database *rdb.Session) {
+	hub := sockets.CreateHub(database)
 	go hub.Run()
 
 	e.GET("/ws", func(c echo.Context) error {
@@ -22,7 +22,7 @@ func SetupSockets(e *echo.Echo) {
 
 // SetupRoutes: configures the API endpoints
 func SetupRoutes(e *echo.Echo, database *rdb.Session) {
-	SetupSockets(e)
+	SetupSockets(e, database)
 	
 	listRoute := routes.ListRoute{ Database: database }
 

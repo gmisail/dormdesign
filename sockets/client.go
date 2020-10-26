@@ -6,7 +6,9 @@ import (
 	"net/http"
 	"encoding/json"
 	"errors"
+	"fmt"
 
+	"github.com/gmisail/dormdesign/models"
 	"github.com/labstack/echo/v4"
 	"github.com/gorilla/websocket"
 )
@@ -68,7 +70,7 @@ func (c *Client) readPump() {
 			break
 		}
 		
-		message, err := translateMessage(byteMessage)
+		message, err := c.translateMessage(byteMessage)
 		if err != nil {
 			log.Println(err)
 		} else {	// Only forward message to hub if its valid
@@ -79,7 +81,7 @@ func (c *Client) readPump() {
 }
 
 // Takes in raw message data and returns a Message object if its valid. Otherwise, returns error.
-func translateMessage(byteMessage []byte) (Message, error) {
+func (c *Client) translateMessage(byteMessage []byte) (Message, error) {
 	var message interface{}
 
 	// Decode JSON data
@@ -117,7 +119,14 @@ func translateMessage(byteMessage []byte) (Message, error) {
 		/*
 			Update property/properties of existing ListItem
 		*/
-		return Message{}, errors.New("Event1 not supported yet")
+
+		itemID := data["itemID"].(string)
+		property := data["property"].(string)
+		value := data["value"]
+
+		updatedItem := models.EditListItem(c.hub.database, roomID, itemID, property, value)
+
+		return Message{ room: roomID, sender: c, content: updatedItem }, errors.New("[itemUpdated]")
 
 	case "itemDeleted":
 		/*

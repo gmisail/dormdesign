@@ -84,3 +84,37 @@ func AddListItem(database *rdb.Session, id string, item ListItem) {
 		fmt.Println(updateErr)
 	}
 }
+
+func EditListItem(database *rdb.Session, id string, itemID string, property string, value interface{}) ListItem {
+	res, err := rdb.DB("dd-data").Table("lists").Get(id).Run(database)
+
+	var data List
+	res.One(&data)
+
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	defer res.Close()
+
+	/* TODO: replace the data.Items with a map to avoid this */
+	for _, item := range data.Items {
+		if item.ID == itemID {
+			if property == "editorPosition" {
+				coord := value.(map[string]float32)
+				item.EditorPosition.X = coord["x"]
+				item.EditorPosition.Y = coord["Y"]
+			}
+			
+			updateErr := rdb.DB("dd-data").Table("lists").Get(id).Update(data).Exec(database)
+
+			if updateErr != nil {
+				fmt.Println(updateErr)
+			}
+			
+			return item
+		}
+	}
+
+	return ListItem{}
+}
