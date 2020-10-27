@@ -124,13 +124,19 @@ func (c *Client) translateMessage(byteMessage []byte) (Message, error) {
 		value := data["value"]
 
 		updatedItem := models.EditListItem(c.hub.database, roomID, itemID, property, value)
-		itemJson, itemJsonErr := json.Marshal(updatedItem)
-
-		if itemJsonErr != nil {
-			return Message{}, itemJsonErr
+		_ = updatedItem
+		response := MessageResponse{
+			Event: "itemUpdated",
+			Data: updatedItem,
 		}
 
-		return Message{ room: roomID, sender: c, content: itemJson }, nil
+		responseBytes, responseBytesErr := json.Marshal(response)
+
+		if responseBytesErr != nil {
+			return Message{}, responseBytesErr
+		}
+	
+		return Message{ room: roomID, sender: c, response: responseBytes }, nil
 
 	case "itemDeleted":
 		/*

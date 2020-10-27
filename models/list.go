@@ -12,10 +12,12 @@ type ListItem struct {
 	Quantity int `json:"quantity"`
 	ClaimedBy string `json:"claimedBy"`
 	Editable bool `json:"editable"`
-	EditorPosition *struct {
-		X string `json:"x"`
-		Y string `json:"y"`
-	} `json:"editorPosition"`
+	EditorPosition *EditorPoint `json:"editorPosition"`
+}
+
+type EditorPoint struct {
+	X float64 `json:"x"`
+	Y float64 `json:"y"`
 }
 
 type List struct {
@@ -108,12 +110,17 @@ func EditListItem(database *rdb.Session, id string, itemID string, property stri
 
 				// TODO: change the position from string to float32 or int, 
 				// but the conversion is kinda finicky...
-				if item.EditorPosition != nil {
-					item.EditorPosition.X = fmt.Sprintf("%f", x)
-					item.EditorPosition.Y = fmt.Sprintf("%f", y)				
+				if item.EditorPosition == nil {
+					item.EditorPosition = &EditorPoint{
+						X: x,
+						Y: y,
+					}
+				} else {
+					item.EditorPosition.X = x
+					item.EditorPosition.Y = y
 				}
 			}
-			
+
 			updateErr := rdb.DB("dd-data").Table("lists").Get(id).Update(data).Exec(database)
 
 			if updateErr != nil {

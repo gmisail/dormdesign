@@ -7,7 +7,11 @@ import (
 type Message struct {
 	room string
 	sender *Client
-	content []byte
+	response []byte
+}
+type MessageResponse struct {
+	Event string `json:"event"`
+	Data interface{} `json:"data"`
 }
 
 type Room struct {
@@ -87,9 +91,14 @@ func (h *Hub) Run() {
 			room := h.rooms[message.room]
 
 			if room != nil {
+				// Send message to all clients in the room
 				for client := range room.Clients {
+					// Don't send message back to person who originally sent it
+					if (client == message.sender) {
+						continue
+					}
 					select {
-					case client.send <- message.content:
+					case client.send <- message.response:
 					default:
 						h.RemoveClient(client.id, client)
 					}
