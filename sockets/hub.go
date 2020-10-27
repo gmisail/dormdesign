@@ -1,9 +1,17 @@
 package sockets
 
+import (
+	rdb "gopkg.in/rethinkdb/rethinkdb-go.v6"
+)
+
 type Message struct {
 	room string
 	sender *Client
-	content []byte
+	response []byte
+}
+type MessageResponse struct {
+	Event string `json:"event"`
+	Data interface{} `json:"data"`
 }
 
 type Room struct {
@@ -11,14 +19,16 @@ type Room struct {
 }
 
 type Hub struct {
+	database *rdb.Session
 	rooms map[string]*Room
 	broadcast chan Message
 	register chan *Client
 	unregister chan *Client
 }
 
-func CreateHub() *Hub {
+func CreateHub(database *rdb.Session) *Hub {
 	return &Hub{
+		database: database,
 		broadcast: make(chan Message),
 		register: make(chan *Client),
 		unregister: make(chan *Client),
@@ -81,9 +91,14 @@ func (h *Hub) Run() {
 			room := h.rooms[message.room]
 
 			if room != nil {
+				// Send message to all clients in the room
 				for client := range room.Clients {
+					// Don't send message back to person who originally sent it
+					if (client == message.sender) {
+						continue
+					}
 					select {
-					case client.send <- message.content:
+					case client.send <- message.response:
 					default:
 						h.RemoveClient(client.id, client)
 					}

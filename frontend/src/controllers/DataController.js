@@ -61,9 +61,9 @@ class DataController {
       throw new Error(message);
     }
     const data = await response.json();
-
+    // Convert JSON object containing items keyed by their IDs to an ES6 Map
     const itemMap = new Map(
-      data.Items.map((item) => [item.id, new DormItem(item)])
+      Object.keys(data.items).map((key) => [key, new DormItem(data.items[key])])
     );
 
     // Static data for testing purposes
@@ -114,7 +114,6 @@ class DataController {
         listID: roomID,
         name: "Fridge",
         quantity: 4,
-        editable: false,
       }),
     });
     if (!itemResponse1.ok) {
@@ -132,7 +131,6 @@ class DataController {
         listID: roomID,
         name: "Microwave",
         quantity: 1,
-        editable: true,
       }),
     });
     if (!itemResponse2.ok) {

@@ -24,8 +24,8 @@ class RoomRoute extends Component {
     this.getItemMap();
   }
 
-  onReceiveSocketMessage = (message) => {
-    console.log("RECEIVED", message);
+  onReceiveSocketMessage = (data) => {
+    console.log("RECEIVED", data);
   };
 
   onSocketConnectionClosed = (message) => {
@@ -68,13 +68,14 @@ class RoomRoute extends Component {
 
   // Callback passed to RoomCanvas for when item is updated
   itemUpdatedInEditor = (item) => {
-    console.log("ITEM", item.id, "UPDATED");
+    // console.log("ITEM", item.id, item, "UPDATED");
     this.state.socketConnection.send({
       event: "itemUpdated",
       data: {
         itemID: item.id,
-        property: "editorPosition",
-        value: item.editorPosition,
+        updated: {
+          editorPosition: item.editorPosition,
+        },
       },
     });
   };
