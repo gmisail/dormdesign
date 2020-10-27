@@ -6,6 +6,7 @@ import DormItemList from "../components/DormItemList/DormItemList";
 import ListItemForm from "../components/ListItemForm/ListItemForm";
 import DataController from "../controllers/DataController";
 import SocketConnection from "../controllers/SocketConnection";
+import EventController from "../controllers/EventController";
 
 class RoomRoute extends Component {
   constructor() {
@@ -26,6 +27,8 @@ class RoomRoute extends Component {
 
   onReceiveSocketMessage = (data) => {
     console.log("RECEIVED", data);
+
+    EventController.emit(data.event, data.data);
   };
 
   onSocketConnectionClosed = (message) => {

@@ -1,3 +1,4 @@
+import EventController from "../controllers/EventController";
 import SceneObject from "./SceneObject";
 import MouseController from "./MouseController";
 import Collisions from "./Collisions";
@@ -76,6 +77,8 @@ class RoomObject extends SceneObject {
     this.state.floorGrid = floorGrid;
 
     this.objectColors = ["#0043E0", "#f28a00", "#C400E0", "#7EE016", "#0BE07B"];
+
+    //    EventController.on("itemUpdated", this.test)
   }
 
   // Fills any area between the boundary of the room and the bounding box of the RoomObject itself with a box. Returns that list of boxes

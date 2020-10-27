@@ -6,8 +6,11 @@ import { BrowserRouter as Router, Route } from "react-router-dom";
 import "../node_modules/bootstrap/dist/css/bootstrap.min.css";
 import RoomRoute from "./routes/RoomRoute";
 import HomeRoute from "./routes/HomeRoute";
+import EventController from "./controllers/EventController";
 
 function App() {
+  EventController.create();
+
   return (
     <Router>
       <NavigationBar></NavigationBar>
