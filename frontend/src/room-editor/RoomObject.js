@@ -78,7 +78,11 @@ class RoomObject extends SceneObject {
 
     this.objectColors = ["#0043E0", "#f28a00", "#C400E0", "#7EE016", "#0BE07B"];
 
-    //    EventController.on("itemUpdated", this.test)
+    EventController.on("itemUpdated", (payload) => {
+      this.updateRoomItem(payload.id, {
+        position: payload.updated.editorPosition,
+      });
+    });
   }
 
   // Fills any area between the boundary of the room and the bounding box of the RoomObject itself with a box. Returns that list of boxes
