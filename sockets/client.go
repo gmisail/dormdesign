@@ -120,14 +120,25 @@ func (c *Client) translateMessage(byteMessage []byte) (Message, error) {
 		*/
 
 		itemID := data["itemID"].(string)
-		property := data["property"].(string)
-		value := data["value"]
+		// Get map of updated properties and their values
+		updated := data["updated"].(map[string]interface{})
+	
 
-		updatedItem := models.EditListItem(c.hub.database, roomID, itemID, property, value)
-		_ = updatedItem
+		item, err := models.EditListItem(c.hub.database, roomID, itemID, updated)
+		log.Println("ITEM", (*item).EditorPosition)
+		if err != nil {
+			return Message{}, err
+		}
+		
 		response := MessageResponse{
 			Event: "itemUpdated",
-			Data: updatedItem,
+			Data: struct{
+				ID string `json:"id"`
+				Updated map[string]interface{} `json:"updated"`
+			}{
+				ID: itemID,
+				Updated: updated,
+			},
 		}
 
 		responseBytes, responseBytesErr := json.Marshal(response)

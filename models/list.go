@@ -7,11 +7,10 @@ import (
 )
 
 type ListItem struct {
-	ID string `json:"id"`
-	Name string `json:"name"`
-	Quantity int `json:"quantity"`
-	ClaimedBy string `json:"claimedBy"`
-	Editable bool `json:"editable"`
+	ID string `json:"id" rethinkdb:"id"`
+	Name string `json:"name" rethinkdb:"name"`
+	Quantity int `json:"quantity" rethinkdb:"quantity"`
+	ClaimedBy string `json:"claimedBy" rethinkdb:"claimedBy"`
 	EditorPosition *EditorPoint `json:"editorPosition"`
 }
 
@@ -21,15 +20,15 @@ type EditorPoint struct {
 }
 
 type List struct {
-	ID string `rethinkdb:"id"`
-	Items []ListItem `rethinkdb:"Items"`
+	ID string `json:"id" rethinkdb:"id"`
+	Items map[string]ListItem `json:"items" rethinkdb:"items"`
 }
 
 /*
 	Create an empty list with the given ID
 */
 func CreateList(database *rdb.Session, id string) {
-	err := rdb.DB("dd-data").Table("lists").Insert(List{ ID: id, Items: nil }).Exec(database)
+	err := rdb.DB("dd-data").Table("lists").Insert(List{ ID: id, Items: map[string]ListItem{} }).Exec(database)
 
 	if err != nil {
 		fmt.Println(err)
@@ -78,16 +77,17 @@ func AddListItem(database *rdb.Session, id string, item ListItem) {
 
 	defer res.Close()
 
-	data.Items = append(data.Items, item)
+	data.Items[item.ID] = item
 
 	updateErr := rdb.DB("dd-data").Table("lists").Get(id).Update(data).Exec(database)
 
 	if updateErr != nil {
 		fmt.Println(updateErr)
 	}
+
 }
 
-func EditListItem(database *rdb.Session, id string, itemID string, property string, value interface{}) ListItem {
+func EditListItem(database *rdb.Session, id string, itemID string, updated map[string]interface{}) (*ListItem, error) {
 	res, err := rdb.DB("dd-data").Table("lists").Get(id).Run(database)
 
 	var data List
@@ -99,37 +99,36 @@ func EditListItem(database *rdb.Session, id string, itemID string, property stri
 
 	defer res.Close()
 
-	/* TODO: replace the data.Items with a map to avoid this */
-	for _, item := range data.Items {
-		if item.ID == itemID {
-			if property == "editorPosition" {
-				coord := value.(map[string]interface{})
-			
-				x := coord["x"].(float64)
-				y := coord["y"].(float64)
+	item, ok := data.Items[itemID]
+	if !ok {
+		return nil, errors.New("Error updating ListItem. Unable to find item matching id: " + itemID)
+	}
+	for property, value := range updated {
+		switch property {
+		case "editorPosition":
+			coord := value.(map[string]interface{})
+		
+			x := coord["x"].(float64)
+			y := coord["y"].(float64)
 
-				// TODO: change the position from string to float32 or int, 
-				// but the conversion is kinda finicky...
-				if item.EditorPosition == nil {
-					item.EditorPosition = &EditorPoint{
-						X: x,
-						Y: y,
-					}
-				} else {
-					item.EditorPosition.X = x
-					item.EditorPosition.Y = y
+			if item.EditorPosition == nil {
+				item.EditorPosition = &EditorPoint{
+					X: x,
+					Y: y,
 				}
+			} else {
+				item.EditorPosition.X = x
+				item.EditorPosition.Y = y
 			}
-
-			updateErr := rdb.DB("dd-data").Table("lists").Get(id).Update(data).Exec(database)
-
-			if updateErr != nil {
-				fmt.Println(updateErr)
-			}
-			
-			return item
+		default:
+			return nil, errors.New("Error updating ListItem. Unknown property: " + property)
 		}
 	}
 
-	return ListItem{}
+	updateErr := rdb.DB("dd-data").Table("lists").Get(id).Update(map[string]interface{}{"items": map[string]interface{}{item.ID: item}}).Exec(database)
+	if updateErr != nil {
+		return nil, updateErr
+	}
+	
+	return &item, nil
 }

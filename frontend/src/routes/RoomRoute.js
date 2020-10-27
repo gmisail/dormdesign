@@ -73,8 +73,9 @@ class RoomRoute extends Component {
       event: "itemUpdated",
       data: {
         itemID: item.id,
-        property: "editorPosition",
-        value: item.editorPosition,
+        updated: {
+          editorPosition: item.editorPosition,
+        },
       },
     });
   };
