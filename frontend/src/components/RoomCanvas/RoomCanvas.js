@@ -3,6 +3,7 @@ import "./RoomCanvas.css";
 import SceneController from "../../room-editor/SceneController";
 import RoomObject from "../../room-editor/RoomObject";
 import Vector2 from "../../room-editor/Vector2";
+import EventController from "../../controllers/EventController";
 
 class RoomCanvas extends Component {
   constructor(props) {
@@ -46,6 +47,12 @@ class RoomCanvas extends Component {
       scene: scene,
       roomObject: room,
     });
+
+    EventController.on("itemUpdated", (payload) => {
+      room.updateRoomItem(payload.id, {
+        position: payload.updated.editorPosition,
+      });
+    });
   }
 
   componentDidUpdate(prevProps) {
@@ -77,26 +84,6 @@ class RoomCanvas extends Component {
         j++;
       }
     }
-  }
-
-  // Takes in editor data for object and tries to update the corresponding object in the editor scene
-  updateRoomObject(args) {
-    const { id, item, itemEditorData, sceneObject } = args;
-
-    // If no scene object provided, try and get it from the scene by id
-    const obj = sceneObject ?? this.state.scene.objects.get(id);
-    if (!obj) {
-      console.error(
-        `Error updating object with id ${id}. Couldn't find corresponding scene object with matching id.`
-      );
-      return;
-    }
-    this.state.roomObject.updateRoomItem(id, {
-      position: itemEditorData.position,
-      name: item.name,
-      width: item.dimensions.w,
-      height: item.dimensions.l,
-    });
   }
 
   // Called when object is moved in room. Updates item's position and calls callback function
