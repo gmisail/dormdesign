@@ -20,7 +20,6 @@ type ItemForm struct {
 	ItemID string `json:"id" form:"id"`
 	Name string `json:"name" form:"name"`
 	Quantity int `json:"quantity" form:"quantity"`
-	Editable bool `json:"editable" form:"editable"`
 }
 
 func (route *ListRoute) OnGetList(c echo.Context) error {
