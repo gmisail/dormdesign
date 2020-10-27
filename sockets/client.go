@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"encoding/json"
 	"errors"
-	"fmt"
 
 	"github.com/gmisail/dormdesign/models"
 	"github.com/labstack/echo/v4"
@@ -125,8 +124,13 @@ func (c *Client) translateMessage(byteMessage []byte) (Message, error) {
 		value := data["value"]
 
 		updatedItem := models.EditListItem(c.hub.database, roomID, itemID, property, value)
+		itemJson, itemJsonErr := json.Marshal(updatedItem)
 
-		return Message{ room: roomID, sender: c, content: updatedItem }, errors.New("[itemUpdated]")
+		if itemJsonErr != nil {
+			return Message{}, itemJsonErr
+		}
+
+		return Message{ room: roomID, sender: c, content: itemJson }, nil
 
 	case "itemDeleted":
 		/*
