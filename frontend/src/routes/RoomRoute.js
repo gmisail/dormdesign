@@ -22,29 +22,32 @@ class RoomRoute extends Component {
   }
 
   componentDidMount() {
-    this.getItemMap();
+    this.loadData();
   }
 
-  onReceiveSocketMessage = (data) => {
-    console.log("RECEIVED", data);
-
-    EventController.emit(data.event, data.data);
-  };
-
   onSocketConnectionClosed = (message) => {
-    console.log("SOCKET CLOSED", message);
+    console.warn("SOCKET CLOSED", message);
+
+    /*
+      TODO: Display some sort of error and try to reconnect
+    */
   };
 
-  getItemMap = async () => {
-    // const listID = await DataController.CREATE_TEST_LIST();
+  loadData = async () => {
     const roomID = this.props.match.params.id;
-    console.log("ROOM ID", roomID);
 
     const connection = new SocketConnection(roomID);
-    connection.onMessage = this.onReceiveSocketMessage;
+    // When socket connection receives message, notify EventController
+    connection.onMessage = (data) => {
+      if (data.event) {
+        EventController.emit(data.event, data.data);
+      } else {
+        console.warn("Socket message received with no event field: ", data);
+      }
+    };
     connection.onClose = this.onSocketConnectionClosed;
-
     this.setState({ socketConnection: connection });
+
     const itemMap = await DataController.getList(roomID);
     this.setState({ itemMap: itemMap });
   };
