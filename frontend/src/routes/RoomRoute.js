@@ -7,6 +7,7 @@ import ListItemForm from "../components/ListItemForm/ListItemForm";
 import DataController from "../controllers/DataController";
 import SocketConnection from "../controllers/SocketConnection";
 import EventController from "../controllers/EventController";
+import DormItem from "../models/DormItem";
 
 class RoomRoute extends Component {
   constructor() {
@@ -23,6 +24,7 @@ class RoomRoute extends Component {
 
   componentDidMount() {
     this.loadData();
+    this.setupEventListeners();
   }
 
   onSocketConnectionClosed = (message) => {
@@ -52,6 +54,16 @@ class RoomRoute extends Component {
     this.setState({ itemMap: itemMap });
   };
 
+  setupEventListeners = () => {
+    EventController.on("itemAdded", (data) => {
+      const item = new DormItem(data);
+
+      this.state.itemMap.set(item.id, item);
+      // In order for react to register that map has changed, need to copy map values to new map
+      this.setState({ itemMap: new Map(this.state.itemMap) });
+    });
+  };
+
   editItem = (item) => {
     this.setState({ editingItem: item });
     this.toggleModal("edit");
@@ -60,23 +72,30 @@ class RoomRoute extends Component {
   saveEditedItem = async () => {
     const item = this.state.editingItem;
     const editedItem = await DataController.editListItem(item);
+
     this.state.itemMap.set(item.id, editedItem);
+    // In order for react to register that map has changed, need to copy map values to new map
+    this.setState({ itemMap: new Map(this.state.itemMap) });
+
     this.setState({ editingItem: undefined });
     this.toggleModal();
   };
 
   addNewItem = async (item) => {
-    let newItem = await DataController.addListItem(item);
-    this.state.itemMap.set(newItem.id, newItem);
+    this.state.socketConnection.send({
+      event: "addItem",
+      data: {
+        ...item,
+      },
+    });
 
     this.toggleModal();
   };
 
   // Callback passed to RoomCanvas for when item is updated
   itemUpdatedInEditor = (item) => {
-    // console.log("ITEM", item.id, item, "UPDATED");
     this.state.socketConnection.send({
-      event: "itemUpdated",
+      event: "updateItem",
       data: {
         itemID: item.id,
         updated: {

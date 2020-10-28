@@ -58,7 +58,7 @@ class RoomCanvas extends Component {
   componentDidUpdate(prevProps) {
     // Filter out items not included in editor
     const includedItems = [...this.props.itemMap.values()].filter(
-      (item) => item.editable
+      (item) => item.visibleInEditor
     );
 
     // Sort included items and currently added objects by id
@@ -109,8 +109,8 @@ class RoomCanvas extends Component {
     const newObj = this.state.roomObject.addItemToRoom({
       id: item.id,
       name: item.name,
-      feetWidth: item.dimensions.w,
-      feetHeight: item.dimensions.l,
+      feetWidth: item.dimensions.width,
+      feetHeight: item.dimensions.length,
       position: item.editorPosition,
     });
     // If item had no position, update item data with new position set by the room (should be in center of room by default)

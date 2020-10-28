@@ -6,6 +6,7 @@ import (
 
 type Message struct {
 	room string
+	excludeSender bool
 	sender *Client
 	response []byte
 }
@@ -93,8 +94,8 @@ func (h *Hub) Run() {
 			if room != nil {
 				// Send message to all clients in the room
 				for client := range room.Clients {
-					// Don't send message back to person who originally sent it
-					if (client == message.sender) {
+					// If excludeSender flag, don't send message back to client that originally sent it
+					if (message.excludeSender && client == message.sender) {
 						continue
 					}
 					select {

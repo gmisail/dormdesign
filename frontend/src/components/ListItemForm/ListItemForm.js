@@ -7,6 +7,7 @@ class ListItemForm extends Component {
   constructor(props) {
     super(props);
     let item = props.item;
+    // Name for new items should be blank
     const name = item ? item.name : "";
     if (!item) {
       item = new DormItem();
@@ -15,8 +16,8 @@ class ListItemForm extends Component {
     let width = "",
       length = "";
     if (item.dimensions) {
-      width = item.dimensions.w ?? "";
-      length = item.dimensions.l ?? "";
+      width = item.dimensions.width ?? "";
+      length = item.dimensions.length ?? "";
     }
 
     this.state = {
@@ -26,7 +27,7 @@ class ListItemForm extends Component {
       ownerInputValue: item.claimedBy ?? "",
       widthInputValue: width,
       lengthInputValue: length,
-      editableValue: item.editable,
+      visibleInEditorValue: item.visibleInEditor,
       validated: false,
     };
   }
@@ -68,9 +69,9 @@ class ListItemForm extends Component {
           : this.state.ownerInputValue;
       const width = parseFloat(this.state.widthInputValue);
       const length = parseFloat(this.state.lengthInputValue);
-      item.dimensions.w = isNaN(width) ? undefined : width;
-      item.dimensions.l = isNaN(length) ? undefined : length;
-      item.editable = this.state.editableValue;
+      item.dimensions.width = isNaN(width) ? undefined : width;
+      item.dimensions.length = isNaN(length) ? undefined : length;
+      item.visibleInEditor = this.state.visibleInEditorValue;
       this.props.onSubmit(item);
     }
   };
@@ -153,9 +154,9 @@ class ListItemForm extends Component {
         </Form.Group>
         <Form.Group>
           <Form.Check
-            label="Add to Room Editor"
-            name="editableValue"
-            checked={this.state.editableValue}
+            label="Show in Room Editor"
+            name="visibleInEditorValue"
+            checked={this.state.visibleInEditorValue}
             onChange={this.handleInputChange}
           />
         </Form.Group>

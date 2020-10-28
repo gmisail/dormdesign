@@ -1,7 +1,7 @@
 package routes
 
 import (
-	"fmt"
+	"log"
 	"github.com/gmisail/dormdesign/models"
 	"github.com/labstack/echo/v4"
 	"net/http"
@@ -34,7 +34,7 @@ func (route *ListRoute) OnGetList(c echo.Context) error {
 
 	// Server failed to fetch list from DB, return 500 - Internal Server Error
 	if err != nil {	
-		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+		return echo.NewHTTPError(http.StatusInternalServerError)
 	}
 
 	return c.JSON(http.StatusOK, list)
@@ -48,9 +48,11 @@ Creates an empty list and returns the ID
 func (route *ListRoute) OnCreateList(c echo.Context) error {
 	id := uuid.New().String()
 
-	models.CreateList(route.Database, id)
-
-	fmt.Println("Created list with id:", id);
+	err := models.CreateList(route.Database, id)
+	if err != nil {
+		log.Println(err)
+		return echo.NewHTTPError(http.StatusInternalServerError)
+	}
  
 	return c.JSON(http.StatusOK, id)
 }
@@ -78,7 +80,7 @@ func (route *ListRoute) OnAddListItem(c echo.Context) error {
 	// Failed to bind ItemForm to Echo context, return 400 - Bad Request
 	err := c.Bind(form);
 	if err != nil {
-		fmt.Println(err);
+		log.Println(err);
 		return echo.NewHTTPError(http.StatusBadRequest, "Error processing request data")
 	}
 
@@ -93,9 +95,10 @@ func (route *ListRoute) OnAddListItem(c echo.Context) error {
 		ID: itemID,
 		Name: form.Name,					// If not provided in form, will be ""
 		Quantity: form.Quantity,	// If not provided in form, will be 0
-		EditorPosition: nil,
+		VisibleInEditor: false,
+		Dimensions: models.ItemDimensions{},
+		EditorPosition: models.EditorPoint{},
 	}
-	fmt.Println("Added item:", item)
 
 	models.AddListItem(route.Database, listID, item)
 
