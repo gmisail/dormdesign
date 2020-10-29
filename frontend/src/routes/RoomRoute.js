@@ -41,6 +41,7 @@ class RoomRoute extends Component {
     const connection = new SocketConnection(roomID);
     // When socket connection receives message, notify EventController
     connection.onMessage = (data) => {
+      console.log("RECEIVED: ", data);
       if (data.event) {
         EventController.emit(data.event, data.data);
       } else {
@@ -63,10 +64,10 @@ class RoomRoute extends Component {
       this.setState({ itemMap: new Map(this.state.itemMap) });
     });
 
-    EventController.on("itemUpdated", (payload) => {
-      // console.log(payload);
-      const item = this.state.itemMap.get(payload.id);
-      const updated = payload.updated;
+    EventController.on("itemUpdated", (data) => {
+      // console.log(data);
+      const item = this.state.itemMap.get(data.id);
+      const updated = data.updated;
       if (updated.editorPosition) {
         item.editorPosition = updated.editorPosition;
       }
@@ -86,6 +87,7 @@ class RoomRoute extends Component {
         item.quantity = updated.quantity;
       }
       this.setState({ itemMap: new Map(this.state.itemMap) });
+      console.log(data);
     });
   };
 
@@ -94,14 +96,14 @@ class RoomRoute extends Component {
     this.toggleModal("edit");
   };
 
-  saveEditedItem = async () => {
-    const item = this.state.editingItem;
-    const editedItem = await DataController.editListItem(item);
-
+  editItemFormSubmit = (itemID, modified) => {
+    console.log(modified);
     this.state.socketConnection.send({
-      event: "editItem",
+      event: "updateItem",
+      respond: true,
       data: {
-        ...item,
+        itemID,
+        updated: modified,
       },
     });
 
@@ -109,11 +111,11 @@ class RoomRoute extends Component {
     // // In order for react to register that map has changed, need to copy map values to new map
     // this.setState({ itemMap: new Map(this.state.itemMap) });
 
-    this.setState({ editingItem: undefined });
+    // this.setState({ editingItem: undefined });
     this.toggleModal();
   };
 
-  addNewItem = async (item) => {
+  addNewItem = (item) => {
     this.state.socketConnection.send({
       event: "addItem",
       data: {
@@ -128,6 +130,7 @@ class RoomRoute extends Component {
   itemUpdatedInEditor = (item) => {
     this.state.socketConnection.send({
       event: "updateItem",
+      respond: false,
       data: {
         itemID: item.id,
         updated: {
@@ -166,7 +169,7 @@ class RoomRoute extends Component {
             <Modal.Body>
               <ListItemForm
                 item={this.state.editingItem}
-                onSubmit={this.saveEditedItem}
+                onSubmit={this.editItemFormSubmit}
               />
             </Modal.Body>
           </Modal>

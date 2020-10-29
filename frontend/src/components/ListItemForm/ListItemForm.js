@@ -24,7 +24,7 @@ class ListItemForm extends Component {
       item: item,
       nameInputValue: name,
       qtyInputValue: item.quantity,
-      ownerInputValue: item.claimedBy ?? "",
+      claimedByInputValue: item.claimedBy ?? "",
       widthInputValue: width,
       lengthInputValue: length,
       visibleInEditorValue: item.visibleInEditor,
@@ -44,7 +44,7 @@ class ListItemForm extends Component {
       }
     } else if (name === "nameInputValue") {
       value = value.substring(0, 30);
-    } else if (name === "ownerInputValue") {
+    } else if (name === "claimedByInputValue") {
       value = value.substring(0, 30);
     }
 
@@ -53,6 +53,12 @@ class ListItemForm extends Component {
     });
   };
 
+  /*
+  Called when form is submitted. If form fields are valid, returns item ID and an object containing the DormItem
+  fields that were modified and their new values. Currently property values are in a form that is ready
+  to be sent and interpreted by the Golang backend, meaning undefined values are instead set to Golang
+  zero values (e.g. "" for strings)
+  */
   onFormSubmit = (event) => {
     const form = event.currentTarget;
     event.preventDefault();
@@ -60,19 +66,65 @@ class ListItemForm extends Component {
     if (form.checkValidity() === false) {
       event.stopPropagation();
     } else {
+      let {
+        nameInputValue,
+        qtyInputValue,
+        widthInputValue,
+        lengthInputValue,
+        visibleInEditorValue,
+        claimedByInputValue,
+      } = this.state;
       let item = this.state.item;
-      item.name = this.state.nameInputValue;
-      item.quantity = parseInt(this.state.qtyInputValue);
-      item.claimedBy =
-        this.state.ownerInputValue.length === 0
-          ? undefined
-          : this.state.ownerInputValue;
-      const width = parseFloat(this.state.widthInputValue);
-      const length = parseFloat(this.state.lengthInputValue);
-      item.dimensions.width = isNaN(width) ? undefined : width;
-      item.dimensions.length = isNaN(length) ? undefined : length;
-      item.visibleInEditor = this.state.visibleInEditorValue;
-      this.props.onSubmit(item);
+      let modifiedProperties = {};
+      if (nameInputValue !== item.name) {
+        modifiedProperties.name = nameInputValue;
+      }
+      if (qtyInputValue !== item.quantity) {
+        modifiedProperties.quantity = parseInt(qtyInputValue);
+      }
+
+      // If NaN set to 0 (which is treated like undefined)
+      if (isNaN(widthInputValue)) {
+        widthInputValue = 0;
+      } else {
+        widthInputValue = parseFloat(widthInputValue);
+      }
+      if (isNaN(lengthInputValue)) {
+        lengthInputValue = 0;
+      } else {
+        lengthInputValue = parseFloat(lengthInputValue);
+      }
+
+      // If dimension values aren't zero, compare them with old item dimensions. Otherwise, check if item values are undefined
+      const widthEqual =
+        widthInputValue !== 0
+          ? Math.abs(widthInputValue - item.dimensions.width) < 0.0001
+          : item.dimensions.width === undefined;
+      const lengthEqual =
+        lengthInputValue !== 0
+          ? Math.abs(lengthInputValue - item.dimensions.length) < 0.0001
+          : item.dimensions.length === undefined;
+      if (!widthEqual || !lengthEqual) {
+        modifiedProperties.dimensions = {
+          width: widthInputValue,
+          length: lengthInputValue,
+          height: 0, // TODO: replace when form has a height field
+        };
+      }
+
+      // claimbedBy == "" and a previous value of undefined means no change.
+      if (
+        (claimedByInputValue.length === 0 && item.claimedBy !== undefined) ||
+        (claimedByInputValue.length !== 0 &&
+          claimedByInputValue !== item.claimedBy)
+      ) {
+        modifiedProperties.claimbedBy = claimedByInputValue;
+      }
+      if (visibleInEditorValue !== item.visibleInEditor) {
+        modifiedProperties.visibleInEditor = visibleInEditorValue;
+      }
+
+      this.props.onSubmit(item.id, modifiedProperties);
     }
   };
 
@@ -117,8 +169,8 @@ class ListItemForm extends Component {
         <Form.Group controlId="formItemOwner">
           <Form.Label>Name of Owner</Form.Label>
           <Form.Control
-            name="ownerInputValue"
-            value={this.state.ownerInputValue}
+            name="claimedByInputValue"
+            value={this.state.claimedByInputValue}
             placeholder="Name of the person that this belongs too"
             onChange={this.handleInputChange}
           />

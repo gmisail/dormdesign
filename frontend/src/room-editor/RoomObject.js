@@ -302,7 +302,7 @@ class RoomObject extends SceneObject {
       console.error("ERROR updating room item. Invalid object ID: " + id);
       return;
     }
-    if (position) {
+    if (position && position.x && position.y) {
       obj.setPosition(new Vector2(position.x, position.y));
     }
     if (name) {

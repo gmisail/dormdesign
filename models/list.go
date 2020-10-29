@@ -111,12 +111,13 @@ func EditListItem(database *rdb.Session, id string, itemID string, updated map[s
 	if !ok {
 		return nil, errors.New("ERROR Updating ListItem. Unable to find item matching id: " + itemID)
 	}
+	
 	for property, value := range updated {
 		switch property {
 		case "name": 
 			item.Name = value.(string)
 		case "quantity":
-			item.Quantity = value.(int)
+			item.Quantity = int(value.(float64))
 		case "claimbedBy":
 			item.ClaimedBy = value.(string)
 		case "visibleInEditor":

@@ -112,6 +112,12 @@ func (c *Client) translateMessage(byteMessage []byte) (Message, error) {
 		return Message{}, errors.New("ERROR Message event isn't a string")
 	}
 
+	// Field that indicates whether or not to a message response back to sender. If not present, default is true
+	respond, ok := messageMap["respond"].(bool)
+	if !ok {
+		respond = true;
+	}
+
 	// Handle different message events based on value of "event" field in message JSON
 	switch event {
 	case "addItem":
@@ -124,10 +130,10 @@ func (c *Client) translateMessage(byteMessage []byte) (Message, error) {
 		if err != nil {
 			return Message{}, err
 		}
-
-		log.Printf("ITEM: %+v\n", item)
 		
 		models.AddListItem(c.hub.database, roomID, item)
+
+		log.Printf("ADDED ITEM %+v\n", item)
 		
 		response := MessageResponse{
 			Event: "itemAdded",
@@ -138,7 +144,7 @@ func (c *Client) translateMessage(byteMessage []byte) (Message, error) {
 			return Message{}, responseBytesErr
 		}
 		
-		return Message{ room: roomID, excludeSender: false, sender: c, response: responseBytes }, nil
+		return Message{ room: roomID, includeSender: respond, sender: c, response: responseBytes }, nil
 	case "updateItem":	
 		/*
 			Update property/properties of existing ListItem
@@ -152,6 +158,8 @@ func (c *Client) translateMessage(byteMessage []byte) (Message, error) {
 		if err != nil {
 			return Message{}, err
 		}
+
+		log.Printf("\nUPDATED ITEM %s %+v\n", itemID, updated)
 		
 		response := MessageResponse{
 			Event: "itemUpdated",
@@ -167,8 +175,8 @@ func (c *Client) translateMessage(byteMessage []byte) (Message, error) {
 		if responseBytesErr != nil {
 			return Message{}, responseBytesErr
 		}
-	
-		return Message{ room: roomID, excludeSender: true, sender: c, response: responseBytes }, nil
+
+		return Message{ room: roomID, includeSender: respond, sender: c, response: responseBytes }, nil
 
 	case "deleteItem":
 		/*

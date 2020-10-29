@@ -83,7 +83,6 @@ class RoomCanvas extends Component {
 
   // Takes in item ID and tries to update the corresponding object in the editor scene
   updateRoomObject = (id) => {
-    console.log(id);
     const item = this.props.itemMap.get(id);
     if (!item) {
       console.error(
