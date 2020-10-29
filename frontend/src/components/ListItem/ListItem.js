@@ -1,6 +1,8 @@
 import React from "react";
 import { BsPencilSquare } from "react-icons/bs";
+import { BsThreeDots } from "react-icons/bs";
 import { ListGroupItem, Button } from "react-bootstrap";
+import IconButton from "../IconButton/IconButton";
 
 const ListItem = (props) => {
   const { item, onEdit } = props;
@@ -16,7 +18,7 @@ const ListItem = (props) => {
         </div>
 
         <div>
-          {item.claimedBy === undefined || item.claimedBy.length === 0 ? (
+          {/* {item.claimedBy === undefined || item.claimedBy.length === 0 ? (
             <Button
               variant="secondary"
               size="sm"
@@ -38,7 +40,10 @@ const ListItem = (props) => {
             }}
           >
             <BsPencilSquare />
-          </Button>
+          </Button> */}
+          <IconButton>
+            <BsThreeDots></BsThreeDots>
+          </IconButton>
         </div>
       </div>
     </ListGroupItem>

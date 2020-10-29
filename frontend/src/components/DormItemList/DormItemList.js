@@ -1,6 +1,5 @@
 import React from "react";
 import { ListGroup } from "react-bootstrap";
-
 import ListItem from "../ListItem/ListItem";
 
 const DormItemList = (props) => {
