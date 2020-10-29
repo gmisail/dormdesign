@@ -41,7 +41,6 @@ class RoomRoute extends Component {
     const connection = new SocketConnection(roomID);
     // When socket connection receives message, notify EventController
     connection.onMessage = (data) => {
-      console.log("RECEIVED: ", data);
       if (data.event) {
         EventController.emit(data.event, data.data);
       } else {
@@ -87,7 +86,6 @@ class RoomRoute extends Component {
         item.quantity = updated.quantity;
       }
       this.setState({ itemMap: new Map(this.state.itemMap) });
-      console.log(data);
     });
   };
 
@@ -97,7 +95,6 @@ class RoomRoute extends Component {
   };
 
   editItemFormSubmit = (itemID, modified) => {
-    console.log(modified);
     this.state.socketConnection.send({
       event: "updateItem",
       respond: true,
@@ -107,11 +104,6 @@ class RoomRoute extends Component {
       },
     });
 
-    // this.state.itemMap.set(item.id, editedItem);
-    // // In order for react to register that map has changed, need to copy map values to new map
-    // this.setState({ itemMap: new Map(this.state.itemMap) });
-
-    // this.setState({ editingItem: undefined });
     this.toggleModal();
   };
 
