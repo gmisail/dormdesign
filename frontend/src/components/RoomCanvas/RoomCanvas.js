@@ -3,6 +3,7 @@ import "./RoomCanvas.css";
 import SceneController from "../../room-editor/SceneController";
 import RoomObject from "../../room-editor/RoomObject";
 import Vector2 from "../../room-editor/Vector2";
+import EventController from "../../controllers/EventController";
 
 class RoomCanvas extends Component {
   constructor(props) {
@@ -45,12 +46,19 @@ class RoomCanvas extends Component {
     this.setState({
       scene: scene,
       roomObject: room,
+      visibleItemsMap: new Map(),
+    });
+
+    EventController.on("itemPositionUpdated", (payload) => {
+      room.updateRoomItem(payload.id, {
+        position: payload.editorPosition,
+      });
     });
   }
 
   componentDidUpdate(prevProps) {
     // Filter out items not included in editor
-    const includedItems = [...this.props.itemMap.values()].filter(
+    const includedItems = this.props.items.filter(
       (item) => item.visibleInEditor
     );
 
@@ -60,6 +68,10 @@ class RoomCanvas extends Component {
     });
     const addedObjects = [...this.state.roomObject.roomItems].sort();
 
+    // Map that will be filled with references to all items that are part of editor
+    const visibleItemsMap = this.state.visibleItemsMap;
+    visibleItemsMap.clear();
+
     // Iterate through both sorted lists simultaneously and find objects that need to be added/removed
     let i = 0;
     let j = 0;
@@ -68,36 +80,32 @@ class RoomCanvas extends Component {
       const b = j < addedObjects.length ? addedObjects[j] : undefined;
       if (!b || a < b) {
         this.addItemToScene(items[i]);
+        visibleItemsMap.set(items[i].id, items[i]);
         i++;
       } else if (!a || a > b) {
         this.removeItemFromScene(b);
         j++;
       } else {
         // Update item in case its properties changed
-        this.updateRoomObject(a);
+        this.updateRoomObject(items[i]);
+        visibleItemsMap.set(items[i].id, items[i]);
         i++;
         j++;
       }
     }
   }
 
-  // Takes in item ID and tries to update the corresponding object in the editor scene
-  updateRoomObject = (id) => {
-    const item = this.props.itemMap.get(id);
-    if (!item) {
-      console.error(
-        `ERROR Updating item in room editor. Invalid item ID: ${id}`
-      );
-    }
+  // Takes in item and tries to update the corresponding object in the editor scene
+  updateRoomObject = (item) => {
     // Try and fetch corresponding scene object
-    const obj = this.state.scene.objects.get(id);
+    const obj = this.state.scene.objects.get(item.id);
     if (!obj) {
       console.error(
-        `ERROR updating object with id ${id}. Couldn't find corresponding scene object with matching id.`
+        `ERROR updating object with id ${item.id}. Couldn't find corresponding scene object with matching id.`
       );
       return;
     }
-    this.state.roomObject.updateRoomItem(id, {
+    this.state.roomObject.updateRoomItem(item.id, {
       position: item.editorPosition,
       name: item.name,
       width: item.dimensions.width,
@@ -107,19 +115,18 @@ class RoomCanvas extends Component {
 
   // Called when object is moved in room. Updates item's position and calls callback function
   roomObjectUpdated = (obj) => {
-    const updated = {
-      id: obj.id,
-      position: obj.position,
-    };
-
-    const item = this.props.itemMap.get(updated.id);
+    const item = this.state.visibleItemsMap.get(obj.id);
 
     if (item) {
-      item.editorPosition = updated.position;
-    }
-
-    if (this.props.onItemUpdate) {
-      this.props.onItemUpdate(item);
+      item.editorPosition = obj.position;
+      if (this.props.onItemUpdate) {
+        this.props.onItemUpdate(item);
+      }
+    } else {
+      console.error(
+        "ERROR Unable to find item associated with SceneObject: ",
+        obj
+      );
     }
   };
 

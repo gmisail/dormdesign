@@ -84,15 +84,13 @@ class ListItemForm extends Component {
       }
 
       // If NaN set to 0 (which is treated like undefined)
+      widthInputValue = parseFloat(widthInputValue);
+      lengthInputValue = parseFloat(lengthInputValue);
       if (isNaN(widthInputValue)) {
         widthInputValue = 0;
-      } else {
-        widthInputValue = parseFloat(widthInputValue);
       }
       if (isNaN(lengthInputValue)) {
         lengthInputValue = 0;
-      } else {
-        lengthInputValue = parseFloat(lengthInputValue);
       }
 
       // If dimension values aren't zero, compare them with old item dimensions. Otherwise, check if item values are undefined
@@ -118,7 +116,7 @@ class ListItemForm extends Component {
         (claimedByInputValue.length !== 0 &&
           claimedByInputValue !== item.claimedBy)
       ) {
-        modifiedProperties.claimbedBy = claimedByInputValue;
+        modifiedProperties.claimedBy = claimedByInputValue;
       }
       if (visibleInEditorValue !== item.visibleInEditor) {
         modifiedProperties.visibleInEditor = visibleInEditorValue;

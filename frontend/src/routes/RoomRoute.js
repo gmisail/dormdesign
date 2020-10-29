@@ -14,10 +14,10 @@ class RoomRoute extends Component {
     super();
 
     this.state = {
-      itemMap: undefined,
+      items: undefined,
       showModal: false,
       modalType: "none",
-      editingItemIndex: undefined,
+      editingItem: undefined,
       socketConnection: undefined,
     };
   }
@@ -50,45 +50,65 @@ class RoomRoute extends Component {
     connection.onClose = this.onSocketConnectionClosed;
     this.setState({ socketConnection: connection });
 
-    const itemMap = await DataController.getList(roomID);
-    this.setState({ itemMap: itemMap });
+    try {
+      const items = await DataController.getList(roomID);
+      this.setState({ items: items });
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   setupEventListeners = () => {
     EventController.on("itemAdded", (data) => {
       const item = new DormItem(data);
 
-      this.state.itemMap.set(item.id, item);
-      // In order for react to register that map has changed, need to copy map values to new map
-      this.setState({ itemMap: new Map(this.state.itemMap) });
+      this.setState({ items: [item, ...this.state.items] });
     });
 
-    EventController.on("itemUpdated", (data) => {
-      // console.log(data);
-      const item = this.state.itemMap.get(data.id);
+    EventController.on("itemEdited", (data) => {
       const updated = data.updated;
-      if (updated.editorPosition) {
-        item.editorPosition = updated.editorPosition;
+
+      const oldItemArray = this.state.items;
+      let itemArray = [];
+      let updateIndex = undefined;
+      for (let i = 0; i < oldItemArray.length; i++) {
+        let item = oldItemArray[i];
+        itemArray.push(item);
+        if (item.id === data.id) {
+          updateIndex = i;
+        }
       }
-      if (updated.dimensions) {
-        item.dimensions = updated.dimensions;
+      if (updateIndex === undefined) {
+        console.error(
+          "ERROR Updating item. Unable to find item with ID ",
+          data.id
+        );
+      } else {
+        if (Object.prototype.hasOwnProperty.call(updated, "editorPosition")) {
+          itemArray[updateIndex].editorPosition = updated.editorPosition;
+        }
+        if (Object.prototype.hasOwnProperty.call(updated, "dimensions")) {
+          itemArray[updateIndex].dimensions = updated.dimensions;
+        }
+        if (Object.prototype.hasOwnProperty.call(updated, "name")) {
+          itemArray[updateIndex].name = updated.name;
+        }
+        if (Object.prototype.hasOwnProperty.call(updated, "claimedBy")) {
+          itemArray[updateIndex].claimedBy = updated.claimedBy;
+        }
+        if (Object.prototype.hasOwnProperty.call(updated, "visibleInEditor")) {
+          itemArray[updateIndex].visibleInEditor = updated.visibleInEditor;
+        }
+        if (Object.prototype.hasOwnProperty.call(updated, "quantity")) {
+          itemArray[updateIndex].quantity = updated.quantity;
+        }
+
+        this.setState({ items: itemArray });
       }
-      if (updated.name) {
-        item.name = updated.name;
-      }
-      if (updated.claimedBy) {
-        item.claimedBy = updated.claimedBy;
-      }
-      if (updated.visibleInEditor) {
-        item.visibleInEditor = updated.visibleInEditor;
-      }
-      if (updated.quantity) {
-        item.quantity = updated.quantity;
-      }
-      this.setState({ itemMap: new Map(this.state.itemMap) });
     });
   };
 
+  // Called when edit button is clicked for an item in the list
   editItem = (item) => {
     this.setState({ editingItem: item });
     this.toggleModal("edit");
@@ -97,7 +117,7 @@ class RoomRoute extends Component {
   // Receives item ID and list of modified properties when ListItemForm is submitted
   editItemFormSubmit = (itemID, modified) => {
     this.state.socketConnection.send({
-      event: "updateItem",
+      event: "editItem",
       respond: true,
       data: {
         itemID,
@@ -106,6 +126,7 @@ class RoomRoute extends Component {
     });
 
     this.toggleModal();
+    this.setState({ editingItem: undefined });
   };
 
   // Receives item ID and list of modified properties when ListItemForm is submitted
@@ -121,13 +142,11 @@ class RoomRoute extends Component {
   // Callback passed to RoomCanvas for when item is updated
   itemUpdatedInEditor = (item) => {
     this.state.socketConnection.send({
-      event: "updateItem",
+      event: "updateItemPosition",
       respond: false,
       data: {
         itemID: item.id,
-        updated: {
-          editorPosition: item.editorPosition,
-        },
+        editorPosition: item.editorPosition,
       },
     });
   };
@@ -180,7 +199,7 @@ class RoomRoute extends Component {
           </Row>
           <Row className="mt-auto">
             <Col xs={12} lg={7} className="mb-3">
-              {this.state.itemMap === undefined ? (
+              {this.state.items === undefined ? (
                 <div className="text-center mt-5">
                   <Spinner animation="border" role="status">
                     <span className="sr-only">Loading...</span>
@@ -188,7 +207,7 @@ class RoomRoute extends Component {
                 </div>
               ) : (
                 <RoomCanvas
-                  itemMap={this.state.itemMap}
+                  items={this.state.items}
                   onItemUpdate={this.itemUpdatedInEditor}
                 />
               )}
@@ -204,7 +223,7 @@ class RoomRoute extends Component {
                 </Button>
               </Row>
 
-              {this.state.itemMap === undefined ? (
+              {this.state.items === undefined ? (
                 <div className="text-center mt-5">
                   <Spinner animation="border" role="status">
                     <span className="sr-only">Loading...</span>
@@ -212,7 +231,7 @@ class RoomRoute extends Component {
                 </div>
               ) : (
                 <DormItemList
-                  items={[...this.state.itemMap.values()]}
+                  items={this.state.items}
                   onEditItem={this.editItem}
                 ></DormItemList>
               )}
