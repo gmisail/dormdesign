@@ -62,6 +62,31 @@ class RoomRoute extends Component {
       // In order for react to register that map has changed, need to copy map values to new map
       this.setState({ itemMap: new Map(this.state.itemMap) });
     });
+
+    EventController.on("itemUpdated", (payload) => {
+      // console.log(payload);
+      const item = this.state.itemMap.get(payload.id);
+      const updated = payload.updated;
+      if (updated.editorPosition) {
+        item.editorPosition = updated.editorPosition;
+      }
+      if (updated.dimensions) {
+        item.dimensions = updated.dimensions;
+      }
+      if (updated.name) {
+        item.name = updated.name;
+      }
+      if (updated.claimedBy) {
+        item.claimedBy = updated.claimedBy;
+      }
+      if (updated.visibleInEditor) {
+        item.visibleInEditor = updated.visibleInEditor;
+      }
+      if (updated.quantity) {
+        item.quantity = updated.quantity;
+      }
+      this.setState({ itemMap: new Map(this.state.itemMap) });
+    });
   };
 
   editItem = (item) => {
@@ -73,9 +98,16 @@ class RoomRoute extends Component {
     const item = this.state.editingItem;
     const editedItem = await DataController.editListItem(item);
 
-    this.state.itemMap.set(item.id, editedItem);
-    // In order for react to register that map has changed, need to copy map values to new map
-    this.setState({ itemMap: new Map(this.state.itemMap) });
+    this.state.socketConnection.send({
+      event: "editItem",
+      data: {
+        ...item,
+      },
+    });
+
+    // this.state.itemMap.set(item.id, editedItem);
+    // // In order for react to register that map has changed, need to copy map values to new map
+    // this.setState({ itemMap: new Map(this.state.itemMap) });
 
     this.setState({ editingItem: undefined });
     this.toggleModal();

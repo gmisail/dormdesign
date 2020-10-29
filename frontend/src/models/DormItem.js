@@ -17,9 +17,10 @@ class DormItem {
 
     this.dimensions = dimensions
       ? {
-          width: dimensions.width,
-          length: dimensions.length,
-          height: dimensions.height,
+          // If dimensions are 0 (default value from backend), set as undefined
+          width: dimensions.width === 0 ? undefined : dimensions.width,
+          length: dimensions.length === 0 ? undefined : dimensions.length,
+          height: dimensions.height === 0 ? undefined : dimensions.height,
         }
       : { width: undefined, length: undefined, height: undefined };
     this.visibleInEditor = visibleInEditor ?? false;
