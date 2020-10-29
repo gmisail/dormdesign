@@ -159,7 +159,7 @@ func (c *Client) translateMessage(byteMessage []byte) (Message, error) {
 			return Message{}, err
 		}
 
-		log.Printf("\nUPDATED ITEM %s %+v\n", itemID, updated)
+		log.Printf("UPDATED ITEM %s %+v\n", itemID, updated)
 		
 		response := MessageResponse{
 			Event: "itemUpdated",

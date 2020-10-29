@@ -94,6 +94,7 @@ class RoomRoute extends Component {
     this.toggleModal("edit");
   };
 
+  // Receives item ID and list of modified properties when ListItemForm is submitted
   editItemFormSubmit = (itemID, modified) => {
     this.state.socketConnection.send({
       event: "updateItem",
@@ -107,12 +108,11 @@ class RoomRoute extends Component {
     this.toggleModal();
   };
 
-  addNewItem = (item) => {
+  // Receives item ID and list of modified properties when ListItemForm is submitted
+  addNewItem = (itemID, modified) => {
     this.state.socketConnection.send({
       event: "addItem",
-      data: {
-        ...item,
-      },
+      data: modified,
     });
 
     this.toggleModal();
@@ -148,7 +148,7 @@ class RoomRoute extends Component {
               <Modal.Title>Add an Item</Modal.Title>
             </Modal.Header>
             <Modal.Body>
-              <ListItemForm onSubmit={this.addNewItem.bind(this)} />
+              <ListItemForm onSubmit={this.addNewItem} />
             </Modal.Body>
           </Modal>
         );
