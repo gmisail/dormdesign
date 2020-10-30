@@ -7,78 +7,146 @@ import ListItemForm from "../components/ListItemForm/ListItemForm";
 import DataController from "../controllers/DataController";
 import SocketConnection from "../controllers/SocketConnection";
 import EventController from "../controllers/EventController";
+import DormItem from "../models/DormItem";
 
 class RoomRoute extends Component {
   constructor() {
     super();
 
     this.state = {
-      itemMap: undefined,
+      items: undefined,
       showModal: false,
       modalType: "none",
-      editingItemIndex: undefined,
+      editingItem: undefined,
       socketConnection: undefined,
     };
   }
 
   componentDidMount() {
-    this.getItemMap();
+    this.loadData();
+    this.setupEventListeners();
   }
 
-  onReceiveSocketMessage = (data) => {
-    console.log("RECEIVED", data);
-
-    EventController.emit(data.event, data.data);
-  };
-
   onSocketConnectionClosed = (message) => {
-    console.log("SOCKET CLOSED", message);
+    console.warn("SOCKET CLOSED", message);
+
+    /*
+      TODO: Display some sort of error and try to reconnect
+    */
   };
 
-  getItemMap = async () => {
-    // const listID = await DataController.CREATE_TEST_LIST();
+  loadData = async () => {
     const roomID = this.props.match.params.id;
-    console.log("ROOM ID", roomID);
 
     const connection = new SocketConnection(roomID);
-    connection.onMessage = this.onReceiveSocketMessage;
+    // When socket connection receives message, notify EventController
+    connection.onMessage = (data) => {
+      if (data.event) {
+        EventController.emit(data.event, data.data);
+      } else {
+        console.warn("Socket message received with no event field: ", data);
+      }
+    };
     connection.onClose = this.onSocketConnectionClosed;
-
     this.setState({ socketConnection: connection });
-    const itemMap = await DataController.getList(roomID);
-    this.setState({ itemMap: itemMap });
+
+    try {
+      const items = await DataController.getList(roomID);
+      this.setState({ items: items });
+    } catch (err) {
+      console.error(err);
+    }
   };
 
+  setupEventListeners = () => {
+    EventController.on("itemAdded", (data) => {
+      const item = new DormItem(data);
+
+      this.setState({ items: [item, ...this.state.items] });
+    });
+
+    EventController.on("itemEdited", (data) => {
+      const updated = data.updated;
+
+      const oldItemArray = this.state.items;
+      let itemArray = [];
+      let updateIndex = undefined;
+      for (let i = 0; i < oldItemArray.length; i++) {
+        let item = oldItemArray[i];
+        itemArray.push(item);
+        if (item.id === data.id) {
+          updateIndex = i;
+        }
+      }
+      if (updateIndex === undefined) {
+        console.error(
+          "ERROR Updating item. Unable to find item with ID ",
+          data.id
+        );
+      } else {
+        if (Object.prototype.hasOwnProperty.call(updated, "editorPosition")) {
+          itemArray[updateIndex].editorPosition = updated.editorPosition;
+        }
+        if (Object.prototype.hasOwnProperty.call(updated, "dimensions")) {
+          itemArray[updateIndex].dimensions = updated.dimensions;
+        }
+        if (Object.prototype.hasOwnProperty.call(updated, "name")) {
+          itemArray[updateIndex].name = updated.name;
+        }
+        if (Object.prototype.hasOwnProperty.call(updated, "claimedBy")) {
+          itemArray[updateIndex].claimedBy = updated.claimedBy;
+        }
+        if (Object.prototype.hasOwnProperty.call(updated, "visibleInEditor")) {
+          itemArray[updateIndex].visibleInEditor = updated.visibleInEditor;
+        }
+        if (Object.prototype.hasOwnProperty.call(updated, "quantity")) {
+          itemArray[updateIndex].quantity = updated.quantity;
+        }
+
+        this.setState({ items: itemArray });
+      }
+    });
+  };
+
+  // Called when edit button is clicked for an item in the list
   editItem = (item) => {
     this.setState({ editingItem: item });
     this.toggleModal("edit");
   };
 
-  saveEditedItem = async () => {
-    const item = this.state.editingItem;
-    const editedItem = await DataController.editListItem(item);
-    this.state.itemMap.set(item.id, editedItem);
-    this.setState({ editingItem: undefined });
+  // Receives item ID and list of modified properties when ListItemForm is submitted
+  editItemFormSubmit = (itemID, modified) => {
+    this.state.socketConnection.send({
+      event: "editItem",
+      respond: true,
+      data: {
+        itemID,
+        updated: modified,
+      },
+    });
+
     this.toggleModal();
+    this.setState({ editingItem: undefined });
   };
 
-  addNewItem = async (item) => {
-    let newItem = await DataController.addListItem(item);
-    this.state.itemMap.set(newItem.id, newItem);
+  // Receives item ID and list of modified properties when ListItemForm is submitted
+  addNewItem = (itemID, modified) => {
+    this.state.socketConnection.send({
+      event: "addItem",
+      data: modified,
+    });
 
     this.toggleModal();
   };
 
   // Callback passed to RoomCanvas for when item is updated
   itemUpdatedInEditor = (item) => {
-    // console.log("ITEM", item.id, item, "UPDATED");
     this.state.socketConnection.send({
-      event: "itemUpdated",
+      event: "updateItemPosition",
+      respond: false,
       data: {
         itemID: item.id,
-        updated: {
-          editorPosition: item.editorPosition,
-        },
+        editorPosition: item.editorPosition,
       },
     });
   };
@@ -99,7 +167,7 @@ class RoomRoute extends Component {
               <Modal.Title>Add an Item</Modal.Title>
             </Modal.Header>
             <Modal.Body>
-              <ListItemForm onSubmit={this.addNewItem.bind(this)} />
+              <ListItemForm onSubmit={this.addNewItem} />
             </Modal.Body>
           </Modal>
         );
@@ -112,7 +180,7 @@ class RoomRoute extends Component {
             <Modal.Body>
               <ListItemForm
                 item={this.state.editingItem}
-                onSubmit={this.saveEditedItem}
+                onSubmit={this.editItemFormSubmit}
               />
             </Modal.Body>
           </Modal>
@@ -131,7 +199,7 @@ class RoomRoute extends Component {
           </Row>
           <Row className="mt-auto">
             <Col xs={12} lg={7} className="mb-3">
-              {this.state.itemMap === undefined ? (
+              {this.state.items === undefined ? (
                 <div className="text-center mt-5">
                   <Spinner animation="border" role="status">
                     <span className="sr-only">Loading...</span>
@@ -139,7 +207,7 @@ class RoomRoute extends Component {
                 </div>
               ) : (
                 <RoomCanvas
-                  itemMap={this.state.itemMap}
+                  items={this.state.items}
                   onItemUpdate={this.itemUpdatedInEditor}
                 />
               )}
@@ -155,7 +223,7 @@ class RoomRoute extends Component {
                 </Button>
               </Row>
 
-              {this.state.itemMap === undefined ? (
+              {this.state.items === undefined ? (
                 <div className="text-center mt-5">
                   <Spinner animation="border" role="status">
                     <span className="sr-only">Loading...</span>
@@ -163,7 +231,7 @@ class RoomRoute extends Component {
                 </div>
               ) : (
                 <DormItemList
-                  items={[...this.state.itemMap.values()]}
+                  items={this.state.items}
                   onEditItem={this.editItem}
                 ></DormItemList>
               )}

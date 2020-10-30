@@ -50,8 +50,7 @@ class DataController {
   //Retrieves the List's data from the server.
   static async getList(id) {
     if (!id) {
-      console.error("Failed to fetch list. Room ID is undefined");
-      return;
+      throw new Error("Can't fetch room data. Room ID is undefined");
     }
 
     const response = await fetch(`/list/get?id=${id}`);
@@ -61,17 +60,15 @@ class DataController {
       throw new Error(message);
     }
     const data = await response.json();
-    // Convert JSON object containing items keyed by their IDs to an ES6 Map
-    const itemMap = new Map(
-      Object.keys(data.items).map((key) => [key, new DormItem(data.items[key])])
-    );
 
-    // Static data for testing purposes
-    // const itemMap = new Map(
-    //   TEST_ITEMS_DATA.map((item) => [item.id, new DormItem(item)])
-    // );
+    if (!data.items) {
+      throw new Error("ERROR Room items missing from fetch room response");
+    }
 
-    return itemMap;
+    const items = data.items.map((item) => {
+      return new DormItem(item);
+    });
+    return items;
   }
 
   /*

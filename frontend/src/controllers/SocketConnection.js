@@ -10,11 +10,14 @@ class SocketConnection {
   // Receives incoming messages and parses the data JS objects
   set onMessage(callback) {
     this.connection.onmessage = (evt) => {
+      let data = undefined;
       try {
-        const data = JSON.parse(evt.data);
-        callback(data);
+        data = JSON.parse(evt.data);
       } catch (e) {
         console.error("Error parsing socket message data: ", e);
+      }
+      if (data) {
+        callback(data);
       }
     };
   }

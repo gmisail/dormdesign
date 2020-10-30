@@ -298,8 +298,11 @@ class RoomObject extends SceneObject {
   // Updates object in room. Returns true if successful false if not
   updateRoomItem(id, { position, name, width, height }) {
     const obj = this.scene.objects.get(id);
-    if (!obj) return false;
-    if (position) {
+    if (!obj) {
+      console.error("ERROR updating room item. Invalid object ID: " + id);
+      return;
+    }
+    if (position && position.x && position.y) {
       obj.setPosition(new Vector2(position.x, position.y));
     }
     if (name) {

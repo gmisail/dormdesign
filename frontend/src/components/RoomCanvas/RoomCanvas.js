@@ -46,19 +46,20 @@ class RoomCanvas extends Component {
     this.setState({
       scene: scene,
       roomObject: room,
+      visibleItemsMap: new Map(),
     });
 
-    EventController.on("itemUpdated", (payload) => {
+    EventController.on("itemPositionUpdated", (payload) => {
       room.updateRoomItem(payload.id, {
-        position: payload.updated.editorPosition,
+        position: payload.editorPosition,
       });
     });
   }
 
   componentDidUpdate(prevProps) {
     // Filter out items not included in editor
-    const includedItems = [...this.props.itemMap.values()].filter(
-      (item) => item.editable
+    const includedItems = this.props.items.filter(
+      (item) => item.visibleInEditor
     );
 
     // Sort included items and currently added objects by id
@@ -66,6 +67,10 @@ class RoomCanvas extends Component {
       return a.id - b.id;
     });
     const addedObjects = [...this.state.roomObject.roomItems].sort();
+
+    // Map that will be filled with references to all items that are part of editor
+    const visibleItemsMap = this.state.visibleItemsMap;
+    visibleItemsMap.clear();
 
     // Iterate through both sorted lists simultaneously and find objects that need to be added/removed
     let i = 0;
@@ -75,32 +80,53 @@ class RoomCanvas extends Component {
       const b = j < addedObjects.length ? addedObjects[j] : undefined;
       if (!b || a < b) {
         this.addItemToScene(items[i]);
+        visibleItemsMap.set(items[i].id, items[i]);
         i++;
       } else if (!a || a > b) {
         this.removeItemFromScene(b);
         j++;
       } else {
+        // Update item in case its properties changed
+        this.updateRoomObject(items[i]);
+        visibleItemsMap.set(items[i].id, items[i]);
         i++;
         j++;
       }
     }
   }
 
+  // Takes in item and tries to update the corresponding object in the editor scene
+  updateRoomObject = (item) => {
+    // Try and fetch corresponding scene object
+    const obj = this.state.scene.objects.get(item.id);
+    if (!obj) {
+      console.error(
+        `ERROR updating object with id ${item.id}. Couldn't find corresponding scene object with matching id.`
+      );
+      return;
+    }
+    this.state.roomObject.updateRoomItem(item.id, {
+      position: item.editorPosition,
+      name: item.name,
+      width: item.dimensions.width,
+      height: item.dimensions.length, // Since editor is 2D, use length for Y dimension
+    });
+  };
+
   // Called when object is moved in room. Updates item's position and calls callback function
   roomObjectUpdated = (obj) => {
-    const updated = {
-      id: obj.id,
-      position: obj.position,
-    };
-
-    const item = this.props.itemMap.get(updated.id);
+    const item = this.state.visibleItemsMap.get(obj.id);
 
     if (item) {
-      item.editorPosition = updated.position;
-    }
-
-    if (this.props.onItemUpdate) {
-      this.props.onItemUpdate(item);
+      item.editorPosition = obj.position;
+      if (this.props.onItemUpdate) {
+        this.props.onItemUpdate(item);
+      }
+    } else {
+      console.error(
+        "ERROR Unable to find item associated with SceneObject: ",
+        obj
+      );
     }
   };
 
@@ -109,8 +135,8 @@ class RoomCanvas extends Component {
     const newObj = this.state.roomObject.addItemToRoom({
       id: item.id,
       name: item.name,
-      feetWidth: item.dimensions.w,
-      feetHeight: item.dimensions.l,
+      feetWidth: item.dimensions.width,
+      feetHeight: item.dimensions.length,
       position: item.editorPosition,
     });
     // If item had no position, update item data with new position set by the room (should be in center of room by default)

@@ -10,6 +10,8 @@ import (
 	"github.com/gmisail/dormdesign/models"
 	"github.com/labstack/echo/v4"
 	"github.com/gorilla/websocket"
+	"github.com/google/uuid"
+	"github.com/mitchellh/mapstructure"
 )
 
 const (
@@ -92,46 +94,98 @@ func (c *Client) translateMessage(byteMessage []byte) (Message, error) {
 	// Assert that data is a map
 	messageMap, ok := message.(map[string]interface{})
 	if !ok {
-		return Message{}, errors.New("Incorrect message format")
+		return Message{}, errors.New("ERROR Incorrect message format")
 	}
 
 	roomID, ok := messageMap["room"].(string)
-	_ = roomID 	// TODO: Remove this line when implementation has been added - its only being used to silence variable unused error
 	if !ok {
-		return Message{}, errors.New("Unable to decode room ID from message data")
+		return Message{}, errors.New("ERROR Unable to decode room ID from message data")
 	}
 
 	data, ok := messageMap["data"].(map[string]interface{})
-	_ = data  // TODO: Remove this line - its only being used to silence variable unused error
 	if !ok {
-		return Message{}, errors.New("Message missing required \"data\" field")
+		return Message{}, errors.New("ERROR Message missing required \"data\" field")
+	}
+
+	event, ok := messageMap["event"].(string)
+	if !ok {
+		return Message{}, errors.New("ERROR Message event isn't a string")
 	}
 
 	// Handle different message events based on value of "event" field in message JSON
-	switch messageMap["event"] {
-	case "itemAdded":
+	switch event {
+	case "addItem":
 		/*
 			Create new ListItem model
 		*/
-		return Message{}, errors.New("Event not supported yet")
-	case "itemUpdated":	
+		var item models.ListItem
+		err := mapstructure.Decode(data, &item)
+		item.ID = uuid.New().String()
+		if err != nil {
+			return Message{}, err
+		}
+		
+		models.AddListItem(c.hub.database, roomID, item)
+
+		log.Printf("ADDED ITEM %+v\n", item)
+		
+		response := MessageResponse{
+			Event: "itemAdded",
+			Data: item,
+		}
+		responseBytes, responseBytesErr := json.Marshal(response)
+		if responseBytesErr != nil {
+			return Message{}, responseBytesErr
+		}
+		
+		return Message{ room: roomID, includeSender: true, sender: c, response: responseBytes }, nil
+
+	case "updateItemPosition":
+		itemID := data["itemID"].(string)
+		editorPosition := data["editorPosition"].(map[string]interface{})
+	
+		_, err := models.EditListItem(c.hub.database, roomID, itemID, map[string]interface{}{"editorPosition" : editorPosition })
+		if err != nil {
+			return Message{}, err
+		}
+
+		log.Printf("UPDATED ITEM %s %+v\n", itemID, editorPosition)
+		
+		response := MessageResponse{
+			Event: "itemPositionUpdated",
+			Data: struct{
+				ID string `json:"id"`
+				EditorPosition map[string]interface{} `json:"editorPosition"`
+			}{
+				ID: itemID,
+				EditorPosition: editorPosition,
+			},
+		}
+		responseBytes, responseBytesErr := json.Marshal(response)
+		if responseBytesErr != nil {
+			return Message{}, responseBytesErr
+		}
+
+		return Message{ room: roomID, includeSender: false, sender: c, response: responseBytes }, nil
+
+	case "editItem":	
 		/*
-			Update property/properties of existing ListItem
+			Edit property/properties of existing ListItem
 		*/
 
 		itemID := data["itemID"].(string)
 		// Get map of updated properties and their values
 		updated := data["updated"].(map[string]interface{})
 	
-
-		item, err := models.EditListItem(c.hub.database, roomID, itemID, updated)
-		log.Println("ITEM", (*item).EditorPosition)
+		_, err := models.EditListItem(c.hub.database, roomID, itemID, updated)
 		if err != nil {
 			return Message{}, err
 		}
+
+		log.Printf("UPDATED ITEM %s %+v\n", itemID, updated)
 		
 		response := MessageResponse{
-			Event: "itemUpdated",
+			Event: "itemEdited",
 			Data: struct{
 				ID string `json:"id"`
 				Updated map[string]interface{} `json:"updated"`
@@ -140,22 +194,20 @@ func (c *Client) translateMessage(byteMessage []byte) (Message, error) {
 				Updated: updated,
 			},
 		}
-
 		responseBytes, responseBytesErr := json.Marshal(response)
-
 		if responseBytesErr != nil {
 			return Message{}, responseBytesErr
 		}
-	
-		return Message{ room: roomID, sender: c, response: responseBytes }, nil
 
-	case "itemDeleted":
+		return Message{ room: roomID, includeSender: true, sender: c, response: responseBytes }, nil
+
+	case "deleteItem":
 		/*
 			Delete ListItem
 		*/
 		return Message{}, errors.New("Event not supported yet")
 	default:
-		return Message{}, errors.New("Error: Unknown or missing event in message")
+		return Message{}, errors.New("ERROR Unknown event: " + event)
 	}
 }
 
