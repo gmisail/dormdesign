@@ -4,7 +4,7 @@ import { ListGroup } from "react-bootstrap";
 import ListItem from "../ListItem/ListItem";
 
 const DormItemList = (props) => {
-  const { items, onEditItem } = props;
+  const { items, onEditItem, onClaimItem } = props;
 
   return (
     <ListGroup>
@@ -17,6 +17,7 @@ const DormItemList = (props) => {
               key={item.id}
               item={item}
               onEdit={() => onEditItem(item)}
+              onClaim={() => onClaimItem(item)}
             />
           );
         })

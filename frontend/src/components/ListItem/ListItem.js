@@ -3,7 +3,7 @@ import { BsPencilSquare } from "react-icons/bs";
 import { ListGroupItem, Button } from "react-bootstrap";
 
 const ListItem = (props) => {
-  const { item, onEdit } = props;
+  const { item, onEdit, onClaim } = props;
 
   return (
     <ListGroupItem>
@@ -17,13 +17,7 @@ const ListItem = (props) => {
 
         <div>
           {item.claimedBy === undefined || item.claimedBy.length === 0 ? (
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => {
-                console.log(`Claim button clicked for ${item.name}`);
-              }}
-            >
+            <Button variant="secondary" size="sm" onClick={onClaim}>
               Claim
             </Button>
           ) : (

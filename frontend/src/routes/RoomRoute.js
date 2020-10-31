@@ -8,6 +8,7 @@ import DataController from "../controllers/DataController";
 import SocketConnection from "../controllers/SocketConnection";
 import EventController from "../controllers/EventController";
 import DormItem from "../models/DormItem";
+import ChooseNameForm from "../components/ChooseNameForm/ChooseNameForm";
 
 class RoomRoute extends Component {
   constructor() {
@@ -25,6 +26,11 @@ class RoomRoute extends Component {
   componentDidMount() {
     this.loadData();
     this.setupEventListeners();
+
+    const name = window.localStorage.getItem("name");
+    if (!name || name.length === 0) {
+      this.toggleModal("choose-name");
+    }
   }
 
   onSocketConnectionClosed = (message) => {
@@ -129,6 +135,30 @@ class RoomRoute extends Component {
     this.setState({ editingItem: undefined });
   };
 
+  editClaimedBy = (item) => {
+    const name = window.localStorage.getItem("name");
+
+    if (!name || name.length === 0) {
+      this.toggleModal("choose-name");
+    } else {
+      this.state.socketConnection.send({
+        event: "editItem",
+        respond: true,
+        data: {
+          itemID: item.id,
+          updated: {
+            claimedBy: window.localStorage.getItem("name"),
+          },
+        },
+      });
+    }
+  };
+
+  editName = (name) => {
+    window.localStorage.setItem("name", name);
+    this.toggleModal();
+  };
+
   // Receives item ID and list of modified properties when ListItemForm is submitted
   addNewItem = (itemID, modified) => {
     this.state.socketConnection.send({
@@ -185,6 +215,21 @@ class RoomRoute extends Component {
             </Modal.Body>
           </Modal>
         );
+      case "choose-name":
+        return (
+          <Modal show={this.state.showModal} onHide={this.toggleModal}>
+            <Modal.Header closeButton>
+              <Modal.Title>Choose Your Name</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+              Before you can claim items, you must choose a name so that other
+              users know who you are.
+              <hr />
+              <ChooseNameForm onSubmit={this.editName} />
+            </Modal.Body>
+          </Modal>
+        );
+
       default:
         return;
     }
@@ -233,6 +278,7 @@ class RoomRoute extends Component {
                 <DormItemList
                   items={this.state.items}
                   onEditItem={this.editItem}
+                  onClaimItem={this.editClaimedBy}
                 ></DormItemList>
               )}
             </Col>
