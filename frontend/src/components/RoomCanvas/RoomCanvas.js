@@ -17,7 +17,7 @@ class RoomCanvas extends Component {
 
   componentDidMount() {
     const scene = new SceneController([this.canvas1, this.canvas2]);
-    scene.backgroundColor = "#ccc";
+    scene.backgroundColor = "#fff";
 
     // Points defining the edges of the room (in feet)
     const testBoundaryPath = [
@@ -38,7 +38,7 @@ class RoomCanvas extends Component {
       scene: scene,
       boundaryPoints: testBoundaryPath,
       canvasLayer: 1,
-      backgroundColor: "#ccc",
+      backgroundColor: "#fff",
       onObjectMoved: this.roomObjectUpdated,
     });
     scene.addObject(room);
@@ -154,17 +154,21 @@ class RoomCanvas extends Component {
 
   render() {
     return (
-      <div className="room-canvas-container mx-auto">
-        <canvas
-          ref={(ref) => (this.canvas1 = ref)}
-          className="room-canvas"
-          style={{ zIndex: 1 }}
-        ></canvas>
-        <canvas
-          ref={(ref) => (this.canvas2 = ref)}
-          className="room-canvas"
-          style={{ zIndex: 2 }}
-        ></canvas>
+      <div class="card">
+        <div class="card-body">
+          <div className="room-canvas-container mx-auto">
+            <canvas
+              ref={(ref) => (this.canvas1 = ref)}
+              className="room-canvas"
+              style={{ zIndex: 1 }}
+            ></canvas>
+            <canvas
+              ref={(ref) => (this.canvas2 = ref)}
+              className="room-canvas"
+              style={{ zIndex: 2 }}
+            ></canvas>
+          </div>
+        </div>
       </div>
     );
   }

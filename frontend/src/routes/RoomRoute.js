@@ -138,7 +138,7 @@ class RoomRoute extends Component {
       });
     }
   };
-  
+
   // Called when delete button is clicked for an item in the list
   deleteItem = (item) => {
     console.log("Delete button clicked for item: ", item);
@@ -263,16 +263,6 @@ class RoomRoute extends Component {
               )}
             </Col>
             <Col lg={5}>
-              <Row className="justify-content-between align-items-center m-0 mb-3">
-                <h5>Dorm Items</h5>
-                <Button
-                  name="addItemButton"
-                  onClick={() => this.toggleModal("add")}
-                >
-                  Add Item
-                </Button>
-              </Row>
-
               {this.state.items === undefined ? (
                 <div className="text-center mt-5">
                   <Spinner animation="border" role="status">
@@ -287,6 +277,15 @@ class RoomRoute extends Component {
                   onDeleteItem={this.deleteItem}
                 ></DormItemList>
               )}
+
+              <Row className="justify-content-between align-items-center m-0 mt-3">
+                <Button
+                  name="addItemButton"
+                  onClick={() => this.toggleModal("add")}
+                >
+                  Add Item
+                </Button>
+              </Row>
             </Col>
           </Row>
         </Container>
