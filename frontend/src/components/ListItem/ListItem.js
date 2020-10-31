@@ -51,7 +51,9 @@ const ListItem = (props) => {
                 <ul>
                   <li onClick={onEdit}>Edit</li>
                   <li onClick={onClaim}>Claim</li>
-                  <li onClick={onDelete}>Delete</li>
+                  <li id="danger" onClick={onDelete}>
+                    Delete
+                  </li>
                 </ul>
               </div>
             ) : null}

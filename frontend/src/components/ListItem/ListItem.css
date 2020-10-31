@@ -35,6 +35,10 @@
   color: rgb(36, 36, 36);
 }
 
+.item-dropdown-content li#danger {
+  color: #dc3545;
+}
+
 .item-dropdown-content li:last-child {
   border-bottom: none;
 }
