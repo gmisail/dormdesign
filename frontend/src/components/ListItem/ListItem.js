@@ -1,11 +1,30 @@
-import React from "react";
-import { BsPencilSquare } from "react-icons/bs";
+import React, { useState, useEffect, useRef } from "react";
 import { BsThreeDots } from "react-icons/bs";
-import { ListGroupItem, Button } from "react-bootstrap";
+import { ListGroupItem } from "react-bootstrap";
 import IconButton from "../IconButton/IconButton";
+import "./ListItem.css";
 
 const ListItem = (props) => {
-  const { item, onEdit } = props;
+  const { item, onEdit, onClaim, onDelete } = props;
+
+  const [showMenu, setShowMenu] = useState(false);
+  const menuRef = useRef(null);
+
+  useEffect(() => {
+    // Clicked outside of menu
+    function handleClickOutside(event) {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setShowMenu(false);
+      }
+    }
+
+    // Bind the event listener
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      // Unbind the event listener on clean up
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [menuRef]);
 
   return (
     <ListGroupItem>
@@ -17,33 +36,26 @@ const ListItem = (props) => {
           </span>
         </div>
 
-        <div>
-          {/* {item.claimedBy === undefined || item.claimedBy.length === 0 ? (
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => {
-                console.log(`Claim button clicked for ${item.name}`);
-              }}
-            >
-              Claim
-            </Button>
-          ) : (
-            <i className="align-middle mr-1">Claimed by {item.claimedBy}</i>
+        <div className="d-flex align-items-center">
+          {item.claimedBy === undefined ||
+          item.claimedBy.length === 0 ? null : (
+            <i className="mr-3">Claimed by {item.claimedBy}</i>
           )}
-          <Button
-            className="ml-2"
-            size="sm"
-            variant="secondary"
-            onClick={() => {
-              onEdit(item);
-            }}
-          >
-            <BsPencilSquare />
-          </Button> */}
-          <IconButton>
-            <BsThreeDots></BsThreeDots>
-          </IconButton>
+
+          <div className="item-dropdown-menu" ref={menuRef}>
+            <IconButton onClick={() => setShowMenu(!showMenu)}>
+              <BsThreeDots className="item-menu-button"></BsThreeDots>
+            </IconButton>
+            {showMenu ? (
+              <div className="item-dropdown-content">
+                <ul>
+                  <li onClick={onEdit}>Edit</li>
+                  <li onClick={onClaim}>Claim</li>
+                  <li onClick={onDelete}>Delete</li>
+                </ul>
+              </div>
+            ) : null}
+          </div>
         </div>
       </div>
     </ListGroupItem>

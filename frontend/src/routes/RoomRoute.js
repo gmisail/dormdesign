@@ -114,6 +114,16 @@ class RoomRoute extends Component {
     this.toggleModal("edit");
   };
 
+  // Called when claim button is clicked for an item in the list
+  claimItem = (item) => {
+    console.log("Claim button clicked for item: ", item);
+  };
+
+  // Called when delete button is clicked for an item in the list
+  deleteItem = (item) => {
+    console.log("Delete button clicked for item: ", item);
+  };
+
   // Receives item ID and list of modified properties when ListItemForm is submitted
   editItemFormSubmit = (itemID, modified) => {
     this.state.socketConnection.send({
@@ -233,6 +243,8 @@ class RoomRoute extends Component {
                 <DormItemList
                   items={this.state.items}
                   onEditItem={this.editItem}
+                  onClaimItem={this.claimItem}
+                  onDeleteItem={this.deleteItem}
                 ></DormItemList>
               )}
             </Col>
