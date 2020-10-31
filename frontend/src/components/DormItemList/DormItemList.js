@@ -1,10 +1,9 @@
 import React from "react";
 import { ListGroup } from "react-bootstrap";
-
 import ListItem from "../ListItem/ListItem";
 
 const DormItemList = (props) => {
-  const { items, onEditItem, onClaimItem } = props;
+  const { items, onEditItem, onClaimItem, onDeleteItem } = props;
 
   return (
     <ListGroup>
@@ -18,6 +17,7 @@ const DormItemList = (props) => {
               item={item}
               onEdit={() => onEditItem(item)}
               onClaim={() => onClaimItem(item)}
+              onDelete={() => onDeleteItem(item)}
             />
           );
         })

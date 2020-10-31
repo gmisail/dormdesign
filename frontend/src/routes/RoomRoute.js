@@ -120,22 +120,7 @@ class RoomRoute extends Component {
     this.toggleModal("edit");
   };
 
-  // Receives item ID and list of modified properties when ListItemForm is submitted
-  editItemFormSubmit = (itemID, modified) => {
-    this.state.socketConnection.send({
-      event: "editItem",
-      respond: true,
-      data: {
-        itemID,
-        updated: modified,
-      },
-    });
-
-    this.toggleModal();
-    this.setState({ editingItem: undefined });
-  };
-
-  editClaimedBy = (item) => {
+  claimItem = (item) => {
     const name = window.localStorage.getItem("name");
 
     if (!name || name.length === 0) {
@@ -152,6 +137,26 @@ class RoomRoute extends Component {
         },
       });
     }
+  };
+  
+  // Called when delete button is clicked for an item in the list
+  deleteItem = (item) => {
+    console.log("Delete button clicked for item: ", item);
+  };
+
+  // Receives item ID and list of modified properties when ListItemForm is submitted
+  editItemFormSubmit = (itemID, modified) => {
+    this.state.socketConnection.send({
+      event: "editItem",
+      respond: true,
+      data: {
+        itemID,
+        updated: modified,
+      },
+    });
+
+    this.toggleModal();
+    this.setState({ editingItem: undefined });
   };
 
   editName = (name) => {
@@ -278,7 +283,8 @@ class RoomRoute extends Component {
                 <DormItemList
                   items={this.state.items}
                   onEditItem={this.editItem}
-                  onClaimItem={this.editClaimedBy}
+                  onClaimItem={this.claimItem}
+                  onDeleteItem={this.deleteItem}
                 ></DormItemList>
               )}
             </Col>
