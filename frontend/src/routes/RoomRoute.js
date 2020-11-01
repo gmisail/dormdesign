@@ -24,6 +24,7 @@ class RoomRoute extends Component {
   }
 
   componentDidMount() {
+    window.localStorage.clear();
     this.loadData();
     this.setupEventListeners();
 
@@ -138,7 +139,7 @@ class RoomRoute extends Component {
       });
     }
   };
-  
+
   // Called when delete button is clicked for an item in the list
   deleteItem = (item) => {
     console.log("Delete button clicked for item: ", item);
@@ -227,8 +228,8 @@ class RoomRoute extends Component {
               <Modal.Title>Choose Your Name</Modal.Title>
             </Modal.Header>
             <Modal.Body>
-              Before you can claim items, you must choose a name so that other
-              users know who you are.
+              Choose a name so that other people in the room know who you are.
+              This data will only be stored locally in your browser.
               <hr />
               <ChooseNameForm onSubmit={this.editName} />
             </Modal.Body>
