@@ -263,6 +263,15 @@ class RoomRoute extends Component {
               )}
             </Col>
             <Col lg={5}>
+              <Row className="justify-content-between align-items-center m-0 mb-3">
+                <Button
+                  name="addItemButton"
+                  onClick={() => this.toggleModal("add")}
+                >
+                  Add Item
+                </Button>
+              </Row>
+
               {this.state.items === undefined ? (
                 <div className="text-center mt-5">
                   <Spinner animation="border" role="status">
@@ -277,15 +286,6 @@ class RoomRoute extends Component {
                   onDeleteItem={this.deleteItem}
                 ></DormItemList>
               )}
-
-              <Row className="justify-content-between align-items-center m-0 mt-3">
-                <Button
-                  name="addItemButton"
-                  onClick={() => this.toggleModal("add")}
-                >
-                  Add Item
-                </Button>
-              </Row>
             </Col>
           </Row>
         </Container>
