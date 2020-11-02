@@ -35,7 +35,7 @@ type List struct {
 	Create an empty list with the given ID
 */
 func CreateList(database *rdb.Session, id string) error {
-	err := rdb.DB("dd-data").Table("lists").Insert(List{ ID: id, Items: []ListItem{} }).Exec(database)
+	err := rdb.DB("dd_data").Table("lists").Insert(List{ ID: id, Items: []ListItem{} }).Exec(database)
 
 	if err != nil {
 		return err
@@ -48,7 +48,7 @@ func CreateList(database *rdb.Session, id string) error {
 	Returns a specific list
 */
 func GetList(database *rdb.Session, id string) (List, error) {
-	res, err := rdb.DB("dd-data").Table("lists").Get(id).Run(database)
+	res, err := rdb.DB("dd_data").Table("lists").Get(id).Run(database)
 
 	if err != nil {
 		return List{}, err
@@ -73,7 +73,7 @@ func GetList(database *rdb.Session, id string) (List, error) {
 	Add a list item to the list at the given room ID
 */
 func AddListItem(database *rdb.Session, roomID string, item ListItem) error {
-	err := rdb.DB("dd-data").Table("lists").Get(roomID).Update(map[string]interface{}{"items": rdb.Row.Field("items").Default([]ListItem{}).Append(item)}).Exec(database)
+	err := rdb.DB("dd_data").Table("lists").Get(roomID).Update(map[string]interface{}{"items": rdb.Row.Field("items").Default([]ListItem{}).Append(item)}).Exec(database)
 
 	if err != nil {
 		return err
@@ -83,7 +83,7 @@ func AddListItem(database *rdb.Session, roomID string, item ListItem) error {
 }
 
 func EditListItem(database *rdb.Session, id string, itemID string, updated map[string]interface{}) (*ListItem, error) {
-	res, err := rdb.DB("dd-data").Table("lists").Get(id).Field("items").Filter(rdb.Row.Field("id").Eq(itemID)).Run(database)
+	res, err := rdb.DB("dd_data").Table("lists").Get(id).Field("items").Filter(rdb.Row.Field("id").Eq(itemID)).Run(database)
 
 	var item ListItem;
 	res.One(&item);
@@ -121,7 +121,7 @@ func EditListItem(database *rdb.Session, id string, itemID string, updated map[s
 		}
 	}
 
-	err = rdb.DB("dd-data").Table("lists").Get(id).Update(map[string]interface{}{
+	err = rdb.DB("dd_data").Table("lists").Get(id).Update(map[string]interface{}{
 		"items": rdb.Row.Field("items").Map(func(c rdb.Term) interface{} {
 			return rdb.Branch(c.Field("id").Eq(itemID), item, c)
 		}),
