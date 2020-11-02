@@ -117,12 +117,28 @@ class SceneController {
       canvas.parentElement.clientWidth * realToCSSPixels
     );
 
-    // Check if the canvas is not the same size.
+    // Check if canvas size (drawingbuffer) is not the same size as actual width of parent
     if (canvas.width !== parentWidth || canvas.height !== parentWidth) {
-      // Make the canvas the same size
+      /*
+        Set CSS size of canvas to be the same as the CSS size of the parent element.
+        CSS size automatically accounts and scales for higher-res displays, so we
+        don't incoporate DPR (devicePixelRatio)
+      */
+      canvas.style.width = `${canvas.parentElement.clientWidth}px`;
+      canvas.style.height = `${canvas.parentElement.clientWidth}px`;
+
+      /* 
+        This sets the actual size of the canvas coordinate system (if no width or height has
+        been specified in the CSS properties of the canvas, this will also set
+        the CSS display size. But since we are setting the CSS display size above, we want
+        the drawing buffer to be scaled with the DPR of the screen, so the canvas is
+        sharp on high-res displays. This comes at a cost of performance though,
+        since more pixels are rendered on high-res displays.
+      */
       canvas.width = parentWidth;
       canvas.height = parentWidth;
-      // Return true if canvas was reszied
+
+      // Return true since canvas was resized
       return true;
     }
     return false;
