@@ -8,6 +8,8 @@ import DataController from "../controllers/DataController";
 import SocketConnection from "../controllers/SocketConnection";
 import EventController from "../controllers/EventController";
 import DormItem from "../models/DormItem";
+import ChooseNameForm from "../components/ChooseNameForm/ChooseNameForm";
+import { BsPlus } from "react-icons/bs";
 
 class RoomRoute extends Component {
   constructor() {
@@ -25,6 +27,11 @@ class RoomRoute extends Component {
   componentDidMount() {
     this.loadData();
     this.setupEventListeners();
+
+    const name = window.localStorage.getItem("name");
+    if (!name || name.length === 0) {
+      this.toggleModal("choose-name");
+    }
   }
 
   onSocketConnectionClosed = (message) => {
@@ -114,9 +121,23 @@ class RoomRoute extends Component {
     this.toggleModal("edit");
   };
 
-  // Called when claim button is clicked for an item in the list
   claimItem = (item) => {
-    console.log("Claim button clicked for item: ", item);
+    const name = window.localStorage.getItem("name");
+
+    if (!name || name.length === 0) {
+      this.toggleModal("choose-name");
+    } else {
+      this.state.socketConnection.send({
+        event: "editItem",
+        respond: true,
+        data: {
+          itemID: item.id,
+          updated: {
+            claimedBy: window.localStorage.getItem("name"),
+          },
+        },
+      });
+    }
   };
 
   // Called when delete button is clicked for an item in the list
@@ -137,6 +158,11 @@ class RoomRoute extends Component {
 
     this.toggleModal();
     this.setState({ editingItem: undefined });
+  };
+
+  editName = (name) => {
+    window.localStorage.setItem("name", name);
+    this.toggleModal();
   };
 
   // Receives item ID and list of modified properties when ListItemForm is submitted
@@ -195,6 +221,21 @@ class RoomRoute extends Component {
             </Modal.Body>
           </Modal>
         );
+      case "choose-name":
+        return (
+          <Modal show={this.state.showModal} onHide={this.toggleModal}>
+            <Modal.Header closeButton>
+              <Modal.Title>Choose Your Name</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+              Before you can claim items, you must choose a name so that other
+              users know who you are.
+              <hr />
+              <ChooseNameForm onSubmit={this.editName} />
+            </Modal.Body>
+          </Modal>
+        );
+
       default:
         return;
     }
@@ -204,11 +245,11 @@ class RoomRoute extends Component {
     return (
       <>
         <Container fluid className="px-3 pr-xl-5 pl-xl-5 room-container">
-          <Row className="p-3 align-items-center">
+          <Row className="p-3 align-items-start">
             <h2 className="m-0">Dorm Name - Room #</h2>
           </Row>
-          <Row className="mt-auto">
-            <Col xs={12} lg={7} className="mb-3">
+          <Row className="align-items-start">
+            <Col xs={12} xl={8} className="mb-3">
               {this.state.items === undefined ? (
                 <div className="text-center mt-5">
                   <Spinner animation="border" role="status">
@@ -222,17 +263,7 @@ class RoomRoute extends Component {
                 />
               )}
             </Col>
-            <Col lg={5}>
-              <Row className="justify-content-between align-items-center m-0 mb-3">
-                <h5>Dorm Items</h5>
-                <Button
-                  name="addItemButton"
-                  onClick={() => this.toggleModal("add")}
-                >
-                  Add Item
-                </Button>
-              </Row>
-
+            <Col xl={4} className="mb-4">
               {this.state.items === undefined ? (
                 <div className="text-center mt-5">
                   <Spinner animation="border" role="status">
@@ -250,6 +281,14 @@ class RoomRoute extends Component {
             </Col>
           </Row>
         </Container>
+        <button
+          className="fixed-add-button"
+          name="addItemButton"
+          onClick={() => this.toggleModal("add")}
+        >
+          <BsPlus></BsPlus>
+          <span className="add-button-text">Add Item</span>
+        </button>
         {this.renderModal()}
       </>
     );
