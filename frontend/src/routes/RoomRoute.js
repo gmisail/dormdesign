@@ -142,6 +142,7 @@ class RoomRoute extends Component {
     } else {
       this.state.socketConnection.send({
         event: "editItem",
+        sendResponse: true,
         data: {
           itemID: item.id,
           updated: {
@@ -157,6 +158,7 @@ class RoomRoute extends Component {
     console.log("Delete button clicked for item: ", item);
     this.state.socketConnection.send({
       event: "deleteItem",
+      sendResponse: true,
       data: {
         itemID: item.id,
       },
@@ -167,6 +169,7 @@ class RoomRoute extends Component {
   editItemFormSubmit = (itemID, modified) => {
     this.state.socketConnection.send({
       event: "editItem",
+      sendResponse: true,
       data: {
         itemID: itemID,
         updated: modified,
@@ -186,6 +189,7 @@ class RoomRoute extends Component {
   addNewItem = (itemID, modified) => {
     this.state.socketConnection.send({
       event: "addItem",
+      sendResponse: true,
       data: modified,
     });
 
@@ -196,6 +200,7 @@ class RoomRoute extends Component {
   itemUpdatedInEditor = (item) => {
     this.state.socketConnection.send({
       event: "updateItemPosition",
+      sendResponse: false,
       data: {
         itemID: item.id,
         editorPosition: item.editorPosition,
