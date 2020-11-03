@@ -10,6 +10,12 @@ const ListItem = (props) => {
   const [showMenu, setShowMenu] = useState(false);
   const menuRef = useRef(null);
 
+  // Called when a button in menu is clicked. Closes the menu and calls passed callback
+  const menuOptionClicked = (callback) => {
+    setShowMenu(false);
+    callback();
+  };
+
   useEffect(() => {
     // Clicked outside of menu
     function handleClickOutside(event) {
@@ -25,7 +31,7 @@ const ListItem = (props) => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [menuRef]);
-  
+
   return (
     <ListGroupItem>
       <div className="d-flex justify-content-between align-items-center">
@@ -49,9 +55,9 @@ const ListItem = (props) => {
             {showMenu ? (
               <div className="item-dropdown-content">
                 <ul>
-                  <li onClick={onEdit}>Edit</li>
-                  <li onClick={onClaim}>Claim</li>
-                  <li id="danger" onClick={onDelete}>
+                  <li onClick={() => menuOptionClicked(onEdit)}>Edit</li>
+                  <li onClick={() => menuOptionClicked(onClaim)}>Claim</li>
+                  <li id="danger" onClick={() => menuOptionClicked(onDelete)}>
                     Delete
                   </li>
                 </ul>

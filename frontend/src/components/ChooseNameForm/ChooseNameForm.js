@@ -23,7 +23,12 @@ class ChooseNameForm extends Component {
 
   onFormSubmit = (event) => {
     event.preventDefault();
+    const form = event.currentTarget;
     this.setState({ validated: true });
+    if (form.checkValidity() === false) {
+      event.stopPropagation();
+      return;
+    }
 
     this.props.onSubmit(this.state.name.trim());
   };
@@ -35,7 +40,7 @@ class ChooseNameForm extends Component {
         validated={this.state.validated}
         onSubmit={this.onFormSubmit}
       >
-        <Form.Group controlId="formItemName">
+        <Form.Group controlId="formUserName">
           <Form.Label>Name</Form.Label>
           <Form.Control
             name="nameValue"
