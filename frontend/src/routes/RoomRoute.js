@@ -25,7 +25,6 @@ class RoomRoute extends Component {
   }
 
   componentDidMount() {
-    window.localStorage.clear();
     this.loadData();
     this.setupEventListeners();
 
@@ -71,6 +70,19 @@ class RoomRoute extends Component {
       const item = new DormItem(data);
 
       this.setState({ items: [item, ...this.state.items] });
+    });
+
+    EventController.on("itemDeleted", (data) => {
+      if (data.id === undefined) {
+        console.error(
+          "Received 'itemDeleted' event missing item id. Event data: ",
+          data
+        );
+        return;
+      }
+      const itemArray = this.state.items.filter((item) => item.id !== data.id);
+
+      this.setState({ items: itemArray });
     });
 
     EventController.on("itemEdited", (data) => {
@@ -130,7 +142,6 @@ class RoomRoute extends Component {
     } else {
       this.state.socketConnection.send({
         event: "editItem",
-        respond: true,
         data: {
           itemID: item.id,
           updated: {
@@ -144,15 +155,20 @@ class RoomRoute extends Component {
   // Called when delete button is clicked for an item in the list
   deleteItem = (item) => {
     console.log("Delete button clicked for item: ", item);
+    this.state.socketConnection.send({
+      event: "deleteItem",
+      data: {
+        itemID: item.id,
+      },
+    });
   };
 
   // Receives item ID and list of modified properties when ListItemForm is submitted
   editItemFormSubmit = (itemID, modified) => {
     this.state.socketConnection.send({
       event: "editItem",
-      respond: true,
       data: {
-        itemID,
+        itemID: itemID,
         updated: modified,
       },
     });
@@ -180,7 +196,6 @@ class RoomRoute extends Component {
   itemUpdatedInEditor = (item) => {
     this.state.socketConnection.send({
       event: "updateItemPosition",
-      respond: false,
       data: {
         itemID: item.id,
         editorPosition: item.editorPosition,

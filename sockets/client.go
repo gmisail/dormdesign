@@ -205,7 +205,29 @@ func (c *Client) translateMessage(byteMessage []byte) (Message, error) {
 		/*
 			Delete ListItem
 		*/
-		return Message{}, errors.New("Event not supported yet")
+		itemID := data["itemID"].(string)
+		err = models.RemoveListItem(c.hub.database, roomID, itemID)
+		if err != nil {
+			return Message{}, err
+		}
+
+		log.Printf("DELETED ITEM %s", itemID)
+
+		response := MessageResponse{
+			Event: "itemDeleted",
+			Data: struct{
+				ID string `json:"id"`
+			}{
+				ID: itemID,
+			},
+		}
+
+		responseBytes, responseBytesErr := json.Marshal(response)
+		if responseBytesErr != nil {
+			return Message{}, responseBytesErr
+		}
+
+		return Message{ room: roomID, includeSender: true, sender: c, response: responseBytes }, nil
 	default:
 		return Message{}, errors.New("ERROR Unknown event: " + event)
 	}

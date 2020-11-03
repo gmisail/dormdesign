@@ -82,6 +82,16 @@ func AddListItem(database *rdb.Session, roomID string, item ListItem) error {
 	return nil
 }
 
+func RemoveListItem(database *rdb.Session, roomID string, itemID string) error {
+	err := rdb.DB("dd_data").Table("lists").Get(roomID).Update(map[string]interface{}{
+		"items": rdb.Row.Field("items").Filter(func(item rdb.Term) interface{} {
+			return item.Field("id").Ne(itemID)
+		}),
+	}).Exec(database)
+
+	return err;
+}
+
 func EditListItem(database *rdb.Session, id string, itemID string, updated map[string]interface{}) (*ListItem, error) {
 	res, err := rdb.DB("dd_data").Table("lists").Get(id).Field("items").Filter(rdb.Row.Field("id").Eq(itemID)).Run(database)
 
