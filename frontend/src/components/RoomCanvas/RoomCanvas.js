@@ -154,8 +154,8 @@ class RoomCanvas extends Component {
 
   render() {
     return (
-      <div class="card">
-        <div class="card-body">
+      <div className="card">
+        <div className="card-body">
           <div className="room-canvas-container mx-auto">
             <canvas
               ref={(ref) => (this.canvas1 = ref)}

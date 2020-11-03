@@ -112,6 +112,14 @@ func (c *Client) translateMessage(byteMessage []byte) (Message, error) {
 		return Message{}, errors.New("ERROR Message event isn't a string")
 	}
 
+	sendResponse, ok := messageMap["sendResponse"].(bool)
+	if !ok {
+		return Message{}, errors.New("ERROR Message missing 'sendResponse' field")
+	}
+
+	var response *MessageResponse
+	response = nil
+
 	// Handle different message events based on value of "event" field in message JSON
 	switch event {
 	case "addItem":
@@ -129,16 +137,10 @@ func (c *Client) translateMessage(byteMessage []byte) (Message, error) {
 
 		log.Printf("ADDED ITEM %+v\n", item)
 		
-		response := MessageResponse{
+		response = &MessageResponse{
 			Event: "itemAdded",
 			Data: item,
 		}
-		responseBytes, responseBytesErr := json.Marshal(response)
-		if responseBytesErr != nil {
-			return Message{}, responseBytesErr
-		}
-		
-		return Message{ room: roomID, includeSender: true, sender: c, response: responseBytes }, nil
 
 	case "updateItemPosition":
 		itemID := data["itemID"].(string)
@@ -151,7 +153,7 @@ func (c *Client) translateMessage(byteMessage []byte) (Message, error) {
 
 		log.Printf("UPDATED ITEM %s %+v\n", itemID, editorPosition)
 		
-		response := MessageResponse{
+		response = &MessageResponse{
 			Event: "itemPositionUpdated",
 			Data: struct{
 				ID string `json:"id"`
@@ -161,12 +163,6 @@ func (c *Client) translateMessage(byteMessage []byte) (Message, error) {
 				EditorPosition: editorPosition,
 			},
 		}
-		responseBytes, responseBytesErr := json.Marshal(response)
-		if responseBytesErr != nil {
-			return Message{}, responseBytesErr
-		}
-
-		return Message{ room: roomID, includeSender: false, sender: c, response: responseBytes }, nil
 
 	case "editItem":	
 		/*
@@ -184,7 +180,7 @@ func (c *Client) translateMessage(byteMessage []byte) (Message, error) {
 
 		log.Printf("UPDATED ITEM %s %+v\n", itemID, updated)
 		
-		response := MessageResponse{
+		response = &MessageResponse{
 			Event: "itemEdited",
 			Data: struct{
 				ID string `json:"id"`
@@ -194,21 +190,41 @@ func (c *Client) translateMessage(byteMessage []byte) (Message, error) {
 				Updated: updated,
 			},
 		}
-		responseBytes, responseBytesErr := json.Marshal(response)
-		if responseBytesErr != nil {
-			return Message{}, responseBytesErr
-		}
-
-		return Message{ room: roomID, includeSender: true, sender: c, response: responseBytes }, nil
 
 	case "deleteItem":
 		/*
 			Delete ListItem
 		*/
-		return Message{}, errors.New("Event not supported yet")
+		itemID := data["itemID"].(string)
+		err = models.RemoveListItem(c.hub.database, roomID, itemID)
+		if err != nil {
+			return Message{}, err
+		}
+
+		log.Printf("DELETED ITEM %s", itemID)
+
+		response = &MessageResponse{
+			Event: "itemDeleted",
+			Data: struct{
+				ID string `json:"id"`
+			}{
+				ID: itemID,
+			},
+		}
 	default:
 		return Message{}, errors.New("ERROR Unknown event: " + event)
 	}
+
+	if response == nil {
+		return Message{}, errors.New("ERROR Message response is nil for event: " + event)
+	}
+
+	responseBytes, responseBytesErr := json.Marshal(*response)
+	if responseBytesErr != nil {
+		return Message{}, responseBytesErr
+	}
+
+	return Message{ room: roomID, includeSender: sendResponse, sender: c, response: responseBytes }, nil
 }
 
 func (c *Client) writePump() {
