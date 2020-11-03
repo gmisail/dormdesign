@@ -9,6 +9,7 @@ import SocketConnection from "../controllers/SocketConnection";
 import EventController from "../controllers/EventController";
 import DormItem from "../models/DormItem";
 import ChooseNameForm from "../components/ChooseNameForm/ChooseNameForm";
+import { BsPlus } from "react-icons/bs";
 
 class RoomRoute extends Component {
   constructor() {
@@ -244,11 +245,11 @@ class RoomRoute extends Component {
     return (
       <>
         <Container fluid className="px-3 pr-xl-5 pl-xl-5 room-container">
-          <Row className="p-3 align-items-center">
+          <Row className="p-3 align-items-start">
             <h2 className="m-0">Dorm Name - Room #</h2>
           </Row>
-          <Row className="mt-auto">
-            <Col xs={12} lg={7} className="mb-3">
+          <Row className="align-items-start">
+            <Col xs={12} xl={8} className="mb-3">
               {this.state.items === undefined ? (
                 <div className="text-center mt-5">
                   <Spinner animation="border" role="status">
@@ -262,16 +263,7 @@ class RoomRoute extends Component {
                 />
               )}
             </Col>
-            <Col lg={5}>
-              <Row className="justify-content-between align-items-center m-0 mb-3">
-                <Button
-                  name="addItemButton"
-                  onClick={() => this.toggleModal("add")}
-                >
-                  Add Item
-                </Button>
-              </Row>
-
+            <Col xl={4}>
               {this.state.items === undefined ? (
                 <div className="text-center mt-5">
                   <Spinner animation="border" role="status">
@@ -289,6 +281,14 @@ class RoomRoute extends Component {
             </Col>
           </Row>
         </Container>
+        <button
+          className="fixed-add-button"
+          name="addItemButton"
+          onClick={() => this.toggleModal("add")}
+        >
+          <BsPlus></BsPlus>
+          <span className="add-button-text">Add Item</span>
+        </button>
         {this.renderModal()}
       </>
     );
