@@ -263,7 +263,7 @@ class RoomRoute extends Component {
                 />
               )}
             </Col>
-            <Col xl={4}>
+            <Col xl={4} className="mb-4">
               {this.state.items === undefined ? (
                 <div className="text-center mt-5">
                   <Spinner animation="border" role="status">
