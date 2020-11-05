@@ -263,77 +263,26 @@ class RoomRoute extends Component {
     }
   }
 
-  render() {
+  renderRoom() {
     return (
       <>
-        {/* <Container fluid className="px-3 pr-xl-5 pl-xl-5 room-container"> */}
         <div className="room-container">
-          <h2 className="room-header m-0">Dorm Name - Room #</h2>
+          <h2 className="room-header">Dorm Name - Room #</h2>
           <div className="room-editor-container">
-            {this.state.items === undefined ? (
-              <div className="text-center mt-5">
-                <Spinner animation="border" role="status">
-                  <span className="sr-only">Loading...</span>
-                </Spinner>
-              </div>
-            ) : (
-              <RoomCanvas
-                items={this.state.items}
-                onItemUpdate={this.itemUpdatedInEditor}
-              />
-            )}
+            <RoomCanvas
+              items={this.state.items}
+              onItemUpdate={this.itemUpdatedInEditor}
+            />
           </div>
           <div className="room-item-list-container">
-            {this.state.items === undefined ? (
-              <div className="text-center mt-5">
-                <Spinner animation="border" role="status">
-                  <span className="sr-only">Loading...</span>
-                </Spinner>
-              </div>
-            ) : (
-              <DormItemList
-                items={this.state.items}
-                onEditItem={this.editItem}
-                onClaimItem={this.claimItem}
-                onDeleteItem={this.deleteItem}
-              ></DormItemList>
-            )}
+            <DormItemList
+              items={this.state.items}
+              onEditItem={this.editItem}
+              onClaimItem={this.claimItem}
+              onDeleteItem={this.deleteItem}
+            ></DormItemList>
           </div>
         </div>
-
-        {/* <Row className="align-items-start flex-grow-2">
-            <Col xs={12} xl={8} className="mb-3">
-              {this.state.items === undefined ? (
-                <div className="text-center mt-5">
-                  <Spinner animation="border" role="status">
-                    <span className="sr-only">Loading...</span>
-                  </Spinner>
-                </div>
-              ) : (
-                <RoomCanvas
-                  items={this.state.items}
-                  onItemUpdate={this.itemUpdatedInEditor}
-                />
-              )}
-            </Col>
-            <Col xl={4} className="mb-4">
-              {this.state.items === undefined ? (
-                <div className="text-center mt-5">
-                  <Spinner animation="border" role="status">
-                    <span className="sr-only">Loading...</span>
-                  </Spinner>
-                </div>
-              ) : (
-                <DormItemList
-                  items={this.state.items}
-                  onEditItem={this.editItem}
-                  onClaimItem={this.claimItem}
-                  onDeleteItem={this.deleteItem}
-                ></DormItemList>
-              )}
-            </Col>
-          </Row> */}
-        {/* </Container> */}
         <button
           className="fixed-add-button"
           name="addItemButton"
@@ -342,6 +291,23 @@ class RoomRoute extends Component {
           <BsPlus></BsPlus>
           <span className="add-button-text">Add Item</span>
         </button>
+      </>
+    );
+  }
+
+  render() {
+    return (
+      <>
+        {this.state.items === undefined ? (
+          <div className="text-center mt-5">
+            <Spinner animation="grow" role="status" variant="primary">
+              <span className="sr-only">Loading...</span> ) :
+            </Spinner>
+          </div>
+        ) : (
+          this.renderRoom()
+        )}
+
         {this.renderModal()}
       </>
     );
