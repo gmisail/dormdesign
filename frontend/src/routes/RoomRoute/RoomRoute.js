@@ -268,7 +268,7 @@ class RoomRoute extends Component {
       <>
         <div className="room-container">
           <h2 className="room-header">Dorm Name - Room #</h2>
-          <div className="room-editor-container">
+          <div className="d-flex justify-content-center room-editor-container">
             <RoomCanvas
               items={this.state.items}
               onItemUpdate={this.itemUpdatedInEditor}

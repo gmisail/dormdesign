@@ -3,14 +3,15 @@
   margin-right: auto;
   height: calc(100vh - 56px);
   padding: 15px 25px;
-  max-width: 1200px;
+  max-width: min(1200px, 125vh);
   display: grid;
   grid-template-columns: 2fr 1fr;
-  grid-template-rows: 50px 1fr;
+  grid-template-rows: max-content;
   grid-template-areas:
     "room-header room-header"
     "room-editor room-item-list";
-  column-gap: 20px;
+  gap: 20px 20px;
+  justify-content: center;
 }
 
 @media screen and (max-width: 1000px) {
@@ -18,14 +19,13 @@
     height: 100%;
     grid-template-columns: 100%;
     column-gap: 0;
-    row-gap: 25px;
 
     /* 
       Since we can't size the editor row based on the canvas size
       (since the canvas sizes itself based on the editor row's size),
       set it based on whatever fits the entire editor in the viewport
     */
-    grid-template-rows: 50px min(calc(100vw - 50px), calc(100vh - 180px)) max-content;
+    grid-template-rows: max-content min(calc(100vw - 50px), calc(100vh - 180px)) max-content;
 
     grid-template-areas:
       "room-header"
@@ -36,6 +36,13 @@
 
 .room-header {
   grid-area: room-header;
+  margin: 0;
+}
+
+@media screen and (max-width: 500px) {
+  .room-header {
+    font-size: 17pt;
+  }
 }
 
 .room-editor-container {
