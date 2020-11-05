@@ -102,8 +102,10 @@ class SceneController {
     for (let i = 0; i < canvasArray.length; i++) {
       if (this.resizeCanvas(canvasArray[i])) {
         // Update size of parent element manually (since canvas has position absolute)
-        // canvasArray[i].parentElement.style.width = `${canvasArray[i].width}px`;
-        canvasArray[i].parentElement.style.height = `${canvasArray[i].width}px`;
+        canvasArray[i].parentElement.style.maxWidth =
+          canvasArray[i].style.width;
+        canvasArray[i].parentElement.style.maxHeight =
+          canvasArray[i].style.height;
         resized = true;
       }
     }
@@ -113,19 +115,21 @@ class SceneController {
   resizeCanvas(canvas) {
     const realToCSSPixels = window.devicePixelRatio;
 
-    const parentWidth = Math.floor(
-      canvas.parentElement.clientWidth * realToCSSPixels
-    );
+    // Size based on element containing the canvas container
+    const container = canvas.parentElement.parentElement;
 
-    // Check if canvas size (drawingbuffer) is not the same size as actual width of parent
-    if (canvas.width !== parentWidth || canvas.height !== parentWidth) {
+    // Size to fit
+    const size = Math.min(container.clientWidth, container.clientHeight);
+
+    // Check if canvas size (drawingbuffer) is not the same size as actual width of container
+    if (canvas.width !== size || canvas.height !== size) {
       /*
-        Set CSS size of canvas to be the same as the CSS size of the parent element.
+        Set CSS size of canvas to be the same as the CSS size of the container.
         CSS size automatically accounts and scales for higher-res displays, so we
         don't incoporate DPR (devicePixelRatio)
       */
-      canvas.style.width = `${canvas.parentElement.clientWidth}px`;
-      canvas.style.height = `${canvas.parentElement.clientWidth}px`;
+      canvas.style.width = `${size}px`;
+      canvas.style.height = `${size}px`;
 
       /* 
         This sets the actual size of the canvas coordinate system (if no width or height has
@@ -135,8 +139,8 @@ class SceneController {
         sharp on high-res displays. This comes at a cost of performance though,
         since more pixels are rendered on high-res displays.
       */
-      canvas.width = parentWidth;
-      canvas.height = parentWidth;
+      canvas.width = size * realToCSSPixels;
+      canvas.height = size * realToCSSPixels;
 
       // Return true since canvas was resized
       return true;

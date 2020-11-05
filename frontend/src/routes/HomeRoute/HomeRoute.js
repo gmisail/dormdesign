@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import { Container, Row, Button } from "react-bootstrap";
-import DataController from "../controllers/DataController";
+import DataController from "../../controllers/DataController";
 
 class HomeRoute extends Component {
   createRoomClicked = async () => {

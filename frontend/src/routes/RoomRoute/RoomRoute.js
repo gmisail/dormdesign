@@ -1,15 +1,16 @@
 import React, { Component } from "react";
-import { Container, Row, Col, Button, Spinner } from "react-bootstrap";
+import { Spinner } from "react-bootstrap";
 import Modal from "react-bootstrap/Modal";
-import RoomCanvas from "../components/RoomCanvas/RoomCanvas";
-import DormItemList from "../components/DormItemList/DormItemList";
-import ListItemForm from "../components/ListItemForm/ListItemForm";
-import DataController from "../controllers/DataController";
-import SocketConnection from "../controllers/SocketConnection";
-import EventController from "../controllers/EventController";
-import DormItem from "../models/DormItem";
-import ChooseNameForm from "../components/ChooseNameForm/ChooseNameForm";
+import RoomCanvas from "../../components/RoomCanvas/RoomCanvas";
+import DormItemList from "../../components/DormItemList/DormItemList";
+import ListItemForm from "../../components/ListItemForm/ListItemForm";
+import DataController from "../../controllers/DataController";
+import SocketConnection from "../../controllers/SocketConnection";
+import EventController from "../../controllers/EventController";
+import DormItem from "../../models/DormItem";
+import ChooseNameForm from "../../components/ChooseNameForm/ChooseNameForm";
 import { BsPlus } from "react-icons/bs";
+import "./RoomRoute.css";
 
 class RoomRoute extends Component {
   constructor() {
@@ -265,11 +266,42 @@ class RoomRoute extends Component {
   render() {
     return (
       <>
-        <Container fluid className="px-3 pr-xl-5 pl-xl-5 room-container">
-          <Row className="p-3 align-items-start">
-            <h2 className="m-0">Dorm Name - Room #</h2>
-          </Row>
-          <Row className="align-items-start">
+        {/* <Container fluid className="px-3 pr-xl-5 pl-xl-5 room-container"> */}
+        <div className="room-container">
+          <h2 className="room-header m-0">Dorm Name - Room #</h2>
+          <div className="room-editor-container">
+            {this.state.items === undefined ? (
+              <div className="text-center mt-5">
+                <Spinner animation="border" role="status">
+                  <span className="sr-only">Loading...</span>
+                </Spinner>
+              </div>
+            ) : (
+              <RoomCanvas
+                items={this.state.items}
+                onItemUpdate={this.itemUpdatedInEditor}
+              />
+            )}
+          </div>
+          <div className="room-item-list-container">
+            {this.state.items === undefined ? (
+              <div className="text-center mt-5">
+                <Spinner animation="border" role="status">
+                  <span className="sr-only">Loading...</span>
+                </Spinner>
+              </div>
+            ) : (
+              <DormItemList
+                items={this.state.items}
+                onEditItem={this.editItem}
+                onClaimItem={this.claimItem}
+                onDeleteItem={this.deleteItem}
+              ></DormItemList>
+            )}
+          </div>
+        </div>
+
+        {/* <Row className="align-items-start flex-grow-2">
             <Col xs={12} xl={8} className="mb-3">
               {this.state.items === undefined ? (
                 <div className="text-center mt-5">
@@ -300,8 +332,8 @@ class RoomRoute extends Component {
                 ></DormItemList>
               )}
             </Col>
-          </Row>
-        </Container>
+          </Row> */}
+        {/* </Container> */}
         <button
           className="fixed-add-button"
           name="addItemButton"
