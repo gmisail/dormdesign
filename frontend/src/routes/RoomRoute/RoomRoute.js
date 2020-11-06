@@ -1,16 +1,13 @@
 import React, { Component } from "react";
 
-import { Container, Row, Col, Spinner } from "react-bootstrap";
+import { Spinner } from "react-bootstrap";
 import { BsPlus } from "react-icons/bs";
 
 import RoomCanvas from "../../components/RoomCanvas/RoomCanvas";
 import DormItemList from "../../components/DormItemList/DormItemList";
 
-import { Spinner } from "react-bootstrap";
-import Modal from "react-bootstrap/Modal";
 import RoomCanvas from "../../components/RoomCanvas/RoomCanvas";
 import DormItemList from "../../components/DormItemList/DormItemList";
-import ListItemForm from "../../components/ListItemForm/ListItemForm";
 
 import DataController from "../../controllers/DataController";
 import SocketConnection from "../../controllers/SocketConnection";
@@ -21,8 +18,6 @@ import AddModal from "../../components/modals/AddModal";
 import EditModal from "../../components/modals/EditModal";
 import NameModal from "../../components/modals/NameModal";
 
-import ChooseNameForm from "../../components/ChooseNameForm/ChooseNameForm";
-import { BsPlus } from "react-icons/bs";
 import "./RoomRoute.css";
 
 class RoomRoute extends Component {
