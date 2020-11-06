@@ -138,7 +138,17 @@ class RoomRoute extends Component {
       }
       switch (action) {
         case "addItem":
-          console.log("RECEIVED addItem failed message");
+          console.error("Error adding item:", data.message);
+          alert("Unable to add item");
+        case "deleteItem":
+          console.error("Error deleting item:", data.message);
+          alert("Unable to delete item");
+        case "updateItemPosition":
+          console.error("Error updating item position:", data.message);
+          alert("Unable to update item position");
+        case "editItem":
+          console.error("Error editing item:", data.message);
+          alert("Unable to edit item");
       }
     });
   };
