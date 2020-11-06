@@ -126,6 +126,21 @@ class RoomRoute extends Component {
         this.setState({ items: itemArray });
       }
     });
+
+    // Received when an event sent from this client failed on the server
+    EventController.on("actionFailed", (data) => {
+      const action = data.action;
+      if (action === undefined) {
+        console.error(
+          "Received 'actionFailed' event with missing 'action' field in data"
+        );
+        return;
+      }
+      switch (action) {
+        case "addItem":
+          console.log("RECEIVED addItem failed message");
+      }
+    });
   };
 
   // Called when edit button is clicked for an item in the list

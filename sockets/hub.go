@@ -7,6 +7,7 @@ import (
 type Message struct {
 	room string
 	includeSender bool
+	includeOtherClients bool
 	sender *Client
 	response []byte
 }
