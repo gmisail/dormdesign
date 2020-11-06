@@ -106,6 +106,7 @@ class SceneController {
           canvasArray[i].style.width;
         canvasArray[i].parentElement.style.maxHeight =
           canvasArray[i].style.height;
+
         resized = true;
       }
     }

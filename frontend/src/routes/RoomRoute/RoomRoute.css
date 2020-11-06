@@ -53,6 +53,14 @@
   grid-area: room-item-list;
 }
 
+@media screen and (max-width: 1000px) {
+  /* Set items to be minimum of grid column width and grid row height so that they line up with the editor (which also sizes similarly) */
+  .room-item-list-container {
+    width: min(calc(100vw - 50px), calc(100vh - 180px));
+    justify-self: center;
+  }
+}
+
 .fixed-add-button {
   position: fixed;
   z-index: 5;
