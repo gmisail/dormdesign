@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Container, Row, Col, Button, Spinner } from "react-bootstrap";
+import { Container, Row, Col, Spinner } from "react-bootstrap";
 import { BsPlus } from "react-icons/bs";
 
 import RoomCanvas from "../components/RoomCanvas/RoomCanvas";
