@@ -1,15 +1,17 @@
 import React, { Component } from "react";
 import { Container, Row, Col, Button, Spinner } from "react-bootstrap";
-import Modal from "react-bootstrap/Modal";
+import { BsPlus } from "react-icons/bs";
+
 import RoomCanvas from "../components/RoomCanvas/RoomCanvas";
 import DormItemList from "../components/DormItemList/DormItemList";
-import ListItemForm from "../components/ListItemForm/ListItemForm";
 import DataController from "../controllers/DataController";
 import SocketConnection from "../controllers/SocketConnection";
 import EventController from "../controllers/EventController";
 import DormItem from "../models/DormItem";
-import ChooseNameForm from "../components/ChooseNameForm/ChooseNameForm";
-import { BsPlus } from "react-icons/bs";
+
+import AddModal from "../components/modals/AddModal";
+import EditModal from "../components/modals/EditModal";
+import NameModal from "../components/modals/NameModal";
 
 class RoomRoute extends Component {
   constructor() {
@@ -219,44 +221,29 @@ class RoomRoute extends Component {
     switch (this.state.modalType) {
       case "add":
         return (
-          <Modal show={this.state.showModal} onHide={this.toggleModal}>
-            <Modal.Header closeButton>
-              <Modal.Title>Add an Item</Modal.Title>
-            </Modal.Header>
-            <Modal.Body>
-              <ListItemForm onSubmit={this.addNewItem} />
-            </Modal.Body>
-          </Modal>
+          <AddModal
+            show={this.state.showModal}
+            onHide={this.toggleModal}
+            onSubmit={this.addNewItem}
+          />
         );
       case "edit":
         return (
-          <Modal show={this.state.showModal} onHide={this.toggleModal}>
-            <Modal.Header closeButton>
-              <Modal.Title>Edit Item</Modal.Title>
-            </Modal.Header>
-            <Modal.Body>
-              <ListItemForm
-                item={this.state.editingItem}
-                onSubmit={this.editItemFormSubmit}
-              />
-            </Modal.Body>
-          </Modal>
+          <EditModal
+            show={this.state.showModal}
+            onHide={this.toggleModal}
+            onSubmit={this.editItemFormSubmit}
+            editingItem={this.state.editingItem}
+          />
         );
       case "choose-name":
         return (
-          <Modal show={this.state.showModal} onHide={this.toggleModal}>
-            <Modal.Header closeButton>
-              <Modal.Title>Choose Your Name</Modal.Title>
-            </Modal.Header>
-            <Modal.Body>
-              Choose a name so that other people in the room know who you are.
-              This data will only be stored locally in your browser.
-              <hr />
-              <ChooseNameForm onSubmit={this.editName} />
-            </Modal.Body>
-          </Modal>
+          <NameModal
+            show={this.state.showModal}
+            onHide={this.toggleModal}
+            onSubmit={this.editName}
+          />
         );
-
       default:
         return;
     }
