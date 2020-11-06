@@ -6,9 +6,6 @@ import { BsPlus } from "react-icons/bs";
 import RoomCanvas from "../../components/RoomCanvas/RoomCanvas";
 import DormItemList from "../../components/DormItemList/DormItemList";
 
-import RoomCanvas from "../../components/RoomCanvas/RoomCanvas";
-import DormItemList from "../../components/DormItemList/DormItemList";
-
 import DataController from "../../controllers/DataController";
 import SocketConnection from "../../controllers/SocketConnection";
 import EventController from "../../controllers/EventController";
