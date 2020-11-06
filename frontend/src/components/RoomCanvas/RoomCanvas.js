@@ -154,21 +154,17 @@ class RoomCanvas extends Component {
 
   render() {
     return (
-      <div className="card">
-        <div className="card-body">
-          <div className="room-canvas-container mx-auto">
-            <canvas
-              ref={(ref) => (this.canvas1 = ref)}
-              className="room-canvas"
-              style={{ zIndex: 1 }}
-            ></canvas>
-            <canvas
-              ref={(ref) => (this.canvas2 = ref)}
-              className="room-canvas"
-              style={{ zIndex: 2 }}
-            ></canvas>
-          </div>
-        </div>
+      <div className="card room-canvas-container">
+        <canvas
+          ref={(ref) => (this.canvas1 = ref)}
+          className="room-canvas"
+          style={{ zIndex: 1 }}
+        ></canvas>
+        <canvas
+          ref={(ref) => (this.canvas2 = ref)}
+          className="room-canvas"
+          style={{ zIndex: 2 }}
+        ></canvas>
       </div>
     );
   }
