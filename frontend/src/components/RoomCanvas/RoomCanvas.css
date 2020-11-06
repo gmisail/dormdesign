@@ -5,5 +5,7 @@
 
 .room-canvas-container {
   position: relative;
-  max-width: 82vh;
+  height: 100%;
+  width: 100%;
+  border: none;
 }
