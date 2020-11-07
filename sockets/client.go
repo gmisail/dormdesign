@@ -150,13 +150,13 @@ func (c *Client) translateMessage(byteMessage []byte) (Message, error) {
 		item.ID = uuid.New().String()
 		if err != nil {
 			errorString = "Unable to translate addItem event: " + err.Error()
-			break;
+			break
 		}
 		
 		err = models.AddListItem(c.hub.database, roomID, item)
 		if err != nil {
 			errorString = "Error adding item to database: " + err.Error()
-			break;
+			break
 		}
 
 		log.Printf("ADDED ITEM %+v\n", item)
@@ -170,14 +170,14 @@ func (c *Client) translateMessage(byteMessage []byte) (Message, error) {
 		itemID, ok := data["itemID"].(string)
 		editorPosition, ok := data["editorPosition"].(map[string]interface{})
 		if !ok {
-			errorString = "Incorrect/missing event fields: " + err.Error()
-			break;
+			errorString = "Incorrect/missing fields in received event."
+			break
 		}
 	
 		_, err := models.EditListItem(c.hub.database, roomID, itemID, map[string]interface{}{"editorPosition" : editorPosition })
 		if err != nil {
 			errorString = "Error updating item position in database: " + err.Error()
-			break;
+			break
 		}
 
 		log.Printf("UPDATED ITEM %s %+v\n", itemID, editorPosition)
@@ -203,14 +203,14 @@ func (c *Client) translateMessage(byteMessage []byte) (Message, error) {
 		updated, ok := data["updated"].(map[string]interface{})
 
 		if !ok {
-			errorString = "Incorrect/missing event fields: " + err.Error()
-			break;
+			errorString = "Incorrect/missing fields in received event."
+			break
 		}
 	
 		_, err := models.EditListItem(c.hub.database, roomID, itemID, updated)
 		if err != nil {
 			errorString = "Error editing item in database: " + err.Error()
-			break;
+			break
 		}
 
 		log.Printf("UPDATED ITEM %s %+v\n", itemID, updated)
@@ -232,14 +232,14 @@ func (c *Client) translateMessage(byteMessage []byte) (Message, error) {
 		*/
 		itemID, ok := data["itemID"].(string)
 		if !ok {
-			errorString = "Incorrect/missing event fields: " + err.Error()
-			break;
+			errorString = "Incorrect/missing fields in received event."
+			break
 		}
 		
 		err = models.RemoveListItem(c.hub.database, roomID, itemID)
 		if err != nil {
 			errorString = "Error removing item from list: " + err.Error()
-			break;
+			break
 		}
 
 		log.Printf("DELETED ITEM %s", itemID)
@@ -256,16 +256,16 @@ func (c *Client) translateMessage(byteMessage []byte) (Message, error) {
 		return Message{}, errors.New("ERROR Unknown event: " + event)
 	}
 
-	if response == nil {
-		return Message{}, errors.New("ERROR Message response is nil for event: " + event)
-	}
-	
 	if (errorString != "") {
 		log.Printf(errorString)
 		response = generateErrorMessageResponse(event, errorString)
 		// Send error message back to sender, but not other clients in room
 		includeOtherClients = false
 		sendResponse = true
+	}
+
+	if response == nil {
+		return Message{}, errors.New("ERROR Message response is nil for event: " + event)
 	}
 
 	responseBytes, responseBytesErr := json.Marshal(*response)

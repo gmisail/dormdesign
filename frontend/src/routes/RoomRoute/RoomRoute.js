@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 
-import { Spinner } from "react-bootstrap";
+import { Spinner, Alert } from "react-bootstrap";
 import { BsPlus } from "react-icons/bs";
 
 import RoomCanvas from "../../components/RoomCanvas/RoomCanvas";
@@ -16,6 +16,7 @@ import EditModal from "../../components/modals/EditModal";
 import NameModal from "../../components/modals/NameModal";
 
 import "./RoomRoute.css";
+import ErrorModal from "../../components/modals/ErrorModal";
 
 class RoomRoute extends Component {
   constructor() {
@@ -27,6 +28,7 @@ class RoomRoute extends Component {
       modalType: "none",
       editingItem: undefined,
       socketConnection: undefined,
+      errorMessage: "Something happened",
     };
   }
 
@@ -144,17 +146,39 @@ class RoomRoute extends Component {
       }
       switch (action) {
         case "addItem":
-          console.error("Error adding item:", data.message);
-          alert("Unable to add item");
+          console.error("Error adding item.", data.message);
+          this.setState({
+            showModal: true,
+            modalType: "error",
+            errorMessage: "Failed to create a new item. Try again later.",
+          });
+          break;
         case "deleteItem":
-          console.error("Error deleting item:", data.message);
-          alert("Unable to delete item");
+          console.error("Error deleting item.", data.message);
+          this.setState({
+            showModal: true,
+            modalType: "error",
+            errorMessage: "Failed to delete item. Try again later.",
+          });
+          break;
         case "updateItemPosition":
-          console.error("Error updating item position:", data.message);
-          alert("Unable to update item position");
+          console.error("Error updating item position.", data.message);
+          this.setState({
+            showModal: true,
+            modalType: "error",
+            errorMessage: "Failed to update item in editor. Try again later.",
+          });
+          break;
         case "editItem":
-          console.error("Error editing item:", data.message);
-          alert("Unable to edit item");
+          console.error("Error editing item.", data.message);
+          this.setState({
+            showModal: true,
+            modalType: "error",
+            errorMessage: "Failed to edit item properties. Try again later.",
+          });
+          break;
+        default:
+          console.error("Unknown socket event error.", data);
       }
     });
   };
@@ -273,6 +297,14 @@ class RoomRoute extends Component {
             onSubmit={this.editName}
           />
         );
+      case "error":
+        return (
+          <ErrorModal
+            show={this.state.showModal}
+            onHide={this.toggleModal}
+            message={this.state.errorMessage}
+          ></ErrorModal>
+        );
       default:
         return;
     }
@@ -282,6 +314,16 @@ class RoomRoute extends Component {
     return (
       <>
         <div className="room-container">
+          {this.state.showAlert ? (
+            <Alert
+              className="room-alert"
+              variant={this.state.alertVariant}
+              onClose={() => this.setState({ showAlert: false })}
+              dismissible
+            >
+              {this.state.alertMessage}
+            </Alert>
+          ) : null}
           <h2 className="room-header">Dorm Name - Room #</h2>
           <div className="d-flex justify-content-center room-editor-container">
             <RoomCanvas
