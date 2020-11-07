@@ -4,8 +4,8 @@ import NavigationBar from "./components/navbar/NavigationBar";
 import { BrowserRouter as Router, Route } from "react-router-dom";
 
 import "../node_modules/bootstrap/dist/css/bootstrap.min.css";
-import RoomRoute from "./routes/RoomRoute";
-import HomeRoute from "./routes/HomeRoute";
+import RoomRoute from "./routes/RoomRoute/RoomRoute";
+import HomeRoute from "./routes/HomeRoute/HomeRoute";
 import EventController from "./controllers/EventController";
 import { IconContext } from "react-icons";
 
