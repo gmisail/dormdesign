@@ -7,6 +7,7 @@ import (
 type Message struct {
 	room string
 	includeSender bool
+	includeOtherClients bool
 	sender *Client
 	response []byte
 }
@@ -94,8 +95,12 @@ func (h *Hub) Run() {
 			if room != nil {
 				// Send message to all clients in the room
 				for client := range room.Clients {
-					// If includeSender flag, send message back to client that originally sent it
+					// If includeSender flag is false, don't send message back to client that originally sent it
 					if (!message.includeSender && client == message.sender) {
+						continue
+					}
+					// If includeOtherClients flag is false, don't send message to other clients in room
+					if (!message.includeOtherClients && client != message.sender) {
 						continue
 					}
 					select {

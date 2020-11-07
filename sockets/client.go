@@ -81,6 +81,20 @@ func (c *Client) readPump() {
 	}
 }
 
+// Helper function used in translateMessage to generate a MessageResponse when an error occurs
+func generateErrorMessageResponse(failedEvent string, errorString string) *MessageResponse {
+	return &MessageResponse{
+		Event: "actionFailed",
+		Data: struct{
+			Action string `json:"action"`
+			Message string `json:"message"`
+		}{
+			Action: failedEvent,
+			Message: errorString,
+		},
+	}
+}
+
 // Takes in raw message data and returns a Message object if its valid. Otherwise, returns error.
 func (c *Client) translateMessage(byteMessage []byte) (Message, error) {
 	var message interface{}
@@ -117,6 +131,11 @@ func (c *Client) translateMessage(byteMessage []byte) (Message, error) {
 		return Message{}, errors.New("ERROR Message missing 'sendResponse' field")
 	}
 
+	includeOtherClients := true
+
+	// Set if there's an error handling an event. If set, an error MessageResponse will be generated and returned
+	var errorString string
+
 	var response *MessageResponse
 	response = nil
 
@@ -130,10 +149,15 @@ func (c *Client) translateMessage(byteMessage []byte) (Message, error) {
 		err := mapstructure.Decode(data, &item)
 		item.ID = uuid.New().String()
 		if err != nil {
-			return Message{}, err
+			errorString = "Unable to translate addItem event: " + err.Error()
+			break
 		}
 		
-		models.AddListItem(c.hub.database, roomID, item)
+		err = models.AddListItem(c.hub.database, roomID, item)
+		if err != nil {
+			errorString = "Error adding item to database: " + err.Error()
+			break
+		}
 
 		log.Printf("ADDED ITEM %+v\n", item)
 		
@@ -143,12 +167,17 @@ func (c *Client) translateMessage(byteMessage []byte) (Message, error) {
 		}
 
 	case "updateItemPosition":
-		itemID := data["itemID"].(string)
-		editorPosition := data["editorPosition"].(map[string]interface{})
+		itemID, ok := data["itemID"].(string)
+		editorPosition, ok := data["editorPosition"].(map[string]interface{})
+		if !ok {
+			errorString = "Incorrect/missing fields in received event."
+			break
+		}
 	
 		_, err := models.EditListItem(c.hub.database, roomID, itemID, map[string]interface{}{"editorPosition" : editorPosition })
 		if err != nil {
-			return Message{}, err
+			errorString = "Error updating item position in database: " + err.Error()
+			break
 		}
 
 		log.Printf("UPDATED ITEM %s %+v\n", itemID, editorPosition)
@@ -169,13 +198,19 @@ func (c *Client) translateMessage(byteMessage []byte) (Message, error) {
 			Edit property/properties of existing ListItem
 		*/
 
-		itemID := data["itemID"].(string)
+		itemID, ok := data["itemID"].(string)
 		// Get map of updated properties and their values
-		updated := data["updated"].(map[string]interface{})
+		updated, ok := data["updated"].(map[string]interface{})
+
+		if !ok {
+			errorString = "Incorrect/missing fields in received event."
+			break
+		}
 	
 		_, err := models.EditListItem(c.hub.database, roomID, itemID, updated)
 		if err != nil {
-			return Message{}, err
+			errorString = "Error editing item in database: " + err.Error()
+			break
 		}
 
 		log.Printf("UPDATED ITEM %s %+v\n", itemID, updated)
@@ -195,10 +230,16 @@ func (c *Client) translateMessage(byteMessage []byte) (Message, error) {
 		/*
 			Delete ListItem
 		*/
-		itemID := data["itemID"].(string)
+		itemID, ok := data["itemID"].(string)
+		if !ok {
+			errorString = "Incorrect/missing fields in received event."
+			break
+		}
+		
 		err = models.RemoveListItem(c.hub.database, roomID, itemID)
 		if err != nil {
-			return Message{}, err
+			errorString = "Error removing item from list: " + err.Error()
+			break
 		}
 
 		log.Printf("DELETED ITEM %s", itemID)
@@ -215,6 +256,14 @@ func (c *Client) translateMessage(byteMessage []byte) (Message, error) {
 		return Message{}, errors.New("ERROR Unknown event: " + event)
 	}
 
+	if (errorString != "") {
+		log.Printf(errorString)
+		response = generateErrorMessageResponse(event, errorString)
+		// Send error message back to sender, but not other clients in room
+		includeOtherClients = false
+		sendResponse = true
+	}
+
 	if response == nil {
 		return Message{}, errors.New("ERROR Message response is nil for event: " + event)
 	}
@@ -224,7 +273,7 @@ func (c *Client) translateMessage(byteMessage []byte) (Message, error) {
 		return Message{}, responseBytesErr
 	}
 
-	return Message{ room: roomID, includeSender: sendResponse, sender: c, response: responseBytes }, nil
+	return Message{ room: roomID, includeSender: sendResponse, includeOtherClients: includeOtherClients, sender: c, response: responseBytes }, nil
 }
 
 func (c *Client) writePump() {
