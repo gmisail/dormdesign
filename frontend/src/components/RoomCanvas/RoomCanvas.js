@@ -4,6 +4,8 @@ import SceneController from "../../room-editor/SceneController";
 import RoomObject from "../../room-editor/RoomObject";
 import Vector2 from "../../room-editor/Vector2";
 import EventController from "../../controllers/EventController";
+import IconButton from "../IconButton/IconButton";
+import { BsArrowClockwise } from "react-icons/bs";
 
 class RoomCanvas extends Component {
   constructor(props) {
@@ -39,7 +41,9 @@ class RoomCanvas extends Component {
       boundaryPoints: testBoundaryPath,
       canvasLayer: 1,
       backgroundColor: "#fff",
-      onObjectMoved: this.roomObjectUpdated,
+      onObjectMoved: this.roomRectObjectUpdated,
+      onObjectSelected: this.roomRectObjectSelected,
+      selectedObject: undefined,
     });
     scene.addObject(room);
 
@@ -56,7 +60,12 @@ class RoomCanvas extends Component {
     });
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps, prevState) {
+    // If the state change was the selected object, then return early since included items didn't change
+    if (prevState.selectedObject !== this.state.selectedObject) {
+      return;
+    }
+
     // Filter out items not included in editor
     const includedItems = this.props.items.filter(
       (item) => item.visibleInEditor
@@ -114,7 +123,7 @@ class RoomCanvas extends Component {
   };
 
   // Called when object is moved in room. Updates item's position and calls callback function
-  roomObjectUpdated = (obj) => {
+  roomRectObjectUpdated = (obj) => {
     const item = this.state.visibleItemsMap.get(obj.id);
 
     if (item) {
@@ -128,6 +137,11 @@ class RoomCanvas extends Component {
         obj
       );
     }
+  };
+
+  // Called when object is selected in room. Receives 'undefined' if currently selected object is deselected (without another one being selected)
+  roomRectObjectSelected = (obj) => {
+    this.setState({ selectedObject: obj });
   };
 
   // Adds item to editor. Takes in item reference and reference to editor data for item
@@ -155,6 +169,14 @@ class RoomCanvas extends Component {
   render() {
     return (
       <div className="card room-canvas-container">
+        <div className="room-editor-toolbar">
+          <IconButton
+            onClick={() => this.state.selectedObject.rotateBy(90)}
+            disabled={this.state.selectedObject === undefined}
+          >
+            <BsArrowClockwise></BsArrowClockwise>
+          </IconButton>
+        </div>
         <canvas
           ref={(ref) => (this.canvas1 = ref)}
           className="room-canvas"

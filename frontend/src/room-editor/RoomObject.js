@@ -14,6 +14,7 @@ class RoomObject extends SceneObject {
     canvasLayer,
     backgroundColor,
     onObjectMoved,
+    onObjectSelected,
   }) {
     super({
       scene: scene,
@@ -40,6 +41,7 @@ class RoomObject extends SceneObject {
     this.opacity = opacity ?? 1.0;
 
     this.onObjectMoved = onObjectMoved;
+    this.onObjectSelected = onObjectSelected;
 
     this._fitRoomToCanvas();
     this._calculateOffsetPoints();
@@ -140,8 +142,13 @@ class RoomObject extends SceneObject {
   _fitRoomToCanvas() {
     const ctx = this.scene.ctx[this.canvasLayer];
 
-    // Padding from edge of canvas for room outline
-    this.boundaryOffset = ctx.canvas.width * 0.04;
+    // Padding from edge of canvas
+    const padding = {
+      top: ctx.canvas.width * 0.08,
+      bottom: ctx.canvas.width * 0.04,
+      left: ctx.canvas.width * 0.04,
+      right: ctx.canvas.width * 0.04,
+    };
 
     // Find canvas pixels per foot
     let maxWidth;
@@ -154,8 +161,9 @@ class RoomObject extends SceneObject {
         maxHeight = this.boundaryPoints[i].y;
       }
     }
-    const usableCanvasWidth = ctx.canvas.width - 2 * this.boundaryOffset;
-    const usableCanvasHeight = ctx.canvas.height - 2 * this.boundaryOffset;
+    const usableCanvasWidth = ctx.canvas.width - (padding.left + padding.right);
+    const usableCanvasHeight =
+      ctx.canvas.height - (padding.top + padding.bottom);
 
     let roomAspect = maxWidth / maxHeight;
     let canvasAspect = ctx.canvas.width / ctx.canvas.height;
@@ -175,11 +183,24 @@ class RoomObject extends SceneObject {
 
     this.size.x = maxWidth;
     this.size.y = maxHeight;
-    const globalSize = this.getGlobalSize();
-    this.position = new Vector2(
-      ctx.canvas.width / 2 - globalSize.x / 2,
-      ctx.canvas.height / 2 - globalSize.y / 2
-    );
+
+    const bbox = this.getGlobalBoundingBox();
+    const globalSize = { x: bbox.p2.x - bbox.p1.x, y: bbox.p2.y - bbox.p1.y };
+
+    let position = {
+      x: ctx.canvas.width / 2 - globalSize.x / 2,
+      y: ctx.canvas.height / 2 - globalSize.y / 2,
+    };
+
+    // Only adjust position for padding if the padding actually affects it
+    if (padding.left > position.x) {
+      position.x += padding.left - position.x;
+    }
+    if (padding.top > position.y) {
+      position.y += padding.top - position.y;
+    }
+
+    this.position = new Vector2(position.x, position.y);
   }
 
   // Rounds num to the nearest multiple of given a number
@@ -193,10 +214,6 @@ class RoomObject extends SceneObject {
 
   // Mouse callbacks that are passed to mouse controller
   onMouseDown(position) {
-    if (this.state.selectedObject) {
-      this.state.selectedObject.selected = false;
-      this.state.selectedObject = undefined;
-    }
     // Get the object indices that were under the click and sort them in descending order so that the one on top is selected
     const clicked = this._getChildrenIndicesAtPosition(position).sort(
       (a, b) => b - a
@@ -204,28 +221,34 @@ class RoomObject extends SceneObject {
     if (clicked.length > 0) {
       for (let i = 0; i < clicked.length; i++) {
         const obj = this.children[clicked[i]];
+        // Only able to selected objects that have "selected" property
         if ("selected" in obj) {
-          obj.selected = true;
-          this.state.selectedObject = obj;
-          // Move the selected object to the back of the children array so its drawn last (on top)
-          this.children.push(this.children.splice(clicked[i], 1)[0]);
-          break;
+          // Don't reselect if already selected
+          if (this.state.selectedObject?.id !== obj.id) {
+            obj.selected = true;
+            this.state.selectedObject = obj;
+            // Move the selected object to the back of the children array so its drawn last (on top)
+            this.children.push(this.children.splice(clicked[i], 1)[0]);
+            this.onObjectSelected(obj);
+          }
+          return;
         }
       }
+    }
+    if (this.state.selectedObject) {
+      this.state.selectedObject.selected = false;
+      this.state.selectedObject = undefined;
+      this.onObjectSelected(undefined);
     }
   }
   onMouseMove(delta) {
     if (this.state.selectedObject && !this.state.selectedObject.staticObject) {
       const selectedObject = this.state.selectedObject;
-      const scaledDelta = new Vector2(
-        delta.x / selectedObject.transformMatrix.a,
-        delta.y / selectedObject.transformMatrix.d
-      );
       const unsnappedPos = selectedObject.getUnsnappedPosition();
+      const globalPos = selectedObject.localToGlobalPoint(unsnappedPos);
       selectedObject.setPosition(
-        new Vector2(
-          unsnappedPos.x + scaledDelta.x,
-          unsnappedPos.y + scaledDelta.y
+        selectedObject.globalToLocalPoint(
+          new Vector2(globalPos.x + delta.x, globalPos.y + delta.y)
         )
       );
 
@@ -329,7 +352,8 @@ class RoomObject extends SceneObject {
   }
 
   _draw(ctx) {
-    const globalSize = this.getGlobalSize();
+    const bbox = this.getGlobalBoundingBox();
+    const globalSize = { x: bbox.p2.x - bbox.p1.x, y: bbox.p2.y - bbox.p1.y };
 
     // Draw caption text
     const captionText = "1 cell = 1 square foot";

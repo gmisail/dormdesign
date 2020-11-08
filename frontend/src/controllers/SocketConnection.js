@@ -13,7 +13,6 @@ class SocketConnection {
       let data = undefined;
       try {
         data = JSON.parse(evt.data);
-        console.log("SUCCESS", evt.data);
       } catch (e) {
         console.error("Error parsing socket message data: ", evt.data, e);
       }

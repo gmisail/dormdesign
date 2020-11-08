@@ -23,6 +23,8 @@ class RoomRectObject extends SceneObject {
       size: size,
       staticObject: staticObject,
       canvasLayer: canvasLayer,
+      origin: new Vector2(size.x / 2, size.y / 2),
+      // origin: new Vector2(0, 0),
     });
 
     this.color = color;
@@ -87,30 +89,33 @@ class RoomRectObject extends SceneObject {
     if (this.parent) {
       // Restrict position to parent borders
       const xLimit = Math.min(
-        this.parent.size.x - this.size.x,
-        Math.max(0, this.position.x)
+        this.parent.size.x - (this.size.x - this.origin.x),
+        Math.max(this.origin.x, this.position.x)
       );
       const yLimit = Math.min(
-        this.parent.size.y - this.size.y,
-        Math.max(0, this.position.y)
+        this.parent.size.y - (this.size.y - this.origin.y),
+        Math.max(this.origin.y, this.position.y)
       );
-      this.position = new Vector2(xLimit, yLimit);
+
+      if (
+        !Vector2.floatEquals(xLimit, this.position.x) ||
+        !Vector2.floatEquals(yLimit, this.position.y)
+      ) {
+        this.position = new Vector2(xLimit, yLimit);
+      }
 
       // Check for intersections with RoomObject boundary boxes to detect if its in
-      const offset = 0.01; // Small "error" allows for things such as a 1' x 1' obj fitting in a 1' x 1' space without counting as collision
-      const corner1 = new Vector2(
-        this.position.x + offset,
-        this.position.y + offset
-      );
-      const corner2 = new Vector2(
-        this.position.x + this.size.x * this.scale.x - offset,
-        this.position.y + this.size.y * this.scale.y - offset
-      );
+      const offset = 0.015; // Small "error" allows for things such as a 1' x 1' obj fitting in a 1' x 1' space without counting as collision
+      let bbox = this.getLocalBoundingBox();
+      bbox.p1.x += offset;
+      bbox.p1.y += offset;
+      bbox.p2.x -= offset;
+      bbox.p2.y -= offset;
       this.outOfBounds = false;
       for (let i = 0; i < this.parent.boundaryBoxes.length; i++) {
         this.outOfBounds = Collisions.rectInRect(
-          corner1,
-          corner2,
+          bbox.p1,
+          bbox.p2,
           this.parent.boundaryBoxes[i].p1,
           this.parent.boundaryBoxes[i].p2
         );
@@ -155,30 +160,21 @@ class RoomRectObject extends SceneObject {
     ctx.resetTransform();
 
     // Draw text on top of object - For some reason the context using the transformation matrix seems to draw the text differently on firefox and chrome resulting in it being offset. So its being drawn by manually scaling the necessary values.
+    const globalPos = this.localToGlobalPoint(this.position);
+
     const fontSize = 0.28;
     this._setContextTextStyle(ctx, fontSize);
-    const lineOffset = 0.18 * this.transformMatrix.a;
+    const lineOffset = 0.18 * this.parent.scale.x;
     const fitNameText = this._getEditedText(ctx, this.nameText);
     const fitDimensionsText = this._getEditedText(
       ctx,
       `${this.size.x}' x ${this.size.y}'`
     );
-    ctx.font = `bold ${fontSize * this.transformMatrix.a}px sans-serif`;
-    ctx.fillText(
-      fitNameText,
-      this.transformMatrix.e + (this.size.x / 2) * this.transformMatrix.a,
-      this.transformMatrix.f +
-        (this.size.y / 2) * this.transformMatrix.a -
-        lineOffset
-    );
+    ctx.font = `bold ${fontSize * this.parent.scale.x}px sans-serif`;
 
-    ctx.fillText(
-      fitDimensionsText,
-      this.transformMatrix.e + (this.size.x / 2) * this.transformMatrix.a,
-      this.transformMatrix.f +
-        (this.size.y / 2) * this.transformMatrix.a +
-        lineOffset
-    );
+    ctx.fillText(fitNameText, globalPos.x, globalPos.y - lineOffset);
+
+    ctx.fillText(fitDimensionsText, globalPos.x, globalPos.y + lineOffset);
   }
 
   // Takes font size and configures the context to draw text with these styles
@@ -192,9 +188,11 @@ class RoomRectObject extends SceneObject {
   // Trims text so it fits in size of object. If the available width is less than the width of '...', returns empty string
   _getEditedText(ctx, text) {
     this._setContextTextStyle(ctx);
-    const textPadding = this.size.x / 20;
+    const bbox = this.getLocalBoundingBox(); // Accounts for rotation
+    const size = { x: bbox.p2.x - bbox.p1.x, y: bbox.p2.y - bbox.p1.y };
+    const textPadding = size.x / 20;
     text = text.trim();
-    while (ctx.measureText(text).width > this.size.x - 2 * textPadding) {
+    while (ctx.measureText(text).width > size.x - 2 * textPadding) {
       if (text.length <= 3) return "";
       text = text.substring(0, text.length - 4) + "...";
     }
