@@ -34,7 +34,10 @@ class SceneObject {
     matrix.translateSelf(this._position.x, this._position.y);
     matrix.rotateSelf(0, 0, this._rotation);
     matrix.scaleSelf(this._scale.x, this._scale.y);
-    matrix.translateSelf(-this._origin.x, -this._origin.y);
+    matrix.translateSelf(
+      -this._origin.x * this._size.x,
+      -this._origin.y * this._size.y
+    );
     return matrix;
   }
 
@@ -97,13 +100,16 @@ class SceneObject {
     this._rotation = degs;
     this._updateTransform();
   }
-  // Expects vector between (0 and this.size)
+  // Expects vector with values between 0 and 1
   set origin(vector) {
+    vector.x = Math.min(1, Math.max(0, vector.x));
+    vector.y = Math.min(1, Math.max(0, vector.y));
     this._origin = vector;
     this._updateTransform();
   }
   set size(vector) {
     this._size = vector;
+    this._updateTransform();
   }
 
   rotateBy(degs) {

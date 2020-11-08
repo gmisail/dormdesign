@@ -183,8 +183,14 @@ class RoomRoute extends Component {
     });
   };
 
+  // Called when ChooseNameForm is submitted
+  editName = (name) => {
+    window.localStorage.setItem("name", name);
+    this.toggleModal();
+  };
+
   // Called when edit button is clicked for an item in the list
-  editItem = (item) => {
+  showEditForm = (item) => {
     this.setState({ editingItem: item });
     this.toggleModal("edit");
   };
@@ -210,7 +216,6 @@ class RoomRoute extends Component {
 
   // Called when delete button is clicked for an item in the list
   deleteItem = (item) => {
-    console.log("Delete button clicked for item: ", item);
     this.state.socketConnection.send({
       event: "deleteItem",
       sendResponse: true,
@@ -220,8 +225,9 @@ class RoomRoute extends Component {
     });
   };
 
-  // Receives item ID and list of modified properties when ListItemForm is submitted
-  editItemFormSubmit = (itemID, modified) => {
+  // Takes in item ID and dictionary of modified properties
+  editItem = (itemID, modified) => {
+    console.log(itemID, modified);
     this.state.socketConnection.send({
       event: "editItem",
       sendResponse: true,
@@ -233,11 +239,6 @@ class RoomRoute extends Component {
 
     this.toggleModal();
     this.setState({ editingItem: undefined });
-  };
-
-  editName = (name) => {
-    window.localStorage.setItem("name", name);
-    this.toggleModal();
   };
 
   // Receives item ID and list of modified properties when ListItemForm is submitted
@@ -285,7 +286,7 @@ class RoomRoute extends Component {
           <EditModal
             show={this.state.showModal}
             onHide={this.toggleModal}
-            onSubmit={this.editItemFormSubmit}
+            onSubmit={this.editItem}
             editingItem={this.state.editingItem}
           />
         );
@@ -328,13 +329,13 @@ class RoomRoute extends Component {
           <div className="d-flex justify-content-center room-editor-container">
             <RoomCanvas
               items={this.state.items}
-              onItemUpdate={this.itemUpdatedInEditor}
+              onItemPositionUpdated={this.itemUpdatedInEditor}
             />
           </div>
           <div className="room-item-list-container">
             <DormItemList
               items={this.state.items}
-              onEditItem={this.editItem}
+              onEditItem={this.showEditForm}
               onClaimItem={this.claimItem}
               onDeleteItem={this.deleteItem}
             ></DormItemList>

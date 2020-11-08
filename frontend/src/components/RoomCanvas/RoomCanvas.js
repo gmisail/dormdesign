@@ -5,7 +5,7 @@ import RoomObject from "../../room-editor/RoomObject";
 import Vector2 from "../../room-editor/Vector2";
 import EventController from "../../controllers/EventController";
 import IconButton from "../IconButton/IconButton";
-import { BsArrowClockwise } from "react-icons/bs";
+import { BsArrowClockwise, BsX, BsUnlock, BsLock } from "react-icons/bs";
 
 class RoomCanvas extends Component {
   constructor(props) {
@@ -14,6 +14,7 @@ class RoomCanvas extends Component {
     this.state = {
       scene: undefined,
       roomObject: undefined,
+      lockIcon: false,
     };
   }
 
@@ -43,7 +44,7 @@ class RoomCanvas extends Component {
       backgroundColor: "#fff",
       onObjectMoved: this.roomRectObjectUpdated,
       onObjectSelected: this.roomRectObjectSelected,
-      selectedObject: undefined,
+      selectedObjectID: undefined,
     });
     scene.addObject(room);
 
@@ -62,10 +63,9 @@ class RoomCanvas extends Component {
 
   componentDidUpdate(prevProps, prevState) {
     // If the state change was the selected object, then return early since included items didn't change
-    if (prevState.selectedObject !== this.state.selectedObject) {
+    if (prevState.selectedObjectID !== this.state.selectedObjectID) {
       return;
     }
-
     // Filter out items not included in editor
     const includedItems = this.props.items.filter(
       (item) => item.visibleInEditor
@@ -73,9 +73,11 @@ class RoomCanvas extends Component {
 
     // Sort included items and currently added objects by id
     const items = includedItems.sort((a, b) => {
-      return a.id - b.id;
+      return a.id < b.id;
     });
-    const addedObjects = [...this.state.roomObject.roomItems].sort();
+    const addedObjects = [...this.state.roomObject.roomItems].sort((a, b) => {
+      return a < b;
+    });
 
     // Map that will be filled with references to all items that are part of editor
     const visibleItemsMap = this.state.visibleItemsMap;
@@ -102,18 +104,18 @@ class RoomCanvas extends Component {
         j++;
       }
     }
+
+    // If selected item is no longer in room, update state
+    if (
+      this.state.selectedObjectID !== undefined &&
+      visibleItemsMap.get(this.state.selectedObjectID) === undefined
+    ) {
+      this.setState({ selectedObjectID: undefined });
+    }
   }
 
   // Takes in item and tries to update the corresponding object in the editor scene
   updateRoomObject = (item) => {
-    // Try and fetch corresponding scene object
-    const obj = this.state.scene.objects.get(item.id);
-    if (!obj) {
-      console.error(
-        `ERROR updating object with id ${item.id}. Couldn't find corresponding scene object with matching id.`
-      );
-      return;
-    }
     this.state.roomObject.updateRoomItem(item.id, {
       position: item.editorPosition,
       name: item.name,
@@ -128,8 +130,8 @@ class RoomCanvas extends Component {
 
     if (item) {
       item.editorPosition = obj.position;
-      if (this.props.onItemUpdate) {
-        this.props.onItemUpdate(item);
+      if (this.props.onItemPositionUpdated) {
+        this.props.onItemPositionUpdated(item);
       }
     } else {
       console.error(
@@ -141,7 +143,10 @@ class RoomCanvas extends Component {
 
   // Called when object is selected in room. Receives 'undefined' if currently selected object is deselected (without another one being selected)
   roomRectObjectSelected = (obj) => {
-    this.setState({ selectedObject: obj });
+    this.setState({
+      selectedObjectID: obj?.id,
+      lockIcon: obj?.movementLocked ? true : false,
+    });
   };
 
   // Adds item to editor. Takes in item reference and reference to editor data for item
@@ -166,15 +171,52 @@ class RoomCanvas extends Component {
     this.state.roomObject.removeItemFromRoom(id);
   };
 
+  rotateSelectedObject = () => {
+    if (this.state.selectedObjectID !== undefined) {
+      this.state.scene.objects.get(this.state.selectedObjectID).rotateBy(90);
+    }
+  };
+
+  lockSelectedObject = () => {
+    const value = !this.state.scene.objects.get(this.state.selectedObjectID)
+      .movementLocked;
+    this.state.roomObject.updateRoomItem(this.state.selectedObjectID, {
+      movementLocked: value,
+    });
+    this.setState({ lockIcon: value });
+  };
+
+  // Sets selected item's visibleInEditor property to false
+  hideSelectedObject = () => {
+    console.log("Hide button clicked");
+  };
+
   render() {
     return (
       <div className="card room-canvas-container">
         <div className="room-editor-toolbar">
           <IconButton
-            onClick={() => this.state.selectedObject.rotateBy(90)}
-            disabled={this.state.selectedObject === undefined}
+            onClick={this.lockSelectedObject}
+            disabled={this.state.selectedObjectID === undefined}
+            style={{ fontSize: "0.95em" }}
+          >
+            {this.state.lockIcon ? <BsLock></BsLock> : <BsUnlock></BsUnlock>}
+          </IconButton>
+          <IconButton
+            onClick={this.rotateSelectedObject}
+            disabled={
+              this.state.selectedObjectID === undefined || this.state.lockIcon
+            }
           >
             <BsArrowClockwise></BsArrowClockwise>
+          </IconButton>
+          <IconButton
+            onClick={this.hideSelectedObject}
+            disabled={
+              this.state.selectedObjectID === undefined || this.state.lockIcon
+            }
+          >
+            <BsX></BsX>
           </IconButton>
         </div>
         <canvas

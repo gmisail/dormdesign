@@ -23,8 +23,7 @@ class RoomRectObject extends SceneObject {
       size: size,
       staticObject: staticObject,
       canvasLayer: canvasLayer,
-      origin: new Vector2(size.x / 2, size.y / 2),
-      // origin: new Vector2(0, 0),
+      origin: new Vector2(0.5, 0.5),
     });
 
     this.color = color;
@@ -41,6 +40,8 @@ class RoomRectObject extends SceneObject {
     this._selectionLineSpeed = 0.4;
     this._selectionLineWidth = 0.05;
     this._selectionLineDash = [0.18, 0.15]; // [Line dash length, space length]
+
+    this.movementLocked = false;
 
     this._selectionOutlineOffset = 0;
 
@@ -88,14 +89,8 @@ class RoomRectObject extends SceneObject {
 
     if (this.parent) {
       // Restrict position to parent borders
-      const xLimit = Math.min(
-        this.parent.size.x - (this.size.x - this.origin.x),
-        Math.max(this.origin.x, this.position.x)
-      );
-      const yLimit = Math.min(
-        this.parent.size.y - (this.size.y - this.origin.y),
-        Math.max(this.origin.y, this.position.y)
-      );
+      const xLimit = Math.min(this.parent.size.x, Math.max(0, this.position.x));
+      const yLimit = Math.min(this.parent.size.y, Math.max(0, this.position.y));
 
       if (
         !Vector2.floatEquals(xLimit, this.position.x) ||

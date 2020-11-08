@@ -83,27 +83,58 @@ class RoomObject extends SceneObject {
   // Fills any area between the boundary of the room and the bounding box of the RoomObject itself with a box. Returns that list of boxes
   _getOutOfBoundsBoxes() {
     const boxes = [];
+
+    /* Distance past the size of the room. Used since currently some boundary edges are flush with
+    the bottom of the room and therefore won't get any rects beneath them */
+    const offset = 0.5;
+    const directions = [];
     // Loop over boundary edges
     for (let i = 0; i < this.boundaryPoints.length; i++) {
       const p1 = this.boundaryPoints[i];
       const p2 = this.boundaryPoints[
         i === this.boundaryPoints.length - 1 ? 0 : i + 1
       ];
-      // Check if edge is a vertical line - Only need to make boxes for either all vertical lines or all horizontal lines, not both
+
       if (Vector2.floatEquals(p1.x, p2.x)) {
-        // Check if edge is lined up with corresponding edge of RoomObject. If not, create a box
+        // Vertical line
         const direction = p2.y > p1.y ? 1 : -1;
-        if (direction > 0 && !Vector2.floatEquals(p1.x, this.size.x)) {
-          boxes.push({
-            p1: new Vector2(p1.x, p1.y),
-            p2: new Vector2(this.size.x, p2.y),
-          });
-        } else if (direction < 0 && !Vector2.floatEquals(p1.x, 0)) {
-          boxes.push({
-            p1: new Vector2(0, p2.y),
-            p2: new Vector2(p1.x, p1.y),
-          });
+        // Prevents overlapping boxes
+        if (directions.length === 0 || directions[i - 1] === direction) {
+          if (direction > 0) {
+            // Down line
+            boxes.push({
+              p1: new Vector2(p1.x, p1.y),
+              p2: new Vector2(this.size.x + offset, p2.y),
+            });
+          } else if (direction < 0) {
+            // Up line
+            boxes.push({
+              p1: new Vector2(-offset, p2.y),
+              p2: new Vector2(p1.x, p1.y),
+            });
+          }
         }
+        directions.push(direction);
+      } else {
+        // Horizontal line
+        const direction = p2.x > p1.x ? 1 : -1;
+        // Prevents overlapping boxes
+        if (directions.length === 0 || directions[i - 1] !== direction) {
+          if (direction > 0) {
+            // Right line
+            boxes.push({
+              p1: new Vector2(p1.x, -offset),
+              p2: new Vector2(p2.x, p2.y),
+            });
+          } else if (direction < 0) {
+            // Left line
+            boxes.push({
+              p1: new Vector2(p2.x, p2.y),
+              p2: new Vector2(p1.x, this.size.y + offset),
+            });
+          }
+        }
+        directions.push(direction);
       }
     }
     return boxes;
@@ -225,6 +256,9 @@ class RoomObject extends SceneObject {
         if ("selected" in obj) {
           // Don't reselect if already selected
           if (this.state.selectedObject?.id !== obj.id) {
+            if (this.state.selectedObject) {
+              this.state.selectedObject.selected = false;
+            }
             obj.selected = true;
             this.state.selectedObject = obj;
             // Move the selected object to the back of the children array so its drawn last (on top)
@@ -244,6 +278,9 @@ class RoomObject extends SceneObject {
   onMouseMove(delta) {
     if (this.state.selectedObject && !this.state.selectedObject.staticObject) {
       const selectedObject = this.state.selectedObject;
+      if (selectedObject.movementLocked) {
+        return;
+      }
       const unsnappedPos = selectedObject.getUnsnappedPosition();
       const globalPos = selectedObject.localToGlobalPoint(unsnappedPos);
       selectedObject.setPosition(
@@ -319,7 +356,7 @@ class RoomObject extends SceneObject {
   }
 
   // Updates object in room. Returns true if successful false if not
-  updateRoomItem(id, { position, name, width, height }) {
+  updateRoomItem(id, { position, name, width, height, movementLocked }) {
     const obj = this.scene.objects.get(id);
     if (!obj) {
       console.error("ERROR updating room item. Invalid object ID: " + id);
@@ -333,6 +370,9 @@ class RoomObject extends SceneObject {
     }
     if (width && height) {
       obj.size = new Vector2(width, height);
+    }
+    if (movementLocked !== undefined) {
+      obj.movementLocked = movementLocked;
     }
   }
 
