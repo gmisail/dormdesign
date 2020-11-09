@@ -26,6 +26,7 @@ class SceneObject {
     if (canvasLayer === 0) {
       this.scene._updateBackground = true;
     }
+    this.drawBoundingBox = false;
     this._updateTransform();
   }
 
@@ -218,6 +219,16 @@ class SceneObject {
 
     // Reset transformation matrix so it doesn't interfere with other draws
     ctx.resetTransform();
+
+    // Draw global bounding box. For debugging.
+    if (this.drawBoundingBox) {
+      const bbox = this.getGlobalBoundingBox();
+      const w = bbox.p2.x - bbox.p1.x;
+      const h = bbox.p2.y - bbox.p1.y;
+      ctx.strokeStyle = "red";
+      ctx.lineWidth = 2;
+      ctx.strokeRect(bbox.p1.x, bbox.p1.y, w, h);
+    }
   }
 }
 
