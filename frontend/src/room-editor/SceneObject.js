@@ -19,7 +19,7 @@ class SceneObject {
     this._rotation = rotation ?? 0.0;
     this._origin = origin ?? new Vector2(0, 0);
     this.staticObject = staticObject ?? false;
-    this.parent = undefined;
+    this.parent = null;
     this._children = [];
     this._size = size;
     this.canvasLayer = canvasLayer ?? 0;
@@ -43,7 +43,7 @@ class SceneObject {
 
   // Calculates and returns the transformation matrix for this object using the parent's transformation matrix (if it has a parent. Otherwise uses identity).
   _calculateTransform() {
-    let matrix = undefined;
+    let matrix;
     if (this.parent) {
       // Make a copy of parent matrix
       matrix = this.parent._transformMatrix.multiply(
@@ -124,7 +124,7 @@ class SceneObject {
   }
 
   removeChild(object) {
-    object.parent = undefined;
+    object.parent = null;
     let end = 0;
     for (let i = 0; i < this._children.length; i++) {
       const obj = this._children[i];

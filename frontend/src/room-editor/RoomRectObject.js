@@ -7,6 +7,7 @@ class RoomRectObject extends SceneObject {
     scene,
     id,
     position,
+    rotation,
     size,
     color,
     opacity,
@@ -15,11 +16,13 @@ class RoomRectObject extends SceneObject {
     snapPosition,
     snapOffset,
     canvasLayer,
+    movementLocked,
   }) {
     super({
       scene: scene,
       id: id,
       position: position,
+      rotation: rotation,
       size: size,
       staticObject: staticObject,
       canvasLayer: canvasLayer,
@@ -41,7 +44,7 @@ class RoomRectObject extends SceneObject {
     this._selectionLineWidth = 0.05;
     this._selectionLineDash = [0.18, 0.15]; // [Line dash length, space length]
 
-    this.movementLocked = false;
+    this.movementLocked = movementLocked ?? false;
 
     this._selectionOutlineOffset = 0;
 

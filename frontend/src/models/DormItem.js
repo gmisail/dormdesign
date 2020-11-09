@@ -8,23 +8,34 @@ class DormItem {
       dimensions,
       visibleInEditor,
       editorPosition,
+      editorRotation,
+      editorLocked,
     } = data ?? {};
     this.id = id;
-    this.name = name === undefined || name.length === 0 ? "New Item" : name;
-    this.quantity = quantity ?? 1;
-    this.claimedBy =
-      claimedBy === undefined || claimedBy.length === 0 ? undefined : claimedBy;
+    this.name = name ? name : "New Item";
+    this.quantity = quantity ? quantity : 1;
+    this.claimedBy = claimedBy ? claimedBy : null;
 
-    this.dimensions = dimensions
-      ? {
-          // If dimensions are 0 (default value from backend), set as undefined
-          width: dimensions.width === 0 ? undefined : dimensions.width,
-          length: dimensions.length === 0 ? undefined : dimensions.length,
-          height: dimensions.height === 0 ? undefined : dimensions.height,
-        }
-      : { width: undefined, length: undefined, height: undefined };
+    this.dimensions = {
+      width: dimensions?.width ? dimensions.width : null,
+      length: dimensions?.length ? dimensions.length : null,
+      height: dimensions?.height ? dimensions.height : null,
+    };
     this.visibleInEditor = visibleInEditor ?? false;
-    this.editorPosition = editorPosition;
+    this.editorPosition = {
+      x: editorPosition?.x ? editorPosition.x : null,
+      y: editorPosition?.y ? editorPosition.y : null,
+    };
+    this.editorRotation = editorRotation ? editorRotation : 0;
+    this.editorLocked = editorLocked ? editorLocked : false;
+  }
+
+  update(updated) {
+    for (const [key, value] of Object.entries(updated)) {
+      if (value !== undefined) {
+        this[key] = value;
+      }
+    }
   }
 }
 

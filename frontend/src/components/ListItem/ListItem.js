@@ -5,7 +5,7 @@ import IconButton from "../IconButton/IconButton";
 import "./ListItem.css";
 
 const ListItem = (props) => {
-  const { item, onEdit, onClaim, onDelete } = props;
+  const { item, onEdit, onClaim, onDelete, onToggleEditorVisibility } = props;
 
   const [showMenu, setShowMenu] = useState(false);
   const menuRef = useRef(null);
@@ -43,10 +43,9 @@ const ListItem = (props) => {
         </div>
 
         <div className="d-flex align-items-center">
-          {item.claimedBy === undefined ||
-          item.claimedBy.length === 0 ? null : (
+          {item.claimedBy ? (
             <i className="mr-3">Claimed by {item.claimedBy}</i>
-          )}
+          ) : null}
 
           <div className="item-dropdown-menu" ref={menuRef}>
             <IconButton onClick={() => setShowMenu(!showMenu)}>
@@ -56,6 +55,11 @@ const ListItem = (props) => {
               <div className="item-dropdown-content">
                 <ul>
                   <li onClick={() => menuOptionClicked(onEdit)}>Edit</li>
+                  <li
+                    onClick={() => menuOptionClicked(onToggleEditorVisibility)}
+                  >
+                    {item.visibleInEditor ? "Hide" : "Show"} in editor
+                  </li>
                   <li onClick={() => menuOptionClicked(onClaim)}>Claim</li>
                   <li id="danger" onClick={() => menuOptionClicked(onDelete)}>
                     Delete

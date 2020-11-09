@@ -6,6 +6,7 @@ import Vector2 from "../../room-editor/Vector2";
 import EventController from "../../controllers/EventController";
 import IconButton from "../IconButton/IconButton";
 import { BsArrowClockwise, BsX, BsUnlock, BsLock } from "react-icons/bs";
+import DormItem from "../../models/DormItem";
 
 class RoomCanvas extends Component {
   constructor(props) {
@@ -42,7 +43,7 @@ class RoomCanvas extends Component {
       boundaryPoints: testBoundaryPath,
       canvasLayer: 1,
       backgroundColor: "#fff",
-      onObjectMoved: this.roomRectObjectUpdated,
+      onObjectUpdated: this.roomRectObjectUpdated,
       onObjectSelected: this.roomRectObjectSelected,
       selectedObjectID: undefined,
     });
@@ -54,7 +55,7 @@ class RoomCanvas extends Component {
       visibleItemsMap: new Map(),
     });
 
-    EventController.on("itemPositionUpdated", (payload) => {
+    EventController.on("itemUpdatedInEditor", (payload) => {
       room.updateRoomItem(payload.id, {
         position: payload.editorPosition,
       });
@@ -90,8 +91,9 @@ class RoomCanvas extends Component {
       const a = i < items.length ? items[i].id : undefined;
       const b = j < addedObjects.length ? addedObjects[j] : undefined;
       if (!b || a < b) {
-        this.addItemToScene(items[i]);
         visibleItemsMap.set(items[i].id, items[i]);
+        // Must addItemToScene after its set in visibleItemsMap since addItemToScene might update position (if item has none), which would call roomRectObjectUpdated
+        this.addItemToScene(items[i]);
         i++;
       } else if (!a || a > b) {
         this.removeItemFromScene(b);
@@ -121,23 +123,34 @@ class RoomCanvas extends Component {
       name: item.name,
       width: item.dimensions.width,
       height: item.dimensions.length, // Since editor is 2D, use length for Y dimension
+      rotation: item.editorRotation,
+      movementLocked: item.editorLocked,
     });
   };
 
-  // Called when object is moved in room. Updates item's position and calls callback function
-  roomRectObjectUpdated = (obj) => {
-    const item = this.state.visibleItemsMap.get(obj.id);
+  /* Called when object properties are updated in editor (e.g. position, rotation, movementLocked...). Takes in object ID
+  and updated values. Sends update event to server and updates local item values */
+  roomRectObjectUpdated = (id, updated) => {
+    const item = this.state.visibleItemsMap.get(id);
 
     if (item) {
-      item.editorPosition = obj.position;
-      if (this.props.onItemPositionUpdated) {
-        this.props.onItemPositionUpdated(item);
-      }
+      // Need to translate updated obj since it has different property name (e.g. 'position' instead of 'editorPosition')
+      const translatedUpdated = {
+        editorPosition: updated.position,
+        editorRotation: updated.rotation,
+        editorLocked: updated.movementLocked,
+      };
+      item.update(translatedUpdated);
+      this.props.socketConnection.send({
+        event: "updateItemInEditor",
+        sendResponse: false,
+        data: {
+          itemID: item.id,
+          updated: translatedUpdated,
+        },
+      });
     } else {
-      console.error(
-        "ERROR Unable to find item associated with SceneObject: ",
-        obj
-      );
+      console.error("ERROR Unable to find item associated with ID: ", id);
     }
   };
 
@@ -157,6 +170,8 @@ class RoomCanvas extends Component {
       feetWidth: item.dimensions.width,
       feetHeight: item.dimensions.length,
       position: item.editorPosition,
+      rotation: item.editorRotation,
+      movementLocked: item.editorLocked,
     });
     // If item had no position, update item data with new position set by the room (should be in center of room by default)
     if (!item.editorPosition) {
@@ -173,7 +188,11 @@ class RoomCanvas extends Component {
 
   rotateSelectedObject = () => {
     if (this.state.selectedObjectID !== undefined) {
-      this.state.scene.objects.get(this.state.selectedObjectID).rotateBy(90);
+      const obj = this.state.scene.objects.get(this.state.selectedObjectID);
+      obj.rotateBy(90);
+      this.roomRectObjectUpdated(this.state.selectedObjectID, {
+        rotation: obj.rotation,
+      });
     }
   };
 
@@ -183,12 +202,10 @@ class RoomCanvas extends Component {
     this.state.roomObject.updateRoomItem(this.state.selectedObjectID, {
       movementLocked: value,
     });
+    this.roomRectObjectUpdated(this.state.selectedObjectID, {
+      movementLocked: value,
+    });
     this.setState({ lockIcon: value });
-  };
-
-  // Sets selected item's visibleInEditor property to false
-  hideSelectedObject = () => {
-    console.log("Hide button clicked");
   };
 
   render() {
@@ -209,14 +226,6 @@ class RoomCanvas extends Component {
             }
           >
             <BsArrowClockwise></BsArrowClockwise>
-          </IconButton>
-          <IconButton
-            onClick={this.hideSelectedObject}
-            disabled={
-              this.state.selectedObjectID === undefined || this.state.lockIcon
-            }
-          >
-            <BsX></BsX>
           </IconButton>
         </div>
         <canvas

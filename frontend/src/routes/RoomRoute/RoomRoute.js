@@ -93,7 +93,7 @@ class RoomRoute extends Component {
       this.setState({ items: itemArray });
     });
 
-    EventController.on("itemEdited", (data) => {
+    EventController.on("itemUpdated", (data) => {
       const updated = data.updated;
 
       const oldItemArray = this.state.items;
@@ -112,24 +112,7 @@ class RoomRoute extends Component {
           data.id
         );
       } else {
-        if (Object.prototype.hasOwnProperty.call(updated, "editorPosition")) {
-          itemArray[updateIndex].editorPosition = updated.editorPosition;
-        }
-        if (Object.prototype.hasOwnProperty.call(updated, "dimensions")) {
-          itemArray[updateIndex].dimensions = updated.dimensions;
-        }
-        if (Object.prototype.hasOwnProperty.call(updated, "name")) {
-          itemArray[updateIndex].name = updated.name;
-        }
-        if (Object.prototype.hasOwnProperty.call(updated, "claimedBy")) {
-          itemArray[updateIndex].claimedBy = updated.claimedBy;
-        }
-        if (Object.prototype.hasOwnProperty.call(updated, "visibleInEditor")) {
-          itemArray[updateIndex].visibleInEditor = updated.visibleInEditor;
-        }
-        if (Object.prototype.hasOwnProperty.call(updated, "quantity")) {
-          itemArray[updateIndex].quantity = updated.quantity;
-        }
+        itemArray[updateIndex].update(updated);
 
         this.setState({ items: itemArray });
       }
@@ -195,6 +178,7 @@ class RoomRoute extends Component {
     this.toggleModal("edit");
   };
 
+  // Called when claim button is clicked for an item in the list
   claimItem = (item) => {
     const name = window.localStorage.getItem("name");
 
@@ -202,7 +186,7 @@ class RoomRoute extends Component {
       this.toggleModal("choose-name");
     } else {
       this.state.socketConnection.send({
-        event: "editItem",
+        event: "updateItem",
         sendResponse: true,
         data: {
           itemID: item.id,
@@ -212,6 +196,20 @@ class RoomRoute extends Component {
         },
       });
     }
+  };
+
+  // Called when show/hide from editor is clicked for an item in the list
+  toggleEditorVisibility = (item) => {
+    this.state.socketConnection.send({
+      event: "updateItem",
+      sendResponse: true,
+      data: {
+        itemID: item.id,
+        updated: {
+          visibleInEditor: !item.visibleInEditor,
+        },
+      },
+    });
   };
 
   // Called when delete button is clicked for an item in the list
@@ -227,9 +225,8 @@ class RoomRoute extends Component {
 
   // Takes in item ID and dictionary of modified properties
   editItem = (itemID, modified) => {
-    console.log(itemID, modified);
     this.state.socketConnection.send({
-      event: "editItem",
+      event: "updateItem",
       sendResponse: true,
       data: {
         itemID: itemID,
@@ -242,7 +239,7 @@ class RoomRoute extends Component {
   };
 
   // Receives item ID and list of modified properties when ListItemForm is submitted
-  addNewItem = (itemID, modified) => {
+  addNewItem = (_, modified) => {
     this.state.socketConnection.send({
       event: "addItem",
       sendResponse: true,
@@ -250,18 +247,6 @@ class RoomRoute extends Component {
     });
 
     this.toggleModal();
-  };
-
-  // Callback passed to RoomCanvas for when item is updated
-  itemUpdatedInEditor = (item) => {
-    this.state.socketConnection.send({
-      event: "updateItemPosition",
-      sendResponse: false,
-      data: {
-        itemID: item.id,
-        editorPosition: item.editorPosition,
-      },
-    });
   };
 
   toggleModal = (type) => {
@@ -328,8 +313,8 @@ class RoomRoute extends Component {
           <h2 className="room-header">Dorm Name - Room #</h2>
           <div className="d-flex justify-content-center room-editor-container">
             <RoomCanvas
+              socketConnection={this.state.socketConnection}
               items={this.state.items}
-              onItemPositionUpdated={this.itemUpdatedInEditor}
             />
           </div>
           <div className="room-item-list-container">
@@ -338,6 +323,7 @@ class RoomRoute extends Component {
               onEditItem={this.showEditForm}
               onClaimItem={this.claimItem}
               onDeleteItem={this.deleteItem}
+              onToggleEditorVisibility={this.toggleEditorVisibility}
             ></DormItemList>
           </div>
         </div>
