@@ -67,43 +67,31 @@ class RoomCanvas extends Component {
     if (prevState.selectedObjectID !== this.state.selectedObjectID) {
       return;
     }
-    // Filter out items not included in editor
-    const includedItems = this.props.items.filter(
-      (item) => item.visibleInEditor
-    );
+    // Filter out items with visibleInEditor set to false
+    const itemsToInclude = this.props.items.reduce((map, item) => {
+      if (item.visibleInEditor) {
+        map.set(item.id, item);
+      }
+      return map;
+    }, new Map());
 
-    // Sort included items and currently added objects by id
-    const items = includedItems.sort((a, b) => {
-      return a.id < b.id;
-    });
-    const addedObjects = [...this.state.roomObject.roomItems].sort((a, b) => {
-      return a < b;
-    });
-
-    // Map that will be filled with references to all items that are part of editor
     const visibleItemsMap = this.state.visibleItemsMap;
-    visibleItemsMap.clear();
 
-    // Iterate through both sorted lists simultaneously and find objects that need to be added/removed
-    let i = 0;
-    let j = 0;
-    while (i < items.length || j < addedObjects.length) {
-      const a = i < items.length ? items[i].id : undefined;
-      const b = j < addedObjects.length ? addedObjects[j] : undefined;
-      if (!b || a < b) {
-        visibleItemsMap.set(items[i].id, items[i]);
-        // Must addItemToScene after its set in visibleItemsMap since addItemToScene might update position (if item has none), which would call roomRectObjectUpdated
-        this.addItemToScene(items[i]);
-        i++;
-      } else if (!a || a > b) {
-        this.removeItemFromScene(b);
-        j++;
+    // Check for objects to add and update existing objects
+    for (let [key, value] of itemsToInclude) {
+      if (!visibleItemsMap.has(key)) {
+        visibleItemsMap.set(key, value);
+        this.addItemToScene(value);
       } else {
-        // Update item in case its properties changed
-        this.updateRoomObject(items[i]);
-        visibleItemsMap.set(items[i].id, items[i]);
-        i++;
-        j++;
+        this.updateRoomObject(value);
+      }
+    }
+
+    // Check for objects that need to be deleted
+    for (let key of visibleItemsMap.keys()) {
+      if (!itemsToInclude.has(key)) {
+        visibleItemsMap.delete(key);
+        this.removeItemFromScene(key);
       }
     }
 
