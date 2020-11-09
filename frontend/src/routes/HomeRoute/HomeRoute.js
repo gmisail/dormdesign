@@ -1,5 +1,14 @@
 import React, { Component } from "react";
-import { Container, Row, Col, Card, Button, Jumbotron } from "react-bootstrap";
+import {
+  Container,
+  Row,
+  Col,
+  Card,
+  Button,
+  Jumbotron,
+  InputGroup,
+  FormControl,
+} from "react-bootstrap";
 import DataController from "../../controllers/DataController";
 
 class HomeRoute extends Component {
@@ -11,10 +20,10 @@ class HomeRoute extends Component {
   render() {
     return (
       <>
-        <Jumbotron fluid>
+        <Jumbotron id="landing-jumbotron" fluid>
           <Container>
             <h1>Plan for college, together.</h1>
-            <p>Add a cool tagline here.</p>
+            <p>An RCOS Project.</p>
           </Container>
         </Jumbotron>
 
@@ -46,13 +55,21 @@ class HomeRoute extends Component {
                   </Card.Title>
                   <p>Need to join an existing room?</p>
 
-                  <Button
-                    variant="primary"
-                    name="createRoomButton"
-                    onClick={this.createRoomClicked}
-                  >
-                    Join Room
-                  </Button>
+                  <InputGroup>
+                    <FormControl
+                      placeholder="Room Code"
+                      aria-label="Room Code"
+                    />
+                    <InputGroup.Append>
+                      <Button
+                        variant="primary"
+                        name="createRoomButton"
+                        onClick={this.createRoomClicked}
+                      >
+                        Join Room
+                      </Button>
+                    </InputGroup.Append>
+                  </InputGroup>
                 </Card.Body>
               </Card>
             </Col>
