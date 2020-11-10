@@ -55,9 +55,13 @@ const ListItem = (props) => {
             {showMenu ? (
               <div className="item-dropdown-content">
                 <ul>
-                  <li onClick={() => menuOptionClicked(onEdit)}>Edit</li>
+                  <li id="top" onClick={() => menuOptionClicked(onEdit)}>
+                    Edit
+                  </li>
+
                   <li onClick={() => menuOptionClicked(onClaim)}>Claim</li>
-                  <li id="danger" onClick={() => menuOptionClicked(onDelete)}>
+
+                  <li id="bottom" onClick={() => menuOptionClicked(onDelete)}>
                     Delete
                   </li>
                 </ul>
