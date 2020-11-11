@@ -9,7 +9,7 @@ import HomeRoute from "./routes/HomeRoute/HomeRoute";
 import EventController from "./controllers/EventController";
 import { IconContext } from "react-icons";
 
-import "./App.css";
+import "./App.scss";
 
 function App() {
   EventController.create();
