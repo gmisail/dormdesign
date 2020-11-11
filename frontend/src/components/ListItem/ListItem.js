@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
-import { BsThreeDots } from "react-icons/bs";
+import { BsThreeDots, BsX, BsPencil, BsPerson } from "react-icons/bs";
 import { ListGroupItem } from "react-bootstrap";
 import IconButton from "../IconButton/IconButton";
+
 import "./ListItem.css";
 
 const ListItem = (props) => {
@@ -56,13 +57,24 @@ const ListItem = (props) => {
               <div className="item-dropdown-content">
                 <ul>
                   <li id="top" onClick={() => menuOptionClicked(onEdit)}>
-                    Edit
+                    <div className="item-dropdown-content-row">
+                      <BsPencil></BsPencil>
+                      <span>Edit</span>
+                    </div>
                   </li>
 
-                  <li onClick={() => menuOptionClicked(onClaim)}>Claim</li>
+                  <li onClick={() => menuOptionClicked(onClaim)}>
+                    <div className="item-dropdown-content-row">
+                      <BsPerson></BsPerson>
+                      Claim
+                    </div>
+                  </li>
 
-                  <li id="bottom" onClick={() => menuOptionClicked(onDelete)}>
-                    Delete
+                  <li onClick={() => menuOptionClicked(onDelete)}>
+                    <div className="color-danger item-dropdown-content-row">
+                      <BsX></BsX>
+                      Delete
+                    </div>
                   </li>
                 </ul>
               </div>
