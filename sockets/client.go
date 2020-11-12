@@ -175,11 +175,6 @@ func (c *Client) translateMessage(byteMessage []byte) (Message, error) {
 		// Get map of updated properties and their values
 		updated, ok := data["updated"].(map[string]interface{})
 
-		// log.Printf("UPDATED ITEM %s %+v\n", itemID, updated)
-		// test := updated["name"].(string)
-		// log.Printf("%+v\n", test)
-		// ok = false;
-
 		if !ok {
 			errorString = "Incorrect/missing fields in received event."
 			break
@@ -192,16 +187,9 @@ func (c *Client) translateMessage(byteMessage []byte) (Message, error) {
 		}
 
 		log.Printf("UPDATED ITEM %s %+v\n", itemID, updated)
-
-		var responseEvent string
-		if (event == "updateItem") {
-			responseEvent = "itemUpdated"
-		} else {
-			responseEvent = "itemUpdatedInEditor"
-		}
 		
 		response = &MessageResponse{
-			Event: responseEvent,
+			Event: "itemUpdated",
 			Data: struct{
 				ID string `json:"id"`
 				Updated map[string]interface{} `json:"updated"`
