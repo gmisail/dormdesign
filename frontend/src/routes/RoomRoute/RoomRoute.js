@@ -23,12 +23,12 @@ class RoomRoute extends Component {
     super();
 
     this.state = {
-      items: undefined,
+      items: [],
       showModal: false,
       modalType: "none",
       editingItem: undefined,
-      socketConnection: undefined,
       errorMessage: "Something happened",
+      selectedItemID: undefined,
     };
   }
 
@@ -63,7 +63,7 @@ class RoomRoute extends Component {
       }
     };
     connection.onClose = this.onSocketConnectionClosed;
-    this.setState({ socketConnection: connection });
+    this.socketConnection = connection;
 
     try {
       const items = await DataController.getList(roomID);
@@ -95,7 +95,6 @@ class RoomRoute extends Component {
 
     EventController.on("itemUpdated", (data) => {
       const updated = data.updated;
-
       const oldItemArray = this.state.items;
       let itemArray = [];
       let updateIndex = undefined;
@@ -108,8 +107,7 @@ class RoomRoute extends Component {
       }
       if (updateIndex === undefined) {
         console.error(
-          "ERROR Updating item. Unable to find item with ID ",
-          data.id
+          `ERROR Updating item. Unable to find item with ID ${data.id} given data ${data}`
         );
       } else {
         itemArray[updateIndex].update(updated);
@@ -185,7 +183,7 @@ class RoomRoute extends Component {
     if (!name || name.length === 0) {
       this.toggleModal("choose-name");
     } else {
-      this.state.socketConnection.send({
+      this.socketConnection.send({
         event: "updateItem",
         sendResponse: true,
         data: {
@@ -198,9 +196,27 @@ class RoomRoute extends Component {
     }
   };
 
+  // Passed to RoomCanvas and called when an item is selected in the editor
+  itemSelectedInEditor = (item) => {
+    this.setState({ selectedItemID: item?.id });
+  };
+
+  // Passed to RoomCanvas and called when an item is updated (e.g. moved, rotated, locked) in the editor
+  itemUpdatedInEditor = (item, updated) => {
+    item.update(updated);
+    this.socketConnection.send({
+      event: "updateItem",
+      sendResponse: false,
+      data: {
+        itemID: item.id,
+        updated: updated,
+      },
+    });
+  };
+
   // Called when show/hide from editor is clicked for an item in the list
   toggleEditorVisibility = (item) => {
-    this.state.socketConnection.send({
+    this.socketConnection.send({
       event: "updateItem",
       sendResponse: true,
       data: {
@@ -214,7 +230,7 @@ class RoomRoute extends Component {
 
   // Called when delete button is clicked for an item in the list
   deleteItem = (item) => {
-    this.state.socketConnection.send({
+    this.socketConnection.send({
       event: "deleteItem",
       sendResponse: true,
       data: {
@@ -225,7 +241,7 @@ class RoomRoute extends Component {
 
   // Takes in item ID and dictionary of modified properties
   editItem = (itemID, modified) => {
-    this.state.socketConnection.send({
+    this.socketConnection.send({
       event: "updateItem",
       sendResponse: true,
       data: {
@@ -240,7 +256,7 @@ class RoomRoute extends Component {
 
   // Receives item ID and list of modified properties when ListItemForm is submitted
   addNewItem = (_, modified) => {
-    this.state.socketConnection.send({
+    this.socketConnection.send({
       event: "addItem",
       sendResponse: true,
       data: modified,
@@ -313,8 +329,10 @@ class RoomRoute extends Component {
           <h2 className="room-header">Dorm Name - Room #</h2>
           <div className="d-flex justify-content-center room-editor-container">
             <RoomCanvas
-              socketConnection={this.state.socketConnection}
               items={this.state.items}
+              selectedItemID={this.state.selectedItemID}
+              onItemSelected={this.itemSelectedInEditor}
+              onItemUpdated={this.itemUpdatedInEditor}
             />
           </div>
           <div className="room-item-list-container">

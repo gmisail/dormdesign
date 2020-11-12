@@ -5,7 +5,7 @@ import RoomRectObject from "./RoomRectObject";
 import RoomGridObject from "./RoomGridObject";
 import Vector2 from "./Vector2";
 
-class RoomObject extends SceneObject {
+class RoomEditorObject extends SceneObject {
   constructor({
     scene,
     id,
@@ -77,7 +77,7 @@ class RoomObject extends SceneObject {
     this.objectColorCounter = 0;
   }
 
-  // Fills any area between the boundary of the room and the bounding box of the RoomObject itself with a box. Returns that list of boxes
+  // Fills any area between the boundary of the room and the bounding box of the RoomEditorObject itself with a box. Returns that list of boxes
   _getOutOfBoundsBoxes() {
     const boxes = [];
 
@@ -321,8 +321,8 @@ class RoomObject extends SceneObject {
   addItemToRoom({
     id,
     name,
-    feetWidth,
-    feetHeight,
+    width,
+    height,
     position,
     rotation,
     movementLocked,
@@ -347,7 +347,7 @@ class RoomObject extends SceneObject {
       scene: this.scene,
       position: position,
       rotation: rotation ?? 0,
-      size: new Vector2(feetWidth ?? 1, feetHeight ?? 1),
+      size: new Vector2(width ?? 1, height ?? 1),
       color: color,
       opacity: 0.5,
       nameText: name ?? "New Item",
@@ -485,4 +485,4 @@ class RoomObject extends SceneObject {
   }
 }
 
-export default RoomObject;
+export default RoomEditorObject;

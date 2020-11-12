@@ -31,10 +31,40 @@ class DormItem {
   }
 
   update(updated) {
-    for (const [key, value] of Object.entries(updated)) {
-      if (value !== undefined) {
-        this[key] = value;
-      }
+    /* 
+      Ensure that updated is deep merged into this.
+      TODO: Replace hardcoded method below with an actual deepmerge function?
+    */
+    if (updated.name !== undefined) {
+      this.name = updated.name;
+    }
+    if (updated.quantity !== undefined) {
+      this.quantity = updated.quantity;
+    }
+    if (updated.claimedBy !== undefined) {
+      this.claimedBy = updated.claimedBy;
+    }
+    if (updated.dimensions !== undefined) {
+      this.dimensions = {
+        width: updated.dimensions.width ?? this.dimensions.width,
+        length: updated.dimensions.length ?? this.dimensions.length,
+        height: updated.dimensions.height ?? this.dimensions.height,
+      };
+    }
+    if (updated.visibleInEditor !== undefined) {
+      this.visibleInEditor = updated.visibleInEditor;
+    }
+    if (updated.editorPosition !== undefined) {
+      this.editorPosition = {
+        x: updated.editorPosition.x ?? this.editorPosition.x,
+        y: updated.editorPosition.y ?? this.editorPosition.y,
+      };
+    }
+    if (updated.editorRotation !== undefined) {
+      this.editorRotation = updated.editorRotation;
+    }
+    if (updated.editorLocked !== undefined) {
+      this.editorLocked = updated.editorLocked;
     }
   }
 }
