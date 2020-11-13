@@ -1,5 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
-import { BsThreeDots, BsX, BsPencil, BsPerson } from "react-icons/bs";
+import {
+  BsThreeDots,
+  BsX,
+  BsPencil,
+  BsPerson,
+  BsEye,
+  BsEyeSlash,
+} from "react-icons/bs";
 import { ListGroupItem } from "react-bootstrap";
 import IconButton from "../IconButton/IconButton";
 
@@ -67,6 +74,23 @@ const ListItem = (props) => {
                       <BsPerson></BsPerson>
                       Claim
                     </div>
+                  </li>
+
+                  <li
+                    onClick={() => menuOptionClicked(onToggleEditorVisibility)}
+                  >
+                    {item.visibleInEditor ? (
+                      <span>
+                        <BsEye />
+                        Hide
+                      </span>
+                    ) : (
+                      <span>
+                        <BsEyeSlash />
+                        Show
+                      </span>
+                    )}{" "}
+                    in Editor
                   </li>
 
                   <li onClick={() => menuOptionClicked(onDelete)}>
