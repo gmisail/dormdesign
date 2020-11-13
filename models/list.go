@@ -13,6 +13,8 @@ type ListItem struct {
 	VisibleInEditor bool `json:"visibleInEditor" rethinkdb:"visibleInEditor"`
 	Dimensions ItemDimensions `json:"dimensions" rethinkdb:"dimensions"`
 	EditorPosition EditorPoint `json:"editorPosition"`
+	EditorRotation float64 `json:"editorRotation"`
+	EditorLocked bool `json:"editorLocked"`
 }
 
 type ItemDimensions struct {
@@ -107,25 +109,80 @@ func EditListItem(database *rdb.Session, id string, itemID string, updated map[s
 	for property, value := range updated {
 		switch property {
 		case "name": 
-			item.Name = value.(string)
+			if value == nil {
+				item.Name = ""
+			} else {
+				item.Name = value.(string)
+			}
 		case "quantity":
-			item.Quantity = int(value.(float64))
+			if value == nil {
+				item.Quantity = 0
+			} else {
+				item.Quantity = int(value.(float64))
+			}
 		case "claimedBy":
-			item.ClaimedBy = value.(string)
+			if value == nil {
+				item.ClaimedBy = ""
+			} else {
+				item.ClaimedBy = value.(string)
+			}
 		case "visibleInEditor":
-			item.VisibleInEditor = value.(bool)
+			if value == nil {
+				item.VisibleInEditor = false
+			} else {
+				item.VisibleInEditor = value.(bool)
+			}
 		case "dimensions":
-			dimensions := value.(map[string]interface{})
-			item.Dimensions.Width = dimensions["width"].(float64)
-			item.Dimensions.Length = dimensions["length"].(float64)
-			item.Dimensions.Height = dimensions["height"].(float64)
-
+			if value == nil {
+				item.Dimensions = ItemDimensions{}
+			} else {
+				dimensions := value.(map[string]interface{})
+				if dimensions["width"] == nil {
+					item.Dimensions.Width = 0.0
+				} else {
+					item.Dimensions.Width = dimensions["width"].(float64)
+				}
+				if dimensions["height"] == nil {
+					item.Dimensions.Height = 0.0
+				} else {
+					item.Dimensions.Height = dimensions["height"].(float64)
+				}
+				if dimensions["length"] == nil {
+					item.Dimensions.Length = 0.0
+				} else {
+					item.Dimensions.Length = dimensions["length"].(float64)
+				}
+			}
 		case "editorPosition":
-			coord := value.(map[string]interface{})
-		
-			item.EditorPosition.X = coord["x"].(float64)
-			item.EditorPosition.Y = coord["y"].(float64)
+			if value == nil {
+				item.EditorPosition = EditorPoint{}
+			} else {
+				coord := value.(map[string]interface{})
 
+				if coord["x"] == nil {
+					item.EditorPosition.X = 0.0
+				} else {
+					item.EditorPosition.X = coord["x"].(float64)
+				}
+				
+				if coord["y"] == nil {
+					item.EditorPosition.Y = 0.0
+				} else {
+					item.EditorPosition.Y = coord["y"].(float64)
+				}
+			}
+		case "editorRotation":
+			if value == nil {
+				item.EditorRotation = 0.0
+			} else {
+				item.EditorRotation = value.(float64)
+			}
+		case "editorLocked":
+			if value == nil {
+				item.EditorLocked = false
+			} else {
+				item.EditorLocked = value.(bool)
+			}
 		default:
 			return nil, errors.New("ERROR Updating ListItem. Unknown property: " + property)
 		}

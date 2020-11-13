@@ -1,18 +1,47 @@
 import React, { Component } from "react";
 import "./RoomCanvas.css";
 import SceneController from "../../room-editor/SceneController";
-import RoomObject from "../../room-editor/RoomObject";
+import RoomEditorObject from "../../room-editor/RoomEditorObject";
 import Vector2 from "../../room-editor/Vector2";
 import EventController from "../../controllers/EventController";
+import IconButton from "../IconButton/IconButton";
+import { BsArrowClockwise, BsUnlock, BsLock } from "react-icons/bs";
+
+// Converts DormItem properties to properties expected by RoomEditorObject
+function itemToEditorProperties(props) {
+  return {
+    id: props.id,
+    position: props.editorPosition
+      ? { x: props.editorPosition.x, y: props.editorPosition.y }
+      : undefined,
+    name: props.name,
+    width: props.dimensions?.width,
+    height: props.dimensions?.length,
+    rotation: props.editorRotation,
+    movementLocked: props.editorLocked,
+  };
+}
+
+// Converts (relevant) editor properties to properties expected by DormItem
+function editorToItemProperties(props) {
+  return {
+    editorPosition: props.position
+      ? { x: props.position.x, y: props.position.y }
+      : undefined,
+    editorRotation: props.rotation,
+    editorLocked: props.movementLocked,
+  };
+}
 
 class RoomCanvas extends Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      scene: undefined,
-      roomObject: undefined,
+      selectedItemLocked: false,
     };
+
+    this.visibleItemsMap = new Map();
   }
 
   componentDidMount() {
@@ -34,127 +63,163 @@ class RoomCanvas extends Component {
       new Vector2(4, 6.5),
       new Vector2(0, 6.5),
     ];
-    const room = new RoomObject({
+    const room = new RoomEditorObject({
       scene: scene,
       boundaryPoints: testBoundaryPath,
       canvasLayer: 1,
       backgroundColor: "#fff",
-      onObjectMoved: this.roomObjectUpdated,
+      onObjectUpdated: this.editorItemUpdated,
+      onObjectSelected: this.editorItemSelected,
+      selectedObjectID: undefined,
     });
     scene.addObject(room);
 
-    this.setState({
-      scene: scene,
-      roomObject: room,
-      visibleItemsMap: new Map(),
-    });
+    this.scene = scene;
+    this.roomEditor = room;
 
-    EventController.on("itemPositionUpdated", (payload) => {
-      room.updateRoomItem(payload.id, {
-        position: payload.editorPosition,
-      });
-    });
-  }
+    this.updateVisibleItems(this.props.items);
 
-  componentDidUpdate(prevProps) {
-    // Filter out items not included in editor
-    const includedItems = this.props.items.filter(
-      (item) => item.visibleInEditor
-    );
-
-    // Sort included items and currently added objects by id
-    const items = includedItems.sort((a, b) => {
-      return a.id - b.id;
-    });
-    const addedObjects = [...this.state.roomObject.roomItems].sort();
-
-    // Map that will be filled with references to all items that are part of editor
-    const visibleItemsMap = this.state.visibleItemsMap;
-    visibleItemsMap.clear();
-
-    // Iterate through both sorted lists simultaneously and find objects that need to be added/removed
-    let i = 0;
-    let j = 0;
-    while (i < items.length || j < addedObjects.length) {
-      const a = i < items.length ? items[i].id : undefined;
-      const b = j < addedObjects.length ? addedObjects[j] : undefined;
-      if (!b || a < b) {
-        this.addItemToScene(items[i]);
-        visibleItemsMap.set(items[i].id, items[i]);
-        i++;
-      } else if (!a || a > b) {
-        this.removeItemFromScene(b);
-        j++;
-      } else {
-        // Update item in case its properties changed
-        this.updateRoomObject(items[i]);
-        visibleItemsMap.set(items[i].id, items[i]);
-        i++;
-        j++;
+    /*
+      Listen to "itemUpdated" in order to check if the currently selected item had properties (like editorLocked) changed that 
+      require a state update
+    */
+    EventController.on("itemUpdated", (payload) => {
+      if (payload.id === this.props.selectedItemID) {
+        const locked = payload.updated.editorLocked;
+        if (locked === undefined) return;
+        if (this.state.selectedItemLocked !== locked) {
+          this.setState({ selectedItemLocked: locked });
+        }
       }
-    }
+    });
   }
 
-  // Takes in item and tries to update the corresponding object in the editor scene
-  updateRoomObject = (item) => {
-    // Try and fetch corresponding scene object
-    const obj = this.state.scene.objects.get(item.id);
-    if (!obj) {
-      console.error(
-        `ERROR updating object with id ${item.id}. Couldn't find corresponding scene object with matching id.`
-      );
+  componentDidUpdate(prevProps, prevState) {
+    // If any of these cases apply, no need to update visible items
+    if (prevState.selectedItemLocked !== this.state.selectedItemLocked) {
       return;
     }
-    this.state.roomObject.updateRoomItem(item.id, {
-      position: item.editorPosition,
-      name: item.name,
-      width: item.dimensions.width,
-      height: item.dimensions.length, // Since editor is 2D, use length for Y dimension
-    });
-  };
+    this.updateVisibleItems(this.props.items);
+  }
 
-  // Called when object is moved in room. Updates item's position and calls callback function
-  roomObjectUpdated = (obj) => {
-    const item = this.state.visibleItemsMap.get(obj.id);
-
-    if (item) {
-      item.editorPosition = obj.position;
-      if (this.props.onItemUpdate) {
-        this.props.onItemUpdate(item);
+  // Sorts through passed in items and adds, removes, and updates them from the editor and this.visibleItemsMap
+  updateVisibleItems(items) {
+    // Filter out items with visibleInEditor set to false
+    const itemsToInclude = items.reduce((map, item) => {
+      if (item.visibleInEditor) {
+        map.set(item.id, item);
       }
-    } else {
-      console.error(
-        "ERROR Unable to find item associated with SceneObject: ",
-        obj
-      );
+      return map;
+    }, new Map());
+
+    // Check for objects to add and update existing objects
+    for (let [key, item] of itemsToInclude) {
+      if (!this.visibleItemsMap.has(key)) {
+        // Put item in map and add it to the editor
+        this.visibleItemsMap.set(key, item);
+        const itemSceneObj = this.roomEditor.addItemToRoom(
+          itemToEditorProperties(item)
+        );
+        // If item had no position, update item data with new position set by the editor (should be in center of room by default)
+        if (!item.editorPosition) {
+          item.editorPosition = {
+            x: itemSceneObj.position.x,
+            y: itemSceneObj.position.y,
+          };
+        }
+      } else {
+        // If item already in the editor, update its properties in case they changed
+        this.roomEditor.updateRoomItem(item.id, itemToEditorProperties(item));
+      }
     }
+
+    // Check for objects that need to be deleted
+    for (let key of this.visibleItemsMap.keys()) {
+      if (!itemsToInclude.has(key)) {
+        this.visibleItemsMap.delete(key);
+        this.roomEditor.removeItemFromRoom(key);
+      }
+    }
+  }
+
+  /* 
+    Called when object properties are updated in editor (e.g. position, rotation, movementLocked...). Takes in object ID and updated values and translates them to item
+    property values. Then passes them up to callback passed from parent 
+  */
+  editorItemUpdated = (id, updated) => {
+    const item = this.visibleItemsMap.get(id);
+    if (!item) {
+      console.error("Unable to find item associated with ID: ", id);
+      return;
+    }
+    const translated = editorToItemProperties(updated);
+    this.props.onItemUpdated(item, translated);
   };
 
-  // Adds item to editor. Takes in item reference and reference to editor data for item
-  addItemToScene = (item) => {
-    const newObj = this.state.roomObject.addItemToRoom({
-      id: item.id,
-      name: item.name,
-      feetWidth: item.dimensions.width,
-      feetHeight: item.dimensions.length,
-      position: item.editorPosition,
+  editorItemSelected = (obj) => {
+    let item;
+    if (obj) {
+      item = this.visibleItemsMap.get(obj.id);
+      if (!item) {
+        console.error("Unable to find item associated with ID: ", obj.id);
+        return;
+      }
+    }
+    const locked = item?.editorLocked ?? false;
+    if (this.state.selectedItemLocked !== locked) {
+      this.setState({ selectedItemLocked: locked });
+    }
+
+    this.props.onItemSelected(item);
+  };
+
+  // Called when rotate button in toolbar is clicked
+  rotateSelectedObject = () => {
+    const selectedID = this.props.selectedItemID;
+    if (!selectedID) return;
+
+    const obj = this.scene.objects.get(selectedID);
+    obj.rotateBy(90);
+    this.editorItemUpdated(selectedID, {
+      rotation: obj.rotation,
     });
-    // If item had no position, update item data with new position set by the room (should be in center of room by default)
-    if (!item.editorPosition) {
-      item.editorPosition = newObj.position;
-    }
-
-    return newObj;
   };
 
-  // Removed item from editor. Just takes in item reference
-  removeItemFromScene = (id) => {
-    this.state.roomObject.removeItemFromRoom(id);
+  // Called when lock button in toolbar is clicked
+  lockSelectedObject = () => {
+    const selectedID = this.props.selectedItemID;
+    if (!selectedID) return;
+    const value = !this.scene.objects.get(selectedID).movementLocked;
+    this.roomEditor.updateRoomItem(selectedID, {
+      movementLocked: value,
+    });
+    this.editorItemUpdated(selectedID, {
+      movementLocked: value,
+    });
+    this.setState({ selectedItemLocked: value });
   };
 
   render() {
+    const { selectedItemLocked } = this.state;
+    const { selectedItemID } = this.props;
+
     return (
       <div className="card room-canvas-container">
+        <div className="room-editor-toolbar">
+          <IconButton
+            onClick={this.lockSelectedObject}
+            disabled={selectedItemID === undefined}
+            style={{ fontSize: "0.95em" }}
+          >
+            {selectedItemLocked ? <BsLock></BsLock> : <BsUnlock></BsUnlock>}
+          </IconButton>
+          <IconButton
+            onClick={this.rotateSelectedObject}
+            disabled={selectedItemID === undefined}
+          >
+            <BsArrowClockwise></BsArrowClockwise>
+          </IconButton>
+        </div>
         <canvas
           ref={(ref) => (this.canvas1 = ref)}
           className="room-canvas"

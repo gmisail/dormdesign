@@ -53,7 +53,7 @@ class SceneController {
   removeObject(obj) {
     this.objects.delete(obj.id);
     for (let i = 0; i < obj.children.length; i++) {
-      obj.children[i].parent = undefined;
+      obj.children[i].parent = null;
     }
     obj.parent.removeChild(obj);
   }

@@ -166,34 +166,7 @@ func (c *Client) translateMessage(byteMessage []byte) (Message, error) {
 			Data: item,
 		}
 
-	case "updateItemPosition":
-		itemID, ok := data["itemID"].(string)
-		editorPosition, ok := data["editorPosition"].(map[string]interface{})
-		if !ok {
-			errorString = "Incorrect/missing fields in received event."
-			break
-		}
-	
-		_, err := models.EditListItem(c.hub.database, roomID, itemID, map[string]interface{}{"editorPosition" : editorPosition })
-		if err != nil {
-			errorString = "Error updating item position in database: " + err.Error()
-			break
-		}
-
-		log.Printf("UPDATED ITEM %s %+v\n", itemID, editorPosition)
-		
-		response = &MessageResponse{
-			Event: "itemPositionUpdated",
-			Data: struct{
-				ID string `json:"id"`
-				EditorPosition map[string]interface{} `json:"editorPosition"`
-			}{
-				ID: itemID,
-				EditorPosition: editorPosition,
-			},
-		}
-
-	case "editItem":	
+	case "updateItem", "updateItemInEditor":	
 		/*
 			Edit property/properties of existing ListItem
 		*/
@@ -216,7 +189,7 @@ func (c *Client) translateMessage(byteMessage []byte) (Message, error) {
 		log.Printf("UPDATED ITEM %s %+v\n", itemID, updated)
 		
 		response = &MessageResponse{
-			Event: "itemEdited",
+			Event: "itemUpdated",
 			Data: struct{
 				ID string `json:"id"`
 				Updated map[string]interface{} `json:"updated"`

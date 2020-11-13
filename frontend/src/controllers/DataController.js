@@ -77,7 +77,7 @@ class DataController {
     */
   static async addListItem(item) {
     // /* TODO: send call to server */
-    if (item.name.length === 0) {
+    if (!item.name) {
       item.name = "New Item";
     }
 

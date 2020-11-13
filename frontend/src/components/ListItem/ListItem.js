@@ -1,12 +1,19 @@
 import React, { useState, useEffect, useRef } from "react";
-import { BsThreeDots, BsX, BsPencil, BsPerson } from "react-icons/bs";
+import {
+  BsThreeDots,
+  BsX,
+  BsPencil,
+  BsPerson,
+  BsEye,
+  BsEyeSlash,
+} from "react-icons/bs";
 import { ListGroupItem } from "react-bootstrap";
 import IconButton from "../IconButton/IconButton";
 
 import "./ListItem.css";
 
 const ListItem = (props) => {
-  const { item, onEdit, onClaim, onDelete } = props;
+  const { item, onEdit, onClaim, onDelete, onToggleEditorVisibility } = props;
 
   const [showMenu, setShowMenu] = useState(false);
   const menuRef = useRef(null);
@@ -44,10 +51,9 @@ const ListItem = (props) => {
         </div>
 
         <div className="d-flex align-items-center">
-          {item.claimedBy === undefined ||
-          item.claimedBy.length === 0 ? null : (
+          {item.claimedBy ? (
             <i className="mr-3">Claimed by {item.claimedBy}</i>
-          )}
+          ) : null}
 
           <div className="item-dropdown-menu" ref={menuRef}>
             <IconButton onClick={() => setShowMenu(!showMenu)}>
@@ -57,24 +63,36 @@ const ListItem = (props) => {
               <div className="item-dropdown-content">
                 <ul>
                   <li id="top" onClick={() => menuOptionClicked(onEdit)}>
-                    <div className="item-dropdown-content-row">
-                      <BsPencil></BsPencil>
-                      <span>Edit</span>
-                    </div>
+                    <BsPencil />
+                    Edit
                   </li>
-
                   <li onClick={() => menuOptionClicked(onClaim)}>
-                    <div className="item-dropdown-content-row">
-                      <BsPerson></BsPerson>
-                      Claim
-                    </div>
+                    <BsPerson />
+                    Claim
+                  </li>
+                  <li
+                    onClick={() => menuOptionClicked(onToggleEditorVisibility)}
+                  >
+                    {item.visibleInEditor ? (
+                      <>
+                        <BsEyeSlash />
+                        Hide
+                      </>
+                    ) : (
+                      <>
+                        <BsEye />
+                        Show
+                      </>
+                    )}{" "}
+                    in Editor
                   </li>
 
-                  <li onClick={() => menuOptionClicked(onDelete)}>
-                    <div className="color-danger item-dropdown-content-row">
-                      <BsX></BsX>
-                      Delete
-                    </div>
+                  <li
+                    className="color-danger"
+                    onClick={() => menuOptionClicked(onDelete)}
+                  >
+                    <BsX />
+                    Delete
                   </li>
                 </ul>
               </div>

@@ -3,7 +3,13 @@ import { ListGroup } from "react-bootstrap";
 import ListItem from "../ListItem/ListItem";
 
 const DormItemList = (props) => {
-  const { items, onEditItem, onClaimItem, onDeleteItem } = props;
+  const {
+    items,
+    onEditItem,
+    onClaimItem,
+    onDeleteItem,
+    onToggleEditorVisibility,
+  } = props;
 
   return (
     <ListGroup>
@@ -18,6 +24,7 @@ const DormItemList = (props) => {
               onEdit={() => onEditItem(item)}
               onClaim={() => onClaimItem(item)}
               onDelete={() => onDeleteItem(item)}
+              onToggleEditorVisibility={() => onToggleEditorVisibility(item)}
             />
           );
         })

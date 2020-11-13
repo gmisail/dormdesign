@@ -5,7 +5,7 @@ import RoomRectObject from "./RoomRectObject";
 import RoomGridObject from "./RoomGridObject";
 import Vector2 from "./Vector2";
 
-class RoomObject extends SceneObject {
+class RoomEditorObject extends SceneObject {
   constructor({
     scene,
     id,
@@ -13,12 +13,13 @@ class RoomObject extends SceneObject {
     opacity,
     canvasLayer,
     backgroundColor,
-    onObjectMoved,
+    onObjectUpdated,
+    onObjectSelected,
   }) {
     super({
       scene: scene,
       id: id,
-      parent: undefined,
+      parent: null,
       position: new Vector2(0, 0),
       size: new Vector2(0, 0),
       scale: new Vector2(1, 1),
@@ -39,7 +40,8 @@ class RoomObject extends SceneObject {
     this.borderWidth = 0.07;
     this.opacity = opacity ?? 1.0;
 
-    this.onObjectMoved = onObjectMoved;
+    this.onObjectUpdated = onObjectUpdated;
+    this.onObjectSelected = onObjectSelected;
 
     this._fitRoomToCanvas();
     this._calculateOffsetPoints();
@@ -55,12 +57,6 @@ class RoomObject extends SceneObject {
       onMouseUp: this.onMouseUp.bind(this),
     });
 
-    this.state = {
-      grid: undefined,
-      selectedObject: undefined,
-      objectColorCounter: 0,
-    };
-
     const floorGrid = new RoomGridObject({
       scene: this.scene,
       position: new Vector2(0, 0),
@@ -73,35 +69,69 @@ class RoomObject extends SceneObject {
       canvasLayer: 0,
     });
     this.addChild(floorGrid);
-    this.state.floorGrid = floorGrid;
+    this.floorGrid = floorGrid;
+
+    this.selectedObject = null;
 
     this.objectColors = ["#0043E0", "#f28a00", "#C400E0", "#7EE016", "#0BE07B"];
+    this.objectColorCounter = 0;
   }
 
-  // Fills any area between the boundary of the room and the bounding box of the RoomObject itself with a box. Returns that list of boxes
+  // Fills any area between the boundary of the room and the bounding box of the RoomEditorObject itself with a box. Returns that list of boxes
   _getOutOfBoundsBoxes() {
     const boxes = [];
+
+    /* Distance past the size of the room. Used since currently some boundary edges are flush with
+    the bottom of the room and therefore won't get any rects beneath them */
+    const offset = 0.5;
+    const directions = [];
     // Loop over boundary edges
     for (let i = 0; i < this.boundaryPoints.length; i++) {
       const p1 = this.boundaryPoints[i];
       const p2 = this.boundaryPoints[
         i === this.boundaryPoints.length - 1 ? 0 : i + 1
       ];
-      // Check if edge is a vertical line - Only need to make boxes for either all vertical lines or all horizontal lines, not both
+
       if (Vector2.floatEquals(p1.x, p2.x)) {
-        // Check if edge is lined up with corresponding edge of RoomObject. If not, create a box
+        // Vertical line
         const direction = p2.y > p1.y ? 1 : -1;
-        if (direction > 0 && !Vector2.floatEquals(p1.x, this.size.x)) {
-          boxes.push({
-            p1: new Vector2(p1.x, p1.y),
-            p2: new Vector2(this.size.x, p2.y),
-          });
-        } else if (direction < 0 && !Vector2.floatEquals(p1.x, 0)) {
-          boxes.push({
-            p1: new Vector2(0, p2.y),
-            p2: new Vector2(p1.x, p1.y),
-          });
+        // Prevents overlapping boxes
+        if (directions.length === 0 || directions[i - 1] === direction) {
+          if (direction > 0) {
+            // Down line
+            boxes.push({
+              p1: new Vector2(p1.x, p1.y),
+              p2: new Vector2(this.size.x + offset, p2.y),
+            });
+          } else if (direction < 0) {
+            // Up line
+            boxes.push({
+              p1: new Vector2(-offset, p2.y),
+              p2: new Vector2(p1.x, p1.y),
+            });
+          }
         }
+        directions.push(direction);
+      } else {
+        // Horizontal line
+        const direction = p2.x > p1.x ? 1 : -1;
+        // Prevents overlapping boxes
+        if (directions.length === 0 || directions[i - 1] !== direction) {
+          if (direction > 0) {
+            // Right line
+            boxes.push({
+              p1: new Vector2(p1.x, -offset),
+              p2: new Vector2(p2.x, p2.y),
+            });
+          } else if (direction < 0) {
+            // Left line
+            boxes.push({
+              p1: new Vector2(p2.x, p2.y),
+              p2: new Vector2(p1.x, this.size.y + offset),
+            });
+          }
+        }
+        directions.push(direction);
       }
     }
     return boxes;
@@ -140,8 +170,13 @@ class RoomObject extends SceneObject {
   _fitRoomToCanvas() {
     const ctx = this.scene.ctx[this.canvasLayer];
 
-    // Padding from edge of canvas for room outline
-    this.boundaryOffset = ctx.canvas.width * 0.04;
+    // Padding from edge of canvas
+    const padding = {
+      top: ctx.canvas.width * 0.08,
+      bottom: ctx.canvas.width * 0.04,
+      left: ctx.canvas.width * 0.04,
+      right: ctx.canvas.width * 0.04,
+    };
 
     // Find canvas pixels per foot
     let maxWidth;
@@ -154,8 +189,9 @@ class RoomObject extends SceneObject {
         maxHeight = this.boundaryPoints[i].y;
       }
     }
-    const usableCanvasWidth = ctx.canvas.width - 2 * this.boundaryOffset;
-    const usableCanvasHeight = ctx.canvas.height - 2 * this.boundaryOffset;
+    const usableCanvasWidth = ctx.canvas.width - (padding.left + padding.right);
+    const usableCanvasHeight =
+      ctx.canvas.height - (padding.top + padding.bottom);
 
     let roomAspect = maxWidth / maxHeight;
     let canvasAspect = ctx.canvas.width / ctx.canvas.height;
@@ -175,11 +211,24 @@ class RoomObject extends SceneObject {
 
     this.size.x = maxWidth;
     this.size.y = maxHeight;
-    const globalSize = this.getGlobalSize();
-    this.position = new Vector2(
-      ctx.canvas.width / 2 - globalSize.x / 2,
-      ctx.canvas.height / 2 - globalSize.y / 2
-    );
+
+    const bbox = this.getGlobalBoundingBox();
+    const globalSize = { x: bbox.p2.x - bbox.p1.x, y: bbox.p2.y - bbox.p1.y };
+
+    let position = {
+      x: ctx.canvas.width / 2 - globalSize.x / 2,
+      y: ctx.canvas.height / 2 - globalSize.y / 2,
+    };
+
+    // Only adjust position for padding if the padding actually affects it
+    if (padding.left > position.x) {
+      position.x += padding.left - position.x;
+    }
+    if (padding.top > position.y) {
+      position.y += padding.top - position.y;
+    }
+
+    this.position = new Vector2(position.x, position.y);
   }
 
   // Rounds num to the nearest multiple of given a number
@@ -193,10 +242,6 @@ class RoomObject extends SceneObject {
 
   // Mouse callbacks that are passed to mouse controller
   onMouseDown(position) {
-    if (this.state.selectedObject) {
-      this.state.selectedObject.selected = false;
-      this.state.selectedObject = undefined;
-    }
     // Get the object indices that were under the click and sort them in descending order so that the one on top is selected
     const clicked = this._getChildrenIndicesAtPosition(position).sort(
       (a, b) => b - a
@@ -204,32 +249,46 @@ class RoomObject extends SceneObject {
     if (clicked.length > 0) {
       for (let i = 0; i < clicked.length; i++) {
         const obj = this.children[clicked[i]];
+        // Only able to selected objects that have "selected" property
         if ("selected" in obj) {
-          obj.selected = true;
-          this.state.selectedObject = obj;
-          // Move the selected object to the back of the children array so its drawn last (on top)
-          this.children.push(this.children.splice(clicked[i], 1)[0]);
-          break;
+          // Don't reselect if already selected
+          if (this.selectedObject?.id !== obj.id) {
+            if (this.selectedObject) {
+              this.selectedObject.selected = false;
+            }
+            obj.selected = true;
+            this.selectedObject = obj;
+            // Move the selected object to the back of the children array so its drawn last (on top)
+            this.children.push(this.children.splice(clicked[i], 1)[0]);
+            this.onObjectSelected(obj);
+          }
+          return;
         }
       }
     }
+    if (this.selectedObject) {
+      this.selectedObject.selected = false;
+      this.selectedObject = null;
+      this.onObjectSelected(null);
+    }
   }
   onMouseMove(delta) {
-    if (this.state.selectedObject && !this.state.selectedObject.staticObject) {
-      const selectedObject = this.state.selectedObject;
-      const scaledDelta = new Vector2(
-        delta.x / selectedObject.transformMatrix.a,
-        delta.y / selectedObject.transformMatrix.d
-      );
+    if (this.selectedObject && !this.selectedObject.staticObject) {
+      const selectedObject = this.selectedObject;
+      if (selectedObject.movementLocked) {
+        return;
+      }
       const unsnappedPos = selectedObject.getUnsnappedPosition();
+      const globalPos = selectedObject.localToGlobalPoint(unsnappedPos);
       selectedObject.setPosition(
-        new Vector2(
-          unsnappedPos.x + scaledDelta.x,
-          unsnappedPos.y + scaledDelta.y
+        selectedObject.globalToLocalPoint(
+          new Vector2(globalPos.x + delta.x, globalPos.y + delta.y)
         )
       );
 
-      this.onObjectMoved(selectedObject);
+      this.onObjectUpdated(selectedObject.id, {
+        position: selectedObject.position,
+      });
     }
   }
   onMouseUp() {}
@@ -259,21 +318,36 @@ class RoomObject extends SceneObject {
   }
 
   // Takes name, dimensions, color and adds a new item to the room object/scene.
-  addItemToRoom({ id, name, feetWidth, feetHeight, position }) {
+  addItemToRoom({
+    id,
+    name,
+    width,
+    height,
+    position,
+    rotation,
+    movementLocked,
+  }) {
     // Don't add object if another already exists with given id
     if (id && this.scene.objects.has(id)) {
       return undefined;
     }
-    const color = this.objectColors[this.state.objectColorCounter];
-    this.state.objectColorCounter++;
-    if (this.state.objectColorCounter === this.objectColors.length) {
-      this.state.objectColorCounter = 0;
+    const color = this.objectColors[this.objectColorCounter];
+    this.objectColorCounter++;
+    if (this.objectColorCounter === this.objectColors.length) {
+      this.objectColorCounter = 0;
+    }
+
+    // If no position given or position is invalid, assign a position in center of room
+    let assignPosition = !position || !position.x || !position.y;
+    if (assignPosition) {
+      position = new Vector2(this.size.x / 2, this.size.y / 2);
     }
     const obj = new RoomRectObject({
       id: id,
       scene: this.scene,
-      position: position ?? new Vector2(0, 0),
-      size: new Vector2(feetWidth ?? 1, feetHeight ?? 1),
+      position: position,
+      rotation: rotation ?? 0,
+      size: new Vector2(width ?? 1, height ?? 1),
       color: color,
       opacity: 0.5,
       nameText: name ?? "New Item",
@@ -281,22 +355,24 @@ class RoomObject extends SceneObject {
       snapPosition: false,
       snapOffset: 0.2,
       canvasLayer: this.canvasLayer,
+      movementLocked: movementLocked ?? false,
     });
-    if (!position) {
-      obj.setPosition(
-        new Vector2(
-          this.size.x / 2 - obj.size.x / 2,
-          this.size.y / 2 - obj.size.y / 2
-        )
-      );
-    }
     this.roomItems.add(obj.id);
     this.addChild(obj);
+
+    // If position was assigned, call
+    if (assignPosition) {
+      this.onObjectUpdated(id, { position: position });
+    }
+
     return obj;
   }
 
   // Updates object in room. Returns true if successful false if not
-  updateRoomItem(id, { position, name, width, height }) {
+  updateRoomItem(
+    id,
+    { position, name, width, height, rotation, movementLocked }
+  ) {
     const obj = this.scene.objects.get(id);
     if (!obj) {
       console.error("ERROR updating room item. Invalid object ID: " + id);
@@ -308,14 +384,24 @@ class RoomObject extends SceneObject {
     if (name) {
       obj.nameText = name;
     }
-    if (width && height) {
-      obj.size = new Vector2(width, height);
+    // Allow null dimension values (but just set them to 1 in that case)
+    if (width !== undefined && height !== undefined) {
+      obj.size = new Vector2(width ?? 1, height ?? 1);
+    }
+    if (rotation !== undefined) {
+      obj.rotation = rotation;
+    }
+    if (movementLocked !== undefined) {
+      obj.movementLocked = movementLocked;
     }
   }
 
   removeItemFromRoom(id) {
     const obj = this.scene.objects.get(id);
     if (obj) {
+      if (this.selectedObject && this.selectedObject.id === id) {
+        this.selectedObject = null;
+      }
       this.scene.removeObject(obj);
     }
     this.roomItems.delete(id);
@@ -329,7 +415,8 @@ class RoomObject extends SceneObject {
   }
 
   _draw(ctx) {
-    const globalSize = this.getGlobalSize();
+    const bbox = this.getGlobalBoundingBox();
+    const globalSize = { x: bbox.p2.x - bbox.p1.x, y: bbox.p2.y - bbox.p1.y };
 
     // Draw caption text
     const captionText = "1 cell = 1 square foot";
@@ -398,4 +485,4 @@ class RoomObject extends SceneObject {
   }
 }
 
-export default RoomObject;
+export default RoomEditorObject;
