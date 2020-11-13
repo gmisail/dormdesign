@@ -5,6 +5,7 @@ import ListItem from "../ListItem/ListItem";
 const DormItemList = (props) => {
   const {
     items,
+    selectedItemID,
     onEditItem,
     onClaimItem,
     onDeleteItem,
@@ -19,6 +20,7 @@ const DormItemList = (props) => {
         items.map((item) => {
           return (
             <ListItem
+              className={selectedItemID === item.id ? "item-selected" : ""}
               key={item.id}
               item={item}
               onEdit={() => onEditItem(item)}

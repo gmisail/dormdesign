@@ -338,6 +338,7 @@ class RoomRoute extends Component {
           <div className="room-item-list-container">
             <DormItemList
               items={this.state.items}
+              selectedItemID={this.state.selectedItemID}
               onEditItem={this.showEditForm}
               onClaimItem={this.claimItem}
               onDeleteItem={this.deleteItem}

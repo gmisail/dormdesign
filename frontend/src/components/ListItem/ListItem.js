@@ -10,10 +10,17 @@ import {
 import { ListGroupItem } from "react-bootstrap";
 import IconButton from "../IconButton/IconButton";
 
-import "./ListItem.css";
+import "./ListItem.scss";
 
 const ListItem = (props) => {
-  const { item, onEdit, onClaim, onDelete, onToggleEditorVisibility } = props;
+  const {
+    item,
+    onEdit,
+    onClaim,
+    onDelete,
+    onToggleEditorVisibility,
+    className,
+  } = props;
 
   const [showMenu, setShowMenu] = useState(false);
   const menuRef = useRef(null);
@@ -41,7 +48,7 @@ const ListItem = (props) => {
   }, [menuRef]);
 
   return (
-    <ListGroupItem>
+    <div className={`list-item ${className}`}>
       <div className="d-flex justify-content-between align-items-center">
         <div>
           <span>
@@ -100,7 +107,7 @@ const ListItem = (props) => {
           </div>
         </div>
       </div>
-    </ListGroupItem>
+    </div>
   );
 };
 
