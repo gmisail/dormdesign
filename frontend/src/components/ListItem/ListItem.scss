@@ -28,8 +28,8 @@
   }
 
   &.item-selected {
-    background-color: lighten($color-primary, 36%);
-    border-color: lighten($color-primary, 36%);
+    background-color: $selection-color-primary;
+    border-color: $selection-color-primary;
     border-radius: 5px;
     box-shadow: $box-shadow;
     animation: select-item-animation 0.25s ease-in-out forwards;
@@ -40,7 +40,7 @@
       transform: scale(100%, 100%);
     }
     50% {
-      transform: scale(107%, 107%);
+      transform: scale(108%, 108%);
     }
     100% {
       transform: scale(105%, 105%);
