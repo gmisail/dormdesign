@@ -1,11 +1,11 @@
 @import "./styles/variables.scss";
 
 body {
-  background-color: #f9f9f9;
+  background-color: $background-color;
 }
 
 .main-content-container {
-  background-color: #f9f9f9;
+  background-color: $background-color;
 }
 
 .card {
