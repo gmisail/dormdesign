@@ -15,7 +15,7 @@ import AddModal from "../../components/modals/AddModal";
 import EditModal from "../../components/modals/EditModal";
 import NameModal from "../../components/modals/NameModal";
 
-import "./RoomRoute.css";
+import "./RoomRoute.scss";
 import ErrorModal from "../../components/modals/ErrorModal";
 
 class RoomRoute extends Component {
@@ -352,7 +352,7 @@ class RoomRoute extends Component {
           name="addItemButton"
           onClick={() => this.toggleModal("add")}
         >
-          <BsPlus></BsPlus>
+          <BsPlus />
           <span className="add-button-text">Add Item</span>
         </button>
       </>

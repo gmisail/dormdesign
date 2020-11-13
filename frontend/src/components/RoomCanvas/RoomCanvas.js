@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import "./RoomCanvas.css";
+import "./RoomCanvas.scss";
 import SceneController from "../../room-editor/SceneController";
 import RoomEditorObject from "../../room-editor/RoomEditorObject";
 import Vector2 from "../../room-editor/Vector2";

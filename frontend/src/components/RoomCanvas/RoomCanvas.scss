@@ -1,0 +1,45 @@
+@import "../../styles/variables.scss";
+
+.room-canvas {
+  position: absolute;
+  display: block;
+}
+
+.room-editor-toolbar {
+  position: absolute;
+  top: 10px;
+  left: 0;
+  right: 0;
+  z-index: 3;
+  padding: 0 10px;
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: flex-end;
+  align-items: center;
+
+  & > * + * {
+    margin-left: 10px;
+  }
+
+  button {
+    width: 38px;
+    height: 38px;
+    font-size: 0.9em;
+    color: $text-color-light;
+    background-color: $color-secondary;
+    border-radius: 50px;
+    box-shadow: $box-shadow;
+
+    &:disabled {
+      background-color: lighten($color-secondary, 35%);
+      box-shadow: none;
+    }
+  }
+}
+
+.room-canvas-container {
+  position: relative;
+  height: 100%;
+  width: 100%;
+  border: none;
+}

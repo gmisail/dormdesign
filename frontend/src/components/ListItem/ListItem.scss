@@ -1,11 +1,12 @@
 @import "../../styles/variables.scss";
 
 .item-menu-button {
-  color: #444;
+  color: $text-color-dark;
 }
 
 .list-item {
-  background-color: white;
+  background-color: $foreground-color;
+  color: $text-color-dark;
   padding: 12px;
 
   &:first-child {
@@ -23,7 +24,7 @@
   }
 
   &.item-selected {
-    background-color: $selection-color;
+    background-color: $item-selection-color;
   }
 }
 
@@ -35,19 +36,19 @@
     position: absolute;
     right: 0;
     min-width: 160px;
-    box-shadow: 0px 2px 4px 1px $border-color;
+    box-shadow: $box-shadow;
     z-index: 1;
 
     list-style-type: none;
-    background-color: #f7f7f7;
+    background-color: $background-color;
     padding: 0;
     margin: 0;
-    border: 1px solid rgba(0, 0, 0, 0.09);
+    border: 1px solid $border-color;
     border-radius: 4px;
 
     li {
       padding: 5px 10px;
-      color: rgb(36, 36, 36);
+      color: $text-color-dark;
       font-size: 17px;
       line-height: 28px;
 
@@ -69,7 +70,7 @@
       }
 
       &:hover {
-        background-color: $selection-color;
+        background-color: $border-color;
       }
 
       &:last-child {

@@ -1,5 +1,5 @@
 import React from "react";
-import "./IconButton.css";
+import "./IconButton.scss";
 
 const IconButton = (props) => {
   const { onClick, children, className, disabled, style } = props;

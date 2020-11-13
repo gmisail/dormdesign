@@ -7,7 +7,6 @@ import {
   BsEye,
   BsEyeSlash,
 } from "react-icons/bs";
-import { ListGroupItem } from "react-bootstrap";
 import IconButton from "../IconButton/IconButton";
 
 import "./ListItem.scss";
