@@ -63,41 +63,36 @@ const ListItem = (props) => {
               <div className="item-dropdown-content">
                 <ul>
                   <li id="top" onClick={() => menuOptionClicked(onEdit)}>
-                    <div className="item-dropdown-content-row">
-                      <BsPencil></BsPencil>
-                      <span>Edit</span>
-                    </div>
+                    <BsPencil />
+                    Edit
                   </li>
-
                   <li onClick={() => menuOptionClicked(onClaim)}>
-                    <div className="item-dropdown-content-row">
-                      <BsPerson></BsPerson>
-                      Claim
-                    </div>
+                    <BsPerson />
+                    Claim
                   </li>
-
                   <li
                     onClick={() => menuOptionClicked(onToggleEditorVisibility)}
                   >
                     {item.visibleInEditor ? (
-                      <span>
+                      <>
                         <BsEyeSlash />
                         Hide
-                      </span>
+                      </>
                     ) : (
-                      <span>
+                      <>
                         <BsEye />
                         Show
-                      </span>
+                      </>
                     )}{" "}
                     in Editor
                   </li>
 
-                  <li onClick={() => menuOptionClicked(onDelete)}>
-                    <div className="color-danger item-dropdown-content-row">
-                      <BsX></BsX>
-                      Delete
-                    </div>
+                  <li
+                    className="color-danger"
+                    onClick={() => menuOptionClicked(onDelete)}
+                  >
+                    <BsX />
+                    Delete
                   </li>
                 </ul>
               </div>

@@ -27,21 +27,18 @@
   color: rgb(36, 36, 36);
   font-size: 17px;
   line-height: 28px;
-  vertical-align: middle;
+
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: center;
 
   border-bottom: 1px solid;
   border-bottom-color: #d6d6d6;
 }
 
-.item-dropdown-content .item-dropdown-content-row {
-  margin: auto;
-  display: flex;
-  flex-flow: row nowrap;
-  align-items: center;
-}
-
 .item-dropdown-content li svg {
   font-size: 0.8em;
+  margin: auto 0;
   margin-right: 0.75em;
 }
 
