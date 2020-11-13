@@ -81,12 +81,12 @@ const ListItem = (props) => {
                   >
                     {item.visibleInEditor ? (
                       <span>
-                        <BsEye />
+                        <BsEyeSlash />
                         Hide
                       </span>
                     ) : (
                       <span>
-                        <BsEyeSlash />
+                        <BsEye />
                         Show
                       </span>
                     )}{" "}
