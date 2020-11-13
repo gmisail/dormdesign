@@ -23,8 +23,28 @@
     border-bottom-right-radius: inherit;
   }
 
+  &.item-selected + & {
+    border-top-color: $foreground-color;
+  }
+
   &.item-selected {
-    background-color: $item-selection-color;
+    background-color: lighten($color-primary, 36%);
+    border-color: lighten($color-primary, 36%);
+    border-radius: 5px;
+    box-shadow: $box-shadow;
+    animation: select-item-animation 0.25s ease-in-out forwards;
+  }
+
+  @keyframes select-item-animation {
+    0% {
+      transform: scale(100%, 100%);
+    }
+    50% {
+      transform: scale(107%, 107%);
+    }
+    100% {
+      transform: scale(105%, 105%);
+    }
   }
 }
 
