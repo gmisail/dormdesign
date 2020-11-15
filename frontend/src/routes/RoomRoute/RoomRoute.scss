@@ -1,31 +1,44 @@
 @import "../../styles/variables.scss";
 
+body {
+  // Prevent page scrolling on RoomRoute page
+  overflow: hidden;
+}
+
 .room-container {
-  margin-left: auto;
-  margin-right: auto;
-  height: calc(100vh - 56px);
-  padding: 15px 25px;
-  max-width: min(1200px, 125vh);
+  $navbar-height: 56px;
+  $padding-x: 25px;
+  $padding-y: 15px;
+  $gap-x: 20px;
+  $gap-y: 20px;
+
+  $stack-breakpoint: 900px;
+  $small-breakpoint: 500px;
+
+  $header-height: 40px;
+  $usable-height: calc(100vh - #{$navbar-height});
+
+  margin: auto;
+  overflow: hidden;
+
+  height: $usable-height;
+  max-width: 1400px;
+  padding: $padding-y $padding-x;
+
   display: grid;
-  grid-template-columns: 2fr 1fr;
-  grid-template-rows: max-content;
+  grid-template-columns: 2.75fr 1fr;
+  grid-template-rows: max-content minmax(0, 1fr);
   grid-template-areas:
     "room-header room-header"
     "room-editor room-item-list";
-  gap: 20px 20px;
+  gap: $gap-y $gap-x;
   justify-content: center;
 
-  @media screen and (max-width: 1000px) {
-    height: 100%;
+  @media screen and (max-width: $stack-breakpoint) {
     grid-template-columns: 100%;
     column-gap: 0;
 
-    /* 
-        Since we can't size the editor row based on the canvas size
-        (since the canvas sizes itself based on the editor row's size),
-        set it based on whatever fits the entire editor in the viewport
-      */
-    grid-template-rows: max-content min(calc(100vw - 50px), calc(100vh - 180px)) max-content;
+    grid-template-rows: max-content 60% minmax(0, 1fr);
 
     grid-template-areas:
       "room-header"
@@ -33,13 +46,18 @@
       "room-item-list";
   }
 
+  @media screen and (max-width: $small-breakpoint) {
+    padding: $padding-y 10px;
+    gap: $gap-y * 0.75 0;
+
+    .room-header {
+      font-size: 28px;
+    }
+  }
+
   .room-header {
     grid-area: room-header;
     margin: 0;
-
-    @media screen and (max-width: 500px) {
-      font-size: 17pt;
-    }
   }
 
   .room-editor-container {
@@ -48,40 +66,42 @@
 
   .room-item-list-container {
     grid-area: room-item-list;
+    min-width: 325px;
 
-    @media screen and (max-width: 1000px) {
-      /* Set items to be minimum of grid column width and grid row height so that they line up with the editor (which also sizes similarly) */
-      width: min(calc(100vw - 50px), calc(100vh - 180px));
-      justify-self: center;
+    display: flex;
+    flex-flow: column nowrap;
+
+    @media screen and (max-width: $stack-breakpoint) {
+      min-width: 0;
+      width: 100%;
     }
   }
-}
 
-.fixed-add-button {
-  position: fixed;
-  z-index: 5;
-  right: 30px;
-  bottom: 30px;
-  padding: 10px 10px;
-  padding-right: 18px;
-  border: none;
-  border-radius: 9px;
-  background-color: $color-primary;
-  color: $text-color-light;
-  border-radius: 50px;
-  font-size: 20px;
-  font-weight: 800;
-  box-shadow: 0px 0px 10px 4px rgba(0, 0, 0, 0.2);
+  .add-item-button {
+    margin-bottom: 10px;
 
-  .add-button-text {
-    vertical-align: middle;
-  }
+    .add-item-button-text {
+      vertical-align: middle;
+    }
 
-  @media screen and (max-width: 1000px) {
-    padding-right: 10px;
+    @media screen and (max-width: $stack-breakpoint) {
+      padding: 10px;
+      position: fixed;
+      z-index: 1;
+      right: 30px;
+      bottom: 30px;
+      border: none;
+      border-radius: 9px;
+      background-color: $color-primary;
+      color: $text-color-light;
+      border-radius: 50px;
+      font-size: 20px;
+      font-weight: 800;
+      box-shadow: 0px 0px 10px 4px rgba(0, 0, 0, 0.2);
 
-    .add-button-text {
-      display: none;
+      .add-item-button-text {
+        display: none;
+      }
     }
   }
 }

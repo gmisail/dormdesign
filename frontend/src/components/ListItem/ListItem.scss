@@ -2,12 +2,37 @@
 
 .item-menu-button {
   color: $text-color-dark;
+  transition: transform 0.2s;
+
+  &:hover {
+    transform: scale(1.2);
+  }
 }
 
 .list-item {
   background-color: $foreground-color;
+  transition: background-color 0.1s ease-in;
+  font-size: 16px;
   color: $text-color-dark;
   padding: 12px;
+
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+
+  .list-item-content {
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+
+    .item-name {
+      font-weight: 600;
+    }
+    .item-quantity {
+      font-weight: 500;
+    }
+  }
 
   &:first-child {
     border-top-left-radius: inherit;
@@ -23,48 +48,32 @@
     border-bottom-right-radius: inherit;
   }
 
-  &.item-selected + & {
-    border-top-color: $foreground-color;
-  }
-
   &.item-selected {
     background-color: $selection-color-primary;
-    border-color: $selection-color-primary;
-    border-radius: 5px;
-    box-shadow: $box-shadow;
-    animation: select-item-animation 0.25s ease-in-out forwards;
-  }
-
-  @keyframes select-item-animation {
-    0% {
-      transform: scale(100%, 100%);
-    }
-    50% {
-      transform: scale(108%, 108%);
-    }
-    100% {
-      transform: scale(105%, 105%);
-    }
   }
 }
 
 .item-dropdown-menu {
-  position: relative;
-  display: inline-block;
+  min-width: 160px;
+  box-shadow: $box-shadow;
+  background: red;
+  border-radius: 8px;
+  z-index: 2;
+
+  // Hide popper when it has "hidden" class and when item is no longer visible (e.g. it is scrolled out of view)
+  &.hidden,
+  &[data-popper-reference-hidden="true"] {
+    visibility: hidden;
+    pointer-events: none;
+  }
 
   ul {
-    position: absolute;
-    right: 0;
-    min-width: 160px;
-    box-shadow: $box-shadow;
-    z-index: 1;
-
     list-style-type: none;
     background-color: $dropdown-background-color;
     padding: 0;
     margin: 0;
     border: 1px solid $border-color;
-    border-radius: 4px;
+    border-radius: inherit;
 
     li {
       padding: 5px 10px;

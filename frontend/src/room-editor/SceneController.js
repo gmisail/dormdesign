@@ -101,12 +101,6 @@ class SceneController {
     let resized = false;
     for (let i = 0; i < canvasArray.length; i++) {
       if (this.resizeCanvas(canvasArray[i])) {
-        // Update size of parent element manually (since canvas has position absolute)
-        canvasArray[i].parentElement.style.maxWidth =
-          canvasArray[i].style.width;
-        canvasArray[i].parentElement.style.maxHeight =
-          canvasArray[i].style.height;
-
         resized = true;
       }
     }
@@ -116,34 +110,18 @@ class SceneController {
   resizeCanvas(canvas) {
     const realToCSSPixels = window.devicePixelRatio;
 
-    // Size based on element containing the canvas container
-    const container = canvas.parentElement.parentElement;
+    // Lookup the size the browser is displaying the canvas in CSS pixels
+    // and compute a size needed to make our drawingbuffer match it in
+    // device pixels.
+    var displayWidth = Math.floor(canvas.clientWidth * realToCSSPixels);
+    var displayHeight = Math.floor(canvas.clientHeight * realToCSSPixels);
 
-    // Size to fit
-    const size = Math.min(container.clientWidth, container.clientHeight);
+    // Check if the canvas is not the same size.
+    if (canvas.width !== displayWidth || canvas.height !== displayHeight) {
+      // Make the canvas the same size
+      canvas.width = displayWidth;
+      canvas.height = displayHeight;
 
-    // Check if canvas size (drawingbuffer) is not the same size as actual width of container
-    if (canvas.width !== size || canvas.height !== size) {
-      /*
-        Set CSS size of canvas to be the same as the CSS size of the container.
-        CSS size automatically accounts and scales for higher-res displays, so we
-        don't incoporate DPR (devicePixelRatio)
-      */
-      canvas.style.width = `${size}px`;
-      canvas.style.height = `${size}px`;
-
-      /* 
-        This sets the actual size of the canvas coordinate system (if no width or height has
-        been specified in the CSS properties of the canvas, this will also set
-        the CSS display size. But since we are setting the CSS display size above, we want
-        the drawing buffer to be scaled with the DPR of the screen, so the canvas is
-        sharp on high-res displays. This comes at a cost of performance though,
-        since more pixels are rendered on high-res displays.
-      */
-      canvas.width = size * realToCSSPixels;
-      canvas.height = size * realToCSSPixels;
-
-      // Return true since canvas was resized
       return true;
     }
     return false;

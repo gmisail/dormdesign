@@ -7,6 +7,7 @@ import {
   BsEye,
   BsEyeSlash,
 } from "react-icons/bs";
+import { usePopper } from "react-popper";
 import IconButton from "../IconButton/IconButton";
 
 import "./ListItem.scss";
@@ -22,7 +23,21 @@ const ListItem = (props) => {
   } = props;
 
   const [showMenu, setShowMenu] = useState(false);
+  const menuButtonRef = useRef(null);
   const menuRef = useRef(null);
+  const { styles, attributes } = usePopper(
+    menuButtonRef.current,
+    menuRef.current,
+    {
+      placement: "left",
+      modifiers: [
+        {
+          name: "flip",
+          enabled: true,
+        },
+      ],
+    }
+  );
 
   // Called when a button in menu is clicked. Closes the menu and calls passed callback
   const menuOptionClicked = (callback) => {
@@ -31,13 +46,16 @@ const ListItem = (props) => {
   };
 
   useEffect(() => {
-    // Clicked outside of menu
+    // Clicked outside of menu (and also button)
     function handleClickOutside(event) {
-      if (menuRef.current && !menuRef.current.contains(event.target)) {
+      if (
+        menuRef.current &&
+        !menuRef.current.contains(event.target) &&
+        !menuButtonRef.current.contains(event.target)
+      ) {
         setShowMenu(false);
       }
     }
-
     // Bind the event listener
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
@@ -48,62 +66,64 @@ const ListItem = (props) => {
 
   return (
     <div className={`list-item ${className}`}>
-      <div className="d-flex justify-content-between align-items-center">
-        <div>
-          <span>
-            <strong>{item.name}</strong>
+      <div className="list-item-content">
+        <span>
+          <span className="item-name">{item.name}</span>
+          <span className="item-quantity">
             {item.quantity > 1 ? ` (${item.quantity})` : null}
           </span>
-        </div>
+        </span>
+      </div>
 
-        <div className="d-flex align-items-center">
-          {item.claimedBy ? (
-            <i className="mr-3">Claimed by {item.claimedBy}</i>
-          ) : null}
+      <div className="list-item-content">
+        {item.claimedBy ? (
+          <i className="mr-3">Claimed by {item.claimedBy}</i>
+        ) : null}
+        <IconButton
+          ref={menuButtonRef}
+          className="item-menu-button"
+          onClick={() => setShowMenu(!showMenu)}
+        >
+          <BsThreeDots></BsThreeDots>
+        </IconButton>
+        <div
+          ref={menuRef}
+          className={`item-dropdown-menu ${showMenu ? "" : "hidden"}`}
+          style={styles.popper}
+          {...attributes.popper}
+        >
+          <ul>
+            <li id="top" onClick={() => menuOptionClicked(onEdit)}>
+              <BsPencil />
+              Edit
+            </li>
+            <li onClick={() => menuOptionClicked(onClaim)}>
+              <BsPerson />
+              Claim
+            </li>
+            <li onClick={() => menuOptionClicked(onToggleEditorVisibility)}>
+              {item.visibleInEditor ? (
+                <>
+                  <BsEyeSlash />
+                  Hide
+                </>
+              ) : (
+                <>
+                  <BsEye />
+                  Show
+                </>
+              )}{" "}
+              in Editor
+            </li>
 
-          <div className="item-dropdown-menu" ref={menuRef}>
-            <IconButton onClick={() => setShowMenu(!showMenu)}>
-              <BsThreeDots className="item-menu-button"></BsThreeDots>
-            </IconButton>
-            {showMenu ? (
-              <div className="item-dropdown-content">
-                <ul>
-                  <li id="top" onClick={() => menuOptionClicked(onEdit)}>
-                    <BsPencil />
-                    Edit
-                  </li>
-                  <li onClick={() => menuOptionClicked(onClaim)}>
-                    <BsPerson />
-                    Claim
-                  </li>
-                  <li
-                    onClick={() => menuOptionClicked(onToggleEditorVisibility)}
-                  >
-                    {item.visibleInEditor ? (
-                      <>
-                        <BsEyeSlash />
-                        Hide
-                      </>
-                    ) : (
-                      <>
-                        <BsEye />
-                        Show
-                      </>
-                    )}{" "}
-                    in Editor
-                  </li>
-
-                  <li
-                    className="color-danger"
-                    onClick={() => menuOptionClicked(onDelete)}
-                  >
-                    <BsX />
-                    Delete
-                  </li>
-                </ul>
-              </div>
-            ) : null}
-          </div>
+            <li
+              className="color-danger"
+              onClick={() => menuOptionClicked(onDelete)}
+            >
+              <BsX />
+              Delete
+            </li>
+          </ul>
         </div>
       </div>
     </div>

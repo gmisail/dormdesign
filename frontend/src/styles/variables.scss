@@ -1,4 +1,4 @@
-$color-primary: #0c69ff;
+$color-primary: #2b7cff; //#0c69ff;
 $color-secondary: #8a8a8a;
 $color-danger: #dc3545;
 $color-light-grey: #d8d8d8;
@@ -9,6 +9,13 @@ $dropdown-background-color: #f7f7f7;
 $background-color: #f9f9f9;
 $foreground-color: #fff;
 $border-color: $color-light-grey;
-$selection-color-primary: lighten($color-primary, 38%);
+$selection-color-primary: lighten($color-primary, 25%);
+
+$card-border-radius: 8px;
 
 $box-shadow: 0px 2px 4px 1px rgba(0, 0, 0, 0.15);
+
+$btn-font-size: 20px;
+$btn-font-family: "Source Sans Pro", sans-serif;
+$btn-font-weight: 600;
+$btn-border-radius: 8px;

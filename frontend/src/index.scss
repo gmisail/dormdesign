@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Arvo:wght@700&family=Source+Sans+Pro&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Arvo:wght@400;700&family=Source+Sans+Pro:wght@400;600;700&display=swap");
 @import "styles/variables.scss";
 
 * {
@@ -8,32 +8,7 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-h1,
-h2,
-h3,
-h4,
-h5 {
-  font-family: "Arvo", serif;
-  color: $text-color-dark;
-}
-
-body {
-  color: red;
-}
-
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
     monospace;
-}
-
-/*
-  custom classes
-*/
-
-.navbar-brand-logo {
-  font-family: "Arvo", serif;
-}
-
-.main-content-container {
-  padding-top: 56px; /* Offsets content of page from navbar (which is fixed to top) */
 }

@@ -204,7 +204,7 @@ class RoomCanvas extends Component {
     const { selectedItemID } = this.props;
 
     return (
-      <div className="card room-canvas-container">
+      <div className="room-canvas-container">
         <div className="room-editor-toolbar">
           <IconButton
             onClick={this.lockSelectedObject}
@@ -230,6 +230,9 @@ class RoomCanvas extends Component {
           className="room-canvas"
           style={{ zIndex: 2 }}
         ></canvas>
+        <div className="room-canvas-footer">
+          <span>1 Cell = 1 Square Foot</span>
+        </div>
       </div>
     );
   }

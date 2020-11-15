@@ -9,11 +9,6 @@ const NavigationBar = () => {
       <Navbar.Brand className="navbar-brand-logo" as={Link} to="/">
         DormDesign
       </Navbar.Brand>
-
-      <Navbar.Toggle aria-controls="basic-navbar-nav" />
-      <Navbar.Collapse id="navbar-nav">
-        <Nav className="mr-auto"></Nav>
-      </Navbar.Collapse>
     </Navbar>
   );
 };
