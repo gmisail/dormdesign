@@ -68,8 +68,8 @@ class RoomCanvas extends Component {
       new Vector2(3, 4),
       new Vector2(3, 3),
       new Vector2(0, 3),
-      new Vector2(0, 0),
-      new Vector2(1, 0),
+      new Vector2(0, -5),
+      new Vector2(1, -5),
     ];
     const room = new RoomEditorObject({
       scene: scene,
