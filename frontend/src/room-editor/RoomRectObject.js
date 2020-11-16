@@ -102,7 +102,7 @@ class RoomRectObject extends SceneObject {
         this.position = new Vector2(xLimit, yLimit);
       }
 
-      // Check for intersections with RoomObject boundary boxes to detect if its in
+      // Check for collisions. Currently only checks if object collides with one of the room boundary edges.
       const offset = 0.015; // Small "error" allows for things such as a 1' x 1' obj fitting in a 1' x 1' space without counting as collision
       let bbox = this.getLocalBoundingBox();
       bbox.p1.x += offset;
@@ -110,14 +110,15 @@ class RoomRectObject extends SceneObject {
       bbox.p2.x -= offset;
       bbox.p2.y -= offset;
       this.outOfBounds = false;
-      for (let i = 0; i < this.parent.boundaryBoxes.length; i++) {
-        this.outOfBounds = Collisions.rectInRect(
-          bbox.p1,
-          bbox.p2,
-          this.parent.boundaryBoxes[i].p1,
-          this.parent.boundaryBoxes[i].p2
-        );
-        if (this.outOfBounds) break;
+      if (this.parent._offsetPoints) {
+        for (let i = 0; i < this.parent._offsetPoints.length - 1; i++) {
+          const v1 = this.parent._offsetPoints[i];
+          const v2 = this.parent._offsetPoints[i + 1];
+          console.log(v1, v2, i);
+          if (Collisions.segmentIntersectsRect(v1, v2, bbox.p1, bbox.p2)) {
+            this.outOfBounds = true;
+          }
+        }
       }
     }
   }

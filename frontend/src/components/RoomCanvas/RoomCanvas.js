@@ -50,10 +50,12 @@ class RoomCanvas extends Component {
 
     // Points defining the edges of the room (in feet)
     const testBoundaryPath = [
-      new Vector2(0, 0),
-      new Vector2(7.3, 0),
-      new Vector2(7.3, 1.2),
-      new Vector2(8, 1.2),
+      new Vector2(1, 2),
+      new Vector2(2, 2),
+      new Vector2(2, 1),
+      new Vector2(7.3, 1),
+      new Vector2(7.3, 2),
+      new Vector2(8, 2),
       new Vector2(8, 5),
       new Vector2(9, 5),
       new Vector2(9, 6),
@@ -62,6 +64,12 @@ class RoomCanvas extends Component {
       new Vector2(4, 13),
       new Vector2(4, 6.5),
       new Vector2(0, 6.5),
+      new Vector2(0, 4),
+      new Vector2(3, 4),
+      new Vector2(3, 3),
+      new Vector2(0, 3),
+      new Vector2(0, 0),
+      new Vector2(1, 0),
     ];
     const room = new RoomEditorObject({
       scene: scene,
