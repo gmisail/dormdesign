@@ -29,7 +29,7 @@ const ListItem = (props) => {
     menuButtonRef.current,
     menuRef.current,
     {
-      placement: "left",
+      placement: "left-start",
       modifiers: [
         {
           name: "flip",
