@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 
-import { Spinner, Alert } from "react-bootstrap";
-import { BsPlus } from "react-icons/bs";
+import { Spinner, Alert, Button, Row, Col } from "react-bootstrap";
+import { BsGear, BsPlus } from "react-icons/bs";
 
 import RoomCanvas from "../../components/RoomCanvas/RoomCanvas";
 import DormItemList from "../../components/DormItemList/DormItemList";
@@ -14,9 +14,11 @@ import DormItem from "../../models/DormItem";
 import AddModal from "../../components/modals/AddModal";
 import EditModal from "../../components/modals/EditModal";
 import NameModal from "../../components/modals/NameModal";
+import SettingsModal from "../../components/modals/SettingsModal";
 
 import "./RoomRoute.css";
 import ErrorModal from "../../components/modals/ErrorModal";
+import IconButton from "../../components/IconButton/IconButton";
 
 class RoomRoute extends Component {
   constructor() {
@@ -307,6 +309,14 @@ class RoomRoute extends Component {
             message={this.state.errorMessage}
           ></ErrorModal>
         );
+      case "settings":
+        return (
+          <SettingsModal
+            show={this.state.showModal}
+            onHide={this.toggleModal}
+            message={this.state.errorMessage}
+          ></SettingsModal>
+        );
       default:
         return;
     }
@@ -326,7 +336,17 @@ class RoomRoute extends Component {
               {this.state.alertMessage}
             </Alert>
           ) : null}
-          <h2 className="room-header">Dorm Name - Room #</h2>
+
+          <div className="d-flex justify-content-start room-header">
+            <h2>Dorm Name - Room #</h2>
+          </div>
+
+          <div className="d-flex justify-content-end room-header">
+            <IconButton onClick={() => this.toggleModal("settings")}>
+              <BsGear></BsGear>
+            </IconButton>
+          </div>
+
           <div className="d-flex justify-content-center room-editor-container">
             <RoomCanvas
               items={this.state.items}
