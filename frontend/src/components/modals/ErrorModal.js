@@ -5,7 +5,7 @@ const ErrorModal = (props) => {
   return (
     <Modal show={props.show} onHide={props.onHide}>
       <Modal.Header closeButton>
-        <Modal.Title>Something went wrong...</Modal.Title>
+        <Modal.Title>Error</Modal.Title>
       </Modal.Header>
       <Modal.Body>{props.message}</Modal.Body>
     </Modal>

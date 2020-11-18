@@ -22,12 +22,13 @@ class RoomRoute extends Component {
   constructor() {
     super();
 
+    this.errorMessage = "";
+
     this.state = {
-      items: [],
+      items: undefined,
       showModal: false,
       modalType: "none",
       editingItem: undefined,
-      errorMessage: "Something happened",
       selectedItemID: undefined,
     };
   }
@@ -44,14 +45,22 @@ class RoomRoute extends Component {
 
   onSocketConnectionClosed = (message) => {
     console.warn("SOCKET CLOSED", message);
-
-    /*
-      TODO: Display some sort of error and try to reconnect
-    */
+    this.errorMessage = "Lost connection to server. Please refresh the page.";
+    this.toggleModal("error");
   };
 
   loadData = async () => {
     const roomID = this.props.match.params.id;
+
+    try {
+      const items = await DataController.getList(roomID);
+      this.setState({ items: items });
+    } catch (err) {
+      console.error(err);
+      this.errorMessage = "Unable to fetch room data.";
+      this.toggleModal("error");
+      return;
+    }
 
     const connection = new SocketConnection(roomID);
     // When socket connection receives message, notify EventController
@@ -64,13 +73,6 @@ class RoomRoute extends Component {
     };
     connection.onClose = this.onSocketConnectionClosed;
     this.socketConnection = connection;
-
-    try {
-      const items = await DataController.getList(roomID);
-      this.setState({ items: items });
-    } catch (err) {
-      console.error(err);
-    }
   };
 
   setupEventListeners = () => {
@@ -128,39 +130,27 @@ class RoomRoute extends Component {
       switch (action) {
         case "addItem":
           console.error("Error adding item.", data.message);
-          this.setState({
-            showModal: true,
-            modalType: "error",
-            errorMessage: "Failed to create a new item. Try again later.",
-          });
+          this.errorMessage = "Failed to create a new item. Try again later.";
           break;
         case "deleteItem":
           console.error("Error deleting item.", data.message);
-          this.setState({
-            showModal: true,
-            modalType: "error",
-            errorMessage: "Failed to delete item. Try again later.",
-          });
+          this.errorMessage = "Failed to delete item. Try again later.";
           break;
         case "updateItemPosition":
           console.error("Error updating item position.", data.message);
-          this.setState({
-            showModal: true,
-            modalType: "error",
-            errorMessage: "Failed to update item in editor. Try again later.",
-          });
+          this.errorMessage =
+            "Failed to update item in editor. Try again later.";
           break;
         case "editItem":
           console.error("Error editing item.", data.message);
-          this.setState({
-            showModal: true,
-            modalType: "error",
-            errorMessage: "Failed to edit item properties. Try again later.",
-          });
+          this.errorMessage =
+            "Failed to edit item properties. Try again later.";
           break;
         default:
+          this.errorMessgae = "Unknown error.";
           console.error("Unknown socket event error.", data);
       }
+      this.toggleModal("error");
     });
   };
 
@@ -266,10 +256,10 @@ class RoomRoute extends Component {
   };
 
   toggleModal = (type) => {
-    if (type) {
-      this.setState({ modalType: type });
-    }
-    this.setState({ showModal: !this.state.showModal });
+    this.setState({
+      showModal: !this.state.showModal,
+      modalType: type,
+    });
   };
 
   renderModal() {
@@ -304,7 +294,7 @@ class RoomRoute extends Component {
           <ErrorModal
             show={this.state.showModal}
             onHide={this.toggleModal}
-            message={this.state.errorMessage}
+            message={this.errorMessage}
           ></ErrorModal>
         );
       default:

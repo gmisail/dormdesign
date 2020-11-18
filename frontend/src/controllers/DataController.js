@@ -55,8 +55,7 @@ class DataController {
 
     const response = await fetch(`/list/get?id=${id}`);
     if (!response.ok) {
-      const data = await response.json();
-      const message = `${response.status} Error fetching list: ${data.message}`;
+      const message = `${response.status} Error fetching list: ${response.statusText}`;
       throw new Error(message);
     }
     const data = await response.json();
