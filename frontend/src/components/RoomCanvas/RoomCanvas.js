@@ -223,7 +223,7 @@ class RoomCanvas extends Component {
           </IconButton>
           <IconButton
             onClick={this.rotateSelectedObject}
-            disabled={selectedItemID === undefined}
+            disabled={selectedItemID === undefined || selectedItemLocked}
           >
             <BsArrowClockwise></BsArrowClockwise>
           </IconButton>
