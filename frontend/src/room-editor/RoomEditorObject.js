@@ -81,8 +81,8 @@ class RoomEditorObject extends SceneObject {
   _getOutOfBoundsBoxes() {
     const boxes = [];
 
-    /* Distance past the size of the room. Used since currently some boundary edges are flush with
-    the bottom of the room and therefore won't get any rects beneath them */
+    /* Offset represents distance past the size of the room. Used since some boundary edges are flush with
+    the edge of the room and with the current method they wouldn't get any rects beneath them */
     const offset = 0.5;
     const directions = [];
     // Loop over boundary edges
@@ -91,48 +91,60 @@ class RoomEditorObject extends SceneObject {
       const p2 = this.boundaryPoints[
         i === this.boundaryPoints.length - 1 ? 0 : i + 1
       ];
-
+      let direction;
+      let box;
       if (Vector2.floatEquals(p1.x, p2.x)) {
         // Vertical line
-        const direction = p2.y > p1.y ? 1 : -1;
-        // Prevents overlapping boxes
-        if (directions.length === 0 || directions[i - 1] === direction) {
-          if (direction > 0) {
-            // Down line
-            boxes.push({
-              p1: new Vector2(p1.x, p1.y),
-              p2: new Vector2(this.size.x + offset, p2.y),
-            });
-          } else if (direction < 0) {
-            // Up line
-            boxes.push({
-              p1: new Vector2(-offset, p2.y),
-              p2: new Vector2(p1.x, p1.y),
-            });
-          }
+        direction = p2.y > p1.y ? 1 : -1;
+        if (direction > 0) {
+          // Down line
+          box = {
+            p1: new Vector2(p1.x, p1.y),
+            p2: new Vector2(this.size.x + offset, p2.y),
+          };
+        } else if (direction < 0) {
+          // Up line
+          box = {
+            p1: new Vector2(-offset, p2.y),
+            p2: new Vector2(p1.x, p1.y),
+          };
         }
-        directions.push(direction);
       } else {
         // Horizontal line
-        const direction = p2.x > p1.x ? 1 : -1;
-        // Prevents overlapping boxes
-        if (directions.length === 0 || directions[i - 1] !== direction) {
-          if (direction > 0) {
-            // Right line
-            boxes.push({
-              p1: new Vector2(p1.x, -offset),
-              p2: new Vector2(p2.x, p2.y),
-            });
-          } else if (direction < 0) {
-            // Left line
-            boxes.push({
-              p1: new Vector2(p2.x, p2.y),
-              p2: new Vector2(p1.x, this.size.y + offset),
-            });
+        direction = p2.x > p1.x ? 1 : -1;
+        if (direction > 0) {
+          // Right line
+          box = {
+            p1: new Vector2(p1.x, -offset),
+            p2: new Vector2(p2.x, p2.y),
+          };
+        } else if (direction < 0) {
+          // Left line
+          box = {
+            p1: new Vector2(p2.x, p2.y),
+            p2: new Vector2(p1.x, this.size.y + offset),
+          };
+        }
+      }
+      // Check previous two boxes for overlap to see if this box would be redundant (overlap other boxes)
+      let redundant = false;
+      for (let i = boxes.length - 1; i >= boxes.length - 2 && i >= 0; i--) {
+        if (Collisions.rectInRect(box.p1, box.p2, boxes[i].p1, boxes[i].p2)) {
+          redundant = true;
+        }
+      }
+      // When on last edge, also check first two boxes
+      if (i === this.boundaryPoints.length - 1) {
+        for (let i = 0; i < 2 && i < boxes.length; i++) {
+          if (Collisions.rectInRect(box.p1, box.p2, boxes[i].p1, boxes[i].p2)) {
+            redundant = true;
           }
         }
-        directions.push(direction);
       }
+      if (!redundant) {
+        boxes.push(box);
+      }
+      directions.push(direction);
     }
     return boxes;
   }
@@ -146,9 +158,8 @@ class RoomEditorObject extends SceneObject {
         new Vector2(this.boundaryPoints[i].x, this.boundaryPoints[i].y)
       );
     }
-    this._offsetPoints.push(
-      new Vector2(this.boundaryPoints[0].x, this.boundaryPoints[0].y)
-    );
+    // Add reference to first point to end of list so its properly updated by last edge
+    this._offsetPoints.push(this._offsetPoints[0]);
     for (let i = 0; i < this._offsetPoints.length - 1; i++) {
       const p1 = this._offsetPoints[i];
       const p2 = this._offsetPoints[i + 1];
@@ -178,39 +189,56 @@ class RoomEditorObject extends SceneObject {
       right: ctx.canvas.width * 0.02,
     };
 
-    // Find canvas pixels per foot
-    let maxWidth;
-    let maxHeight;
+    let xMax;
+    let yMax;
+    let xMin;
+    let yMin;
     for (let i = 0; i < this.boundaryPoints.length; i++) {
-      if (!maxWidth || this.boundaryPoints[i].x > maxWidth) {
-        maxWidth = this.boundaryPoints[i].x;
+      if (xMax === undefined || this.boundaryPoints[i].x > xMax) {
+        xMax = this.boundaryPoints[i].x;
       }
-      if (!maxHeight || this.boundaryPoints[i].y > maxHeight) {
-        maxHeight = this.boundaryPoints[i].y;
+      if (yMax === undefined || this.boundaryPoints[i].y > yMax) {
+        yMax = this.boundaryPoints[i].y;
+      }
+      if (xMin === undefined || this.boundaryPoints[i].x < xMin) {
+        xMin = this.boundaryPoints[i].x;
+      }
+      if (yMin === undefined || this.boundaryPoints[i].y < yMin) {
+        yMin = this.boundaryPoints[i].y;
       }
     }
+
+    // Translate points so min is at 0,0
+    for (let i = 0; i < this.boundaryPoints.length; i++) {
+      this.boundaryPoints[i].x -= xMin;
+      this.boundaryPoints[i].y -= yMin;
+    }
+
+    const roomWidth = xMax - xMin;
+    const roomHeight = yMax - yMin;
+
+    let roomAspect = roomWidth / roomHeight;
+    let canvasAspect = ctx.canvas.width / ctx.canvas.height;
+
     const usableCanvasWidth = ctx.canvas.width - (padding.left + padding.right);
     const usableCanvasHeight =
       ctx.canvas.height - (padding.top + padding.bottom);
 
-    let roomAspect = maxWidth / maxHeight;
-    let canvasAspect = ctx.canvas.width / ctx.canvas.height;
-
     // Compare canvas aspect ratio to room aspect ratio in to make sure room will fit in canvas
     if (roomAspect > canvasAspect) {
       this.scale = new Vector2(
-        usableCanvasWidth / maxWidth,
-        usableCanvasWidth / maxWidth
+        usableCanvasWidth / roomWidth,
+        usableCanvasWidth / roomWidth
       );
     } else {
       this.scale = new Vector2(
-        usableCanvasHeight / maxHeight,
-        usableCanvasHeight / maxHeight
+        usableCanvasHeight / roomHeight,
+        usableCanvasHeight / roomHeight
       );
     }
 
-    this.size.x = maxWidth;
-    this.size.y = maxHeight;
+    this.size.x = roomWidth;
+    this.size.y = roomHeight;
 
     const bbox = this.getGlobalBoundingBox();
     const globalSize = { x: bbox.p2.x - bbox.p1.x, y: bbox.p2.y - bbox.p1.y };
@@ -455,8 +483,8 @@ class RoomEditorObject extends SceneObject {
     ctx.closePath();
     ctx.strokeStyle = this.borderColor;
     ctx.lineWidth = this.borderWidth;
-    ctx.lineJoin = "round";
-    ctx.lineCap = "round";
+    ctx.lineJoin = "butt";
+    ctx.lineCap = "butt";
     ctx.stroke();
 
     if (this.drawBoundaryBoxes) {
