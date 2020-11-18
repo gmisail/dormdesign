@@ -1,0 +1,73 @@
+@import "../../styles/variables.scss";
+
+.room-canvas-container {
+  background-color: $foreground-color;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+
+  .room-canvas {
+    position: absolute;
+    /* 
+      For some reason using just top, bottom, left, right doesn't properly stretch canvas. So
+      instead we manually set width and height
+    */
+    $top-offset: 50px;
+    $bottom-offset: 25px;
+    $left-offset: 15px;
+    $right-offset: 15px;
+    width: calc(100% - #{$left-offset} - #{$right-offset});
+    height: calc(100% - #{$top-offset} - #{$bottom-offset});
+    top: $top-offset;
+    left: $left-offset;
+
+    border-radius: inherit;
+  }
+
+  .room-canvas-footer {
+    position: absolute;
+    z-index: 2;
+    color: $text-color-dark;
+    font-weight: 600;
+    bottom: 5px;
+    left: 10px;
+  }
+
+  .room-editor-toolbar {
+    position: absolute;
+    top: 10px;
+    left: 0;
+    right: 0;
+    z-index: 3;
+    padding: 0 10px;
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: flex-end;
+    align-items: center;
+
+    & > * + * {
+      margin-left: 10px;
+    }
+
+    button {
+      width: 38px;
+      height: 38px;
+      font-size: 0.9em;
+      color: $text-color-light;
+      background-color: $color-secondary;
+      border-radius: 50px;
+      box-shadow: $box-shadow;
+
+      transition: transform 0.2s ease;
+      transform: scale(1.07);
+
+      &:disabled {
+        background-color: lighten($color-secondary, 35%);
+        box-shadow: none;
+
+        transform: scale(0.9);
+      }
+    }
+  }
+}

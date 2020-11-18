@@ -15,7 +15,7 @@ import AddModal from "../../components/modals/AddModal";
 import EditModal from "../../components/modals/EditModal";
 import NameModal from "../../components/modals/NameModal";
 
-import "./RoomRoute.css";
+import "./RoomRoute.scss";
 import ErrorModal from "../../components/modals/ErrorModal";
 
 class RoomRoute extends Component {
@@ -327,7 +327,7 @@ class RoomRoute extends Component {
             </Alert>
           ) : null}
           <h2 className="room-header">Dorm Name - Room #</h2>
-          <div className="d-flex justify-content-center room-editor-container">
+          <div className="room-editor-container custom-card">
             <RoomCanvas
               items={this.state.items}
               selectedItemID={this.state.selectedItemID}
@@ -336,8 +336,17 @@ class RoomRoute extends Component {
             />
           </div>
           <div className="room-item-list-container">
+            <button
+              className="custom-btn add-item-button"
+              name="addItemButton"
+              onClick={() => this.toggleModal("add")}
+            >
+              <BsPlus />
+              <span className="add-item-button-text">Add Item</span>
+            </button>
             <DormItemList
               items={this.state.items}
+              selectedItemID={this.state.selectedItemID}
               onEditItem={this.showEditForm}
               onClaimItem={this.claimItem}
               onDeleteItem={this.deleteItem}
@@ -345,15 +354,6 @@ class RoomRoute extends Component {
             ></DormItemList>
           </div>
         </div>
-
-        <button
-          className="fixed-add-button"
-          name="addItemButton"
-          onClick={() => this.toggleModal("add")}
-        >
-          <BsPlus></BsPlus>
-          <span className="add-button-text">Add Item</span>
-        </button>
       </>
     );
   }

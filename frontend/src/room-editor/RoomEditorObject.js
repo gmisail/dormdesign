@@ -183,10 +183,10 @@ class RoomEditorObject extends SceneObject {
 
     // Padding from edge of canvas
     const padding = {
-      top: ctx.canvas.width * 0.08,
-      bottom: ctx.canvas.width * 0.04,
-      left: ctx.canvas.width * 0.04,
-      right: ctx.canvas.width * 0.04,
+      top: ctx.canvas.width * 0.02,
+      bottom: ctx.canvas.width * 0.02,
+      left: ctx.canvas.width * 0.02,
+      right: ctx.canvas.width * 0.02,
     };
 
     let xMax;
@@ -443,16 +443,6 @@ class RoomEditorObject extends SceneObject {
   }
 
   _draw(ctx) {
-    const bbox = this.getGlobalBoundingBox();
-    const globalSize = { x: bbox.p2.x - bbox.p1.x, y: bbox.p2.y - bbox.p1.y };
-
-    // Draw caption text
-    const captionText = "1 cell = 1 square foot";
-    this._setContextTextStyle(ctx);
-    const textWidth = ctx.measureText(captionText).width;
-    if (textWidth < globalSize.x) {
-      ctx.fillText(captionText, this.size.x / 2, this.size.y + 0.3);
-    }
     // Fill the area outside of the room with the background color.
     ctx.beginPath();
     // First outline this objects border path - Clockwise order
