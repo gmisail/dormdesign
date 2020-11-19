@@ -12,6 +12,8 @@ class SceneController {
     this.backgroundColor = "#fff";
 
     this.objects = new Map();
+    // Array which will contain references to the objects sorted by their Z-index values
+    this._objectDrawOrder = [];
 
     this._lastFrameTime = undefined;
     this.deltaTime = undefined; // Time since last frame
@@ -48,6 +50,7 @@ class SceneController {
 
   addObject(obj) {
     this.objects.set(obj.id, obj);
+    this._updateDrawOrder();
   }
 
   removeObject(obj) {
@@ -56,11 +59,12 @@ class SceneController {
       obj.children[i].parent = null;
     }
     obj.parent.removeChild(obj);
+    this._updateDrawOrder();
   }
 
   update() {
-    for (let obj of this.objects.values()) {
-      obj.update();
+    for (let i = 0; i < this._objectDrawOrder.length; i++) {
+      this._objectDrawOrder[i].update();
     }
   }
 
@@ -78,11 +82,17 @@ class SceneController {
     // Clear canvas
     this._clearForegroundCanvases(this.ctx);
 
-    for (let obj of this.objects.values()) {
-      obj.draw();
+    for (let i = 0; i < this._objectDrawOrder.length; i++) {
+      this._objectDrawOrder[i].draw();
     }
 
     this._updateBackground = false;
+  }
+
+  _updateDrawOrder() {
+    this._objectDrawOrder = [...this.objects.values()].sort((a, b) => {
+      return a._zIndex - b._zIndex;
+    });
   }
 
   _clearForegroundCanvases(contexts) {

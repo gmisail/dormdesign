@@ -75,6 +75,8 @@ class RoomEditorObject extends SceneObject {
     this.floorGrid = floorGrid;
 
     this.selectedObject = null;
+    // Keeps track of maximum z index so far so when an object is selected it can be given the highest z value. There may be a better way of doing this
+    this._maxZIndex = 0;
 
     this.objectColors = ["#0043E0", "#f28a00", "#C400E0", "#7EE016", "#0BE07B"];
     this.objectColorCounter = 0;
@@ -273,9 +275,11 @@ class RoomEditorObject extends SceneObject {
 
   // Mouse callbacks that are passed to mouse controller
   onMouseDown(position) {
-    // Get the object indices that were under the click and sort them in descending order so that the one on top is selected
+    // Get the object indices that were under the click and sort in order of descending zIndex so that highest object takes priority
     const clicked = this._getChildrenIndicesAtPosition(position).sort(
-      (a, b) => b - a
+      (a, b) => {
+        return this.children[b].zIndex - this.children[a].zIndex;
+      }
     );
     if (clicked.length > 0) {
       for (let i = 0; i < clicked.length; i++) {
@@ -289,8 +293,8 @@ class RoomEditorObject extends SceneObject {
             }
             obj.selected = true;
             this.selectedObject = obj;
-            // Move the selected object to the back of the children array so its drawn last (on top)
-            this.children.push(this.children.splice(clicked[i], 1)[0]);
+            obj.zIndex = ++this._maxZIndex;
+
             this.onObjectSelected(obj);
           }
           return;
@@ -380,7 +384,7 @@ class RoomEditorObject extends SceneObject {
       rotation: rotation ?? 0,
       size: new Vector2(width ?? 1, height ?? 1),
       color: color,
-      opacity: 0.5,
+      opacity: 0.65,
       nameText: name ?? "New Item",
       staticObject: false,
       snapPosition: false,
