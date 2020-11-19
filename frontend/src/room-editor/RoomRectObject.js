@@ -112,10 +112,10 @@ class RoomRectObject extends SceneObject {
       bbox.p2.x -= offset;
       bbox.p2.y -= offset;
       this.outOfBounds = false;
-      if (this.parent._offsetPoints) {
-        for (let i = 0; i < this.parent._offsetPoints.length - 1; i++) {
-          const v1 = this.parent._offsetPoints[i];
-          const v2 = this.parent._offsetPoints[i + 1];
+      if (this.parent.boundaryPoints) {
+        for (let i = 0; i < this.parent.boundaryPoints.length - 1; i++) {
+          const v1 = this.parent.boundaryPoints[i];
+          const v2 = this.parent.boundaryPoints[i + 1];
           if (Collisions.segmentIntersectsRect(v1, v2, bbox.p1, bbox.p2)) {
             this.outOfBounds = true;
           }
