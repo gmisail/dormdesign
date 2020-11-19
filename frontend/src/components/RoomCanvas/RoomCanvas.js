@@ -79,6 +79,7 @@ class RoomCanvas extends Component {
       onObjectUpdated: this.editorItemUpdated,
       onObjectSelected: this.editorItemSelected,
       selectedObjectID: undefined,
+      fontFamily: "Source Sans Pro",
     });
     scene.addObject(room);
 

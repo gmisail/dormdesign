@@ -15,6 +15,7 @@ class RoomEditorObject extends SceneObject {
     backgroundColor,
     onObjectUpdated,
     onObjectSelected,
+    fontFamily,
   }) {
     super({
       scene: scene,
@@ -39,6 +40,8 @@ class RoomEditorObject extends SceneObject {
     this.borderColor = "#555";
     this.borderWidth = 0.07;
     this.opacity = opacity ?? 1.0;
+
+    this.fontFamily = fontFamily;
 
     this.onObjectUpdated = onObjectUpdated;
     this.onObjectSelected = onObjectSelected;
@@ -384,6 +387,7 @@ class RoomEditorObject extends SceneObject {
       snapOffset: 0.2,
       canvasLayer: this.canvasLayer,
       movementLocked: movementLocked ?? false,
+      fontFamily: this.fontFamily,
     });
     this.roomItems.add(obj.id);
     this.addChild(obj);
