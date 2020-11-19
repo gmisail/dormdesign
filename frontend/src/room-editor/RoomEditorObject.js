@@ -49,10 +49,6 @@ class RoomEditorObject extends SceneObject {
     this._fitRoomToCanvas();
     this._calculateOffsetPoints();
 
-    // Boxes occupying area outside of room. Used for detecting when an object is outside of room bounds
-    this.boundaryBoxes = this._getOutOfBoundsBoxes();
-    this.drawBoundaryBoxes = false; // When set to true these boxes will be drawn (for debugging)
-
     this.mouseController = new MouseController({
       watchedElement: this.scene.canvasArray[this.canvasLayer],
       onMouseDown: this.onMouseDown.bind(this),
@@ -80,78 +76,6 @@ class RoomEditorObject extends SceneObject {
 
     this.objectColors = ["#0043E0", "#f28a00", "#C400E0", "#7EE016", "#0BE07B"];
     this.objectColorCounter = 0;
-  }
-
-  // Fills any area between the boundary of the room and the bounding box of the RoomEditorObject itself with a box. Returns that list of boxes
-  _getOutOfBoundsBoxes() {
-    const boxes = [];
-
-    /* Offset represents distance past the size of the room. Used since some boundary edges are flush with
-    the edge of the room and with the current method they wouldn't get any rects beneath them */
-    const offset = 0.5;
-    const directions = [];
-    // Loop over boundary edges
-    for (let i = 0; i < this.boundaryPoints.length; i++) {
-      const p1 = this.boundaryPoints[i];
-      const p2 = this.boundaryPoints[
-        i === this.boundaryPoints.length - 1 ? 0 : i + 1
-      ];
-      let direction;
-      let box;
-      if (Vector2.floatEquals(p1.x, p2.x)) {
-        // Vertical line
-        direction = p2.y > p1.y ? 1 : -1;
-        if (direction > 0) {
-          // Down line
-          box = {
-            p1: new Vector2(p1.x, p1.y),
-            p2: new Vector2(this.size.x + offset, p2.y),
-          };
-        } else if (direction < 0) {
-          // Up line
-          box = {
-            p1: new Vector2(-offset, p2.y),
-            p2: new Vector2(p1.x, p1.y),
-          };
-        }
-      } else {
-        // Horizontal line
-        direction = p2.x > p1.x ? 1 : -1;
-        if (direction > 0) {
-          // Right line
-          box = {
-            p1: new Vector2(p1.x, -offset),
-            p2: new Vector2(p2.x, p2.y),
-          };
-        } else if (direction < 0) {
-          // Left line
-          box = {
-            p1: new Vector2(p2.x, p2.y),
-            p2: new Vector2(p1.x, this.size.y + offset),
-          };
-        }
-      }
-      // Check previous two boxes for overlap to see if this box would be redundant (overlap other boxes)
-      let redundant = false;
-      for (let i = boxes.length - 1; i >= boxes.length - 2 && i >= 0; i--) {
-        if (Collisions.rectInRect(box.p1, box.p2, boxes[i].p1, boxes[i].p2)) {
-          redundant = true;
-        }
-      }
-      // When on last edge, also check first two boxes
-      if (i === this.boundaryPoints.length - 1) {
-        for (let i = 0; i < 2 && i < boxes.length; i++) {
-          if (Collisions.rectInRect(box.p1, box.p2, boxes[i].p1, boxes[i].p2)) {
-            redundant = true;
-          }
-        }
-      }
-      if (!redundant) {
-        boxes.push(box);
-      }
-      directions.push(direction);
-    }
-    return boxes;
   }
 
   // Calculates and sets offset points (used so that when drawing room border the lines won't overlap into the room)
@@ -384,7 +308,7 @@ class RoomEditorObject extends SceneObject {
       rotation: rotation ?? 0,
       size: new Vector2(width ?? 1, height ?? 1),
       color: color,
-      opacity: 0.65,
+      opacity: 0.6,
       nameText: name ?? "New Item",
       staticObject: false,
       snapPosition: false,
@@ -494,20 +418,6 @@ class RoomEditorObject extends SceneObject {
     ctx.lineJoin = "butt";
     ctx.lineCap = "butt";
     ctx.stroke();
-
-    if (this.drawBoundaryBoxes) {
-      for (let i = 0; i < this.boundaryBoxes.length; i++) {
-        ctx.globalAlpha = 0.5;
-        ctx.fillStyle = "#ff0000";
-        ctx.fillRect(
-          this.boundaryBoxes[i].p1.x,
-          this.boundaryBoxes[i].p1.y,
-          this.boundaryBoxes[i].p2.x - this.boundaryBoxes[i].p1.x,
-          this.boundaryBoxes[i].p2.y - this.boundaryBoxes[i].p1.y
-        );
-        ctx.globalAlpha = 1.0;
-      }
-    }
   }
 }
 
