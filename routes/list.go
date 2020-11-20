@@ -108,9 +108,19 @@ func (route *ListRoute) OnAddListItem(c echo.Context) error {
 
 func (route *ListRoute) OnDownloadData(c echo.Context) error {
 	id := c.QueryParam("id")
+	data, err := models.GetList(route.Database, id)
 
-	c.Response().Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s.json", id))
-	c.Response().Header().Set("Content-Type", c.Request().Header.Get("Content-Type"))
+	c.Response().Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=room-%s.json", id))
+	c.Response().Header().Set("Content-Type", "text/json")
 
-	return c.String(http.StatusOK, "{}")
+	/*
+		get room layout data...
+	*/
+
+	if err != nil {
+		log.Println(err)
+		return echo.NewHTTPError(http.StatusBadRequest, "Cannot find room with given ID.")
+	}
+
+	return c.JSON(http.StatusOK, data)
 }

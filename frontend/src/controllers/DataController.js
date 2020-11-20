@@ -1,4 +1,5 @@
 import DormItem from "../models/DormItem";
+import { saveAs } from "file-saver";
 
 // let TEST_ID_COUNTER = 600;
 // const TEST_ITEMS_DATA = [
@@ -54,6 +55,7 @@ class DataController {
     }
 
     const response = await fetch(`/list/get?id=${id}`);
+
     if (!response.ok) {
       const data = await response.json();
       const message = `${response.status} Error fetching list: ${data.message}`;
@@ -104,11 +106,17 @@ class DataController {
     }
 
     const response = await fetch(`/list/download?id=${id}`);
+    const data = await response.json();
+
     if (!response.ok) {
-      const data = await response.json();
       const message = `${response.status} Error downloading data: ${data.message}`;
       throw new Error(message);
     }
+
+    var blob = new Blob([JSON.stringify(data)], {
+      type: "application/json;charset=utf-8",
+    });
+    saveAs(blob, "room-" + id + ".json");
   }
 
   // Sends request to create a list, adds some items to it, and returns the id of the list.
