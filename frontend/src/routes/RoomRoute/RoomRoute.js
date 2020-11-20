@@ -274,6 +274,11 @@ class RoomRoute extends Component {
     this.setState({ showModal: !this.state.showModal });
   };
 
+  exportRoomData = () => {
+    const id = this.props.match.params.id;
+    DataController.downloadRoom(id);
+  };
+
   renderModal() {
     switch (this.state.modalType) {
       case "add":
@@ -314,6 +319,8 @@ class RoomRoute extends Component {
           <SettingsModal
             show={this.state.showModal}
             onHide={this.toggleModal}
+            onExport={this.exportRoomData}
+            onImport={() => console.log("importing file")}
             message={this.state.errorMessage}
           ></SettingsModal>
         );

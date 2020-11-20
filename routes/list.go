@@ -2,6 +2,7 @@ package routes
 
 import (
 	"log"
+	"fmt"
 	"github.com/gmisail/dormdesign/models"
 	"github.com/labstack/echo/v4"
 	"net/http"
@@ -103,4 +104,13 @@ func (route *ListRoute) OnAddListItem(c echo.Context) error {
 	models.AddListItem(route.Database, listID, item)
 
 	return c.JSON(http.StatusOK, item)
+}
+
+func (route *ListRoute) OnDownloadData(c echo.Context) error {
+	id := c.QueryParam("id")
+
+	c.Response().Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s.json", id))
+	c.Response().Header().Set("Content-Type", c.Request().Header.Get("Content-Type"))
+
+	return c.String(http.StatusOK, "{}")
 }

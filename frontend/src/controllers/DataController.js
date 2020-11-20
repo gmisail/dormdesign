@@ -98,6 +98,19 @@ class DataController {
     return true;
   }
 
+  static async downloadRoom(id) {
+    if (!id) {
+      throw new Error("Can't download room data; Room ID is undefined");
+    }
+
+    const response = await fetch(`/list/download?id=${id}`);
+    if (!response.ok) {
+      const data = await response.json();
+      const message = `${response.status} Error downloading data: ${data.message}`;
+      throw new Error(message);
+    }
+  }
+
   // Sends request to create a list, adds some items to it, and returns the id of the list.
   static async CREATE_TEST_ROOM() {
     const roomID = await DataController.createRoom();
