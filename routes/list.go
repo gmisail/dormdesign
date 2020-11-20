@@ -124,3 +124,22 @@ func (route *ListRoute) OnDownloadData(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, data)
 }
+
+func (route *ListRoute) OnUploadData(c echo.Context) error {
+	id := c.QueryParam("id")
+	file, err := c.FormFile("room")
+
+	if err != nil {
+		return err
+	}
+
+	src, err := file.Open()
+	
+	fmt.Println(src)
+
+	if err != nil {
+		return err
+	}
+	
+	defer src.Close()
+}

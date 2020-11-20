@@ -119,6 +119,14 @@ class DataController {
     saveAs(blob, "room-" + id + ".json");
   }
 
+  /*
+    id: identifier of the room
+    room: file object 
+  */
+  static async uploadRoom(id, file) {
+    console.log("uploading room " + file + " to id " + id);
+  }
+
   // Sends request to create a list, adds some items to it, and returns the id of the list.
   static async CREATE_TEST_ROOM() {
     const roomID = await DataController.createRoom();

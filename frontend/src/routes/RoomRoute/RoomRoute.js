@@ -279,6 +279,11 @@ class RoomRoute extends Component {
     DataController.downloadRoom(id);
   };
 
+  importRoomData = (file) => {
+    const id = this.props.match.params.id;
+    DataController.uploadRoom(id, file);
+  };
+
   renderModal() {
     switch (this.state.modalType) {
       case "add":
@@ -320,7 +325,7 @@ class RoomRoute extends Component {
             show={this.state.showModal}
             onHide={this.toggleModal}
             onExport={this.exportRoomData}
-            onImport={() => console.log("importing file")}
+            onImport={this.importRoomData}
             message={this.state.errorMessage}
           ></SettingsModal>
         );
