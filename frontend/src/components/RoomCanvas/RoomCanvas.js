@@ -19,6 +19,7 @@ function itemToEditorProperties(props) {
     height: props.dimensions?.length,
     rotation: props.editorRotation,
     movementLocked: props.editorLocked,
+    zIndex: props.editorZIndex,
   };
 }
 
@@ -30,6 +31,7 @@ function editorToItemProperties(props) {
       : undefined,
     editorRotation: props.rotation,
     editorLocked: props.movementLocked,
+    editorZIndex: props.zIndex,
   };
 }
 
@@ -178,7 +180,6 @@ class RoomCanvas extends Component {
     if (this.state.selectedItemLocked !== locked) {
       this.setState({ selectedItemLocked: locked });
     }
-
     this.props.onItemSelected(item);
   };
 

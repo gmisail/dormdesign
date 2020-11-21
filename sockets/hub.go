@@ -11,10 +11,6 @@ type Message struct {
 	sender *Client
 	response []byte
 }
-type MessageResponse struct {
-	Event string `json:"event"`
-	Data interface{} `json:"data"`
-}
 
 type Room struct {
 	Clients map[*Client]bool

@@ -219,6 +219,10 @@ class RoomEditorObject extends SceneObject {
             this.selectedObject = obj;
             obj.zIndex = ++this._maxZIndex;
 
+            console.log(obj._zIndex, this._maxZIndex);
+            this.onObjectUpdated(obj.id, {
+              zIndex: obj.zIndex,
+            });
             this.onObjectSelected(obj);
           }
           return;
@@ -285,6 +289,7 @@ class RoomEditorObject extends SceneObject {
     position,
     rotation,
     movementLocked,
+    zIndex,
   }) {
     // Don't add object if another already exists with given id
     if (id && this.scene.objects.has(id)) {
@@ -316,6 +321,7 @@ class RoomEditorObject extends SceneObject {
       canvasLayer: this.canvasLayer,
       movementLocked: movementLocked ?? false,
       fontFamily: this.fontFamily,
+      zIndex: zIndex ?? 0,
     });
     this.roomItems.add(obj.id);
     this.addChild(obj);
@@ -331,7 +337,7 @@ class RoomEditorObject extends SceneObject {
   // Updates object in room. Returns true if successful false if not
   updateRoomItem(
     id,
-    { position, name, width, height, rotation, movementLocked }
+    { position, name, width, height, rotation, movementLocked, zIndex }
   ) {
     const obj = this.scene.objects.get(id);
     if (!obj) {
@@ -353,6 +359,10 @@ class RoomEditorObject extends SceneObject {
     }
     if (movementLocked !== undefined) {
       obj.movementLocked = movementLocked;
+    }
+    if (zIndex !== undefined) {
+      console.log(zIndex, id);
+      obj.zIndex = zIndex;
     }
   }
 

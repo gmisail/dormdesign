@@ -10,6 +10,7 @@ class DormItem {
       editorPosition,
       editorRotation,
       editorLocked,
+      editorZIndex,
     } = data ?? {};
     this.id = id;
     this.name = name ? name : "New Item";
@@ -28,6 +29,7 @@ class DormItem {
     };
     this.editorRotation = editorRotation ? editorRotation : 0;
     this.editorLocked = editorLocked ? editorLocked : false;
+    this.editorZIndex = editorZIndex ? editorZIndex : 0;
   }
 
   update(updated) {
@@ -65,6 +67,9 @@ class DormItem {
     }
     if (updated.editorLocked !== undefined) {
       this.editorLocked = updated.editorLocked;
+    }
+    if (updated.editorZIndex !== undefined) {
+      this.editorZIndex = updated.editorZIndex;
     }
   }
 }

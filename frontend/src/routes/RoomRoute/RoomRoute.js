@@ -110,6 +110,7 @@ class RoomRoute extends Component {
           `ERROR Updating item. Unable to find item with ID ${data.id} given data ${data}`
         );
       } else {
+        console.log("UPDATED", updated);
         itemArray[updateIndex].update(updated);
 
         this.setState({ items: itemArray });
@@ -142,8 +143,8 @@ class RoomRoute extends Component {
             errorMessage: "Failed to delete item. Try again later.",
           });
           break;
-        case "updateItemPosition":
-          console.error("Error updating item position.", data.message);
+        case "updateItem":
+          console.error("Error updating item.", data.message);
           this.setState({
             showModal: true,
             modalType: "error",
@@ -204,14 +205,22 @@ class RoomRoute extends Component {
   // Passed to RoomCanvas and called when an item is updated (e.g. moved, rotated, locked) in the editor
   itemUpdatedInEditor = (item, updated) => {
     item.update(updated);
+    console.log("SENDING UPDATED", updated);
     this.socketConnection.send({
-      event: "updateItem",
+      event: "updateItems",
       sendResponse: false,
       data: {
-        itemID: item.id,
-        updated: updated,
+        items: [{ itemID: item.id, updated: { ...updated } }],
       },
     });
+    // this.socketConnection.send({
+    //   event: "updateItem",
+    //   sendResponse: false,
+    //   data: {
+    //     itemID: item.id,
+    //     updated: updated,
+    //   },
+    // });
   };
 
   // Called when show/hide from editor is clicked for an item in the list
