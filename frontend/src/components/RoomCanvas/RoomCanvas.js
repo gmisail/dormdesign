@@ -91,15 +91,18 @@ class RoomCanvas extends Component {
     this.updateVisibleItems(this.props.items);
 
     /*
-      Listen to "itemUpdated" in order to check if the currently selected item had properties (like editorLocked) changed that 
+      Listen to "itemsUpdated" in order to check if the currently selected item had properties (like editorLocked) changed that 
       require a state update
     */
-    EventController.on("itemUpdated", (payload) => {
-      if (payload.id === this.props.selectedItemID) {
-        const locked = payload.updated.editorLocked;
-        if (locked === undefined) return;
-        if (this.state.selectedItemLocked !== locked) {
-          this.setState({ selectedItemLocked: locked });
+    EventController.on("itemsUpdated", (payload) => {
+      for (let i = 0; i < payload.items.length; i++) {
+        const item = payload.items[i];
+        if (item.id === this.props.selectedItemID) {
+          const locked = item.updated.editorLocked;
+          if (locked === undefined) return;
+          if (this.state.selectedItemLocked !== locked) {
+            this.setState({ selectedItemLocked: locked });
+          }
         }
       }
     });

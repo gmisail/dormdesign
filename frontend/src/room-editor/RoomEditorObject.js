@@ -219,7 +219,6 @@ class RoomEditorObject extends SceneObject {
             this.selectedObject = obj;
             obj.zIndex = ++this._maxZIndex;
 
-            console.log(obj._zIndex, this._maxZIndex);
             this.onObjectUpdated(obj.id, {
               zIndex: obj.zIndex,
             });
@@ -361,7 +360,6 @@ class RoomEditorObject extends SceneObject {
       obj.movementLocked = movementLocked;
     }
     if (zIndex !== undefined) {
-      console.log(zIndex, id);
       obj.zIndex = zIndex;
     }
   }

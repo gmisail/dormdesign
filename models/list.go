@@ -122,7 +122,7 @@ func EditListItem(database *rdb.Session, id string, itemID string, updated map[s
 
 	defer res.Close()
 
-	err = utils.UpdateStructJSONFields(&item, updated)
+	err = utils.UpdateStructJSONFields(&item, &updated, true)
 	if err != nil {
 		return nil, err
 	}

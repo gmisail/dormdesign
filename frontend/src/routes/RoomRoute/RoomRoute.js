@@ -93,28 +93,23 @@ class RoomRoute extends Component {
       this.setState({ items: itemArray });
     });
 
-    EventController.on("itemUpdated", (data) => {
-      const updated = data.updated;
+    EventController.on("itemsUpdated", (data) => {
+      const updatedItems = {};
+      for (let i = 0; i < data.items.length; i++) {
+        updatedItems[data.items[i].id] = data.items[i].updated;
+      }
+
       const oldItemArray = this.state.items;
       let itemArray = [];
-      let updateIndex = undefined;
       for (let i = 0; i < oldItemArray.length; i++) {
         let item = oldItemArray[i];
         itemArray.push(item);
-        if (item.id === data.id) {
-          updateIndex = i;
+        const updated = updatedItems[item.id];
+        if (updated !== undefined) {
+          item.update(updated);
         }
       }
-      if (updateIndex === undefined) {
-        console.error(
-          `ERROR Updating item. Unable to find item with ID ${data.id} given data ${data}`
-        );
-      } else {
-        console.log("UPDATED", updated);
-        itemArray[updateIndex].update(updated);
-
-        this.setState({ items: itemArray });
-      }
+      this.setState({ items: itemArray });
     });
 
     // Received when an event sent from this client failed on the server
@@ -143,7 +138,7 @@ class RoomRoute extends Component {
             errorMessage: "Failed to delete item. Try again later.",
           });
           break;
-        case "updateItem":
+        case "updateItems":
           console.error("Error updating item.", data.message);
           this.setState({
             showModal: true,
@@ -185,13 +180,17 @@ class RoomRoute extends Component {
       this.toggleModal("choose-name");
     } else {
       this.socketConnection.send({
-        event: "updateItem",
+        event: "updateItems",
         sendResponse: true,
         data: {
-          itemID: item.id,
-          updated: {
-            claimedBy: window.localStorage.getItem("name"),
-          },
+          items: [
+            {
+              id: item.id,
+              updated: {
+                claimedBy: window.localStorage.getItem("name"),
+              },
+            },
+          ],
         },
       });
     }
@@ -205,22 +204,13 @@ class RoomRoute extends Component {
   // Passed to RoomCanvas and called when an item is updated (e.g. moved, rotated, locked) in the editor
   itemUpdatedInEditor = (item, updated) => {
     item.update(updated);
-    console.log("SENDING UPDATED", updated);
     this.socketConnection.send({
       event: "updateItems",
       sendResponse: false,
       data: {
-        items: [{ itemID: item.id, updated: { ...updated } }],
+        items: [{ id: item.id, updated: { ...updated } }],
       },
     });
-    // this.socketConnection.send({
-    //   event: "updateItem",
-    //   sendResponse: false,
-    //   data: {
-    //     itemID: item.id,
-    //     updated: updated,
-    //   },
-    // });
   };
 
   // Called when show/hide from editor is clicked for an item in the list
@@ -229,10 +219,14 @@ class RoomRoute extends Component {
       event: "updateItem",
       sendResponse: true,
       data: {
-        itemID: item.id,
-        updated: {
-          visibleInEditor: !item.visibleInEditor,
-        },
+        items: [
+          {
+            id: item.id,
+            updated: {
+              visibleInEditor: !item.visibleInEditor,
+            },
+          },
+        ],
       },
     });
   };
@@ -243,7 +237,7 @@ class RoomRoute extends Component {
       event: "deleteItem",
       sendResponse: true,
       data: {
-        itemID: item.id,
+        id: item.id,
       },
     });
   };
@@ -251,11 +245,10 @@ class RoomRoute extends Component {
   // Takes in item ID and dictionary of modified properties
   editItem = (itemID, modified) => {
     this.socketConnection.send({
-      event: "updateItem",
+      event: "updateItems",
       sendResponse: true,
       data: {
-        itemID: itemID,
-        updated: modified,
+        items: [{ id: itemID, updated: modified }],
       },
     });
 

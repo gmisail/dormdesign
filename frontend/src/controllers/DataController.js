@@ -71,33 +71,6 @@ class DataController {
     return items;
   }
 
-  /*
-        Pushes a new item to the list, passes the resulting item back in the callback
-        (with new, server-assigned properties such as id)
-    */
-  static async addListItem(item) {
-    // /* TODO: send call to server */
-    if (!item.name) {
-      item.name = "New Item";
-    }
-
-    return item;
-  }
-
-  /*
-        Modifies the properties of a list item and returns the resulting list as a callback
-    */
-  static async editListItem(item) {
-    return item;
-  }
-
-  /*
-        Removes a item from the list
-    */
-  static async removeListItem(item) {
-    return true;
-  }
-
   // Sends request to create a list, adds some items to it, and returns the id of the list.
   static async CREATE_TEST_ROOM() {
     const roomID = await DataController.createRoom();

@@ -1,6 +1,7 @@
 package sockets;
 
 import (
+	"fmt"
 	"log"
 	"encoding/json"
 	"errors"
@@ -8,7 +9,6 @@ import (
 
 	"github.com/gmisail/dormdesign/models"
 	"github.com/google/uuid"
-	"github.com/mitchellh/mapstructure"
 )
 
 type MessageResponse struct {
@@ -16,152 +16,176 @@ type MessageResponse struct {
 	Data interface{} `json:"data"`
 }
 
-// Helper function used in translateMessage to generate a MessageResponse when an error occurs
-func generateErrorMessageResponse(failedEvent string, errorString string) *MessageResponse {
-	return &MessageResponse{
-		Event: "actionFailed",
-		Data: struct{
-			Action string `json:"action"`
-			Message string `json:"message"`
-		}{
-			Action: failedEvent,
-			Message: errorString,
-		},
-	}
-}
-
 type RoomMessage struct {
 	RoomID string `json:"room"`
 	Event string `json:"event"`
 	SendResponse bool `json:"sendResponse"`
-	Data *map[string]interface{} `json:"data"`
+	//Data *map[string]interface{} `json:"data"`
+	Data json.RawMessage `json:"data"`
 }
 
 // Takes in socket reader and returns a pointer to the translated Message object if its valid. Otherwise, returns error.
 func (c *Client) translateMessage(reader io.Reader) (*Message, error) {
 
+	// Set if there's an error handling an event. If set, an error MessageResponse will be generated at the end of the function and returned
+	var errorString string
+
+	var response *MessageResponse
+	response = nil
+
 	var roomMessage RoomMessage
 	decoder := json.NewDecoder(reader)
-	// Throw an error if there are unknown fields in the message
+	// Throw an error if there are unknown fields in the message - maybe not necessary
 	decoder.DisallowUnknownFields()
 	if err := decoder.Decode(&roomMessage); err != nil {
-		return nil, err;
+		errorString = fmt.Sprintf("Failed to decode message: %s", err)
 	}
 
 	var err error;
 	if roomMessage.RoomID == "" {
-		err = errors.New("Missing/empty 'room' field")
+		errorString = "Missing/empty 'room' field"
 	}
 	if roomMessage.Event == "" {
-		err = errors.New("Missing/empty 'event' field")
+		errorString = "Missing/empty 'event' field"
 	}
 	if roomMessage.Data == nil {
-		err = errors.New("Missing/empty 'data' field")
-	}
-	if err != nil {
-		return nil, err;
+		errorString = "Missing/empty 'data' field"
 	}
 
-	// Set if there's an error handling an event. If set, an error MessageResponse will be generated and returned
-	var errorString string
-	
-	var response *MessageResponse
-	response = nil
-
-	// Handle different message events based on value of "event" field in message JSON
-	switch roomMessage.Event {
-	case "addItem":
-		/*
-			Create new ListItem model
-		*/
-		var item models.ListItem
-		err := mapstructure.Decode(roomMessage.Data, &item)
-		if err != nil {
-			errorString = "Unable to translate addItem event: " + err.Error()
-			break
-		}
-		item.ID = uuid.New().String()
-		
-		err = models.AddListItem(c.hub.database, roomMessage.RoomID, item)
-		if err != nil {
-			errorString = "Error adding item to database: " + err.Error()
-			break
-		}
-
-		log.Printf("ADDED ITEM %+v\n", item)
-		
-		response = &MessageResponse{
-			Event: "itemAdded",
-			Data: item,
-		}
-
-	case "updateItems":	
-		/*
-			Edit property/properties of multiple existing ListItems
-		*/
-		type UpdatedItemsEvent struct {
-			Items []struct {
-				ItemID string
-				Updated map[string]interface{}
-			}
-		}
-
-		var eventData UpdatedItemsEvent
-		err := mapstructure.Decode(roomMessage.Data, &eventData)
-
-		if err != nil {
-			log.Println(err)
-		}
-		
-		for _, item := range eventData.Items {
-			_, err = models.EditListItem(c.hub.database, roomMessage.RoomID, item.ItemID, item.Updated)
+	// Only continue handling if there hasn't already been an error
+	if errorString == "" {
+		// Handle different message events based on value of "event" field in message JSON
+		eventHandler:
+		switch roomMessage.Event {
+		case "addItem":
+			/*
+				Create new ListItem model
+			*/
+			var item models.ListItem
+			err := json.Unmarshal(roomMessage.Data, &item)
 			if err != nil {
-				errorString = "Error updating item in database: " + err.Error()
+				errorString = "Unable to translate addItem event: " + err.Error()
 				break
 			}
-			log.Printf("UPDATED ITEM %s %+v\n", item.ItemID, item.Updated)
+			item.ID = uuid.New().String()
+			
+			err = models.AddListItem(c.hub.database, roomMessage.RoomID, item)
+			if err != nil {
+				errorString = "Error adding item to database: " + err.Error()
+				break
+			}
+
+			log.Printf("ADDED ITEM %+v\n", item)
+			
+			response = &MessageResponse{
+				Event: "itemAdded",
+				Data: item,
+			}
+
+		case "updateItems":	
+			/*
+				Edit property/properties of multiple existing ListItems
+			*/
+			type UpdatedItemsEvent struct {
+				Items []struct {
+					ID string `json:"id"`
+					Updated map[string]interface{} `json:"updated"`
+				} `json:"items"`
+			}
+
+			var eventData UpdatedItemsEvent
+			//err := mapstructure.Decode(roomMessage.Data, &eventData)
+			if err := json.Unmarshal(roomMessage.Data, &eventData); err != nil {
+				errorString = fmt.Sprintf("Failed to decode event data: %s", err)
+				break
+			}
+
+			if len(eventData.Items) == 0 {
+				errorString = "'items' field empty"
+			}
+			
+			for _, item := range eventData.Items {
+				if item.ID == "" {
+					errorString = "Item missing 'itemID' field"
+					break eventHandler // Break out of parent switch statement
+				}
+				if len(item.Updated) == 0 {
+					errorString = "Item 'updated' field missing/empty"
+					break eventHandler
+				}
+
+				_, err = models.EditListItem(c.hub.database, roomMessage.RoomID, item.ID, item.Updated)
+				if err != nil {
+					errorString = "Unable to update item in database: " + err.Error()
+					break eventHandler 
+				}
+				log.Printf("UPDATED ITEM %s %+v\n", item.ID, item.Updated)
+			}
+			
+			response = &MessageResponse{
+				Event: "itemsUpdated",
+				Data: eventData,
+			}
+
+		case "deleteItem":
+			/*
+				Delete ListItem
+			*/
+			type DeleteItemEvent struct {
+				ID string `json:"id"`
+			}
+			var eventData DeleteItemEvent
+			err = json.Unmarshal(roomMessage.Data, &eventData)
+			if err := json.Unmarshal(roomMessage.Data, &eventData); err != nil {
+				errorString = fmt.Sprintf("Failed to decode event data: %s", err)
+				break
+			}
+			
+			if eventData.ID == "" {
+				errorString = "Missing 'itemID' field"
+				break
+			}
+			
+			err = models.RemoveListItem(c.hub.database, roomMessage.RoomID, eventData.ID)
+			if err != nil {
+				errorString = fmt.Sprintf("Unable to remove item: %s", err)
+				break
+			}
+
+			log.Printf("DELETED ITEM %s", eventData.ID)
+
+			response = &MessageResponse{
+				Event: "itemDeleted",
+				Data: eventData,
+			}
+		default:
+			errorString = fmt.Sprintf("Unknown event '%s'", roomMessage.Event)
 		}
-		
-		response = &MessageResponse{
-			Event: "itemsUpdated",
-			Data: eventData,
-		}
-
-	case "deleteItem":
-		/*
-			Delete ListItem
-		*/
-		// itemID, ok := data["itemID"].(string)
-		// if !ok {
-		// 	errorString = "Incorrect/missing fields in received event."
-		// 	break
-		// }
-		
-		// err = models.RemoveListItem(c.hub.database, roomID, itemID)
-		// if err != nil {
-		// 	errorString = "Error removing item from list: " + err.Error()
-		// 	break
-		// }
-
-		// log.Printf("DELETED ITEM %s", itemID)
-
-		// response = &MessageResponse{
-		// 	Event: "itemDeleted",
-		// 	Data: struct{
-		// 		ID string `json:"id"`
-		// 	}{
-		// 		ID: itemID,
-		// 	},
-		// }
-	default:
-		return nil, errors.New("Unknown event: " + roomMessage.Event)
 	}
 
 	includeOtherClients := true
 
 	if (errorString != "") {
 		log.Printf(errorString)
-		response = generateErrorMessageResponse(roomMessage.Event, errorString)
+
+		var action string
+		if roomMessage.Event == "" {
+			action = "unknown"
+		} else {
+			action = roomMessage.Event
+		}
+
+		// Create an error response
+		response = &MessageResponse{
+			Event: "actionFailed",
+			Data: struct{
+				Action string `json:"action"`
+				Message string `json:"message"`
+			}{
+				Action: action,
+				Message: errorString,
+			},
+		}
 		// Send error message back to sender, but not other clients in room
 		includeOtherClients = false
 		roomMessage.SendResponse = true

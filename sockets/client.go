@@ -68,7 +68,7 @@ func (c *Client) readPump() {
 		
 		message, err := c.translateMessage(reader)
 		if err != nil {
-			log.Println(err)
+			log.Printf("Error translating socket message: %s", err)
 		} else {	// Only forward message to hub if its valid
 			message.sender = c
 			c.hub.Send(*message)
