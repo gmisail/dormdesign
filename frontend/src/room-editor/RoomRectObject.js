@@ -17,6 +17,7 @@ class RoomRectObject extends SceneObject {
     snapOffset,
     canvasLayer,
     movementLocked,
+    fontFamily,
   }) {
     super({
       scene: scene,
@@ -35,6 +36,7 @@ class RoomRectObject extends SceneObject {
     this.opacity = opacity ?? 1.0;
 
     this.nameText = nameText;
+    this.fontFamily = fontFamily;
 
     this.outOfBounds = false;
     this.outOfBoundsColor = "#ff0000";
@@ -110,10 +112,10 @@ class RoomRectObject extends SceneObject {
       bbox.p2.x -= offset;
       bbox.p2.y -= offset;
       this.outOfBounds = false;
-      if (this.parent._offsetPoints) {
-        for (let i = 0; i < this.parent._offsetPoints.length - 1; i++) {
-          const v1 = this.parent._offsetPoints[i];
-          const v2 = this.parent._offsetPoints[i + 1];
+      if (this.parent.boundaryPoints) {
+        for (let i = 0; i < this.parent.boundaryPoints.length - 1; i++) {
+          const v1 = this.parent.boundaryPoints[i];
+          const v2 = this.parent.boundaryPoints[i + 1];
           if (Collisions.segmentIntersectsRect(v1, v2, bbox.p1, bbox.p2)) {
             this.outOfBounds = true;
           }
@@ -160,15 +162,17 @@ class RoomRectObject extends SceneObject {
     // Draw text on top of object - For some reason the context using the transformation matrix seems to draw the text differently on firefox and chrome resulting in it being offset. So its being drawn by manually scaling the necessary values.
     const globalPos = this.localToGlobalPoint(this.position);
 
-    const fontSize = 0.28;
+    const fontSize = 0.35;
     this._setContextTextStyle(ctx, fontSize);
-    const lineOffset = 0.18 * this.parent.scale.x;
+    const lineOffset = 0.2 * this.parent.scale.x;
     const fitNameText = this._getEditedText(ctx, this.nameText);
     const fitDimensionsText = this._getEditedText(
       ctx,
       `${this.size.x}' x ${this.size.y}'`
     );
-    ctx.font = `bold ${fontSize * this.parent.scale.x}px sans-serif`;
+    ctx.font = `700 ${fontSize * this.parent.scale.x}px ${
+      this.fontFamily
+    }, sans-serif`;
 
     ctx.fillText(fitNameText, globalPos.x, globalPos.y - lineOffset);
 

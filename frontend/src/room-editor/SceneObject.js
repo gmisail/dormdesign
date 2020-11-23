@@ -11,6 +11,7 @@ class SceneObject {
     origin,
     canvasLayer,
     staticObject,
+    zIndex,
   }) {
     this.scene = scene;
     this.id = id ?? scene.idCounter++;
@@ -22,6 +23,7 @@ class SceneObject {
     this.parent = null;
     this._children = [];
     this._size = size;
+    this._zIndex = zIndex ?? 0;
     this.canvasLayer = canvasLayer ?? 0;
     if (canvasLayer === 0) {
       this.scene._updateBackground = true;
@@ -84,6 +86,9 @@ class SceneObject {
   get size() {
     return this._size;
   }
+  get zIndex() {
+    return this._zIndex;
+  }
 
   get children() {
     return this._children;
@@ -111,6 +116,10 @@ class SceneObject {
   set size(vector) {
     this._size = vector;
     this._updateTransform();
+  }
+  set zIndex(val) {
+    this._zIndex = val;
+    this.scene._updateDrawOrder();
   }
 
   rotateBy(degs) {
