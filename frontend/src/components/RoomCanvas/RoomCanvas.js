@@ -78,7 +78,7 @@ class RoomCanvas extends Component {
       boundaryPoints: testBoundaryPath,
       canvasLayer: 1,
       backgroundColor: "#fff",
-      onObjectUpdated: this.editorItemUpdated,
+      onObjectsUpdated: this.editorItemsUpdated,
       onObjectSelected: this.editorItemSelected,
       selectedObjectID: undefined,
       fontFamily: "Source Sans Pro",
@@ -160,14 +160,34 @@ class RoomCanvas extends Component {
     Called when object properties are updated in editor (e.g. position, rotation, movementLocked...). Takes in object ID and updated values and translates them to item
     property values. Then passes them up to callback passed from parent 
   */
-  editorItemUpdated = (id, updated) => {
-    const item = this.visibleItemsMap.get(id);
-    if (!item) {
-      console.error("Unable to find item associated with ID: ", id);
-      return;
-    }
-    const translated = editorToItemProperties(updated);
-    this.props.onItemUpdated(item, translated);
+  editorItemsUpdated = (objects) => {
+    /* 
+      Make sure editor objects have associated items. Translate updated objects array into array of updated items. 
+      So translate this:
+      [
+        id: object id     
+        updated: object properties updated      
+      ]
+      to this:
+      [
+        item: item reference
+        updated: item properties updated
+      ]
+    */
+    const validItems = objects.reduce((validArray, obj) => {
+      const item = this.visibleItemsMap.get(obj.id);
+      if (item === undefined) {
+        console.error("Unable to find item associated with ID: ", obj.id);
+      } else {
+        validArray.push({
+          item: item,
+          updated: editorToItemProperties(obj.updated),
+        });
+      }
+      return validArray;
+    }, []);
+
+    this.props.onItemsUpdated(validItems);
   };
 
   editorItemSelected = (obj) => {
@@ -193,9 +213,14 @@ class RoomCanvas extends Component {
 
     const obj = this.scene.objects.get(selectedID);
     obj.rotateBy(90);
-    this.editorItemUpdated(selectedID, {
-      rotation: obj.rotation,
-    });
+    this.editorItemsUpdated([
+      {
+        id: selectedID,
+        updated: {
+          rotation: obj.rotation,
+        },
+      },
+    ]);
   };
 
   // Called when lock button in toolbar is clicked
@@ -206,9 +231,14 @@ class RoomCanvas extends Component {
     this.roomEditor.updateRoomItem(selectedID, {
       movementLocked: value,
     });
-    this.editorItemUpdated(selectedID, {
-      movementLocked: value,
-    });
+    this.editorItemsUpdated([
+      {
+        id: selectedID,
+        updated: {
+          movementLocked: value,
+        },
+      },
+    ]);
     this.setState({ selectedItemLocked: value });
   };
 

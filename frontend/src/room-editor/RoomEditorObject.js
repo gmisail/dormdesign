@@ -13,7 +13,7 @@ class RoomEditorObject extends SceneObject {
     opacity,
     canvasLayer,
     backgroundColor,
-    onObjectUpdated,
+    onObjectsUpdated,
     onObjectSelected,
     fontFamily,
   }) {
@@ -43,7 +43,7 @@ class RoomEditorObject extends SceneObject {
 
     this.fontFamily = fontFamily;
 
-    this.onObjectUpdated = onObjectUpdated;
+    this.onObjectsUpdated = onObjectsUpdated;
     this.onObjectSelected = onObjectSelected;
 
     this._fitRoomToCanvas();
@@ -72,7 +72,7 @@ class RoomEditorObject extends SceneObject {
 
     this.selectedObject = null;
     // Keeps track of maximum z index so far so when an object is selected it can be given the highest z value. There may be a better way of doing this
-    this._maxZIndex = 0;
+    // this._maxZIndex = 0;
 
     this.objectColors = ["#0043E0", "#f28a00", "#C400E0", "#7EE016", "#0BE07B"];
     this.objectColorCounter = 0;
@@ -217,11 +217,27 @@ class RoomEditorObject extends SceneObject {
             }
             obj.selected = true;
             this.selectedObject = obj;
-            obj.zIndex = ++this._maxZIndex;
 
-            this.onObjectUpdated(obj.id, {
-              zIndex: obj.zIndex,
-            });
+            const updated = [];
+
+            const oldZIndex = obj.zIndex;
+            obj.zIndex = this.roomItems.size - 1;
+            updated.push({ id: obj.id, updated: { zIndex: obj.zIndex } });
+
+            console.log("OLD,NEW ZINDEX", oldZIndex, obj.zIndex);
+            console.log(this.roomItems.size);
+            for (const id of this.roomItems.values()) {
+              if (id === obj.id) continue;
+              const item = this.scene.objects.get(id);
+              console.log("CHECKING", item.zIndex);
+              if (item.zIndex > oldZIndex) {
+                item.zIndex -= 1;
+                updated.push({ id: item.id, updated: { zIndex: item.zIndex } });
+              }
+            }
+            console.log(updated);
+
+            this.onObjectsUpdated(updated);
             this.onObjectSelected(obj);
           }
           return;
@@ -248,9 +264,14 @@ class RoomEditorObject extends SceneObject {
         )
       );
 
-      this.onObjectUpdated(selectedObject.id, {
-        position: selectedObject.position,
-      });
+      this.onObjectsUpdated([
+        {
+          id: selectedObject.id,
+          updated: {
+            position: selectedObject.position,
+          },
+        },
+      ]);
     }
   }
   onMouseUp() {}
@@ -327,7 +348,7 @@ class RoomEditorObject extends SceneObject {
 
     // If position was assigned, call
     if (assignPosition) {
-      this.onObjectUpdated(id, { position: position });
+      this.onObjectsUpdated([{ id: id, updated: { position: position } }]);
     }
 
     return obj;

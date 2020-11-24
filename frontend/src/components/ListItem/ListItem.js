@@ -1,13 +1,15 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useContext } from "react";
 import {
   BsThreeDots,
   BsX,
   BsPencil,
-  BsPerson,
+  BsPersonPlus,
+  BsPersonDash,
   BsEye,
   BsEyeSlash,
 } from "react-icons/bs";
 import { usePopper } from "react-popper";
+import { RoomContext } from "../../routes/RoomRoute/RoomContext";
 import IconButton from "../IconButton/IconButton";
 
 import "./ListItem.scss";
@@ -21,6 +23,8 @@ const ListItem = (props) => {
     onToggleEditorVisibility,
     className,
   } = props;
+
+  const { name } = useContext(RoomContext);
 
   const [showMenu, setShowMenu] = useState(false);
   const menuButtonRef = useRef(null);
@@ -98,8 +102,17 @@ const ListItem = (props) => {
               Edit
             </li>
             <li onClick={() => menuOptionClicked(onClaim)}>
-              <BsPerson />
-              Claim
+              {item.claimedBy === name ? (
+                <>
+                  <BsPersonDash />
+                  Unclaim
+                </>
+              ) : (
+                <>
+                  <BsPersonPlus />
+                  Claim
+                </>
+              )}
             </li>
             <li onClick={() => menuOptionClicked(onToggleEditorVisibility)}>
               {item.visibleInEditor ? (

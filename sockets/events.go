@@ -166,7 +166,7 @@ func (c *Client) translateMessage(reader io.Reader) (*Message, error) {
 	includeOtherClients := true
 
 	if (errorString != "") {
-		log.Printf(errorString)
+		log.Printf("ERROR: %s", errorString)
 
 		var action string
 		if roomMessage.Event == "" {

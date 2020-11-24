@@ -202,13 +202,19 @@ class RoomRoute extends Component {
   };
 
   // Passed to RoomCanvas and called when an item is updated (e.g. moved, rotated, locked) in the editor
-  itemUpdatedInEditor = (item, updated) => {
-    item.update(updated);
+  itemsUpdatedInEditor = (items) => {
+    const data = items.map((item) => {
+      item.item.update(item.updated);
+      return {
+        id: item.item.id,
+        updated: item.updated,
+      };
+    });
     this.socketConnection.send({
       event: "updateItems",
       sendResponse: false,
       data: {
-        items: [{ id: item.id, updated: { ...updated } }],
+        items: data,
       },
     });
   };
@@ -216,7 +222,7 @@ class RoomRoute extends Component {
   // Called when show/hide from editor is clicked for an item in the list
   toggleEditorVisibility = (item) => {
     this.socketConnection.send({
-      event: "updateItem",
+      event: "updateItems",
       sendResponse: true,
       data: {
         items: [
@@ -334,7 +340,7 @@ class RoomRoute extends Component {
               items={this.state.items}
               selectedItemID={this.state.selectedItemID}
               onItemSelected={this.itemSelectedInEditor}
-              onItemUpdated={this.itemUpdatedInEditor}
+              onItemsUpdated={this.itemsUpdatedInEditor}
             />
           </div>
           <div className="room-item-list-container">

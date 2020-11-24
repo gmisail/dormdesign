@@ -32,7 +32,7 @@ import DormItem from "../models/DormItem";
 /**
  *  Data creation / modification handler.
  */
-class DataController {
+class DataRequests {
   // Creates a new room and returns room ID sent back from server
   static async createRoom() {
     const response = await fetch("/list/create", {
@@ -48,18 +48,18 @@ class DataController {
   }
 
   //Retrieves the List's data from the server.
-  static async getList(id) {
+  static async getRoomData(id) {
     if (!id) {
       throw new Error("Can't fetch room data. Room ID is undefined");
     }
 
     const response = await fetch(`/list/get?id=${id}`);
+    const data = await response.json();
+
     if (!response.ok) {
-      const data = await response.json();
       const message = `${response.status} Error fetching list: ${data.message}`;
       throw new Error(message);
     }
-    const data = await response.json();
 
     if (!data.items) {
       throw new Error("ERROR Room items missing from fetch room response");
@@ -68,12 +68,13 @@ class DataController {
     const items = data.items.map((item) => {
       return new DormItem(item);
     });
+
     return items;
   }
 
   // Sends request to create a list, adds some items to it, and returns the id of the list.
   static async CREATE_TEST_ROOM() {
-    const roomID = await DataController.createRoom();
+    const roomID = await DataRequests.createRoom();
 
     const itemResponse1 = await fetch("/list/add", {
       method: "POST",
@@ -113,4 +114,4 @@ class DataController {
   }
 }
 
-export default DataController;
+export default DataRequests;
