@@ -2,6 +2,7 @@ package models
 
 import (
 	"errors"
+	"fmt"
 	rdb "gopkg.in/rethinkdb/rethinkdb-go.v6"
 )
 
@@ -31,6 +32,7 @@ type EditorPoint struct {
 type List struct {
 	ID string `json:"id" rethinkdb:"id"`
 	Items []ListItem `json:"items" rethinkdb:"items"`
+	Vertices []EditorPoint `json:"vertices" rethinkdb:"vertices"`
 }
 
 /*
@@ -69,6 +71,16 @@ func GetList(database *rdb.Session, id string) (List, error) {
 	defer res.Close()
 
 	return data, nil
+}
+
+func UpdateVertices(database *rdb.Session, id string, verts []EditorPoint) error {
+	fmt.Println("updating verts")
+
+	err := rdb.DB("dd_data").Table("lists").Get(id).Update(map[string]interface{}{
+		"vertices": verts,
+	}).Exec(database)
+
+	return err
 }
 
 /*

@@ -30,10 +30,6 @@ class RoomEditorObject extends SceneObject {
     // Map of item ids that have been added to room
     this.roomItems = new Set();
 
-    // Points that define room boundary (measured in feet). Must be in clockwise order
-    this.boundaryPoints = boundaryPoints;
-    this._offsetPoints = [];
-
     this.backgroundColor = backgroundColor ?? "#fff";
     this.textColor = "#222";
     this.borderColor = "#555";
@@ -43,8 +39,7 @@ class RoomEditorObject extends SceneObject {
     this.onObjectUpdated = onObjectUpdated;
     this.onObjectSelected = onObjectSelected;
 
-    this._fitRoomToCanvas();
-    this._calculateOffsetPoints();
+    this.setBoundaries(boundaryPoints);
 
     // Boxes occupying area outside of room. Used for detecting when an object is outside of room bounds
     this.boundaryBoxes = this._getOutOfBoundsBoxes();
@@ -75,6 +70,14 @@ class RoomEditorObject extends SceneObject {
 
     this.objectColors = ["#0043E0", "#f28a00", "#C400E0", "#7EE016", "#0BE07B"];
     this.objectColorCounter = 0;
+  }
+
+  setBoundaries(boundaryPoints) {
+    this.boundaryPoints = boundaryPoints;
+    this._offsetPoints = [];
+
+    this._fitRoomToCanvas();
+    this._calculateOffsetPoints();
   }
 
   // Fills any area between the boundary of the room and the bounding box of the RoomEditorObject itself with a box. Returns that list of boxes

@@ -225,6 +225,24 @@ func (c *Client) translateMessage(byteMessage []byte) (Message, error) {
 				ID: itemID,
 			},
 		}
+	case "updateLayout":
+		verts := data["vertices"].([]interface{})
+		updatedVerts := make([]models.EditorPoint, len(verts))
+		
+		for i := range verts {
+			vert := verts[i].(map[string]interface{})
+			x := vert["x"].(float64)
+			y := vert["y"].(float64)
+
+			updatedVerts[i] = models.EditorPoint{X: x, Y: y}
+		}
+
+		err := models.UpdateVertices(c.hub.database, roomID, updatedVerts)
+		if err != nil {
+			errorString = "Error updating room layout in database: " + err.Error()
+			break
+		}
+
 	default:
 		return Message{}, errors.New("ERROR Unknown event: " + event)
 	}

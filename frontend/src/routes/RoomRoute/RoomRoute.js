@@ -284,6 +284,20 @@ class RoomRoute extends Component {
     DataController.uploadRoom(id, file);
   };
 
+  updateLayout = (verts) => {
+    this.socketConnection.send({
+      event: "updateLayout",
+      sendResponse: false, // false until we complete the response
+      data: {
+        vertices: verts,
+      },
+    });
+
+    EventController.emit("layoutUpdated", {
+      vertices: verts,
+    });
+  };
+
   renderModal() {
     switch (this.state.modalType) {
       case "add":
@@ -326,6 +340,7 @@ class RoomRoute extends Component {
             onHide={this.toggleModal}
             onExport={this.exportRoomData}
             onImport={this.importRoomData}
+            onUpdateLayout={this.updateLayout}
             message={this.state.errorMessage}
           ></SettingsModal>
         );

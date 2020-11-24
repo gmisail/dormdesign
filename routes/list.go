@@ -135,11 +135,13 @@ func (route *ListRoute) OnUploadData(c echo.Context) error {
 
 	src, err := file.Open()
 	
-	fmt.Println(src)
+	fmt.Println(src, id)
 
 	if err != nil {
 		return err
 	}
 	
 	defer src.Close()
+
+	return nil
 }

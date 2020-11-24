@@ -2,6 +2,7 @@ import React from "react";
 import { Button, Form } from "react-bootstrap";
 import Modal from "react-bootstrap/Modal";
 import ChooseNameForm from "../ChooseNameForm/ChooseNameForm";
+import VertexForm from "../VertexForm";
 
 class SettingsModal extends React.Component {
   constructor() {
@@ -41,6 +42,10 @@ class SettingsModal extends React.Component {
 
         <Modal.Body>
           <Form>
+            <h5>Layout</h5>
+            <VertexForm onUpdateLayout={this.props.onUpdateLayout}></VertexForm>
+            <hr />
+            <h5>Export</h5>
             <p>
               Exporting your room will bundle up all of your room data and save
               it as a JSON file. You can use this file as a backup, or you can
@@ -51,6 +56,7 @@ class SettingsModal extends React.Component {
 
             <hr />
 
+            <h5>Import</h5>
             <p>
               Importing a room from a file will load layouts, properties, and
               items from a pre-existing room. However, any changes that you make
