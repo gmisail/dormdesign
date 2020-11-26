@@ -107,7 +107,6 @@ export const RoomRouteNew = () => {
 
   /* Presents choose name modal if userName is null */
   useEffect(() => {
-    console.log("NAME CHANGE");
     if (!loading && userName === null) {
       toggleModal(modalTypes.chooseName, {
         onSubmit: (newName) => {

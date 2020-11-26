@@ -64,6 +64,13 @@ class RoomEditorObject extends SceneObject {
 
     this.objectColors = ["#0043E0", "#f28a00", "#C400E0", "#7EE016", "#0BE07B"];
     this.objectColorCounter = 0;
+
+    // Set to true when item zIndexes need to be updated (e.g. after an item is selected)
+    this._needNormalizeItemZIndexes = false;
+    /* Set if selected object's position has been updated. onObjectUpdated() callback will 
+    then be called on next update() cycle with updated position. Hopefully this reduces 
+    unnecessary calls to onObjectUpdated */
+    this._selectedObjectPositionUpdated = false;
   }
 
   // Calculates and sets offset points (used so that when drawing room border the lines won't overlap into the room)
@@ -176,13 +183,35 @@ class RoomEditorObject extends SceneObject {
     this.position = new Vector2(position.x, position.y);
   }
 
-  // Rounds num to the nearest multiple of given a number
-  _roundToNearestMultipleOf(num, multipleOf) {
-    const remainder = num % multipleOf;
-    const divided = num / multipleOf;
-    const rounded =
-      remainder >= multipleOf / 2 ? Math.ceil(divided) : Math.floor(divided);
-    return multipleOf * rounded;
+  // Finds all (direct) children that the given point lies within
+  _getChildrenIndicesAtPosition(position) {
+    const objects = this.children;
+    let found = [];
+    for (let i = 0; i < objects.length; i++) {
+      const bbox = objects[i].getGlobalBoundingBox();
+      if (Collisions.pointInRect(position, bbox)) {
+        found.push(i);
+      }
+    }
+    return found;
+  }
+
+  // Ensures that item zIndexes aren't larger than necessary.
+  _normalizeItemZIndexes() {
+    const sortedItems = [...this.roomItems.values()].sort(
+      (a, b) => a.zIndex - b.zIndex
+    );
+    const updated = [];
+    for (let i = 0; i < sortedItems.length; i++) {
+      const item = sortedItems[i];
+      if (item.zIndex !== i) {
+        item.zIndex = i;
+        updated.push({ id: item.id, updated: { zIndex: item.zIndex } });
+      }
+    }
+    if (updated.length > 0) {
+      this.onObjectsUpdated(updated);
+    }
   }
 
   // Mouse callbacks that are passed to mouse controller
@@ -206,25 +235,26 @@ class RoomEditorObject extends SceneObject {
             obj.selected = true;
             this.selectedObject = obj;
 
-            const updated = [];
+            obj.zIndex = Infinity;
+            // const updated = [];
 
-            const oldZIndex = obj.zIndex;
-            obj.zIndex = this.roomItems.size - 1;
-            updated.push({ id: obj.id, updated: { zIndex: obj.zIndex } });
+            // const oldZIndex = obj.zIndex;
+            // obj.zIndex = this.roomItems.size - 1;
+            // updated.push({ id: obj.id, updated: { zIndex: obj.zIndex } });
 
-            console.log("OLD,NEW ZINDEX", oldZIndex, obj.zIndex);
-            console.log(this.roomItems.size);
-            for (const item of this.roomItems.values()) {
-              if (item.id === obj.id) continue;
-              console.log("CHECKING", item.zIndex);
-              if (item.zIndex > oldZIndex) {
-                item.zIndex -= 1;
-                updated.push({ id: item.id, updated: { zIndex: item.zIndex } });
-              }
-            }
-            console.log(updated);
+            // console.log("OLD,NEW ZINDEX", oldZIndex, obj.zIndex);
+            // console.log(this.roomItems.size);
+            // for (const item of this.roomItems.values()) {
+            //   if (item.id === obj.id) continue;
+            //   console.log("CHECKING", item.zIndex);
+            //   if (item.zIndex > oldZIndex) {
+            //     item.zIndex -= 1;
+            //     updated.push({ id: item.id, updated: { zIndex: item.zIndex } });
+            //   }
+            // }
+            // console.log(updated);
+            this._needNormalizeItemZIndexes = true;
 
-            this.onObjectsUpdated(updated);
             this.onObjectSelected(obj);
           }
           return;
@@ -250,42 +280,10 @@ class RoomEditorObject extends SceneObject {
           new Vector2(globalPos.x + delta.x, globalPos.y + delta.y)
         )
       );
-
-      this.onObjectsUpdated([
-        {
-          id: selectedObject.id,
-          updated: {
-            position: selectedObject.position,
-          },
-        },
-      ]);
+      this._selectedObjectPositionUpdated = true;
     }
   }
   onMouseUp() {}
-
-  // Finds all (direct) children that the given point lies within
-  _getChildrenIndicesAtPosition(position) {
-    const objects = this.children;
-    let found = [];
-    for (let i = 0; i < objects.length; i++) {
-      const bbox = objects[i].getGlobalBoundingBox();
-      if (Collisions.pointInRect(position, bbox)) {
-        found.push(i);
-      }
-    }
-    return found;
-  }
-
-  // Configures the context to draw text with these styles
-  _setContextTextStyle(ctx) {
-    // Font size range
-    const fontSize = 0.24;
-
-    ctx.font = `bold ${fontSize}px sans-serif`;
-    ctx.textBaseline = "middle";
-    ctx.textAlign = "center";
-    ctx.fillStyle = this.textColor;
-  }
 
   // Takes name, dimensions, color and adds a new item to the room object/scene. Returns true if item was successfully added, false otherwise
   addItemToRoom({
@@ -342,6 +340,9 @@ class RoomEditorObject extends SceneObject {
       this.onObjectsUpdated([{ id: id, updated: { position: position } }]);
     }
 
+    // Normalize zIndexes of items
+    this._needNormalizeItemZIndexes = true;
+
     return true;
   }
 
@@ -392,6 +393,10 @@ class RoomEditorObject extends SceneObject {
     }
     this.removeChild(obj);
     this.roomItems.delete(id);
+
+    // Normalize zIndexes of items
+    this._needNormalizeItemZIndexes = true;
+
     return true;
   }
 
@@ -400,6 +405,36 @@ class RoomEditorObject extends SceneObject {
     if (this.scene.resized) {
       this._fitRoomToCanvas();
     }
+
+    // Update room item zIndexes if necessary
+    if (this._needNormalizeItemZIndexes) {
+      this._normalizeItemZIndexes();
+      this._needNormalizeItemZIndexes = false;
+    }
+
+    // Send updates to selected object position if any exist
+    if (this._selectedObjectPositionUpdated) {
+      this.onObjectsUpdated([
+        {
+          id: this.selectedObject.id,
+          updated: {
+            position: this.selectedObject.position,
+          },
+        },
+      ]);
+      this._selectedObjectPositionUpdated = false;
+    }
+  }
+
+  // Configures the context to draw text with these styles
+  _setContextTextStyle(ctx) {
+    // Font size range
+    const fontSize = 0.24;
+
+    ctx.font = `bold ${fontSize}px sans-serif`;
+    ctx.textBaseline = "middle";
+    ctx.textAlign = "center";
+    ctx.fillStyle = this.textColor;
   }
 
   draw(ctx) {

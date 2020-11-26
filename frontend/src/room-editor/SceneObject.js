@@ -139,7 +139,6 @@ class SceneObject {
     this._children = this._children.filter((x) => x.id !== obj.id);
     obj.parent = null;
     obj._updateTransform();
-    this._updateDrawOrder = true;
   }
 
   _calculateDrawOrder() {
