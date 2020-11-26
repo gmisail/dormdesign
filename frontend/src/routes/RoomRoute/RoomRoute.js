@@ -122,10 +122,7 @@ class RoomRoute extends Component {
 
     EventController.on("updateLayout", (data) => {
       EventController.emit("layoutUpdated", data);
-    });
-
-    EventController.on("layoutUpdated", (data) => {
-      this.setState({ bounds: data });
+      this.setState({ bounds: data.vertices });
     });
 
     // Received when an event sent from this client failed on the server
@@ -306,6 +303,8 @@ class RoomRoute extends Component {
     EventController.emit("layoutUpdated", {
       vertices: verts,
     });
+
+    this.setState({ bounds: verts });
   };
 
   renderModal() {
