@@ -79,9 +79,12 @@ class RoomEditor extends Component {
 
     this.scene = scene;
     this.roomObject = room;
+
+    // Handle any actions that have accumlated in editorActionQueue
+    this.handleEditorQueue();
   }
 
-  componentDidUpdate() {
+  handleEditorQueue() {
     const { editorActionQueue, clearEditorActionQueue } = this.context;
     for (let i = 0; i < editorActionQueue.length; i++) {
       const action = editorActionQueue[i];
@@ -109,11 +112,17 @@ class RoomEditor extends Component {
         case RoomActions.itemDeleted:
           this.roomObject.removeItemFromRoom(action.payload.id);
           break;
+        default:
+          continue;
       }
     }
     if (editorActionQueue.length > 0) {
       clearEditorActionQueue();
     }
+  }
+
+  componentDidUpdate() {
+    this.handleEditorQueue();
   }
 
   itemsUpdatedInEditor = (items) => {
@@ -178,7 +187,7 @@ class RoomEditor extends Component {
           </IconButton>
           <IconButton
             onClick={this.rotateSelectedItem}
-            disabled={selectedItemID === null}
+            disabled={selectedItemID === null || locked}
           >
             <BsArrowClockwise></BsArrowClockwise>
           </IconButton>

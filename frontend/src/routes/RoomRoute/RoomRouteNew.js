@@ -2,13 +2,11 @@ import React, { useEffect, useState, useContext, useCallback } from "react";
 import { useParams } from "react-router-dom";
 import { RoomContext } from "./RoomContext";
 
-import { Spinner, Alert } from "react-bootstrap";
+import { Spinner } from "react-bootstrap";
 import { BsPlus } from "react-icons/bs";
 
 import RoomEditor from "../../components/RoomEditor/RoomEditor";
 import DormItemList from "../../components/DormItemList/DormItemList";
-
-import DormItem from "../../models/DormItem";
 
 import AddModal from "../../components/modals/AddModal";
 import EditModal from "../../components/modals/EditModal";
@@ -59,7 +57,6 @@ const useModal = () => {
   const [modalProps, setModalProps] = useState(initialModalState);
   const toggleModal = useCallback((type, props) => {
     if (type !== undefined) {
-      // console.log("TYPE TOGGLE");
       setModalProps({
         ...initialModalState,
         ...props,
@@ -88,6 +85,7 @@ export const RoomRouteNew = () => {
     items,
     loading,
     error,
+    socketConnection,
     userName,
     connectToRoom,
     setUserName,
@@ -107,7 +105,8 @@ export const RoomRouteNew = () => {
 
   /* Presents choose name modal if userName is null */
   useEffect(() => {
-    if (!loading && userName === null) {
+    // Only present if actually connected to room (since name might be null otherwise)
+    if (userName === null && socketConnection !== null) {
       toggleModal(modalTypes.chooseName, {
         onSubmit: (newName) => {
           setUserName(newName);
@@ -115,7 +114,16 @@ export const RoomRouteNew = () => {
         },
       });
     }
-  }, [loading, userName, setUserName, toggleModal]);
+  }, [loading, userName, setUserName, toggleModal, socketConnection]);
+
+  useEffect(() => {
+    /* There's an error. Only display modal if still connected to room (since there's a different case for that handled below) */
+    if (error !== null && socketConnection !== null) {
+      toggleModal(modalTypes.error, {
+        message: error.message,
+      });
+    }
+  }, [error, socketConnection, toggleModal]);
 
   const onClickAddItemButton = useCallback(
     () =>
@@ -163,42 +171,52 @@ export const RoomRouteNew = () => {
     [updateItems]
   );
 
+  /* If there's an error and socketConnection has been reset, connection has been 
+  lost. 
+  TODO: Implement actual error types to make it easier to check what error 
+  happened? */
+  const lostConnection = error !== null && socketConnection === null;
   return (
     <>
-      <div className="room-container">
-        {/* {this.state.showAlert ? (
-          <Alert
-            className="room-alert"
-            variant={this.state.alertVariant}
-            onClose={() => this.setState({ showAlert: false })}
-            dismissible
-          >
-            {this.state.alertMessage}
-          </Alert>
-        ) : null} */}
-        <h2 className="room-header">Dorm Name - Room #</h2>
-        <div className="room-editor-container custom-card">
-          <RoomEditor />
+      {loading ? (
+        <div className="text-center mt-5">
+          <Spinner animation="grow" role="status" variant="primary">
+            <span className="sr-only">Loading...</span> ) :
+          </Spinner>
         </div>
-        <div className="room-item-list-container">
-          <button
-            className="custom-btn add-item-button"
-            name="addItemButton"
-            onClick={onClickAddItemButton}
-          >
-            <BsPlus />
-            <span className="add-item-button-text">Add Item</span>
-          </button>
-          <DormItemList
-            items={items}
-            selectedItemID={selectedItemID}
-            onEditItem={onClickEditItemButton}
-            onClaimItem={onClickClaimItemButton}
-            onDeleteItem={deleteItem}
-            onToggleEditorVisibility={onToggleItemEditorVisibility}
-          ></DormItemList>
+      ) : lostConnection ? (
+        <p
+          className="text-center mt-5"
+          style={{ fontSize: 20, fontWeight: 500 }}
+        >
+          Lost connection to room. Please refresh your browser.
+        </p>
+      ) : (
+        <div className="room-container">
+          <h2 className="room-header">Dorm Name - Room #</h2>
+          <div className="room-editor-container custom-card">
+            <RoomEditor />
+          </div>
+          <div className="room-item-list-container">
+            <button
+              className="custom-btn add-item-button"
+              name="addItemButton"
+              onClick={onClickAddItemButton}
+            >
+              <BsPlus />
+              <span className="add-item-button-text">Add Item</span>
+            </button>
+            <DormItemList
+              items={items}
+              selectedItemID={selectedItemID}
+              onEditItem={onClickEditItemButton}
+              onClaimItem={onClickClaimItemButton}
+              onDeleteItem={deleteItem}
+              onToggleEditorVisibility={onToggleItemEditorVisibility}
+            ></DormItemList>
+          </div>
         </div>
-      </div>
+      )}
       <Modal {...modalProps}></Modal>
     </>
   );

@@ -1,4 +1,3 @@
-import { ThemeProvider } from "react-bootstrap";
 import Vector2 from "./Vector2";
 
 class SceneObject {

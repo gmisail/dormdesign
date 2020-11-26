@@ -1,6 +1,5 @@
 import React, { useReducer, useCallback, createContext } from "react";
 import DataRequests from "../../controllers/DataRequests";
-import EventController from "../../controllers/EventController";
 import SocketConnection from "../../controllers/SocketConnection";
 import DormItem from "../../models/DormItem";
 
@@ -41,9 +40,12 @@ const roomReducer = (state, action) => {
       };
     case RoomActions.connectionClosed:
       return {
-        ...state,
+        items: null,
+        editorActionQueue: [],
+        selectedItemID: null,
         loading: false,
-        error: new Error("Connection lost"),
+        socketConnection: null,
+        error: new Error("Connection to room lost"),
       };
     case RoomActions.clearEditorActionQueue:
       return {
@@ -98,6 +100,36 @@ const roomReducer = (state, action) => {
   }
 };
 
+/* Handles socket error message cases. Outputs a specific error message to console and 
+  returns a string with a more presentable message (if the error was recognized) 
+  that can be displayed in the UI */
+const handleSocketErrorEvent = (data) => {
+  const action = data.action;
+  if (action === undefined) {
+    console.error(
+      "Received 'actionFailed' event with missing 'action' field in data"
+    );
+    return null;
+  }
+  switch (action) {
+    case "addItem":
+      console.error("Error adding item.", data.message);
+      return "Failed to create a new item.";
+    case "deleteItem":
+      console.error("Error deleting item.", data.message);
+      return "Failed to delete item.";
+    case "updateItems":
+      console.error("Error updating item.", data.message);
+      return "Failed to update item in editor.";
+    case "editItem":
+      console.error("Error editing item.", data.message);
+      return "Failed to edit item properties.";
+    default:
+      console.error("Unknown socket event error.", data);
+      return null;
+  }
+};
+
 export const RoomContext = createContext();
 
 export const RoomProvider = ({ children }) => {
@@ -124,8 +156,21 @@ export const RoomProvider = ({ children }) => {
         });
 
         connection.onClose = () => {
+          console.warn("Lost connection to Room");
           dispatch({ type: RoomActions.connectionClosed });
         };
+
+        connection.on("actionFailed", (data) => {
+          console.log("RECEIVED ERROR MESSAGE", data);
+          const errorMessage = handleSocketErrorEvent(data);
+          if (errorMessage) {
+            const error = new Error(errorMessage);
+            dispatch({
+              type: RoomActions.error,
+              payload: { error },
+            });
+          }
+        });
 
         connection.on("itemAdded", (data) => {
           const item = new DormItem(data);
