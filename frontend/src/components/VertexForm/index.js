@@ -7,7 +7,7 @@ class VertexForm extends Component {
     super(props);
 
     this.state = {
-      vertices: [new Vector2(0, 0), new Vector2(10, 0), new Vector2(10, 10)],
+      vertices: this.props.bounds,
     };
   }
 

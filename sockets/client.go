@@ -243,6 +243,14 @@ func (c *Client) translateMessage(byteMessage []byte) (Message, error) {
 			break
 		}
 
+		response = &MessageResponse{
+			Event: "updateLayout",
+			Data: struct{
+				Vertices []models.EditorPoint `json:"vertices"`
+			}{
+				Vertices: updatedVerts,
+			},
+		}
 	default:
 		return Message{}, errors.New("ERROR Unknown event: " + event)
 	}

@@ -43,7 +43,10 @@ class SettingsModal extends React.Component {
         <Modal.Body>
           <Form>
             <h5>Layout</h5>
-            <VertexForm onUpdateLayout={this.props.onUpdateLayout}></VertexForm>
+            <VertexForm
+              bounds={this.props.bounds}
+              onUpdateLayout={this.props.onUpdateLayout}
+            ></VertexForm>
             <hr />
             <h5>Export</h5>
             <p>

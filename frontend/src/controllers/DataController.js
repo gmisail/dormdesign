@@ -70,7 +70,11 @@ class DataController {
     const items = data.items.map((item) => {
       return new DormItem(item);
     });
-    return items;
+
+    return {
+      items,
+      vertices: data.vertices,
+    };
   }
 
   /*

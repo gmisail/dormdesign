@@ -49,12 +49,16 @@ class RoomCanvas extends Component {
     scene.backgroundColor = "#fff";
 
     // Points defining the edges of the room (in feet)
-    const defaultRoom = [
+    let defaultRoom = [
       new Vector2(0, 0),
       new Vector2(10, 0),
       new Vector2(10, 10),
       new Vector2(0, 10),
     ];
+
+    if (this.props.bounds != undefined && this.props.bounds.length > 0) {
+      defaultRoom = this.props.bounds;
+    }
 
     const room = new RoomEditorObject({
       scene: scene,

@@ -26,6 +26,7 @@ class RoomRoute extends Component {
 
     this.state = {
       items: [],
+      bounds: [],
       showModal: false,
       modalType: "none",
       editingItem: undefined,
@@ -68,8 +69,9 @@ class RoomRoute extends Component {
     this.socketConnection = connection;
 
     try {
-      const items = await DataController.getList(roomID);
-      this.setState({ items: items });
+      const room = await DataController.getList(roomID);
+
+      this.setState({ items: room.items, bounds: room.vertices });
     } catch (err) {
       console.error(err);
     }
@@ -116,6 +118,14 @@ class RoomRoute extends Component {
 
         this.setState({ items: itemArray });
       }
+    });
+
+    EventController.on("updateLayout", (data) => {
+      EventController.emit("layoutUpdated", data);
+    });
+
+    EventController.on("layoutUpdated", (data) => {
+      this.setState({ bounds: data });
     });
 
     // Received when an event sent from this client failed on the server
@@ -287,7 +297,7 @@ class RoomRoute extends Component {
   updateLayout = (verts) => {
     this.socketConnection.send({
       event: "updateLayout",
-      sendResponse: false, // false until we complete the response
+      sendResponse: true, // false until we complete the response
       data: {
         vertices: verts,
       },
@@ -337,6 +347,7 @@ class RoomRoute extends Component {
         return (
           <SettingsModal
             show={this.state.showModal}
+            bounds={this.state.bounds}
             onHide={this.toggleModal}
             onExport={this.exportRoomData}
             onImport={this.importRoomData}
@@ -377,6 +388,7 @@ class RoomRoute extends Component {
           <div className="d-flex justify-content-center room-editor-container">
             <RoomCanvas
               items={this.state.items}
+              bounds={this.state.bounds}
               selectedItemID={this.state.selectedItemID}
               onItemSelected={this.itemSelectedInEditor}
               onItemUpdated={this.itemUpdatedInEditor}
@@ -408,7 +420,8 @@ class RoomRoute extends Component {
   render() {
     return (
       <>
-        {this.state.items === undefined ? (
+        {(this.state.items === undefined && this.state.bounds === undefined) ||
+        this.state.bounds.length == 0 ? (
           <div className="text-center mt-5">
             <Spinner animation="grow" role="status" variant="primary">
               <span className="sr-only">Loading...</span> ) :
