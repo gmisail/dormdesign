@@ -335,7 +335,7 @@ class RoomEditorObject extends SceneObject {
       this.addChild(obj);
     }
 
-    // If position was assigned, call
+    // If new position was assigned, call
     if (assignPosition) {
       this.onObjectsUpdated([{ id: id, updated: { position: position } }]);
     }

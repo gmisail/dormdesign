@@ -104,6 +104,13 @@ class SceneObject {
   }
   set rotation(degs) {
     this._rotation = degs;
+    // Prevent unnecessary small/large rotation values
+    if (this._rotation > 360) {
+      this._rotation = this._rotation - 360;
+    } else if (this._rotation < 0) {
+      this._rotation = 360 + this._rotation;
+    }
+
     this._updateTransform();
   }
   // Expects vector with values between 0 and 1
@@ -120,10 +127,6 @@ class SceneObject {
   set zIndex(val) {
     this._zIndex = val;
     this._updateDrawOrder = true;
-  }
-
-  rotateBy(degs) {
-    this.rotation = this._rotation + degs;
   }
 
   addChild(obj) {
