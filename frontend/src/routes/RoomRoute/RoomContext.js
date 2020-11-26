@@ -65,6 +65,11 @@ const roomReducer = (state, action) => {
     case RoomActions.itemDeleted:
       return {
         ...state,
+        selectedItemID:
+          state.selectedItemID !== null &&
+          state.selectedItemID !== action.payload.id
+            ? state.selectedItemID
+            : null,
         items: state.items.filter((item) => item.id !== action.payload.id),
       };
     case RoomActions.itemsUpdated:
