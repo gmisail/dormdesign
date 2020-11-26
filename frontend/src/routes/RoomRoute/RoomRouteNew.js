@@ -5,7 +5,7 @@ import { RoomContext } from "./RoomContext";
 import { Spinner, Alert } from "react-bootstrap";
 import { BsPlus } from "react-icons/bs";
 
-import RoomEditor from "../../components/RoomCanvas/RoomEditor";
+import RoomEditor from "../../components/RoomEditor/RoomEditor";
 import DormItemList from "../../components/DormItemList/DormItemList";
 
 import DormItem from "../../models/DormItem";

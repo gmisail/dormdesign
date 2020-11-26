@@ -3,7 +3,7 @@ import React, { Component } from "react";
 import { Spinner, Alert } from "react-bootstrap";
 import { BsPlus } from "react-icons/bs";
 
-import RoomCanvas from "../../components/RoomCanvas/RoomCanvas";
+import RoomCanvas from "../../components/RoomEditor/RoomCanvas";
 import DormItemList from "../../components/DormItemList/DormItemList";
 
 import DataController from "../../controllers/DataController";

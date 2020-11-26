@@ -5,7 +5,7 @@ import RoomEditorObject from "../../room-editor/RoomEditorObject";
 import Vector2 from "../../room-editor/Vector2";
 import IconButton from "../IconButton/IconButton";
 import { BsArrowClockwise, BsUnlock, BsLock } from "react-icons/bs";
-import "./RoomCanvas.scss";
+import "./RoomEditor.scss";
 
 // Converts DormItem properties to properties expected by RoomEditorObject
 const itemToEditorProperties = (props) => {
@@ -147,110 +147,6 @@ class RoomEditor extends Component {
     }
   }
 
-  // useEffect(() => {
-  //   console.log("ROOMCANVAS BINDING EVENTS");
-  //   events.on(RoomActions.connectedToRoom, (payload) => {
-  //     for (let i = 0; i < payload.data.length; i++) {
-  //       const translatedItem = itemToEditorProperties(payload.data[i]);
-  //       editorRef.current.editor.addItemToRoom(translatedItem);
-  //     }
-  //   });
-
-  //   events.on(RoomActions.itemsUpdated, (payload) => {
-  //     for (let i = 0; i < payload.items.length; i++) {
-  //       const id = payload.items[i].id;
-  //       const updated = payload.items[i].updated;
-  //       editorRef.current.editor.updateRoomItem(
-  //         id,
-  //         itemToEditorProperties(updated)
-  //       );
-  //     }
-  //     console.log(
-  //       editorRef.current.editor.children.length,
-  //       editorRef.current.scene._objects.size
-  //     );
-  //   });
-
-  //   events.on(RoomActions.itemAdded, (payload) => {
-  //     editorRef.current.editor.addItemToRoom(payload.item);
-  //     console.log(
-  //       editorRef.current.editor.children.length,
-  //       editorRef.current.scene._objects.size
-  //     );
-  //   });
-
-  //   events.on(RoomActions.itemDeleted, (payload) => {
-  //     editorRef.current.editor.removeItemFromRoom(payload.id);
-  //     console.log(
-  //       editorRef.current.editor.children.length,
-  //       editorRef.current.scene._objects.size
-  //     );
-  //   });
-  // }, [events]);
-
-  // useEffect(() => {
-  //   if (socketConnection === null) return;
-  //   console.log("BINDING ROOMCANVAS SOCKET EVENTS");
-  //   const editor = editorRef.current.editor;
-  //   const scene = editorRef.current.scene;
-  //   socketConnection.on("itemsUpdated", (data) => {
-  //     for (let i = 0; i < data.items.length; i++) {
-  //       const updatedItem = data.items[i];
-  //       if (updatedItem.updated.visibleInEditor !== undefined) {
-  //         if (updatedItem.updated.visibleInEditor === false) {
-  //           editor.removeItemFromRoom(updatedItem.id);
-  //         } else {
-  //         }
-  //       }
-  //       const updated = editor.updateRoomItem(
-  //         item.id,
-  //         itemToEditorProperties(item)
-  //       );
-  //     }
-  //   });
-
-  //   socketConnection.on("itemAdded", (data) => {
-  //     if (!scene.objects.has(data.id)) return;
-  //     editor.addItemToRoom(itemToEditorProperties(data));
-  //   });
-
-  //   socketConnection.on("itemDeleted", (data) => {
-  //     editor.removeItemFromRoom(id);
-  //   });
-  // }, [socketConnection]);
-
-  // useEffect(() => {
-  //   if (items === null) return;
-  //   for (let i = 0; i < items.length; i++) {
-  //     if (items[i].visibleInEditor) {
-
-  //     }
-  //   }
-  // }, [items])
-
-  // const updateItemInEditor = useCallback(
-  //   (data) => {
-  //     for (let i = 0; i < data.items.length; i++) {
-  //       const updatedItem = data.items[i];
-  //       if (updatedItem.updated.visibleInEditor !== undefined) {
-  //         if (updatedItem.updated.visibleInEditor === false) {
-  //           editor.removeItemFromRoom(updatedItem.id);
-  //         } else {
-  //           for (let j = 0; j < items.length; i++) {
-  //             if (items[j].id === updatedItem.id) {
-  //               items
-  //             }
-  //           }
-  //         }
-  //       }
-  //       const updated = editor.updateRoomItem(
-  //         item.id,
-  //         itemToEditorProperties(item)
-  //       );
-  //     }
-  //   },
-  //   [items]
-  // );
   render() {
     return (
       <div className="room-canvas-container">
@@ -269,15 +165,9 @@ class RoomEditor extends Component {
             <BsArrowClockwise></BsArrowClockwise>
           </IconButton>
         </div> */}
-        {/* <canvas
-          ref={backgroundCanvasRef}
-          className="room-canvas"
-          style={{ zIndex: 1 }}
-        ></canvas> */}
         <canvas
           ref={(ref) => (this.mainCanvasRef = ref)}
           className="room-canvas"
-          style={{ zIndex: 1 }}
         ></canvas>
         <div className="room-canvas-footer">
           <span>1 Cell = 1 Square Foot</span>
