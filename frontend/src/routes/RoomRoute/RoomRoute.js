@@ -1,388 +1,223 @@
-import React, { Component } from "react";
+import React, { useEffect, useState, useContext, useCallback } from "react";
+import { useParams } from "react-router-dom";
+import { RoomContext } from "./RoomContext";
 
-import { Spinner, Alert } from "react-bootstrap";
+import { Spinner } from "react-bootstrap";
 import { BsPlus } from "react-icons/bs";
 
-import RoomCanvas from "../../components/RoomEditor/RoomCanvas";
+import RoomEditor from "../../components/RoomEditor/RoomEditor";
 import DormItemList from "../../components/DormItemList/DormItemList";
-
-import DataController from "../../controllers/DataController";
-import SocketConnection from "../../controllers/SocketConnection";
-import EventController from "../../controllers/EventController";
-import DormItem from "../../models/DormItem";
 
 import AddModal from "../../components/modals/AddModal";
 import EditModal from "../../components/modals/EditModal";
 import NameModal from "../../components/modals/NameModal";
 
-import "./RoomRoute.scss";
 import ErrorModal from "../../components/modals/ErrorModal";
 
-class RoomRoute extends Component {
-  constructor() {
-    super();
+import "./RoomRoute.scss";
 
-    this.state = {
-      items: [],
-      showModal: false,
-      modalType: "none",
-      editingItem: undefined,
-      errorMessage: "Something happened",
-      selectedItemID: undefined,
-    };
+const modalTypes = {
+  add: "ADD",
+  edit: "EDIT",
+  chooseName: "CHOOSE_NAME",
+  error: "ERROR",
+};
+
+// Modal component that returns a modal based on the passed 'type' prop and passes all props to that modal
+const Modal = (props) => {
+  switch (props.type) {
+    case modalTypes.add:
+      return <AddModal {...props} />;
+    case modalTypes.edit:
+      return <EditModal {...props} />;
+    case modalTypes.chooseName:
+      return <NameModal {...props} />;
+    case modalTypes.error:
+      return <ErrorModal {...props}></ErrorModal>;
+    default:
+      return null;
   }
+};
 
-  componentDidMount() {
-    this.loadData();
-    this.setupEventListeners();
+/*
+  Keeps track of modal props. Returns current modalProps and toggleModal function
+  which takes (type, data) parameters, type is the modal type that should be 
+  displayed and data is additional props that should be passed to the modal.
 
-    const name = window.localStorage.getItem("name");
-    if (!name || name.length === 0) {
-      this.toggleModal("choose-name");
-    }
-  }
+  Calling toggleModal() with no parameters resets the modalProps so the current
+  modal will be hidden.
+*/
 
-  onSocketConnectionClosed = (message) => {
-    console.warn("SOCKET CLOSED", message);
+const initialModalState = {
+  show: false,
+  type: null,
+};
 
-    /*
-      TODO: Display some sort of error and try to reconnect
-    */
-  };
-
-  loadData = async () => {
-    const roomID = this.props.match.params.id;
-
-    const connection = new SocketConnection(roomID);
-    // When socket connection receives message, notify EventController
-    connection.onMessage = (data) => {
-      if (data.event) {
-        EventController.emit(data.event, data.data);
-      } else {
-        console.warn("Socket message received with no event field: ", data);
-      }
-    };
-    connection.onClose = this.onSocketConnectionClosed;
-    this.socketConnection = connection;
-
-    try {
-      const items = await DataController.getList(roomID);
-      this.setState({ items: items });
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  setupEventListeners = () => {
-    EventController.on("itemAdded", (data) => {
-      const item = new DormItem(data);
-
-      this.setState({ items: [item, ...this.state.items] });
-    });
-
-    EventController.on("itemDeleted", (data) => {
-      if (data.id === undefined) {
-        console.error(
-          "Received 'itemDeleted' event missing item id. Event data: ",
-          data
-        );
-        return;
-      }
-      const itemArray = this.state.items.filter((item) => item.id !== data.id);
-
-      this.setState({ items: itemArray });
-    });
-
-    EventController.on("itemsUpdated", (data) => {
-      const updatedItems = {};
-      for (let i = 0; i < data.items.length; i++) {
-        updatedItems[data.items[i].id] = data.items[i].updated;
-      }
-
-      const oldItemArray = this.state.items;
-      let itemArray = [];
-      for (let i = 0; i < oldItemArray.length; i++) {
-        let item = oldItemArray[i];
-        itemArray.push(item);
-        const updated = updatedItems[item.id];
-        if (updated !== undefined) {
-          item.update(updated);
-        }
-      }
-      this.setState({ items: itemArray });
-    });
-
-    // Received when an event sent from this client failed on the server
-    EventController.on("actionFailed", (data) => {
-      const action = data.action;
-      if (action === undefined) {
-        console.error(
-          "Received 'actionFailed' event with missing 'action' field in data"
-        );
-        return;
-      }
-      switch (action) {
-        case "addItem":
-          console.error("Error adding item.", data.message);
-          this.setState({
-            showModal: true,
-            modalType: "error",
-            errorMessage: "Failed to create a new item. Try again later.",
-          });
-          break;
-        case "deleteItem":
-          console.error("Error deleting item.", data.message);
-          this.setState({
-            showModal: true,
-            modalType: "error",
-            errorMessage: "Failed to delete item. Try again later.",
-          });
-          break;
-        case "updateItems":
-          console.error("Error updating item.", data.message);
-          this.setState({
-            showModal: true,
-            modalType: "error",
-            errorMessage: "Failed to update item in editor. Try again later.",
-          });
-          break;
-        case "editItem":
-          console.error("Error editing item.", data.message);
-          this.setState({
-            showModal: true,
-            modalType: "error",
-            errorMessage: "Failed to edit item properties. Try again later.",
-          });
-          break;
-        default:
-          console.error("Unknown socket event error.", data);
-      }
-    });
-  };
-
-  // Called when ChooseNameForm is submitted
-  editName = (name) => {
-    window.localStorage.setItem("name", name);
-    this.toggleModal();
-  };
-
-  // Called when edit button is clicked for an item in the list
-  showEditForm = (item) => {
-    this.setState({ editingItem: item });
-    this.toggleModal("edit");
-  };
-
-  // Called when claim button is clicked for an item in the list
-  claimItem = (item) => {
-    const name = window.localStorage.getItem("name");
-
-    if (!name || name.length === 0) {
-      this.toggleModal("choose-name");
+const useModal = () => {
+  const [modalProps, setModalProps] = useState(initialModalState);
+  const toggleModal = useCallback((type, props) => {
+    if (type !== undefined) {
+      setModalProps({
+        ...initialModalState,
+        ...props,
+        show: true,
+        type: type,
+        onHide: () => toggleModal(),
+      });
     } else {
-      this.socketConnection.send({
-        event: "updateItems",
-        sendResponse: true,
-        data: {
-          items: [
-            {
-              id: item.id,
-              updated: {
-                claimedBy: window.localStorage.getItem("name"),
-              },
-            },
-          ],
+      /* 
+        When toggling the modal off, we don't want to reset the type variable
+        since we still want that modal to be rendered (so the Bootstrap modal hide animation has time to be shown)
+      */
+      setModalProps((prevState) => ({
+        ...initialModalState,
+        type: prevState.type,
+        onHide: () => toggleModal(),
+      }));
+    }
+  }, []);
+
+  return [modalProps, toggleModal];
+};
+
+export const RoomRouteNew = () => {
+  const {
+    items,
+    loading,
+    error,
+    socketConnection,
+    userName,
+    connectToRoom,
+    setUserName,
+    addItem,
+    updateItems,
+    deleteItem,
+    selectedItemID,
+  } = useContext(RoomContext);
+  const { id } = useParams();
+  const [modalProps, toggleModal] = useModal();
+
+  // Called when component is first mounted
+  useEffect(() => {
+    console.log("CONNECTING TO ROOM");
+    connectToRoom(id);
+  }, [connectToRoom, id]);
+
+  /* Presents choose name modal if userName is null */
+  useEffect(() => {
+    // Only present if actually connected to room (since name might be null otherwise)
+    if (userName === null && socketConnection !== null) {
+      toggleModal(modalTypes.chooseName, {
+        onSubmit: (newName) => {
+          setUserName(newName);
+          toggleModal();
         },
       });
     }
-  };
+  }, [loading, userName, setUserName, toggleModal, socketConnection]);
 
-  // Passed to RoomCanvas and called when an item is selected in the editor
-  itemSelectedInEditor = (item) => {
-    this.setState({ selectedItemID: item?.id });
-  };
-
-  // Passed to RoomCanvas and called when an item is updated (e.g. moved, rotated, locked) in the editor
-  itemsUpdatedInEditor = (items) => {
-    const data = items.map((item) => {
-      item.item.update(item.updated);
-      return {
-        id: item.item.id,
-        updated: item.updated,
-      };
-    });
-    this.socketConnection.send({
-      event: "updateItems",
-      sendResponse: false,
-      data: {
-        items: data,
-      },
-    });
-  };
-
-  // Called when show/hide from editor is clicked for an item in the list
-  toggleEditorVisibility = (item) => {
-    this.socketConnection.send({
-      event: "updateItems",
-      sendResponse: true,
-      data: {
-        items: [
-          {
-            id: item.id,
-            updated: {
-              visibleInEditor: !item.visibleInEditor,
-            },
-          },
-        ],
-      },
-    });
-  };
-
-  // Called when delete button is clicked for an item in the list
-  deleteItem = (item) => {
-    this.socketConnection.send({
-      event: "deleteItem",
-      sendResponse: true,
-      data: {
-        id: item.id,
-      },
-    });
-  };
-
-  // Takes in item ID and dictionary of modified properties
-  editItem = (itemID, modified) => {
-    this.socketConnection.send({
-      event: "updateItems",
-      sendResponse: true,
-      data: {
-        items: [{ id: itemID, updated: modified }],
-      },
-    });
-
-    this.toggleModal();
-    this.setState({ editingItem: undefined });
-  };
-
-  // Receives item ID and list of modified properties when ListItemForm is submitted
-  addNewItem = (_, modified) => {
-    this.socketConnection.send({
-      event: "addItem",
-      sendResponse: true,
-      data: modified,
-    });
-
-    this.toggleModal();
-  };
-
-  toggleModal = (type) => {
-    if (type) {
-      this.setState({ modalType: type });
+  useEffect(() => {
+    /* There's an error. Only display modal if still connected to room (since there's a different case for that handled below) */
+    if (error !== null && socketConnection !== null) {
+      toggleModal(modalTypes.error, {
+        message: error.message,
+      });
     }
-    this.setState({ showModal: !this.state.showModal });
-  };
+  }, [error, socketConnection, toggleModal]);
 
-  renderModal() {
-    switch (this.state.modalType) {
-      case "add":
-        return (
-          <AddModal
-            show={this.state.showModal}
-            onHide={this.toggleModal}
-            onSubmit={this.addNewItem}
-          />
-        );
-      case "edit":
-        return (
-          <EditModal
-            show={this.state.showModal}
-            onHide={this.toggleModal}
-            onSubmit={this.editItem}
-            editingItem={this.state.editingItem}
-          />
-        );
-      case "choose-name":
-        return (
-          <NameModal
-            show={this.state.showModal}
-            onHide={this.toggleModal}
-            onSubmit={this.editName}
-          />
-        );
-      case "error":
-        return (
-          <ErrorModal
-            show={this.state.showModal}
-            onHide={this.toggleModal}
-            message={this.state.errorMessage}
-          ></ErrorModal>
-        );
-      default:
-        return;
-    }
-  }
+  const onClickAddItemButton = useCallback(
+    () =>
+      toggleModal(modalTypes.add, {
+        // Form passes item id and the updated properties/values. We can ignore the id since this a new item
+        onSubmit: (_, properties) => {
+          addItem(properties);
+          toggleModal();
+        },
+      }),
+    [addItem, toggleModal]
+  );
 
-  renderRoom() {
-    return (
-      <>
+  const onClickEditItemButton = useCallback(
+    (item) =>
+      toggleModal(modalTypes.edit, {
+        editingItem: item,
+        onSubmit: (id, updated) => {
+          updateItems([{ id, updated }]);
+          toggleModal();
+        },
+      }),
+    [updateItems, toggleModal]
+  );
+
+  const onClickClaimItemButton = useCallback(
+    (item) =>
+      updateItems([
+        {
+          id: item.id,
+          updated: { claimedBy: item.claimedBy === userName ? null : userName },
+        },
+      ]),
+    [updateItems, userName]
+  );
+
+  const onToggleItemEditorVisibility = useCallback(
+    (item) =>
+      updateItems([
+        {
+          id: item.id,
+          updated: { visibleInEditor: !item.visibleInEditor },
+        },
+      ]),
+    [updateItems]
+  );
+
+  /* If there's an error and socketConnection has been reset, connection has been 
+  lost. 
+  TODO: Implement actual error types to make it easier to check what error 
+  happened? */
+  const lostConnection = error !== null && socketConnection === null;
+  return (
+    <>
+      {loading ? (
+        <div className="text-center mt-5">
+          <Spinner animation="grow" role="status" variant="primary">
+            <span className="sr-only">Loading...</span> ) :
+          </Spinner>
+        </div>
+      ) : lostConnection ? (
+        <p
+          className="text-center mt-5"
+          style={{ fontSize: 20, fontWeight: 500 }}
+        >
+          Lost connection to room. Please refresh your browser.
+        </p>
+      ) : (
         <div className="room-container">
-          {this.state.showAlert ? (
-            <Alert
-              className="room-alert"
-              variant={this.state.alertVariant}
-              onClose={() => this.setState({ showAlert: false })}
-              dismissible
-            >
-              {this.state.alertMessage}
-            </Alert>
-          ) : null}
           <h2 className="room-header">Dorm Name - Room #</h2>
           <div className="room-editor-container custom-card">
-            <RoomCanvas
-              items={this.state.items}
-              selectedItemID={this.state.selectedItemID}
-              onItemSelected={this.itemSelectedInEditor}
-              onItemsUpdated={this.itemsUpdatedInEditor}
-            />
+            <RoomEditor />
           </div>
           <div className="room-item-list-container">
             <button
               className="custom-btn add-item-button"
               name="addItemButton"
-              onClick={() => this.toggleModal("add")}
+              onClick={onClickAddItemButton}
             >
               <BsPlus />
               <span className="add-item-button-text">Add Item</span>
             </button>
             <DormItemList
-              items={this.state.items}
-              selectedItemID={this.state.selectedItemID}
-              onEditItem={this.showEditForm}
-              onClaimItem={this.claimItem}
-              onDeleteItem={this.deleteItem}
-              onToggleEditorVisibility={this.toggleEditorVisibility}
+              items={items}
+              selectedItemID={selectedItemID}
+              onEditItem={onClickEditItemButton}
+              onClaimItem={onClickClaimItemButton}
+              onDeleteItem={deleteItem}
+              onToggleEditorVisibility={onToggleItemEditorVisibility}
             ></DormItemList>
           </div>
         </div>
-      </>
-    );
-  }
-
-  render() {
-    return (
-      <>
-        {this.state.items === undefined ? (
-          <div className="text-center mt-5">
-            <Spinner animation="grow" role="status" variant="primary">
-              <span className="sr-only">Loading...</span> ) :
-            </Spinner>
-          </div>
-        ) : (
-          this.renderRoom()
-        )}
-
-        {this.renderModal()}
-      </>
-    );
-  }
-}
-
-export default RoomRoute;
+      )}
+      <Modal {...modalProps}></Modal>
+    </>
+  );
+};

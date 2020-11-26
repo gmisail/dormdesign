@@ -10,7 +10,7 @@ import HomeRoute from "./routes/HomeRoute/HomeRoute";
 import { IconContext } from "react-icons";
 
 import { RoomProvider } from "./routes/RoomRoute/RoomContext";
-import { RoomRouteNew } from "./routes/RoomRoute/RoomRouteNew";
+import { RoomRouteNew } from "./routes/RoomRoute/RoomRoute";
 
 import "./App.scss";
 
