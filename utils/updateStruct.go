@@ -6,8 +6,9 @@ import (
 )
 
 // UpdateStructJSONFields takes an object and a map of format jsonFieldToUpdate : newValue.
-// tryConvertTypes param specifies whether to try and convert updated numerical value to numerical value of struct field
-// when their types don't match (e.g. when field has type int and updated has type float64)
+// tryConvertTypes param specifies whether to try and convert updated numerical value to numerical 
+// value of struct field when their types don't match (e.g. when field has type int and updated has 
+// type float64)
 func UpdateStructJSONFields(obj interface{}, updates *map[string]interface{}, tryConvertTypes bool) error {
 	return updateStructFieldsDeep(reflect.ValueOf(obj).Elem(), updates, tryConvertTypes)
 }

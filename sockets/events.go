@@ -20,7 +20,6 @@ type RoomMessage struct {
 	RoomID string `json:"room"`
 	Event string `json:"event"`
 	SendResponse bool `json:"sendResponse"`
-	//Data *map[string]interface{} `json:"data"`
 	Data json.RawMessage `json:"data"`
 }
 
