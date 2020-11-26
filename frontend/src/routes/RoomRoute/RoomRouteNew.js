@@ -27,7 +27,6 @@ const modalTypes = {
 
 // Modal component that returns a modal based on the passed 'type' prop and passes all props to that modal
 const Modal = (props) => {
-  // console.log("MODAL PROPS", props);
   switch (props.type) {
     case modalTypes.add:
       return <AddModal {...props} />;
@@ -95,6 +94,7 @@ export const RoomRouteNew = () => {
     addItem,
     updateItems,
     deleteItem,
+    selectedItemID,
   } = useContext(RoomContext);
   const { id } = useParams();
   const [modalProps, toggleModal] = useModal();
@@ -164,7 +164,6 @@ export const RoomRouteNew = () => {
     [updateItems]
   );
 
-  // console.log("RoomRouteNew Rendered", modalProps);
   return (
     <>
       <div className="room-container">
@@ -180,12 +179,6 @@ export const RoomRouteNew = () => {
         ) : null} */}
         <h2 className="room-header">Dorm Name - Room #</h2>
         <div className="room-editor-container custom-card">
-          {/* <RoomCanvas
-            items={this.state.items}
-            selectedItemID={this.state.selectedItemID}
-            onItemSelected={this.itemSelectedInEditor}
-            onItemsUpdated={this.itemsUpdatedInEditor}
-          /> */}
           <RoomEditor />
         </div>
         <div className="room-item-list-container">
@@ -199,7 +192,7 @@ export const RoomRouteNew = () => {
           </button>
           <DormItemList
             items={items}
-            // selectedItemID={this.state.selectedItemID}
+            selectedItemID={selectedItemID}
             onEditItem={onClickEditItemButton}
             onClaimItem={onClickClaimItemButton}
             onDeleteItem={deleteItem}

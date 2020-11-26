@@ -332,8 +332,6 @@ class RoomEditorObject extends SceneObject {
     });
     this.roomItems.set(obj.id, obj);
 
-    console.log("VISIBLE", visible);
-
     // If item has visible property, actually add it to scene
     if (visible) {
       this.addChild(obj);

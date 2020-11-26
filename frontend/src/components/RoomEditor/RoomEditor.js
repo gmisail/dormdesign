@@ -71,7 +71,7 @@ class RoomEditor extends Component {
       boundaryPoints: testBoundaryPath,
       backgroundColor: "#fff",
       onObjectsUpdated: this.itemsUpdatedInEditor,
-      // onObjectSelected: this.editorItemSelected,
+      onObjectSelected: this.itemSelectedInEditor,
       selectedObjectID: undefined,
       fontFamily: "Source Sans Pro",
     });
@@ -91,6 +91,11 @@ class RoomEditor extends Component {
         };
       })
     );
+  };
+
+  itemSelectedInEditor = (obj) => {
+    const { itemSelected } = this.context;
+    itemSelected(obj === null ? null : obj.id);
   };
 
   componentDidUpdate() {

@@ -11,6 +11,7 @@ export const RoomActions = {
   itemAdded: "ITEM_ADDED",
   itemDeleted: "ITEM_DELETED",
   itemsUpdated: "ITEM_UPDATED",
+  itemSelected: "ITEM_SELECTED",
   loading: "LOADING",
   error: "ERROR",
   clearEditorActionQueue: "CLEAR_EDITOR_ACTION_QUEUE",
@@ -22,19 +23,16 @@ const initialState = {
   error: null,
   socketConnection: null,
   userName: null,
-  // events: new EventController(),
   editorActionQueue: [],
+  selectedItemID: null,
 };
 
 const roomReducer = (state, action) => {
-  //state.events.emit(action.type, action.payload);
   if (action.payload?.sendToEditor !== false) {
-    console.log("ADDING ACTION TO EDITOR QUEUE");
     state.editorActionQueue = [...state.editorActionQueue, action];
   }
   switch (action.type) {
     case RoomActions.connectedToRoom:
-      console.log("SET STATE CONNECTED");
       return {
         ...state,
         loading: false,
@@ -89,6 +87,8 @@ const roomReducer = (state, action) => {
         ...state,
         items: itemArray,
       };
+    case RoomActions.itemSelected:
+      return { ...state, selectedItemID: action.payload.id };
     case RoomActions.loading:
       return initialState;
     case RoomActions.error:
@@ -108,17 +108,14 @@ export const RoomProvider = ({ children }) => {
       dispatch({ type: RoomActions.loading });
 
       try {
-        console.log("FETCHING ROOM DATA");
-
         const userName = window.localStorage.getItem("userName");
-        console.log("STORED NAME", userName);
         if (userName !== null) {
           dispatch({ type: RoomActions.setUserName, payload: { userName } });
         }
 
         const data = await DataRequests.getRoomData(id);
         const connection = new SocketConnection(id, () => {
-          // Called when socket connection has be opened
+          // Called when socket connection has been opened
           console.log("Successfully connected to Room");
           dispatch({
             type: RoomActions.connectedToRoom,
@@ -202,6 +199,7 @@ export const RoomProvider = ({ children }) => {
           items: items,
         },
       });
+      // Since no response message is expected, immediately dispatch update
       dispatch({
         type: RoomActions.itemsUpdated,
         payload: { items, sendToEditor: false },
@@ -223,11 +221,19 @@ export const RoomProvider = ({ children }) => {
     [state.socketConnection]
   );
 
+  const itemSelected = useCallback(
+    (id) => {
+      dispatch({
+        type: RoomActions.itemSelected,
+        payload: { id, sendToEditor: false },
+      });
+    },
+    [dispatch]
+  );
+
   const clearEditorActionQueue = useCallback(() => {
     dispatch({ type: RoomActions.clearEditorActionQueue });
   }, [dispatch]);
-
-  // console.log("RoomContext Rendered");
 
   const value = {
     ...state,
@@ -238,6 +244,7 @@ export const RoomProvider = ({ children }) => {
     setUserName,
     deleteItem,
     clearEditorActionQueue,
+    itemSelected,
   };
   return <RoomContext.Provider value={value}>{children}</RoomContext.Provider>;
 };
