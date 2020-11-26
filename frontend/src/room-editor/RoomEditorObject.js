@@ -376,9 +376,17 @@ class RoomEditorObject extends SceneObject {
     }
     if (visible !== undefined) {
       if (visible) {
-        this.addChild(obj);
+        try {
+          this.addChild(obj);
+        } catch (err) {
+          console.warn(`Can't show item ${id}. ${err.message}`);
+        }
       } else {
-        this.removeChild(obj);
+        try {
+          this.removeChild(obj);
+        } catch (err) {
+          console.warn(`Can't hide item ${id}. ${err.message}`);
+        }
       }
     }
     return true;
