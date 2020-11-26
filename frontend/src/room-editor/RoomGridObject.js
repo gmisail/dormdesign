@@ -2,25 +2,13 @@ import SceneObject from "./SceneObject";
 import Vector2 from "./Vector2";
 
 class RoomGridObject extends SceneObject {
-  constructor({
-    scene,
-    id,
-    position,
-    size,
-    opacity,
-    lineColor,
-    lineWidth,
-    canvasLayer,
-  }) {
+  constructor(props) {
     super({
-      scene: scene,
-      id: id,
-      position: position,
-      size: size,
-      scale: new Vector2(1, 1),
+      ...props,
       staticObject: true,
-      canvasLayer: canvasLayer,
     });
+
+    const { opacity, lineColor, lineWidth } = props;
 
     this.floorColor = "#fff";
     this.borderColor = "#555";
@@ -31,9 +19,9 @@ class RoomGridObject extends SceneObject {
     this.opacity = opacity ?? 1.0;
   }
 
-  _update() {}
+  update() {}
 
-  _draw(ctx) {
+  draw(ctx) {
     // Draw grid (each cell represents 1 sq ft)
     const numLinesX = Math.floor(this.size.x);
     const numLinesY = Math.floor(this.size.y);

@@ -1,6 +1,9 @@
+import EventController from "./EventController";
+
 class SocketConnection {
   constructor(id, onOpen) {
     this.id = id;
+    this.eventController = new EventController();
     this.connection = new WebSocket("ws://localhost:8000/ws?id=" + this.id);
     this.connection.onopen = () => {
       if (onOpen !== undefined) {
@@ -21,8 +24,6 @@ class SocketConnection {
         console.error("Error parsing socket message: ", evt.data, e);
       }
     };
-
-    this.events = [];
   }
 
   set onClose(callback) {
@@ -32,19 +33,11 @@ class SocketConnection {
   }
 
   on(evt, callback) {
-    if (!this.events[evt]) {
-      this.events[evt] = [];
-    }
-
-    this.events[evt].push(callback);
+    this.eventController.on(evt, callback);
   }
 
   _emit(evt, payload) {
-    if (this.events[evt]) {
-      this.events[evt].forEach((element) => {
-        element(payload);
-      });
-    }
+    this.eventController.emit(evt, payload);
   }
 
   send(data) {

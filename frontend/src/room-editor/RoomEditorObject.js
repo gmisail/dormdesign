@@ -6,30 +6,20 @@ import RoomGridObject from "./RoomGridObject";
 import Vector2 from "./Vector2";
 
 class RoomEditorObject extends SceneObject {
-  constructor({
-    scene,
-    id,
-    boundaryPoints,
-    opacity,
-    canvasLayer,
-    backgroundColor,
-    onObjectsUpdated,
-    onObjectSelected,
-    fontFamily,
-  }) {
-    super({
-      scene: scene,
-      id: id,
-      parent: null,
-      position: new Vector2(0, 0),
-      size: new Vector2(0, 0),
-      scale: new Vector2(1, 1),
-      staticObject: true,
-      canvasLayer: canvasLayer,
-    });
+  constructor(props) {
+    super(props);
+
+    const {
+      boundaryPoints,
+      opacity,
+      backgroundColor,
+      onObjectsUpdated,
+      onObjectSelected,
+      fontFamily,
+    } = props;
 
     // Map of item ids that have been added to room
-    this.roomItems = new Set();
+    this.roomItems = new Map();
 
     // Points that define room boundary (measured in feet). Must be in clockwise order
     this.boundaryPoints = boundaryPoints;
@@ -43,14 +33,14 @@ class RoomEditorObject extends SceneObject {
 
     this.fontFamily = fontFamily;
 
-    this.onObjectsUpdated = onObjectsUpdated;
-    this.onObjectSelected = onObjectSelected;
+    this.onObjectsUpdated = onObjectsUpdated ?? (() => {});
+    this.onObjectSelected = onObjectSelected ?? (() => {});
 
     this._fitRoomToCanvas();
     this._calculateOffsetPoints();
 
     this.mouseController = new MouseController({
-      watchedElement: this.scene.canvasArray[this.canvasLayer],
+      watchedElement: this.scene.canvas,
       onMouseDown: this.onMouseDown.bind(this),
       onMouseMove: this.onMouseMove.bind(this),
       onMouseUp: this.onMouseUp.bind(this),
@@ -65,14 +55,12 @@ class RoomEditorObject extends SceneObject {
       lineColor: "#888",
       lineWidth: 0.03,
       staticObject: true,
-      canvasLayer: 0,
+      zIndex: -1,
     });
     this.addChild(floorGrid);
     this.floorGrid = floorGrid;
 
     this.selectedObject = null;
-    // Keeps track of maximum z index so far so when an object is selected it can be given the highest z value. There may be a better way of doing this
-    // this._maxZIndex = 0;
 
     this.objectColors = ["#0043E0", "#f28a00", "#C400E0", "#7EE016", "#0BE07B"];
     this.objectColorCounter = 0;
@@ -108,7 +96,7 @@ class RoomEditorObject extends SceneObject {
   }
 
   _fitRoomToCanvas() {
-    const ctx = this.scene.ctx[this.canvasLayer];
+    const ctx = this.scene.ctx;
 
     // Padding from edge of canvas
     const padding = {
@@ -226,9 +214,8 @@ class RoomEditorObject extends SceneObject {
 
             console.log("OLD,NEW ZINDEX", oldZIndex, obj.zIndex);
             console.log(this.roomItems.size);
-            for (const id of this.roomItems.values()) {
-              if (id === obj.id) continue;
-              const item = this.scene.objects.get(id);
+            for (const item of this.roomItems.values()) {
+              if (item.id === obj.id) continue;
               console.log("CHECKING", item.zIndex);
               if (item.zIndex > oldZIndex) {
                 item.zIndex -= 1;
@@ -300,7 +287,7 @@ class RoomEditorObject extends SceneObject {
     ctx.fillStyle = this.textColor;
   }
 
-  // Takes name, dimensions, color and adds a new item to the room object/scene.
+  // Takes name, dimensions, color and adds a new item to the room object/scene. Returns true if item was successfully added, false otherwise
   addItemToRoom({
     id,
     name,
@@ -310,10 +297,11 @@ class RoomEditorObject extends SceneObject {
     rotation,
     movementLocked,
     zIndex,
+    visible,
   }) {
     // Don't add object if another already exists with given id
-    if (id && this.scene.objects.has(id)) {
-      return undefined;
+    if (id && this.roomItems.has(id)) {
+      return false;
     }
     const color = this.objectColors[this.objectColorCounter];
     this.objectColorCounter++;
@@ -338,31 +326,35 @@ class RoomEditorObject extends SceneObject {
       staticObject: false,
       snapPosition: false,
       snapOffset: 0.2,
-      canvasLayer: this.canvasLayer,
       movementLocked: movementLocked ?? false,
       fontFamily: this.fontFamily,
       zIndex: zIndex ?? 0,
     });
-    this.roomItems.add(obj.id);
-    this.addChild(obj);
+    this.roomItems.set(obj.id, obj);
+
+    console.log("VISIBLE", visible);
+
+    // If item has visible property, actually add it to scene
+    if (visible) {
+      this.addChild(obj);
+    }
 
     // If position was assigned, call
     if (assignPosition) {
       this.onObjectsUpdated([{ id: id, updated: { position: position } }]);
     }
 
-    return obj;
+    return true;
   }
 
   // Updates object in room. Returns true if successful false if not
   updateRoomItem(
     id,
-    { position, name, width, height, rotation, movementLocked, zIndex }
+    { position, name, width, height, rotation, movementLocked, zIndex, visible }
   ) {
-    const obj = this.scene.objects.get(id);
+    const obj = this.roomItems.get(id);
     if (!obj) {
-      console.error("ERROR updating room item. Invalid object ID: " + id);
-      return;
+      return false;
     }
     if (position && position.x && position.y) {
       obj.setPosition(new Vector2(position.x, position.y));
@@ -383,27 +375,36 @@ class RoomEditorObject extends SceneObject {
     if (zIndex !== undefined) {
       obj.zIndex = zIndex;
     }
-  }
-
-  removeItemFromRoom(id) {
-    const obj = this.scene.objects.get(id);
-    if (obj) {
-      if (this.selectedObject && this.selectedObject.id === id) {
-        this.selectedObject = null;
+    if (visible !== undefined) {
+      if (visible) {
+        this.addChild(obj);
+      } else {
+        this.removeChild(obj);
       }
-      this.scene.removeObject(obj);
     }
-    this.roomItems.delete(id);
+    return true;
   }
 
-  _update() {
+  // Removes item from room. Returns true if successful, false if not.
+  removeItemFromRoom(id) {
+    const obj = this.roomItems.get(id);
+    if (obj === undefined) return false;
+    if (this.selectedObject && this.selectedObject.id === id) {
+      this.selectedObject = null;
+    }
+    this.removeChild(obj);
+    this.roomItems.delete(id);
+    return true;
+  }
+
+  update() {
     // Resize if the canvas has been resized
     if (this.scene.resized) {
       this._fitRoomToCanvas();
     }
   }
 
-  _draw(ctx) {
+  draw(ctx) {
     // Fill the area outside of the room with the background color.
     ctx.beginPath();
     // First outline this objects border path - Clockwise order

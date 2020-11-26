@@ -1,18 +1,19 @@
-import React, { useReducer, useState, useCallback, createContext } from "react";
+import React, { useReducer, useCallback, createContext } from "react";
 import DataRequests from "../../controllers/DataRequests";
+import EventController from "../../controllers/EventController";
 import SocketConnection from "../../controllers/SocketConnection";
 import DormItem from "../../models/DormItem";
 
-const actions = {
+export const RoomActions = {
   connectedToRoom: "CONNECTED_TO_ROOM",
   connectionClosed: "CONNECTION_CLOSED",
-  MESSAGE_RECEIVED: "MESSAGE_RECEIVED",
-  setName: "SET_NAME",
+  setUserName: "SET_USER_NAME",
   itemAdded: "ITEM_ADDED",
   itemDeleted: "ITEM_DELETED",
   itemsUpdated: "ITEM_UPDATED",
   loading: "LOADING",
   error: "ERROR",
+  clearEditorActionQueue: "CLEAR_EDITOR_ACTION_QUEUE",
 };
 
 const initialState = {
@@ -20,40 +21,53 @@ const initialState = {
   loading: true,
   error: null,
   socketConnection: null,
-  name: null,
+  userName: null,
+  // events: new EventController(),
+  editorActionQueue: [],
 };
 
 const roomReducer = (state, action) => {
+  //state.events.emit(action.type, action.payload);
+  if (action.payload?.sendToEditor !== false) {
+    console.log("ADDING ACTION TO EDITOR QUEUE");
+    state.editorActionQueue = [...state.editorActionQueue, action];
+  }
   switch (action.type) {
-    case actions.connectedToRoom:
+    case RoomActions.connectedToRoom:
+      console.log("SET STATE CONNECTED");
       return {
         ...state,
         loading: false,
         items: action.payload.data,
         socketConnection: action.payload.socketConnection,
       };
-    case actions.connectionClosed:
+    case RoomActions.connectionClosed:
       return {
         ...state,
         loading: false,
         error: new Error("Connection lost"),
       };
-    case actions.setName:
+    case RoomActions.clearEditorActionQueue:
       return {
         ...state,
-        name: action.payload.name,
+        editorActionQueue: [],
       };
-    case actions.itemAdded:
+    case RoomActions.setUserName:
+      return {
+        ...state,
+        userName: action.payload.userName,
+      };
+    case RoomActions.itemAdded:
       return {
         ...state,
         items: [...state.items, action.payload.item],
       };
-    case actions.itemDeleted:
+    case RoomActions.itemDeleted:
       return {
         ...state,
         items: state.items.filter((item) => item.id !== action.payload.id),
       };
-    case actions.itemsUpdated:
+    case RoomActions.itemsUpdated:
       const updatedItems = {};
       for (let i = 0; i < action.payload.items.length; i++) {
         updatedItems[action.payload.items[i].id] =
@@ -75,9 +89,9 @@ const roomReducer = (state, action) => {
         ...state,
         items: itemArray,
       };
-    case actions.loading:
-      return state;
-    case actions.error:
+    case RoomActions.loading:
+      return initialState;
+    case RoomActions.error:
       return { ...state, loading: false, error: action.payload.error };
     default:
       return state;
@@ -91,15 +105,15 @@ export const RoomProvider = ({ children }) => {
 
   const connectToRoom = useCallback(
     async (id) => {
-      dispatch({ type: actions.loading });
+      dispatch({ type: RoomActions.loading });
 
       try {
         console.log("FETCHING ROOM DATA");
 
-        const name = window.localStorage.getItem("name");
-        console.log("STORED NAME", name);
-        if (name !== null) {
-          dispatch({ type: actions.setName, payload: { name } });
+        const userName = window.localStorage.getItem("userName");
+        console.log("STORED NAME", userName);
+        if (userName !== null) {
+          dispatch({ type: RoomActions.setUserName, payload: { userName } });
         }
 
         const data = await DataRequests.getRoomData(id);
@@ -107,44 +121,47 @@ export const RoomProvider = ({ children }) => {
           // Called when socket connection has be opened
           console.log("Successfully connected to Room");
           dispatch({
-            type: actions.connectedToRoom,
+            type: RoomActions.connectedToRoom,
             payload: { data: data, socketConnection: connection },
           });
         });
 
         connection.onClose = () => {
-          dispatch({ type: actions.connectionClosed });
+          dispatch({ type: RoomActions.connectionClosed });
         };
 
         connection.on("itemAdded", (data) => {
           const item = new DormItem(data);
-          dispatch({ type: actions.itemAdded, payload: { item } });
+          dispatch({ type: RoomActions.itemAdded, payload: { item } });
         });
 
         connection.on("itemsUpdated", (data) => {
           dispatch({
-            type: actions.itemsUpdated,
+            type: RoomActions.itemsUpdated,
             payload: { items: data.items },
           });
         });
 
         connection.on("itemDeleted", (data) => {
           dispatch({
-            type: actions.itemDeleted,
+            type: RoomActions.itemDeleted,
             payload: { id: data.id },
           });
         });
       } catch (error) {
-        dispatch({ type: actions.error, payload: { error } });
+        dispatch({ type: RoomActions.error, payload: { error } });
       }
     },
     [dispatch]
   );
 
-  const setName = useCallback((name) => {
-    window.localStorage.setItem("name", name);
-    dispatch({ type: actions.setName, payload: { name } });
-  });
+  const setUserName = useCallback(
+    (userName) => {
+      window.localStorage.setItem("userName", userName);
+      dispatch({ type: RoomActions.setUserName, payload: { userName } });
+    },
+    [dispatch]
+  );
 
   const addItem = useCallback(
     (item) => {
@@ -154,9 +171,12 @@ export const RoomProvider = ({ children }) => {
         data: item,
       });
     },
-    [dispatch, state.socketConnection]
+    [state.socketConnection]
   );
 
+  /* Sends socket message expecting a response (containing the same data as sent) if 
+  successful. Used for updates that don't need to be immediate locally (e.g. Changing the 
+  name of an item) */
   const updateItems = useCallback(
     (items) => {
       state.socketConnection.send({
@@ -167,7 +187,27 @@ export const RoomProvider = ({ children }) => {
         },
       });
     },
-    [dispatch, state.socketConnection]
+    [state.socketConnection]
+  );
+
+  /* Sends socket message saying that item has been updated. Doesn't expect a response if
+  successful. Used for updates that need to be immediately shown locally (e.g. moving an
+  item in the editor) */
+  const updatedItems = useCallback(
+    (items) => {
+      state.socketConnection.send({
+        event: "updateItems",
+        sendResponse: false,
+        data: {
+          items: items,
+        },
+      });
+      dispatch({
+        type: RoomActions.itemsUpdated,
+        payload: { items, sendToEditor: false },
+      });
+    },
+    [state.socketConnection, dispatch]
   );
 
   const deleteItem = useCallback(
@@ -180,18 +220,24 @@ export const RoomProvider = ({ children }) => {
         },
       });
     },
-    [dispatch, state.socketConnection]
+    [state.socketConnection]
   );
 
-  console.log("RoomContext Rendered");
+  const clearEditorActionQueue = useCallback(() => {
+    dispatch({ type: RoomActions.clearEditorActionQueue });
+  }, [dispatch]);
+
+  // console.log("RoomContext Rendered");
 
   const value = {
     ...state,
     connectToRoom,
     addItem,
     updateItems,
-    setName,
+    updatedItems,
+    setUserName,
     deleteItem,
+    clearEditorActionQueue,
   };
   return <RoomContext.Provider value={value}>{children}</RoomContext.Provider>;
 };

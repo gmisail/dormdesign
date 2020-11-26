@@ -5,7 +5,7 @@ import { RoomContext } from "./RoomContext";
 import { Spinner, Alert } from "react-bootstrap";
 import { BsPlus } from "react-icons/bs";
 
-import RoomCanvas from "../../components/RoomCanvas/RoomCanvas";
+import RoomEditor from "../../components/RoomCanvas/RoomEditor";
 import DormItemList from "../../components/DormItemList/DormItemList";
 
 import DormItem from "../../models/DormItem";
@@ -25,8 +25,9 @@ const modalTypes = {
   error: "ERROR",
 };
 
+// Modal component that returns a modal based on the passed 'type' prop and passes all props to that modal
 const Modal = (props) => {
-  console.log("MODAL PROPS", props);
+  // console.log("MODAL PROPS", props);
   switch (props.type) {
     case modalTypes.add:
       return <AddModal {...props} />;
@@ -49,17 +50,19 @@ const Modal = (props) => {
   Calling toggleModal() with no parameters resets the modalProps so the current
   modal will be hidden.
 */
+
+const initialModalState = {
+  show: false,
+  type: null,
+};
+
 const useModal = () => {
-  const initialState = {
-    show: false,
-    type: null,
-  };
-  const [modalProps, setModalProps] = useState(initialState);
+  const [modalProps, setModalProps] = useState(initialModalState);
   const toggleModal = useCallback((type, props) => {
     if (type !== undefined) {
-      console.log("TYPE TOGGLE");
+      // console.log("TYPE TOGGLE");
       setModalProps({
-        ...initialState,
+        ...initialModalState,
         ...props,
         show: true,
         type: type,
@@ -68,10 +71,10 @@ const useModal = () => {
     } else {
       /* 
         When toggling the modal off, we don't want to reset the type variable
-        since we still want that modal to be rendered (so the Bootstrap modal hide animation is shown)
+        since we still want that modal to be rendered (so the Bootstrap modal hide animation has time to be shown)
       */
       setModalProps((prevState) => ({
-        ...initialState,
+        ...initialModalState,
         type: prevState.type,
         onHide: () => toggleModal(),
       }));
@@ -86,9 +89,9 @@ export const RoomRouteNew = () => {
     items,
     loading,
     error,
-    name,
+    userName,
     connectToRoom,
-    setName,
+    setUserName,
     addItem,
     updateItems,
     deleteItem,
@@ -100,21 +103,20 @@ export const RoomRouteNew = () => {
   useEffect(() => {
     console.log("CONNECTING TO ROOM");
     connectToRoom(id);
-  }, []);
+  }, [connectToRoom, id]);
 
-  /* Called when 'loading' variable changes, which happens when the room is loaded 
-  (name should have been set if it exists by then) */
+  /* Presents choose name modal if userName is null */
   useEffect(() => {
     console.log("NAME CHANGE");
-    if (!loading && name === null) {
+    if (!loading && userName === null) {
       toggleModal(modalTypes.chooseName, {
         onSubmit: (newName) => {
-          setName(newName);
+          setUserName(newName);
           toggleModal();
         },
       });
     }
-  }, [loading]);
+  }, [loading, userName, setUserName, toggleModal]);
 
   const onClickAddItemButton = useCallback(
     () =>
@@ -145,13 +147,24 @@ export const RoomRouteNew = () => {
       updateItems([
         {
           id: item.id,
-          updated: { claimedBy: item.claimedBy === name ? null : name },
+          updated: { claimedBy: item.claimedBy === userName ? null : userName },
         },
       ]),
-    [updateItems, name]
+    [updateItems, userName]
   );
 
-  console.log("RoomRouteNew Rendered", modalProps);
+  const onToggleItemEditorVisibility = useCallback(
+    (item) =>
+      updateItems([
+        {
+          id: item.id,
+          updated: { visibleInEditor: !item.visibleInEditor },
+        },
+      ]),
+    [updateItems]
+  );
+
+  // console.log("RoomRouteNew Rendered", modalProps);
   return (
     <>
       <div className="room-container">
@@ -173,6 +186,7 @@ export const RoomRouteNew = () => {
             onItemSelected={this.itemSelectedInEditor}
             onItemsUpdated={this.itemsUpdatedInEditor}
           /> */}
+          <RoomEditor />
         </div>
         <div className="room-item-list-container">
           <button
@@ -189,7 +203,7 @@ export const RoomRouteNew = () => {
             onEditItem={onClickEditItemButton}
             onClaimItem={onClickClaimItemButton}
             onDeleteItem={deleteItem}
-            // onToggleEditorVisibility={this.toggleEditorVisibility}
+            onToggleEditorVisibility={onToggleItemEditorVisibility}
           ></DormItemList>
         </div>
       </div>
