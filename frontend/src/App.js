@@ -4,8 +4,6 @@ import NavigationBar from "./components/navbar/NavigationBar";
 import { BrowserRouter as Router, Route } from "react-router-dom";
 
 import "../node_modules/bootstrap/dist/css/bootstrap.min.css";
-// import RoomRoute from "./routes/RoomRoute/RoomRoute";
-// import RoomRouteFunc from "./routes/RoomRoute/RoomRouteFunc";
 import HomeRoute from "./routes/HomeRoute/HomeRoute";
 import { IconContext } from "react-icons";
 

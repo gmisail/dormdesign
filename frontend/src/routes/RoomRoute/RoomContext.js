@@ -166,7 +166,6 @@ export const RoomProvider = ({ children }) => {
         };
 
         connection.on("actionFailed", (data) => {
-          console.log("RECEIVED ERROR MESSAGE", data);
           const errorMessage = handleSocketErrorEvent(data);
           if (errorMessage) {
             const error = new Error(errorMessage);
