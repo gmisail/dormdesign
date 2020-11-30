@@ -2,9 +2,7 @@ package routes
 
 import (
 	"log"
-	"fmt"
-	"bytes"
-	"io"
+
 	"github.com/gmisail/dormdesign/models"
 	"github.com/labstack/echo/v4"
 	"net/http"
@@ -108,48 +106,28 @@ func (route *ListRoute) OnAddListItem(c echo.Context) error {
 	return c.JSON(http.StatusOK, item)
 }
 
-func (route *ListRoute) OnDownloadData(c echo.Context) error {
+func (route *ListRoute) OnCloneRoom(c echo.Context) error {
 	id := c.QueryParam("id")
-	data, err := models.GetList(route.Database, id)
+	targetId := c.QueryParam("target_id")
 
-	c.Response().Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=room-%s.json", id))
-	c.Response().Header().Set("Content-Type", "text/json")
-
-	/*
-		get room layout data...
-	*/
+	data, err := models.GetList(route.Database, targetId)
 
 	if err != nil {
 		log.Println(err)
 		return echo.NewHTTPError(http.StatusBadRequest, "Cannot find room with given ID.")
 	}
 
+	/* remove all of the current items in the room */
+	models.ClearListItems(route.Database, id)
+
+	/* replace the current vertices with the target room's vertices */
+	models.UpdateVertices(route.Database, id, data.Vertices)
+
+	/* loop through target and add them to current list. Ensures that ID's are new and unique */
+	for _, item := range data.Items {
+		models.AddListItem(route.Database, id, item)
+	}
+
 	return c.JSON(http.StatusOK, data)
 }
 
-func (route *ListRoute) OnUploadData(c echo.Context) error {
-	//id := c.QueryParam("id")
-	file, err := c.FormFile("room")
-
-	if err != nil {
-		fmt.Println(err)
-		return err
-	}
-
-	src, err := file.Open()
-	
-	buffer := bytes.NewBuffer(nil)
-	if _, copyErr := io.Copy(buffer, src); err != nil {
-		fmt.Println(copyErr)
-    	return copyErr
-	}
-
-	if err != nil {
-		fmt.Println(err)
-		return err
-	}
-	
-	defer src.Close()
-	
-	return nil
-}

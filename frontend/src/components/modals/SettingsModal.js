@@ -1,5 +1,5 @@
 import React from "react";
-import { Button, Form } from "react-bootstrap";
+import { Button, Form, InputGroup, FormControl } from "react-bootstrap";
 import Modal from "react-bootstrap/Modal";
 import ChooseNameForm from "../ChooseNameForm/ChooseNameForm";
 import VertexForm from "../VertexForm";
@@ -9,28 +9,19 @@ class SettingsModal extends React.Component {
     super();
 
     this.state = {
-      file: null,
+      id: "",
     };
 
-    this.onFileUploaded = this.onFileUploaded.bind(this);
-    this.onImport = this.onImport.bind(this);
+    this.onClone = this.onClone.bind(this);
+    this.onChange = this.onChange.bind(this);
   }
 
-  onFileUploaded = (evt) => {
-    let file = evt.target.files[0];
-    let type = file.type;
-
-    if (type === "application/json") {
-      this.setState({ file: file });
-    } else {
-      // error
-    }
+  onChange = (evt) => {
+    this.setState({ id: evt.target.value });
   };
 
-  onImport = () => {
-    if (this.state.file) {
-      this.props.onImport(this.state.file);
-    }
+  onClone = (evt) => {
+    this.props.onClone(this.state.id);
   };
 
   render() {
@@ -48,32 +39,25 @@ class SettingsModal extends React.Component {
               onUpdateLayout={this.props.onUpdateLayout}
             ></VertexForm>
             <hr />
-            <h5>Export</h5>
+            <h5>Clone Existing Room</h5>
             <p>
-              Exporting your room will bundle up all of your room data and save
-              it as a JSON file. You can use this file as a backup, or you can
-              send to others so that they can use it as a template.
+              Cloning allows you to copy the layout, furniture, and properties
+              from another room into your room. Note that once you clone a room,
+              changes only apply to your copy, not the original.
             </p>
 
-            <Button onClick={this.props.onExport}>Export Room</Button>
-
-            <hr />
-
-            <h5>Import</h5>
-            <p>
-              Importing a room from a file will load layouts, properties, and
-              items from a pre-existing room. However, any changes that you make
-              will not affect the original room, only your copy.
-            </p>
-            <Form.Group>
-              <Form.File
-                className="position-relative"
-                name="file"
-                onChange={this.onFileUploaded}
+            <InputGroup className="mb-3">
+              <FormControl
+                onChange={this.onChange}
+                placeholder="Room ID"
+                aria-label="Room ID"
+                aria-describedby="Room Identifier"
               />
-            </Form.Group>
 
-            <Button onClick={this.onImport}>Import Room</Button>
+              <InputGroup.Append>
+                <Button onClick={this.onClone}>Clone</Button>
+              </InputGroup.Append>
+            </InputGroup>
           </Form>
         </Modal.Body>
       </Modal>

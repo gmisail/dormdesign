@@ -281,14 +281,27 @@ class RoomRoute extends Component {
     this.setState({ showModal: !this.state.showModal });
   };
 
-  exportRoomData = () => {
-    const id = this.props.match.params.id;
-    DataController.downloadRoom(id);
-  };
+  static async cloneList(id, target) {
+    console.log(id + " -> " + target);
 
-  importRoomData = (file) => {
+    fetch("/list/clone?id=" + id + "&target_id=" + target)
+      .then((response) => response.json())
+      .then((data) => {
+        if (!data.message) {
+          window.location.reload();
+        } else {
+          console.log(data.message);
+        }
+      })
+      .catch((err) => {
+        throw new Error(err);
+      });
+  }
+
+  cloneRoom = (target) => {
     const id = this.props.match.params.id;
-    DataController.uploadRoom(id, file);
+
+    RoomRoute.cloneList(id, target);
   };
 
   updateLayout = (verts) => {
@@ -348,8 +361,7 @@ class RoomRoute extends Component {
             show={this.state.showModal}
             bounds={this.state.bounds}
             onHide={this.toggleModal}
-            onExport={this.exportRoomData}
-            onImport={this.importRoomData}
+            onClone={this.cloneRoom}
             onUpdateLayout={this.updateLayout}
             message={this.state.errorMessage}
           ></SettingsModal>

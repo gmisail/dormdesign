@@ -117,7 +117,16 @@ func RemoveListItem(database *rdb.Session, roomID string, itemID string) error {
 		}),
 	}).Exec(database)
 
-	return err;
+	return err
+}
+
+func ClearListItems(database *rdb.Session, roomID string) error {
+	err := rdb.DB("dd_data").Table("lists").Get(roomID).Update(
+		map[string]interface{}{
+			"items": nil,
+	}).Exec(database)
+
+	return err
 }
 
 func EditListItem(database *rdb.Session, id string, itemID string, updated map[string]interface{}) (*ListItem, error) {
