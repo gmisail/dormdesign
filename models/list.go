@@ -39,7 +39,21 @@ type List struct {
 	Create an empty list with the given ID
 */
 func CreateList(database *rdb.Session, id string) error {
-	err := rdb.DB("dd_data").Table("lists").Insert(List{ ID: id, Items: []ListItem{} }).Exec(database)
+	/* 
+		unless another arrangement is provided, let the default
+		room layout just be a 10x10 square
+	*/	
+	defaultVertices := make([]EditorPoint, 4)
+	defaultVertices[0] = EditorPoint{ X: 0, Y: 0 }
+	defaultVertices[1] = EditorPoint{ X: 10, Y: 0}
+	defaultVertices[2] = EditorPoint{ X: 10, Y: 10}
+	defaultVertices[3] = EditorPoint{ X: 0, Y: 10 }
+	
+	err := rdb.DB("dd_data").Table("lists").Insert(List{ 
+		ID: id, 
+		Items: []ListItem{}, 
+		Vertices: defaultVertices,
+	}).Exec(database)
 
 	if err != nil {
 		return err
