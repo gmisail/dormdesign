@@ -1,13 +1,15 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useContext } from "react";
 import {
   BsThreeDots,
   BsX,
   BsPencil,
-  BsPerson,
+  BsPersonPlus,
+  BsPersonDash,
   BsEye,
   BsEyeSlash,
 } from "react-icons/bs";
 import { usePopper } from "react-popper";
+import { RoomContext } from "../../routes/RoomRoute/RoomContext";
 import IconButton from "../IconButton/IconButton";
 
 import "./ListItem.scss";
@@ -21,6 +23,14 @@ const ListItem = (props) => {
     onToggleEditorVisibility,
     className,
   } = props;
+
+  /*
+    userName is used to determine if the claim option in the menu should be say 
+    "Claim" or "Unclaim" based on whether or not userName matches item.claimedBy
+
+    Note that this could be an issue if two users input the same userName
+  */
+  const { userName } = useContext(RoomContext);
 
   const [showMenu, setShowMenu] = useState(false);
   const menuButtonRef = useRef(null);
@@ -63,7 +73,6 @@ const ListItem = (props) => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [menuRef]);
-
   return (
     <div className={`list-item ${className}`}>
       <div className="list-item-content">
@@ -98,8 +107,17 @@ const ListItem = (props) => {
               Edit
             </li>
             <li onClick={() => menuOptionClicked(onClaim)}>
-              <BsPerson />
-              Claim
+              {item.claimedBy === userName ? (
+                <>
+                  <BsPersonDash />
+                  Unclaim
+                </>
+              ) : (
+                <>
+                  <BsPersonPlus />
+                  Claim
+                </>
+              )}
             </li>
             <li onClick={() => menuOptionClicked(onToggleEditorVisibility)}>
               {item.visibleInEditor ? (

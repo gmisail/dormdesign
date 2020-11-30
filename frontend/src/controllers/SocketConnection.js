@@ -1,23 +1,27 @@
+import EventController from "./EventController";
+
 class SocketConnection {
-  constructor(id) {
+  constructor(id, onOpen) {
     this.id = id;
+    this.eventController = new EventController();
     this.connection = new WebSocket("ws://localhost:8000/ws?id=" + this.id);
     this.connection.onopen = () => {
-      console.log("Socket connection successfully established");
+      if (onOpen !== undefined) {
+        onOpen();
+      }
     };
-  }
 
-  // Receives incoming messages and parses the data JS objects
-  set onMessage(callback) {
     this.connection.onmessage = (evt) => {
       let data = undefined;
       try {
         data = JSON.parse(evt.data);
+        if (data.event !== undefined) {
+          this._emit(data.event, data.data);
+        } else {
+          console.error("Socket message received with no event field: ", data);
+        }
       } catch (e) {
-        console.error("Error parsing socket message data: ", evt.data, e);
-      }
-      if (data) {
-        callback(data);
+        console.error("Error parsing socket message: ", evt.data, e);
       }
     };
   }
@@ -26,6 +30,14 @@ class SocketConnection {
     this.connection.onclose = (evt) => {
       callback(evt);
     };
+  }
+
+  on(evt, callback) {
+    this.eventController.on(evt, callback);
+  }
+
+  _emit(evt, payload) {
+    this.eventController.emit(evt, payload);
   }
 
   send(data) {

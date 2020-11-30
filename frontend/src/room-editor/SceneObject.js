@@ -9,7 +9,6 @@ class SceneObject {
     scale,
     rotation,
     origin,
-    canvasLayer,
     staticObject,
     zIndex,
   }) {
@@ -18,16 +17,16 @@ class SceneObject {
     this._position = position ?? new Vector2(0, 0);
     this._scale = scale ?? new Vector2(1, 1);
     this._rotation = rotation ?? 0.0;
+    this._size = size ?? new Vector2(0, 0);
+    this._zIndex = zIndex ?? 0;
     this._origin = origin ?? new Vector2(0, 0);
     this.staticObject = staticObject ?? false;
+
     this.parent = null;
     this._children = [];
-    this._size = size;
-    this._zIndex = zIndex ?? 0;
-    this.canvasLayer = canvasLayer ?? 0;
-    if (canvasLayer === 0) {
-      this.scene._updateBackground = true;
-    }
+    // Flag that indicates _children needs to be sorted by zIndex next update
+    this._updateDrawOrder = false;
+
     this.drawBoundingBox = false;
     this._updateTransform();
   }
@@ -104,6 +103,13 @@ class SceneObject {
   }
   set rotation(degs) {
     this._rotation = degs;
+    // Prevent unnecessary small/large rotation values
+    if (this._rotation > 360) {
+      this._rotation = this._rotation - 360;
+    } else if (this._rotation < 0) {
+      this._rotation = 360 + this._rotation;
+    }
+
     this._updateTransform();
   }
   // Expects vector with values between 0 and 1
@@ -119,31 +125,28 @@ class SceneObject {
   }
   set zIndex(val) {
     this._zIndex = val;
-    this.scene._updateDrawOrder();
-  }
-
-  rotateBy(degs) {
-    this.rotation = this._rotation + degs;
+    this._updateDrawOrder = true;
   }
 
   addChild(obj) {
-    this.scene.addObject(obj);
+    this.scene._addObject(obj);
     this._children.push(obj);
     obj.parent = this;
     obj._updateTransform();
+    this._updateDrawOrder = true;
   }
 
-  removeChild(object) {
-    object.parent = null;
-    let end = 0;
-    for (let i = 0; i < this._children.length; i++) {
-      const obj = this._children[i];
-      // Only keep objects that either dont have an id properity (i.e. aren't RoomRectObjects) or don't have an id matching the one passed in
-      if (obj.id !== object.id) {
-        this._children[end++] = obj;
-      }
-    }
-    this._children.length = end;
+  removeChild(obj) {
+    this.scene._removeObject(obj);
+    this._children = this._children.filter((x) => x.id !== obj.id);
+    obj.parent = null;
+    obj._updateTransform();
+  }
+
+  _calculateDrawOrder() {
+    this._children = this._children.sort((a, b) => {
+      return a._zIndex - b._zIndex;
+    });
   }
 
   getLocalBoundingBox() {
@@ -209,27 +212,54 @@ class SceneObject {
     return new Vector2(localPoint.x, localPoint.y);
   }
 
-  update() {
-    // Only update if not on background layer or background needs to be redrawn
-    if (this.canvasLayer > 0 || this.scene._updateBackground) {
-      this._update();
+  // Update function that can be overriden in objects that inherit SceneObject
+  update() {}
+
+  // Private update function
+  _update() {
+    // Recalculate children draw order if needed
+    if (this._updateDrawOrder) {
+      this._calculateDrawOrder();
+    }
+
+    this.update();
+
+    // Update children
+    for (let i = 0; i < this._children.length; i++) {
+      this._children[i]._update();
     }
   }
 
-  draw() {
-    const ctx = this.scene.ctx[this.canvasLayer];
-    // Only draw if not on background layer or background needs to be redrawn
-    if (this.canvasLayer > 0 || this.scene._updateBackground) {
-      // Set context transform to this objects transformation matrix
-      ctx.setTransform(this._transformMatrix);
+  // Draw function that can be overriden in objects that inherit SceneObject
+  draw(ctx) {}
 
-      this._draw(ctx);
+  // Private draw function
+  _draw() {
+    const ctx = this.scene.ctx;
+
+    // Child objects with zIndex < 0
+    const negativeZIndex = [];
+    // Child objects with zIndex >= 0
+    const positiveZIndex = [];
+    for (let i = 0; i < this._children.length; i++) {
+      if (this._children[i]._zIndex >= 0) {
+        positiveZIndex.push(i);
+      } else {
+        negativeZIndex.push(i);
+      }
     }
 
-    // Reset transformation matrix so it doesn't interfere with other draws
-    ctx.resetTransform();
+    // First draw all children with zIndex < 0 so they will be underneath this object
+    for (let i = 0; i < negativeZIndex.length; i++) {
+      this._children[negativeZIndex[i]]._draw();
+    }
 
-    // Draw global bounding box. For debugging.
+    // Draw this object. Set context transform to this objects transformation matrix
+    ctx.setTransform(this._transformMatrix);
+    this.draw(ctx);
+
+    // Draw global bounding box if flag enabled. For debugging.
+    ctx.resetTransform();
     if (this.drawBoundingBox) {
       const bbox = this.getGlobalBoundingBox();
       const w = bbox.p2.x - bbox.p1.x;
@@ -237,6 +267,11 @@ class SceneObject {
       ctx.strokeStyle = "red";
       ctx.lineWidth = 2;
       ctx.strokeRect(bbox.p1.x, bbox.p1.y, w, h);
+    }
+
+    // Then draw children with zIndex >= 0 so they will be above this object
+    for (let i = 0; i < positiveZIndex.length; i++) {
+      this._children[positiveZIndex[i]]._draw();
     }
   }
 }

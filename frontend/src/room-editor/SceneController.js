@@ -1,25 +1,25 @@
-class SceneController {
-  constructor(canvases) {
-    this.canvasArray = canvases;
-    this.resizeCanvases(canvases);
+import SceneObject from "./SceneObject";
 
-    this.ctx = [];
-    for (let i = 0; i < canvases.length; i++) {
-      this.ctx.push(canvases[i].getContext("2d"));
-    }
+class SceneController {
+  constructor(canvas) {
+    this.canvas = canvas;
+    this.ctx = canvas.getContext("2d");
+    this.resizeCanvas(canvas);
 
     this.idCounter = 0;
     this.backgroundColor = "#fff";
 
-    this.objects = new Map();
-    // Array which will contain references to the objects sorted by their Z-index values
-    this._objectDrawOrder = [];
+    // Stores all currently added SceneObjects keyed by their id
+    this._objects = new Map();
+
+    // Object that will be the root parent of all other objects
+    this._rootObject = new SceneObject({ scene: this });
 
     this._lastFrameTime = undefined;
-    this.deltaTime = undefined; // Time since last frame
-
-    this.resized = false; // Set to true when if canvas has been resized this frame
-    this._updateBackground = true;
+    // Time since last frame
+    this.deltaTime = undefined;
+    // Set to true when if canvas has been resized this frame
+    this.resized = false;
 
     this.init();
   }
@@ -31,11 +31,7 @@ class SceneController {
   mainLoop(currentTime) {
     requestAnimationFrame(this.mainLoop.bind(this));
 
-    // Resize canvas if screen size has changed
-    this.resized = this.resizeCanvases(this.canvasArray);
-    if (this.resized) {
-      this._updateBackground = true;
-    }
+    this.resized = this.resizeCanvas(this.canvas);
 
     // Calculate time since last frame. Measured in seconds
     if (!currentTime) currentTime = performance.now(); // Needed because currentTime is undefined on first frame
@@ -44,77 +40,57 @@ class SceneController {
     this.deltaTime = deltaMilliSeconds / 1000; // Convert to seconds
     this._lastFrameTime = currentTime;
 
-    this.update();
-    this.render();
-  }
-
-  addObject(obj) {
-    this.objects.set(obj.id, obj);
-    this._updateDrawOrder();
-  }
-
-  removeObject(obj) {
-    this.objects.delete(obj.id);
-    for (let i = 0; i < obj.children.length; i++) {
-      obj.children[i].parent = null;
-    }
-    obj.parent.removeChild(obj);
-    this._updateDrawOrder();
-  }
-
-  update() {
-    for (let i = 0; i < this._objectDrawOrder.length; i++) {
-      this._objectDrawOrder[i].update();
-    }
-  }
-
-  render() {
-    if (this._updateBackground) {
-      this.ctx[0].fillStyle = this.backgroundColor;
-      this.ctx[0].fillRect(
-        0,
-        0,
-        this.ctx[0].canvas.width,
-        this.ctx[0].canvas.height
-      );
-    }
+    this._rootObject._update();
 
     // Clear canvas
-    this._clearForegroundCanvases(this.ctx);
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-    for (let i = 0; i < this._objectDrawOrder.length; i++) {
-      this._objectDrawOrder[i].draw();
-    }
-
-    this._updateBackground = false;
+    this._rootObject._draw();
   }
 
-  _updateDrawOrder() {
-    this._objectDrawOrder = [...this.objects.values()].sort((a, b) => {
-      return a._zIndex - b._zIndex;
-    });
+  addChild(obj) {
+    this._rootObject.addChild(obj);
   }
 
-  _clearForegroundCanvases(contexts) {
-    for (let i = 1; i < contexts.length; i++) {
-      // contexts[i].fillStyle = this.canvasBackgroundColor;
-      contexts[i].clearRect(
-        0,
-        0,
-        contexts[i].canvas.width,
-        contexts[i].canvas.height
+  removeChild(obj) {
+    this._rootObject.removeChild(obj);
+  }
+
+  // Adds object to map keyed by object ID
+  _addObject(obj) {
+    if (this._objects.has(obj.id)) {
+      throw new Error(
+        "Unable to add object to scene. Object with matching ID already added"
       );
     }
+    this._objects.set(obj.id, obj);
   }
 
-  resizeCanvases(canvasArray) {
-    let resized = false;
-    for (let i = 0; i < canvasArray.length; i++) {
-      if (this.resizeCanvas(canvasArray[i])) {
-        resized = true;
-      }
+  // Removes object and all its children from map keyed by object ID
+  _removeObject(obj) {
+    if (!this._objects.has(obj.id)) {
+      throw new Error(
+        `Unable to remove object form scene. No object matching ID ${obj.id} found.`
+      );
     }
-    return resized;
+    this._objects.delete(obj.id);
+    this._recursivelyRemoveChildren(obj);
+  }
+
+  _recursivelyRemoveChildren(obj) {
+    for (let i = 0; i < obj._children.length; i++) {
+      const child = obj._children[i];
+      this.removeObject(child);
+      child._recursivelyRemoveChildren();
+    }
+  }
+
+  hasObjectWithID(id) {
+    return this._objects.has(id);
+  }
+
+  getObjectByID(id) {
+    return this._objects.get(id);
   }
 
   resizeCanvas(canvas) {

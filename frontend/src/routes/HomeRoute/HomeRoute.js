@@ -1,10 +1,10 @@
 import React, { Component } from "react";
 import { Container, Row, Button } from "react-bootstrap";
-import DataController from "../../controllers/DataController";
+import DataRequests from "../../controllers/DataRequests";
 
 class HomeRoute extends Component {
   createRoomClicked = async () => {
-    const roomID = await DataController.CREATE_TEST_ROOM(); // DataController.createRoom()
+    const roomID = await DataRequests.CREATE_TEST_ROOM();
     this.props.history.push(`/room/${roomID}`);
   };
 

@@ -3,32 +3,21 @@ import Vector2 from "./Vector2";
 import Collisions from "./Collisions";
 
 class RoomRectObject extends SceneObject {
-  constructor({
-    scene,
-    id,
-    position,
-    rotation,
-    size,
-    color,
-    opacity,
-    nameText,
-    staticObject,
-    snapPosition,
-    snapOffset,
-    canvasLayer,
-    movementLocked,
-    fontFamily,
-  }) {
+  constructor(props) {
     super({
-      scene: scene,
-      id: id,
-      position: position,
-      rotation: rotation,
-      size: size,
-      staticObject: staticObject,
-      canvasLayer: canvasLayer,
+      ...props,
       origin: new Vector2(0.5, 0.5),
     });
+
+    const {
+      color,
+      opacity,
+      nameText,
+      snapPosition,
+      snapOffset,
+      movementLocked,
+      fontFamily,
+    } = props;
 
     this.color = color;
     this.textColor = "#222";
@@ -53,7 +42,8 @@ class RoomRectObject extends SceneObject {
     this.snapPosition = snapPosition ?? false;
     this.snapOffset = snapOffset ?? 0.1;
     this._unsnappedPosition = undefined;
-    this.setPosition(position);
+
+    this.setPosition(this.position);
   }
 
   // Set position function that handles position snapping. If snapping is disabled, just sets position normally
@@ -88,7 +78,7 @@ class RoomRectObject extends SceneObject {
     return multipleOf * rounded;
   }
 
-  _update() {
+  update() {
     // Animates the dashed selection outline
     this._animateSelection();
 
@@ -136,7 +126,7 @@ class RoomRectObject extends SceneObject {
     }
   }
 
-  _draw(ctx) {
+  draw(ctx) {
     ctx.fillStyle = this.outOfBounds ? this.outOfBoundsColor : this.color;
     ctx.globalAlpha = this.opacity;
     ctx.fillRect(0, 0, this.size.x, this.size.y);

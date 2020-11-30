@@ -10,6 +10,7 @@ class DormItem {
       editorPosition,
       editorRotation,
       editorLocked,
+      editorZIndex,
     } = data ?? {};
     this.id = id;
     this.name = name ? name : "New Item";
@@ -28,12 +29,13 @@ class DormItem {
     };
     this.editorRotation = editorRotation ? editorRotation : 0;
     this.editorLocked = editorLocked ? editorLocked : false;
+    this.editorZIndex = editorZIndex ? editorZIndex : 0;
   }
 
   update(updated) {
     /* 
       Ensure that updated is deep merged into this.
-      TODO: Replace hardcoded method below with an actual deepmerge function?
+      TODO: Maybe replace hardcoded method below with an actual deepmerge function?
     */
     if (updated.name !== undefined) {
       this.name = updated.name;
@@ -45,19 +47,24 @@ class DormItem {
       this.claimedBy = updated.claimedBy;
     }
     if (updated.dimensions !== undefined) {
+      const w = updated.dimensions.width;
+      const l = updated.dimensions.length;
+      const h = updated.dimensions.height;
       this.dimensions = {
-        width: updated.dimensions.width ?? this.dimensions.width,
-        length: updated.dimensions.length ?? this.dimensions.length,
-        height: updated.dimensions.height ?? this.dimensions.height,
+        width: w === undefined ? this.dimensions.width : w,
+        length: l === undefined ? this.dimensions.length : l,
+        height: h === undefined ? this.dimensions.height : h,
       };
     }
     if (updated.visibleInEditor !== undefined) {
       this.visibleInEditor = updated.visibleInEditor;
     }
     if (updated.editorPosition !== undefined) {
+      const x = updated.editorPosition.x;
+      const y = updated.editorPosition.y;
       this.editorPosition = {
-        x: updated.editorPosition.x ?? this.editorPosition.x,
-        y: updated.editorPosition.y ?? this.editorPosition.y,
+        x: x === undefined ? this.editorPosition.x : x,
+        y: y === undefined ? this.editorPosition.y : y,
       };
     }
     if (updated.editorRotation !== undefined) {
@@ -65,6 +72,9 @@ class DormItem {
     }
     if (updated.editorLocked !== undefined) {
       this.editorLocked = updated.editorLocked;
+    }
+    if (updated.editorZIndex !== undefined) {
+      this.editorZIndex = updated.editorZIndex;
     }
   }
 }
