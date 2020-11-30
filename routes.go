@@ -33,6 +33,7 @@ func SetupRoutes(e *echo.Echo, database *rdb.Session) {
 	/* list related routes*/
 	e.GET("/list/get", listRoute.OnGetList)
 	e.GET("/list/download", listRoute.OnDownloadData)
+	e.POST("/list/upload", listRoute.OnUploadData)
 	e.POST("/list/create", listRoute.OnCreateList)
 	e.POST("/list/add", listRoute.OnAddListItem)
 }

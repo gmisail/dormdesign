@@ -129,6 +129,23 @@ class DataController {
   */
   static async uploadRoom(id, file) {
     console.log("uploading room " + file + " to id " + id);
+
+    /*const fileForm = new FormData();
+    fileForm.append('room', file);
+
+    const response = await fetch("/list/upload", {
+      method: "POST",
+   //   headers: {
+     //   "Content-Type": "multipart/form-data; boundary=----------------------",
+   //   },
+      body: fileForm
+    });
+    
+    if (!response.ok) {
+      const data = await response.json();
+      const message = `${response.status} Error uploading layout: ${data.message}`;
+      console.error(message);
+    }*/
   }
 
   // Sends request to create a list, adds some items to it, and returns the id of the list.
@@ -137,9 +154,7 @@ class DataController {
 
     const itemResponse1 = await fetch("/list/add", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+
       body: JSON.stringify({
         listID: roomID,
         name: "Fridge",

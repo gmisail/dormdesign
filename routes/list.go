@@ -3,6 +3,8 @@ package routes
 import (
 	"log"
 	"fmt"
+	"bytes"
+	"io"
 	"github.com/gmisail/dormdesign/models"
 	"github.com/labstack/echo/v4"
 	"net/http"
@@ -126,22 +128,28 @@ func (route *ListRoute) OnDownloadData(c echo.Context) error {
 }
 
 func (route *ListRoute) OnUploadData(c echo.Context) error {
-	id := c.QueryParam("id")
+	//id := c.QueryParam("id")
 	file, err := c.FormFile("room")
 
 	if err != nil {
+		fmt.Println(err)
 		return err
 	}
 
 	src, err := file.Open()
 	
-	fmt.Println(src, id)
+	buffer := bytes.NewBuffer(nil)
+	if _, copyErr := io.Copy(buffer, src); err != nil {
+		fmt.Println(copyErr)
+    	return copyErr
+	}
 
 	if err != nil {
+		fmt.Println(err)
 		return err
 	}
 	
 	defer src.Close()
-
+	
 	return nil
 }
