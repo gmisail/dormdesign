@@ -1,13 +1,15 @@
-import React, { Component } from "react";
+import React, { Component, useContext } from "react";
+import { RoomContext } from "../../routes/RoomRoute/RoomContext";
 import { Form, Col, Button } from "react-bootstrap";
 import Vector2 from "../../room-editor/Vector2";
+import { BsThreeDotsVertical } from "react-icons/bs";
 
 class VertexForm extends Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      vertices: this.props.bounds,
+      vertices: props.bounds ?? [],
     };
   }
 

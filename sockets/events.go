@@ -157,6 +157,70 @@ func (c *Client) translateMessage(reader io.Reader) (*Message, error) {
 				Event: "itemDeleted",
 				Data: eventData,
 			}
+		case "updateLayout":
+			type UpdateVerticesEvent struct {
+				Vertices []models.EditorPoint `json:"vertices"`
+			}
+
+			var eventData UpdateVerticesEvent
+			err := json.Unmarshal(roomMessage.Data, &eventData)
+			if err != nil {
+				errorString = "Unable to translate updateVertices event: " + err.Error()
+				break
+			}
+
+			verts := eventData.Vertices
+			updatedVerts := make([]models.EditorPoint, len(verts))
+		
+			for i := range verts {
+				updatedVerts[i] = verts[i]
+			}
+
+			vertErr := models.UpdateVertices(c.hub.database, roomMessage.RoomID, updatedVerts)
+
+			if vertErr != nil {
+				errorString = "Error updating room layout in database: " + err.Error()
+				break
+			}
+
+			response = &MessageResponse{
+				Event: "updateLayout",
+				Data: struct{
+					Vertices []models.EditorPoint `json:"vertices"`
+				}{
+					Vertices: updatedVerts,
+				},
+			}
+
+			/*
+			
+				verts := data["vertices"].([]interface{})
+		updatedVerts := make([]models.EditorPoint, len(verts))
+		
+		for i := range verts {
+			vert := verts[i].(map[string]interface{})
+			x := vert["x"].(float64)
+			y := vert["y"].(float64)
+
+			updatedVerts[i] = models.EditorPoint{X: x, Y: y}
+		}
+
+		err := models.UpdateVertices(c.hub.database, roomID, updatedVerts)
+		if err != nil {
+			errorString = "Error updating room layout in database: " + err.Error()
+			break
+		}
+
+		response = &MessageResponse{
+			Event: "updateLayout",
+			Data: struct{
+				Vertices []models.EditorPoint `json:"vertices"`
+			}{
+				Vertices: updatedVerts,
+			},
+		}
+			
+			*/
 		default:
 			errorString = fmt.Sprintf("Unknown event '%s'", roomMessage.Event)
 		}

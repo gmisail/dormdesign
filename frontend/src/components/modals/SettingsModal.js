@@ -1,10 +1,13 @@
 import React from "react";
 import { Button, Form, InputGroup, FormControl } from "react-bootstrap";
 import Modal from "react-bootstrap/Modal";
+import { RoomContext } from "../../routes/RoomRoute/RoomContext";
 import ChooseNameForm from "../ChooseNameForm/ChooseNameForm";
 import VertexForm from "../VertexForm";
 
 class SettingsModal extends React.Component {
+  static contextType = RoomContext;
+
   constructor() {
     super();
 
@@ -35,8 +38,8 @@ class SettingsModal extends React.Component {
           <Form>
             <h5>Layout</h5>
             <VertexForm
-              bounds={this.props.bounds}
-              onUpdateLayout={this.props.onUpdateLayout}
+              bounds={this.context.bounds}
+              onUpdateLayout={this.context.updateBounds}
             ></VertexForm>
             <hr />
             <h5>Clone Existing Room</h5>

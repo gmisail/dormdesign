@@ -44,31 +44,21 @@ class RoomEditor extends Component {
     scene.backgroundColor = "#fff";
 
     // Points defining the edges of the room (in feet)
-    const testBoundaryPath = [
-      new Vector2(1, 2),
-      new Vector2(2, 2),
-      new Vector2(2, 1),
-      new Vector2(7.3, 1),
-      new Vector2(7.3, 2),
-      new Vector2(8, 2),
-      new Vector2(8, 5),
-      new Vector2(9, 5),
-      new Vector2(9, 6),
-      new Vector2(8, 6),
-      new Vector2(8, 13),
-      new Vector2(4, 13),
-      new Vector2(4, 6.5),
-      new Vector2(0, 6.5),
-      new Vector2(0, 4),
-      new Vector2(3, 4),
-      new Vector2(3, 3),
-      new Vector2(0, 3),
-      new Vector2(0, -5),
-      new Vector2(1, -5),
+    // Points defining the edges of the room (in feet)
+    let defaultRoom = [
+      new Vector2(0, 0),
+      new Vector2(10, 0),
+      new Vector2(10, 10),
+      new Vector2(0, 10),
     ];
+
+    if (this.context.bounds != undefined && this.context.bounds.length > 0) {
+      defaultRoom = this.context.bounds;
+    }
+
     const room = new RoomEditorObject({
       scene: scene,
-      boundaryPoints: testBoundaryPath,
+      boundaryPoints: defaultRoom,
       backgroundColor: "#fff",
       onObjectsUpdated: this.itemsUpdatedInEditor,
       onObjectSelected: this.itemSelectedInEditor,
@@ -83,6 +73,31 @@ class RoomEditor extends Component {
     // Handle any actions that have accumlated in editorActionQueue
     this.handleEditorQueue();
   }
+
+  /*
+
+  ...
+
+    const room = new RoomEditorObject({
+      scene: scene,
+      boundaryPoints: defaultRoom,
+      canvasLayer: 1,
+      backgroundColor: "#fff",
+      onObjectUpdated: this.editorItemUpdated,
+      onObjectSelected: this.editorItemSelected,
+      selectedObjectID: undefined,
+    });
+    scene.addObject(room);
+
+    this.scene = scene;
+    this.roomEditor = room;
+
+    this.updateVisibleItems(this.props.items);
+  
+    EventController.on("layoutUpdated", (payload) => {
+      this.roomEditor.setBoundaries(payload.vertices);
+    });
+  */
 
   handleEditorQueue() {
     const { editorActionQueue, clearEditorActionQueue } = this.context;
@@ -123,6 +138,8 @@ class RoomEditor extends Component {
         case RoomActions.itemDeleted:
           this.roomObject.removeItemFromRoom(action.payload.id);
           break;
+        case RoomActions.boundsUpdated:
+          this.roomObject.setBoundaries(action.payload.bounds);
         default:
           continue;
       }

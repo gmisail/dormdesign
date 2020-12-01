@@ -11,6 +11,7 @@ export const RoomActions = {
   itemDeleted: "ITEM_DELETED",
   itemsUpdated: "ITEM_UPDATED",
   itemSelected: "ITEM_SELECTED",
+  boundsUpdated: "BOUNDS_UPDATED",
   loading: "LOADING",
   error: "ERROR",
   clearEditorActionQueue: "CLEAR_EDITOR_ACTION_QUEUE",
@@ -18,6 +19,7 @@ export const RoomActions = {
 
 const initialState = {
   items: null,
+  bounds: null,
   loading: true,
   error: null,
   socketConnection: null,
@@ -35,6 +37,7 @@ const roomReducer = (state, action) => {
       return {
         ...state,
         loading: false,
+        bounds: action.payload.bounds,
         items: action.payload.data,
         socketConnection: action.payload.socketConnection,
       };
@@ -96,6 +99,12 @@ const roomReducer = (state, action) => {
       };
     case RoomActions.itemSelected:
       return { ...state, selectedItemID: action.payload.id };
+    case RoomActions.boundsUpdated:
+      const updatedBounds = action.payload.bounds ?? [];
+      return {
+        ...state,
+        bounds: updatedBounds,
+      };
     case RoomActions.loading:
       return initialState;
     case RoomActions.error:
@@ -129,6 +138,9 @@ const handleSocketErrorEvent = (data) => {
     case "editItem":
       console.error("Error editing item.", data.message);
       return "Failed to edit item properties.";
+    case "updateLayout":
+      console.error("Error updating bounds. ", data.message);
+      return "Failed to update room bounds.";
     default:
       console.error("Unknown socket event error.", data);
       return null;
@@ -156,7 +168,11 @@ export const RoomProvider = ({ children }) => {
           console.log("Successfully connected to Room");
           dispatch({
             type: RoomActions.connectedToRoom,
-            payload: { data: data, socketConnection: connection },
+            payload: {
+              data: data.items,
+              socketConnection: connection,
+              bounds: data.vertices,
+            },
           });
         });
 
@@ -192,6 +208,14 @@ export const RoomProvider = ({ children }) => {
           dispatch({
             type: RoomActions.itemDeleted,
             payload: { id: data.id },
+          });
+        });
+
+        connection.on("updateLayout", (data) => {
+          // TODO: add callback
+          dispatch({
+            type: RoomActions.boundsUpdated,
+            payload: { bounds: data.vertices },
           });
         });
       } catch (error) {
@@ -270,6 +294,24 @@ export const RoomProvider = ({ children }) => {
     [state.socketConnection]
   );
 
+  const updateBounds = useCallback(
+    (bounds) => {
+      state.socketConnection.send({
+        event: "updateLayout",
+        sendResponse: true,
+        data: {
+          vertices: bounds,
+        },
+      });
+
+      dispatch({
+        type: RoomActions.boundsUpdated,
+        payload: { bounds },
+      });
+    },
+    [state.socketConnection, dispatch]
+  );
+
   const itemSelected = useCallback(
     (id) => {
       dispatch({
@@ -289,6 +331,7 @@ export const RoomProvider = ({ children }) => {
     connectToRoom,
     addItem,
     updateItems,
+    updateBounds,
     updatedItems,
     setUserName,
     deleteItem,
