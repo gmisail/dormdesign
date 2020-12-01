@@ -33,7 +33,7 @@ import { saveAs } from "file-saver";
 /**
  *  Data creation / modification handler.
  */
-class DataController {
+class DataRequests {
   // Creates a new room and returns room ID sent back from server
   static async createRoom() {
     const response = await fetch("/list/create", {
@@ -49,19 +49,18 @@ class DataController {
   }
 
   //Retrieves the List's data from the server.
-  static async getList(id) {
+  static async getRoomData(id) {
     if (!id) {
       throw new Error("Can't fetch room data. Room ID is undefined");
     }
 
     const response = await fetch(`/list/get?id=${id}`);
+    const data = await response.json();
 
     if (!response.ok) {
-      const data = await response.json();
       const message = `${response.status} Error fetching list: ${data.message}`;
       throw new Error(message);
     }
-    const data = await response.json();
 
     if (!data.items) {
       throw new Error("ERROR Room items missing from fetch room response");
@@ -77,80 +76,26 @@ class DataController {
     };
   }
 
-  /*
-        Pushes a new item to the list, passes the resulting item back in the callback
-        (with new, server-assigned properties such as id)
-    */
-  static async addListItem(item) {
-    // /* TODO: send call to server */
-    if (!item.name) {
-      item.name = "New Item";
+  static async cloneList(id, target) {
+    if (!id || !target) {
+      throw new Error("Can't clone list; either ID or target ID is undefined.");
     }
 
-    return item;
-  }
+    const response = await fetch(
+      "/list/clone?id=" + id + "&target_id=" + target
+    );
+    const data = response.json();
 
-  /*
-        Modifies the properties of a list item and returns the resulting list as a callback
-    */
-  static async editListItem(item) {
-    return item;
-  }
-
-  /*
-        Removes a item from the list
-    */
-  static async removeListItem(item) {
-    return true;
-  }
-
-  static async downloadRoom(id) {
-    if (!id) {
-      throw new Error("Can't download room data; Room ID is undefined");
+    if (!data.message) {
+      window.location.reload();
+    } else {
+      throw new Error(data.message);
     }
-
-    const response = await fetch(`/list/download?id=${id}`);
-    const data = await response.json();
-
-    if (!response.ok) {
-      const message = `${response.status} Error downloading data: ${data.message}`;
-      throw new Error(message);
-    }
-
-    var blob = new Blob([JSON.stringify(data)], {
-      type: "application/json;charset=utf-8",
-    });
-    saveAs(blob, "room-" + id + ".json");
-  }
-
-  /*
-    id: identifier of the room
-    room: file object 
-  */
-  static async uploadRoom(id, file) {
-    console.log("uploading room " + file + " to id " + id);
-
-    /*const fileForm = new FormData();
-    fileForm.append('room', file);
-
-    const response = await fetch("/list/upload", {
-      method: "POST",
-   //   headers: {
-     //   "Content-Type": "multipart/form-data; boundary=----------------------",
-   //   },
-      body: fileForm
-    });
-    
-    if (!response.ok) {
-      const data = await response.json();
-      const message = `${response.status} Error uploading layout: ${data.message}`;
-      console.error(message);
-    }*/
   }
 
   // Sends request to create a list, adds some items to it, and returns the id of the list.
   static async CREATE_TEST_ROOM() {
-    const roomID = await DataController.createRoom();
+    const roomID = await DataRequests.createRoom();
 
     const itemResponse1 = await fetch("/list/add", {
       method: "POST",
@@ -188,4 +133,4 @@ class DataController {
   }
 }
 
-export default DataController;
+export default DataRequests;

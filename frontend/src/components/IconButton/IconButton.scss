@@ -3,8 +3,9 @@
   text-align: center;
   padding: 5px 5px;
   background-color: transparent;
-}
-.icon-button > * {
-  display: block;
-  margin: auto;
+
+  & > * {
+    display: block;
+    margin: auto;
+  }
 }

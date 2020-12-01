@@ -3,31 +3,21 @@ import Vector2 from "./Vector2";
 import Collisions from "./Collisions";
 
 class RoomRectObject extends SceneObject {
-  constructor({
-    scene,
-    id,
-    position,
-    rotation,
-    size,
-    color,
-    opacity,
-    nameText,
-    staticObject,
-    snapPosition,
-    snapOffset,
-    canvasLayer,
-    movementLocked,
-  }) {
+  constructor(props) {
     super({
-      scene: scene,
-      id: id,
-      position: position,
-      rotation: rotation,
-      size: size,
-      staticObject: staticObject,
-      canvasLayer: canvasLayer,
+      ...props,
       origin: new Vector2(0.5, 0.5),
     });
+
+    const {
+      color,
+      opacity,
+      nameText,
+      snapPosition,
+      snapOffset,
+      movementLocked,
+      fontFamily,
+    } = props;
 
     this.color = color;
     this.textColor = "#222";
@@ -35,6 +25,7 @@ class RoomRectObject extends SceneObject {
     this.opacity = opacity ?? 1.0;
 
     this.nameText = nameText;
+    this.fontFamily = fontFamily;
 
     this.outOfBounds = false;
     this.outOfBoundsColor = "#ff0000";
@@ -51,7 +42,8 @@ class RoomRectObject extends SceneObject {
     this.snapPosition = snapPosition ?? false;
     this.snapOffset = snapOffset ?? 0.1;
     this._unsnappedPosition = undefined;
-    this.setPosition(position);
+
+    this.setPosition(this.position);
   }
 
   // Set position function that handles position snapping. If snapping is disabled, just sets position normally
@@ -86,7 +78,7 @@ class RoomRectObject extends SceneObject {
     return multipleOf * rounded;
   }
 
-  _update() {
+  update() {
     // Animates the dashed selection outline
     this._animateSelection();
 
@@ -110,10 +102,10 @@ class RoomRectObject extends SceneObject {
       bbox.p2.x -= offset;
       bbox.p2.y -= offset;
       this.outOfBounds = false;
-      if (this.parent._offsetPoints) {
-        for (let i = 0; i < this.parent._offsetPoints.length - 1; i++) {
-          const v1 = this.parent._offsetPoints[i];
-          const v2 = this.parent._offsetPoints[i + 1];
+      if (this.parent.boundaryPoints) {
+        for (let i = 0; i < this.parent.boundaryPoints.length - 1; i++) {
+          const v1 = this.parent.boundaryPoints[i];
+          const v2 = this.parent.boundaryPoints[i + 1];
           if (Collisions.segmentIntersectsRect(v1, v2, bbox.p1, bbox.p2)) {
             this.outOfBounds = true;
           }
@@ -134,7 +126,7 @@ class RoomRectObject extends SceneObject {
     }
   }
 
-  _draw(ctx) {
+  draw(ctx) {
     ctx.fillStyle = this.outOfBounds ? this.outOfBoundsColor : this.color;
     ctx.globalAlpha = this.opacity;
     ctx.fillRect(0, 0, this.size.x, this.size.y);
@@ -160,15 +152,17 @@ class RoomRectObject extends SceneObject {
     // Draw text on top of object - For some reason the context using the transformation matrix seems to draw the text differently on firefox and chrome resulting in it being offset. So its being drawn by manually scaling the necessary values.
     const globalPos = this.localToGlobalPoint(this.position);
 
-    const fontSize = 0.28;
+    const fontSize = 0.35;
     this._setContextTextStyle(ctx, fontSize);
-    const lineOffset = 0.18 * this.parent.scale.x;
+    const lineOffset = 0.2 * this.parent.scale.x;
     const fitNameText = this._getEditedText(ctx, this.nameText);
     const fitDimensionsText = this._getEditedText(
       ctx,
       `${this.size.x}' x ${this.size.y}'`
     );
-    ctx.font = `bold ${fontSize * this.parent.scale.x}px sans-serif`;
+    ctx.font = `700 ${fontSize * this.parent.scale.x}px ${
+      this.fontFamily
+    }, sans-serif`;
 
     ctx.fillText(fitNameText, globalPos.x, globalPos.y - lineOffset);
 

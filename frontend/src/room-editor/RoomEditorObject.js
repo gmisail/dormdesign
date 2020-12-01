@@ -6,29 +6,20 @@ import RoomGridObject from "./RoomGridObject";
 import Vector2 from "./Vector2";
 
 class RoomEditorObject extends SceneObject {
-  constructor({
-    scene,
-    id,
-    boundaryPoints,
-    opacity,
-    canvasLayer,
-    backgroundColor,
-    onObjectUpdated,
-    onObjectSelected,
-  }) {
-    super({
-      scene: scene,
-      id: id,
-      parent: null,
-      position: new Vector2(0, 0),
-      size: new Vector2(0, 0),
-      scale: new Vector2(1, 1),
-      staticObject: true,
-      canvasLayer: canvasLayer,
-    });
+  constructor(props) {
+    super(props);
+
+    const {
+      boundaryPoints,
+      opacity,
+      backgroundColor,
+      onObjectsUpdated,
+      onObjectSelected,
+      fontFamily,
+    } = props;
 
     // Map of item ids that have been added to room
-    this.roomItems = new Set();
+    this.roomItems = new Map();
 
     this.backgroundColor = backgroundColor ?? "#fff";
     this.textColor = "#222";
@@ -36,17 +27,15 @@ class RoomEditorObject extends SceneObject {
     this.borderWidth = 0.07;
     this.opacity = opacity ?? 1.0;
 
-    this.onObjectUpdated = onObjectUpdated;
-    this.onObjectSelected = onObjectSelected;
+    this.fontFamily = fontFamily;
+
+    this.onObjectsUpdated = onObjectsUpdated ?? (() => {});
+    this.onObjectSelected = onObjectSelected ?? (() => {});
 
     this.setBoundaries(boundaryPoints);
 
-    // Boxes occupying area outside of room. Used for detecting when an object is outside of room bounds
-    this.boundaryBoxes = this._getOutOfBoundsBoxes();
-    this.drawBoundaryBoxes = false; // When set to true these boxes will be drawn (for debugging)
-
     this.mouseController = new MouseController({
-      watchedElement: this.scene.canvasArray[this.canvasLayer],
+      watchedElement: this.scene.canvas,
       onMouseDown: this.onMouseDown.bind(this),
       onMouseMove: this.onMouseMove.bind(this),
       onMouseUp: this.onMouseUp.bind(this),
@@ -61,7 +50,7 @@ class RoomEditorObject extends SceneObject {
       lineColor: "#888",
       lineWidth: 0.03,
       staticObject: true,
-      canvasLayer: 0,
+      zIndex: -1,
     });
     this.addChild(floorGrid);
     this.floorGrid = floorGrid;
@@ -70,6 +59,13 @@ class RoomEditorObject extends SceneObject {
 
     this.objectColors = ["#0043E0", "#f28a00", "#C400E0", "#7EE016", "#0BE07B"];
     this.objectColorCounter = 0;
+
+    // Set to true when item zIndexes need to be updated (e.g. after an item is selected)
+    this._needNormalizeItemZIndexes = false;
+    /* Set if selected object's position has been updated. onObjectUpdated() callback will 
+    then be called on next update() cycle with updated position. Hopefully this reduces 
+    unnecessary calls to onObjectUpdated */
+    this._selectedObjectPositionUpdated = false;
   }
 
   setBoundaries(boundaryPoints) {
@@ -78,78 +74,6 @@ class RoomEditorObject extends SceneObject {
 
     this._fitRoomToCanvas();
     this._calculateOffsetPoints();
-  }
-
-  // Fills any area between the boundary of the room and the bounding box of the RoomEditorObject itself with a box. Returns that list of boxes
-  _getOutOfBoundsBoxes() {
-    const boxes = [];
-
-    /* Offset represents distance past the size of the room. Used since some boundary edges are flush with
-    the edge of the room and with the current method they wouldn't get any rects beneath them */
-    const offset = 0.5;
-    const directions = [];
-    // Loop over boundary edges
-    for (let i = 0; i < this.boundaryPoints.length; i++) {
-      const p1 = this.boundaryPoints[i];
-      const p2 = this.boundaryPoints[
-        i === this.boundaryPoints.length - 1 ? 0 : i + 1
-      ];
-      let direction;
-      let box;
-      if (Vector2.floatEquals(p1.x, p2.x)) {
-        // Vertical line
-        direction = p2.y > p1.y ? 1 : -1;
-        if (direction > 0) {
-          // Down line
-          box = {
-            p1: new Vector2(p1.x, p1.y),
-            p2: new Vector2(this.size.x + offset, p2.y),
-          };
-        } else if (direction < 0) {
-          // Up line
-          box = {
-            p1: new Vector2(-offset, p2.y),
-            p2: new Vector2(p1.x, p1.y),
-          };
-        }
-      } else {
-        // Horizontal line
-        direction = p2.x > p1.x ? 1 : -1;
-        if (direction > 0) {
-          // Right line
-          box = {
-            p1: new Vector2(p1.x, -offset),
-            p2: new Vector2(p2.x, p2.y),
-          };
-        } else if (direction < 0) {
-          // Left line
-          box = {
-            p1: new Vector2(p2.x, p2.y),
-            p2: new Vector2(p1.x, this.size.y + offset),
-          };
-        }
-      }
-      // Check previous two boxes for overlap to see if this box would be redundant (overlap other boxes)
-      let redundant = false;
-      for (let i = boxes.length - 1; i >= boxes.length - 2 && i >= 0; i--) {
-        if (Collisions.rectInRect(box.p1, box.p2, boxes[i].p1, boxes[i].p2)) {
-          redundant = true;
-        }
-      }
-      // When on last edge, also check first two boxes
-      if (i === this.boundaryPoints.length - 1) {
-        for (let i = 0; i < 2 && i < boxes.length; i++) {
-          if (Collisions.rectInRect(box.p1, box.p2, boxes[i].p1, boxes[i].p2)) {
-            redundant = true;
-          }
-        }
-      }
-      if (!redundant) {
-        boxes.push(box);
-      }
-      directions.push(direction);
-    }
-    return boxes;
   }
 
   // Calculates and sets offset points (used so that when drawing room border the lines won't overlap into the room)
@@ -182,14 +106,14 @@ class RoomEditorObject extends SceneObject {
   }
 
   _fitRoomToCanvas() {
-    const ctx = this.scene.ctx[this.canvasLayer];
+    const ctx = this.scene.ctx;
 
     // Padding from edge of canvas
     const padding = {
-      top: ctx.canvas.width * 0.08,
-      bottom: ctx.canvas.width * 0.04,
-      left: ctx.canvas.width * 0.04,
-      right: ctx.canvas.width * 0.04,
+      top: ctx.canvas.width * 0.02,
+      bottom: ctx.canvas.width * 0.02,
+      left: ctx.canvas.width * 0.02,
+      right: ctx.canvas.width * 0.02,
     };
 
     let xMax;
@@ -262,20 +186,44 @@ class RoomEditorObject extends SceneObject {
     this.position = new Vector2(position.x, position.y);
   }
 
-  // Rounds num to the nearest multiple of given a number
-  _roundToNearestMultipleOf(num, multipleOf) {
-    const remainder = num % multipleOf;
-    const divided = num / multipleOf;
-    const rounded =
-      remainder >= multipleOf / 2 ? Math.ceil(divided) : Math.floor(divided);
-    return multipleOf * rounded;
+  // Finds all (direct) children that the given point lies within
+  _getChildrenIndicesAtPosition(position) {
+    const objects = this.children;
+    let found = [];
+    for (let i = 0; i < objects.length; i++) {
+      const bbox = objects[i].getGlobalBoundingBox();
+      if (Collisions.pointInRect(position, bbox)) {
+        found.push(i);
+      }
+    }
+    return found;
+  }
+
+  // Ensures that item zIndexes aren't larger than necessary.
+  _normalizeItemZIndexes() {
+    const sortedItems = [...this.roomItems.values()].sort(
+      (a, b) => a.zIndex - b.zIndex
+    );
+    const updated = [];
+    for (let i = 0; i < sortedItems.length; i++) {
+      const item = sortedItems[i];
+      if (item.zIndex !== i) {
+        item.zIndex = i;
+        updated.push({ id: item.id, updated: { zIndex: item.zIndex } });
+      }
+    }
+    if (updated.length > 0) {
+      this.onObjectsUpdated(updated);
+    }
   }
 
   // Mouse callbacks that are passed to mouse controller
   onMouseDown(position) {
-    // Get the object indices that were under the click and sort them in descending order so that the one on top is selected
+    // Get the object indices that were under the click and sort in order of descending zIndex so that highest object takes priority
     const clicked = this._getChildrenIndicesAtPosition(position).sort(
-      (a, b) => b - a
+      (a, b) => {
+        return this.children[b].zIndex - this.children[a].zIndex;
+      }
     );
     if (clicked.length > 0) {
       for (let i = 0; i < clicked.length; i++) {
@@ -289,8 +237,27 @@ class RoomEditorObject extends SceneObject {
             }
             obj.selected = true;
             this.selectedObject = obj;
-            // Move the selected object to the back of the children array so its drawn last (on top)
-            this.children.push(this.children.splice(clicked[i], 1)[0]);
+
+            obj.zIndex = Infinity;
+            // const updated = [];
+
+            // const oldZIndex = obj.zIndex;
+            // obj.zIndex = this.roomItems.size - 1;
+            // updated.push({ id: obj.id, updated: { zIndex: obj.zIndex } });
+
+            // console.log("OLD,NEW ZINDEX", oldZIndex, obj.zIndex);
+            // console.log(this.roomItems.size);
+            // for (const item of this.roomItems.values()) {
+            //   if (item.id === obj.id) continue;
+            //   console.log("CHECKING", item.zIndex);
+            //   if (item.zIndex > oldZIndex) {
+            //     item.zIndex -= 1;
+            //     updated.push({ id: item.id, updated: { zIndex: item.zIndex } });
+            //   }
+            // }
+            // console.log(updated);
+            this._needNormalizeItemZIndexes = true;
+
             this.onObjectSelected(obj);
           }
           return;
@@ -316,39 +283,12 @@ class RoomEditorObject extends SceneObject {
           new Vector2(globalPos.x + delta.x, globalPos.y + delta.y)
         )
       );
-
-      this.onObjectUpdated(selectedObject.id, {
-        position: selectedObject.position,
-      });
+      this._selectedObjectPositionUpdated = true;
     }
   }
   onMouseUp() {}
 
-  // Finds all (direct) children that the given point lies within
-  _getChildrenIndicesAtPosition(position) {
-    const objects = this.children;
-    let found = [];
-    for (let i = 0; i < objects.length; i++) {
-      const bbox = objects[i].getGlobalBoundingBox();
-      if (Collisions.pointInRect(position, bbox)) {
-        found.push(i);
-      }
-    }
-    return found;
-  }
-
-  // Configures the context to draw text with these styles
-  _setContextTextStyle(ctx) {
-    // Font size range
-    const fontSize = 0.24;
-
-    ctx.font = `bold ${fontSize}px sans-serif`;
-    ctx.textBaseline = "middle";
-    ctx.textAlign = "center";
-    ctx.fillStyle = this.textColor;
-  }
-
-  // Takes name, dimensions, color and adds a new item to the room object/scene.
+  // Takes name, dimensions, color and adds a new item to the room object/scene. Returns true if item was successfully added, false otherwise
   addItemToRoom({
     id,
     name,
@@ -357,10 +297,12 @@ class RoomEditorObject extends SceneObject {
     position,
     rotation,
     movementLocked,
+    zIndex,
+    visible,
   }) {
     // Don't add object if another already exists with given id
-    if (id && this.scene.objects.has(id)) {
-      return undefined;
+    if (id && this.roomItems.has(id)) {
+      return false;
     }
     const color = this.objectColors[this.objectColorCounter];
     this.objectColorCounter++;
@@ -380,34 +322,41 @@ class RoomEditorObject extends SceneObject {
       rotation: rotation ?? 0,
       size: new Vector2(width ?? 1, height ?? 1),
       color: color,
-      opacity: 0.5,
+      opacity: 0.6,
       nameText: name ?? "New Item",
       staticObject: false,
       snapPosition: false,
       snapOffset: 0.2,
-      canvasLayer: this.canvasLayer,
       movementLocked: movementLocked ?? false,
+      fontFamily: this.fontFamily,
+      zIndex: zIndex ?? 0,
     });
-    this.roomItems.add(obj.id);
-    this.addChild(obj);
+    this.roomItems.set(obj.id, obj);
 
-    // If position was assigned, call
-    if (assignPosition) {
-      this.onObjectUpdated(id, { position: position });
+    // If item has visible property, actually add it to scene
+    if (visible) {
+      this.addChild(obj);
     }
 
-    return obj;
+    // If new position was assigned, call
+    if (assignPosition) {
+      this.onObjectsUpdated([{ id: id, updated: { position: position } }]);
+    }
+
+    // Normalize zIndexes of items
+    this._needNormalizeItemZIndexes = true;
+
+    return true;
   }
 
   // Updates object in room. Returns true if successful false if not
   updateRoomItem(
     id,
-    { position, name, width, height, rotation, movementLocked }
+    { position, name, width, height, rotation, movementLocked, zIndex, visible }
   ) {
-    const obj = this.scene.objects.get(id);
+    const obj = this.roomItems.get(id);
     if (!obj) {
-      console.error("ERROR updating room item. Invalid object ID: " + id);
-      return;
+      return false;
     }
     if (position && position.x && position.y) {
       obj.setPosition(new Vector2(position.x, position.y));
@@ -425,37 +374,81 @@ class RoomEditorObject extends SceneObject {
     if (movementLocked !== undefined) {
       obj.movementLocked = movementLocked;
     }
-  }
-
-  removeItemFromRoom(id) {
-    const obj = this.scene.objects.get(id);
-    if (obj) {
-      if (this.selectedObject && this.selectedObject.id === id) {
-        this.selectedObject = null;
-      }
-      this.scene.removeObject(obj);
+    if (zIndex !== undefined) {
+      obj.zIndex = zIndex;
     }
-    this.roomItems.delete(id);
+    if (visible !== undefined) {
+      if (visible) {
+        try {
+          this.addChild(obj);
+        } catch (err) {
+          console.warn(`Can't show item ${id}. ${err.message}`);
+        }
+      } else {
+        try {
+          this.removeChild(obj);
+        } catch (err) {
+          console.warn(`Can't hide item ${id}. ${err.message}`);
+        }
+      }
+    }
+    return true;
   }
 
-  _update() {
+  // Removes item from room. Returns true if successful, false if not.
+  removeItemFromRoom(id) {
+    const obj = this.roomItems.get(id);
+    if (obj === undefined) return false;
+    if (this.selectedObject && this.selectedObject.id === id) {
+      this.selectedObject = null;
+    }
+    this.removeChild(obj);
+    this.roomItems.delete(id);
+
+    // Normalize zIndexes of items
+    this._needNormalizeItemZIndexes = true;
+
+    return true;
+  }
+
+  update() {
     // Resize if the canvas has been resized
     if (this.scene.resized) {
       this._fitRoomToCanvas();
     }
+
+    // Update room item zIndexes if necessary
+    if (this._needNormalizeItemZIndexes) {
+      this._normalizeItemZIndexes();
+      this._needNormalizeItemZIndexes = false;
+    }
+
+    // Send updates to selected object position if any exist
+    if (this._selectedObjectPositionUpdated) {
+      this.onObjectsUpdated([
+        {
+          id: this.selectedObject.id,
+          updated: {
+            position: this.selectedObject.position,
+          },
+        },
+      ]);
+      this._selectedObjectPositionUpdated = false;
+    }
   }
 
-  _draw(ctx) {
-    const bbox = this.getGlobalBoundingBox();
-    const globalSize = { x: bbox.p2.x - bbox.p1.x, y: bbox.p2.y - bbox.p1.y };
+  // Configures the context to draw text with these styles
+  _setContextTextStyle(ctx) {
+    // Font size range
+    const fontSize = 0.24;
 
-    // Draw caption text
-    const captionText = "1 cell = 1 square foot";
-    this._setContextTextStyle(ctx);
-    const textWidth = ctx.measureText(captionText).width;
-    if (textWidth < globalSize.x) {
-      ctx.fillText(captionText, this.size.x / 2, this.size.y + 0.3);
-    }
+    ctx.font = `bold ${fontSize}px sans-serif`;
+    ctx.textBaseline = "middle";
+    ctx.textAlign = "center";
+    ctx.fillStyle = this.textColor;
+  }
+
+  draw(ctx) {
     // Fill the area outside of the room with the background color.
     ctx.beginPath();
     // First outline this objects border path - Clockwise order
@@ -499,20 +492,6 @@ class RoomEditorObject extends SceneObject {
     ctx.lineJoin = "butt";
     ctx.lineCap = "butt";
     ctx.stroke();
-
-    if (this.drawBoundaryBoxes) {
-      for (let i = 0; i < this.boundaryBoxes.length; i++) {
-        ctx.globalAlpha = 0.5;
-        ctx.fillStyle = "#ff0000";
-        ctx.fillRect(
-          this.boundaryBoxes[i].p1.x,
-          this.boundaryBoxes[i].p1.y,
-          this.boundaryBoxes[i].p2.x - this.boundaryBoxes[i].p1.x,
-          this.boundaryBoxes[i].p2.y - this.boundaryBoxes[i].p1.y
-        );
-        ctx.globalAlpha = 1.0;
-      }
-    }
   }
 }
 

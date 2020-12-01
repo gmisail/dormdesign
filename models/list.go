@@ -2,7 +2,9 @@ package models
 
 import (
 	"errors"
-	"fmt"
+	"reflect"
+
+	"github.com/gmisail/dormdesign/utils"
 	rdb "gopkg.in/rethinkdb/rethinkdb-go.v6"
 )
 
@@ -16,6 +18,7 @@ type ListItem struct {
 	EditorPosition EditorPoint `json:"editorPosition"`
 	EditorRotation float64 `json:"editorRotation"`
 	EditorLocked bool `json:"editorLocked"`
+	EditorZIndex float64 `json:"editorZIndex"`
 }
 
 type ItemDimensions struct {
@@ -88,8 +91,6 @@ func GetList(database *rdb.Session, id string) (List, error) {
 }
 
 func UpdateVertices(database *rdb.Session, id string, verts []EditorPoint) error {
-	fmt.Println("updating verts")
-
 	err := rdb.DB("dd_data").Table("lists").Get(id).Update(map[string]interface{}{
 		"vertices": verts,
 	}).Exec(database)
@@ -129,98 +130,33 @@ func ClearListItems(database *rdb.Session, roomID string) error {
 	return err
 }
 
+func reflectValue(obj interface{}) reflect.Value {
+	var val reflect.Value
+
+	if reflect.TypeOf(obj).Kind() == reflect.Ptr {
+		val = reflect.ValueOf(obj).Elem()
+	} else {
+		val = reflect.ValueOf(obj)
+	}
+
+	return val
+}
+
 func EditListItem(database *rdb.Session, id string, itemID string, updated map[string]interface{}) (*ListItem, error) {
 	res, err := rdb.DB("dd_data").Table("lists").Get(id).Field("items").Filter(rdb.Row.Field("id").Eq(itemID)).Run(database)
 
-	var item ListItem;
-	res.One(&item);
+	var item ListItem
+	res.One(&item)
 
 	if err != nil {
 		return nil, err
 	}
 
-	defer res.Close();
-	
-	for property, value := range updated {
-		switch property {
-		case "name": 
-			if value == nil {
-				item.Name = ""
-			} else {
-				item.Name = value.(string)
-			}
-		case "quantity":
-			if value == nil {
-				item.Quantity = 0
-			} else {
-				item.Quantity = int(value.(float64))
-			}
-		case "claimedBy":
-			if value == nil {
-				item.ClaimedBy = ""
-			} else {
-				item.ClaimedBy = value.(string)
-			}
-		case "visibleInEditor":
-			if value == nil {
-				item.VisibleInEditor = false
-			} else {
-				item.VisibleInEditor = value.(bool)
-			}
-		case "dimensions":
-			if value == nil {
-				item.Dimensions = ItemDimensions{}
-			} else {
-				dimensions := value.(map[string]interface{})
-				if dimensions["width"] == nil {
-					item.Dimensions.Width = 0.0
-				} else {
-					item.Dimensions.Width = dimensions["width"].(float64)
-				}
-				if dimensions["height"] == nil {
-					item.Dimensions.Height = 0.0
-				} else {
-					item.Dimensions.Height = dimensions["height"].(float64)
-				}
-				if dimensions["length"] == nil {
-					item.Dimensions.Length = 0.0
-				} else {
-					item.Dimensions.Length = dimensions["length"].(float64)
-				}
-			}
-		case "editorPosition":
-			if value == nil {
-				item.EditorPosition = EditorPoint{}
-			} else {
-				coord := value.(map[string]interface{})
+	defer res.Close()
 
-				if coord["x"] == nil {
-					item.EditorPosition.X = 0.0
-				} else {
-					item.EditorPosition.X = coord["x"].(float64)
-				}
-				
-				if coord["y"] == nil {
-					item.EditorPosition.Y = 0.0
-				} else {
-					item.EditorPosition.Y = coord["y"].(float64)
-				}
-			}
-		case "editorRotation":
-			if value == nil {
-				item.EditorRotation = 0.0
-			} else {
-				item.EditorRotation = value.(float64)
-			}
-		case "editorLocked":
-			if value == nil {
-				item.EditorLocked = false
-			} else {
-				item.EditorLocked = value.(bool)
-			}
-		default:
-			return nil, errors.New("ERROR Updating ListItem. Unknown property: " + property)
-		}
+	err = utils.UpdateStructJSONFields(&item, &updated, true)
+	if err != nil {
+		return nil, err
 	}
 
 	err = rdb.DB("dd_data").Table("lists").Get(id).Update(map[string]interface{}{
@@ -228,7 +164,6 @@ func EditListItem(database *rdb.Session, id string, itemID string, updated map[s
 			return rdb.Branch(c.Field("id").Eq(itemID), item, c)
 		}),
 	}).Exec(database)
-	// log.Printf("%+v\n", response)
 	if err != nil {
 		return nil, err
 	}
