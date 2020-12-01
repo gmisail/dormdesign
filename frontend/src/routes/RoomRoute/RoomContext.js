@@ -12,6 +12,7 @@ export const RoomActions = {
   itemsUpdated: "ITEM_UPDATED",
   itemSelected: "ITEM_SELECTED",
   boundsUpdated: "BOUNDS_UPDATED",
+  cloneRoom: "CLONE_ROOM",
   loading: "LOADING",
   error: "ERROR",
   clearEditorActionQueue: "CLEAR_EDITOR_ACTION_QUEUE",
@@ -40,6 +41,12 @@ const roomReducer = (state, action) => {
         bounds: action.payload.bounds,
         items: action.payload.data,
         socketConnection: action.payload.socketConnection,
+      };
+    case RoomActions.cloneRoom:
+      return {
+        ...state,
+        bounds: action.payload.bounds,
+        items: action.payload.items,
       };
     case RoomActions.connectionClosed:
       return {
@@ -218,6 +225,15 @@ export const RoomProvider = ({ children }) => {
             payload: { bounds: data.vertices },
           });
         });
+
+        connection.on("cloneRoom", (data) => {
+          dispatch({
+            type: RoomActions.updateLayout,
+            payload: { items: data.items, bounds: data.vertices },
+          });
+
+          window.location.reload();
+        });
       } catch (error) {
         dispatch({ type: RoomActions.error, payload: { error } });
       }
@@ -231,6 +247,20 @@ export const RoomProvider = ({ children }) => {
       dispatch({ type: RoomActions.setUserName, payload: { userName } });
     },
     [dispatch]
+  );
+
+  const cloneRoom = useCallback(
+    (id, target) => {
+      state.socketConnection.send({
+        event: "cloneRoom",
+        sendResponse: true,
+        data: {
+          id,
+          target_id: target,
+        },
+      });
+    },
+    [state.socketConnection]
   );
 
   const addItem = useCallback(
@@ -329,6 +359,7 @@ export const RoomProvider = ({ children }) => {
   const value = {
     ...state,
     connectToRoom,
+    cloneRoom,
     addItem,
     updateItems,
     updateBounds,

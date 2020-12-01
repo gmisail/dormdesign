@@ -191,36 +191,37 @@ func (c *Client) translateMessage(reader io.Reader) (*Message, error) {
 					Vertices: updatedVerts,
 				},
 			}
+		case "cloneRoom":
+			type CloneRoomEvent struct {
+				Id string `json:"id"`
+				Target string `json:"target_id"`
+			}
 
-			/*
-			
-				verts := data["vertices"].([]interface{})
-		updatedVerts := make([]models.EditorPoint, len(verts))
-		
-		for i := range verts {
-			vert := verts[i].(map[string]interface{})
-			x := vert["x"].(float64)
-			y := vert["y"].(float64)
+			var eventData CloneRoomEvent
+			err := json.Unmarshal(roomMessage.Data, &eventData)
 
-			updatedVerts[i] = models.EditorPoint{X: x, Y: y}
-		}
+			if err != nil {
+				errorString = "Unable to translate cloneRooms event: " + err.Error()
+				break
+			}
 
-		err := models.UpdateVertices(c.hub.database, roomID, updatedVerts)
-		if err != nil {
-			errorString = "Error updating room layout in database: " + err.Error()
-			break
-		}
+			room, copyErr := models.CopyList(c.hub.database, eventData.Id, eventData.Target)
 
-		response = &MessageResponse{
-			Event: "updateLayout",
-			Data: struct{
-				Vertices []models.EditorPoint `json:"vertices"`
-			}{
-				Vertices: updatedVerts,
-			},
-		}
-			
-			*/
+			if copyErr != nil {
+				errorString = "Unable to copy the room: " + err.Error()
+				break
+			}
+
+			response = &MessageResponse{
+				Event: "cloneRoom",
+				Data: struct{
+					Items []models.ListItem `json:"items"`
+					Vertices []models.EditorPoint `json:"vertices"`
+				}{
+					Items: room.Items,
+					Vertices: room.Vertices,
+				},
+			}
 		default:
 			errorString = fmt.Sprintf("Unknown event '%s'", roomMessage.Event)
 		}

@@ -1,6 +1,7 @@
 package models
 
 import (
+	"log"
 	"errors"
 	"reflect"
 
@@ -86,6 +87,40 @@ func GetList(database *rdb.Session, id string) (List, error) {
 	}
 
 	defer res.Close()
+
+	return data, nil
+}
+
+func CopyList(database *rdb.Session, id string, target string) (List, error) {
+	data, err := GetList(database, target)
+
+	if err != nil {
+		log.Println(err)
+	//	return echo.NewHTTPError(http.StatusBadRequest, "Cannot find room with given ID.")
+	}
+
+	/* remove all of the current items in the room */
+	clearErr := ClearListItems(database, id)
+
+	if clearErr != nil {
+		log.Println(clearErr)
+//		return echo.NewHTTPError(http.StatusBadRequest, "Cannot clear room with given ID.")
+	}
+
+	/* replace the current vertices with the target room's vertices */
+	vertErr := UpdateVertices(database, id, data.Vertices)
+
+	if vertErr != nil {
+		log.Println(vertErr)
+	//	return echo.NewHTTPError(http.StatusBadRequest, "Cannot update vertices with given ID.")
+	}
+
+	/* loop through target and add them to current list. Ensures that ID's are new and unique */
+	for _, item := range data.Items {
+		AddListItem(database, id, item)
+	}
+
+	data, err = GetList(database, target)
 
 	return data, nil
 }

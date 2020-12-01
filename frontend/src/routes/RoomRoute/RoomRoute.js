@@ -105,6 +105,7 @@ export const RoomRouteNew = () => {
     socketConnection,
     userName,
     connectToRoom,
+    cloneRoom,
     setUserName,
     addItem,
     updateItems,
@@ -182,14 +183,14 @@ export const RoomRouteNew = () => {
     () =>
       toggleModal(modalTypes.settings, {
         onClone: (target) => {
-          DataRequests.cloneList(id, target);
+          cloneRoom(id, target);
         },
 
         onUpdateLayout: () => {
           console.log("layout updated");
         },
       }),
-    [toggleModal]
+    [toggleModal, cloneRoom]
   );
 
   const onToggleItemEditorVisibility = useCallback(
