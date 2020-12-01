@@ -1,4 +1,4 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+The DormDesign frontend uses `create-react-app`, and thus it re-uses many of the same commands. 
 
 ## Available Scripts
 
