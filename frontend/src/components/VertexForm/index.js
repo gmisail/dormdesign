@@ -1,8 +1,6 @@
-import React, { Component, useContext } from "react";
-import { RoomContext } from "../../routes/RoomRoute/RoomContext";
-import { Form, Col, Button } from "react-bootstrap";
+import React, { Component } from "react";
+import { Button, Col, Form } from "react-bootstrap";
 import Vector2 from "../../room-editor/Vector2";
-import { BsThreeDotsVertical } from "react-icons/bs";
 
 class VertexForm extends Component {
   constructor(props) {

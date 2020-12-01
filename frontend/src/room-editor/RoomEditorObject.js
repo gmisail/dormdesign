@@ -1,8 +1,8 @@
-import SceneObject from "./SceneObject";
-import MouseController from "./MouseController";
 import Collisions from "./Collisions";
-import RoomRectObject from "./RoomRectObject";
+import MouseController from "./MouseController";
 import RoomGridObject from "./RoomGridObject";
+import RoomRectObject from "./RoomRectObject";
+import SceneObject from "./SceneObject";
 import Vector2 from "./Vector2";
 
 class RoomEditorObject extends SceneObject {
@@ -21,8 +21,8 @@ class RoomEditorObject extends SceneObject {
     // Map of item ids that have been added to room
     this.roomItems = new Map();
 
-    //this.backgroundColor = backgroundColor ?? "#fff";
-    this.backgroundColor = "red";
+    this.backgroundColor = backgroundColor ?? "#fff";
+    //this.backgroundColor = "red";
     this.textColor = "#222";
     this.borderColor = "#555";
     this.borderWidth = 0.07;
@@ -406,7 +406,11 @@ class RoomEditorObject extends SceneObject {
     if (this.selectedObject && this.selectedObject.id === id) {
       this.selectedObject = null;
     }
-    this.removeChild(obj);
+
+    if (this.scene.hasObjectWithID(id)) {
+      this.removeChild(obj);
+    }
+
     this.roomItems.delete(id);
 
     // Normalize zIndexes of items
