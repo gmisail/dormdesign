@@ -407,6 +407,7 @@ class RoomEditorObject extends SceneObject {
       this.selectedObject = null;
     }
 
+    // Remove from scene if obj is in scene (visible in editor)
     if (this.scene.hasObjectWithID(id)) {
       this.removeChild(obj);
     }
