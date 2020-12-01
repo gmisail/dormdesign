@@ -399,7 +399,10 @@ class RoomEditorObject extends SceneObject {
     if (this.selectedObject && this.selectedObject.id === id) {
       this.selectedObject = null;
     }
-    this.removeChild(obj);
+    // Remove from scene if obj is in scene (visible in editor)
+    if (this.scene.hasObjectWithID(id)) {
+      this.removeChild(obj);
+    }
     this.roomItems.delete(id);
 
     // Normalize zIndexes of items
