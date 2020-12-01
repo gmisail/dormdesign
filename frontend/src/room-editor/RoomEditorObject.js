@@ -21,7 +21,8 @@ class RoomEditorObject extends SceneObject {
     // Map of item ids that have been added to room
     this.roomItems = new Map();
 
-    this.backgroundColor = backgroundColor ?? "#fff";
+    //this.backgroundColor = backgroundColor ?? "#fff";
+    this.backgroundColor = "red";
     this.textColor = "#222";
     this.borderColor = "#555";
     this.borderWidth = 0.07;
@@ -31,15 +32,6 @@ class RoomEditorObject extends SceneObject {
 
     this.onObjectsUpdated = onObjectsUpdated ?? (() => {});
     this.onObjectSelected = onObjectSelected ?? (() => {});
-
-    this.setBoundaries(boundaryPoints);
-
-    this.mouseController = new MouseController({
-      watchedElement: this.scene.canvas,
-      onMouseDown: this.onMouseDown.bind(this),
-      onMouseMove: this.onMouseMove.bind(this),
-      onMouseUp: this.onMouseUp.bind(this),
-    });
 
     const floorGrid = new RoomGridObject({
       scene: this.scene,
@@ -54,6 +46,15 @@ class RoomEditorObject extends SceneObject {
     });
     this.addChild(floorGrid);
     this.floorGrid = floorGrid;
+
+    this.mouseController = new MouseController({
+      watchedElement: this.scene.canvas,
+      onMouseDown: this.onMouseDown.bind(this),
+      onMouseMove: this.onMouseMove.bind(this),
+      onMouseUp: this.onMouseUp.bind(this),
+    });
+
+    this.setBoundaries(boundaryPoints);
 
     this.selectedObject = null;
 
@@ -74,6 +75,9 @@ class RoomEditorObject extends SceneObject {
 
     this._fitRoomToCanvas();
     this._calculateOffsetPoints();
+
+    // Update size of grid to match any changes to size made in _fitRoomToCanvas()
+    this.floorGrid.size = new Vector2(this.size.x, this.size.y);
   }
 
   // Calculates and sets offset points (used so that when drawing room border the lines won't overlap into the room)

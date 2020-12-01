@@ -1,5 +1,4 @@
 import DormItem from "../models/DormItem";
-import { saveAs } from "file-saver";
 
 // let TEST_ID_COUNTER = 600;
 // const TEST_ITEMS_DATA = [
