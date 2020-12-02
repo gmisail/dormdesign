@@ -38,13 +38,17 @@ class DataRequests {
     const response = await fetch("/room/create", {
       method: "POST",
     });
+
+    const data = await response.json();
+
     if (!response.ok) {
-      const data = await response.json();
       const message = `${response.status} Error creating room: ${data.message}`;
       console.error(message);
+
+      return null;
     }
-    const roomID = await response.json();
-    return roomID;
+
+    return data;
   }
 
   // Retrieves the Room's data from the server.

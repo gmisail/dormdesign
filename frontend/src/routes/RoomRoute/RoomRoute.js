@@ -42,15 +42,6 @@ const Modal = (props) => {
     default:
       return null;
   }
-
-  /**
-   * EventController.on("updateLayout", (data) => {
-      EventController.emit("layoutUpdated", data);
-      this.setState({ bounds: data.vertices });
-    });
-   * 
-
-   */
 };
 
 /*

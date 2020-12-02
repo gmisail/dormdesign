@@ -209,7 +209,7 @@ func (c *Client) translateMessage(reader io.Reader) (*Message, error) {
 			room, copyErr := models.CopyRoom(c.hub.database, eventData.ID, eventData.Target)
 
 			if copyErr != nil {
-				errorString = "Unable to copy the room: " + err.Error()
+				errorString = "Unable to copy the room: " + copyErr.Error()
 				break
 			}
 
