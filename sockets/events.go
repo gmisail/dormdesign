@@ -194,7 +194,7 @@ func (c *Client) translateMessage(reader io.Reader) (*Message, error) {
 			}
 		case "cloneRoom":
 			type CloneRoomEvent struct {
-				Id string `json:"id"`
+				ID string `json:"id"`
 				Target string `json:"target_id"`
 			}
 
@@ -206,14 +206,14 @@ func (c *Client) translateMessage(reader io.Reader) (*Message, error) {
 				break
 			}
 
-			room, copyErr := models.CopyRoom(c.hub.database, eventData.Id, eventData.Target)
+			room, copyErr := models.CopyRoom(c.hub.database, eventData.ID, eventData.Target)
 
 			if copyErr != nil {
 				errorString = "Unable to copy the room: " + err.Error()
 				break
 			}
 
-			log.Printf("CLONED ROOM %s", eventData.Id)
+			log.Printf("CLONED ROOM %s", eventData.ID)
 
 			response = &MessageResponse{
 				Event: "cloneRoom",
