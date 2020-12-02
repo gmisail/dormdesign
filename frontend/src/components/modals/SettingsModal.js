@@ -2,8 +2,7 @@ import React from "react";
 import { Button, Form, InputGroup, FormControl } from "react-bootstrap";
 import Modal from "react-bootstrap/Modal";
 import { RoomContext } from "../../routes/RoomRoute/RoomContext";
-import ChooseNameForm from "../ChooseNameForm/ChooseNameForm";
-import VertexForm from "../VertexForm";
+import VertexForm from "../VertexForm/VertexForm";
 
 class SettingsModal extends React.Component {
   static contextType = RoomContext;
@@ -35,20 +34,19 @@ class SettingsModal extends React.Component {
         </Modal.Header>
 
         <Modal.Body>
+          <h5>Layout</h5>
+          <VertexForm
+            bounds={this.context.bounds}
+            onSubmit={this.context.updateBounds}
+          ></VertexForm>
+          <hr />
+          <h5>Clone Existing Room</h5>
+          <p>
+            Cloning allows you to copy the layout, furniture, and properties
+            from another room into your room. Note that once you clone a room,
+            changes only apply to your copy, not the original.
+          </p>
           <Form>
-            <h5>Layout</h5>
-            <VertexForm
-              bounds={this.context.bounds}
-              onUpdateLayout={this.context.updateBounds}
-            ></VertexForm>
-            <hr />
-            <h5>Clone Existing Room</h5>
-            <p>
-              Cloning allows you to copy the layout, furniture, and properties
-              from another room into your room. Note that once you clone a room,
-              changes only apply to your copy, not the original.
-            </p>
-
             <InputGroup className="mb-3">
               <FormControl
                 onChange={this.onChange}

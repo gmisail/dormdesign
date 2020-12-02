@@ -70,7 +70,13 @@ class RoomEditorObject extends SceneObject {
   }
 
   setBoundaries(boundaryPoints) {
-    this.boundaryPoints = boundaryPoints;
+    // Create copies of the points since we don't want to reference the passed in objects themselves
+    const copied = [];
+    for (let i = 0; i < boundaryPoints.length; i++) {
+      copied.push(new Vector2(boundaryPoints[i].x, boundaryPoints[i].y));
+    }
+
+    this.boundaryPoints = copied;
     this._offsetPoints = [];
 
     this._fitRoomToCanvas();
@@ -241,25 +247,9 @@ class RoomEditorObject extends SceneObject {
             }
             obj.selected = true;
             this.selectedObject = obj;
-
+            // Set zIndex to something very large so that when item zIndexes are normalized, this item is on top
             obj.zIndex = Infinity;
-            // const updated = [];
 
-            // const oldZIndex = obj.zIndex;
-            // obj.zIndex = this.roomItems.size - 1;
-            // updated.push({ id: obj.id, updated: { zIndex: obj.zIndex } });
-
-            // console.log("OLD,NEW ZINDEX", oldZIndex, obj.zIndex);
-            // console.log(this.roomItems.size);
-            // for (const item of this.roomItems.values()) {
-            //   if (item.id === obj.id) continue;
-            //   console.log("CHECKING", item.zIndex);
-            //   if (item.zIndex > oldZIndex) {
-            //     item.zIndex -= 1;
-            //     updated.push({ id: item.id, updated: { zIndex: item.zIndex } });
-            //   }
-            // }
-            // console.log(updated);
             this._needNormalizeItemZIndexes = true;
 
             this.onObjectSelected(obj);

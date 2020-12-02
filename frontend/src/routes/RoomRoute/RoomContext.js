@@ -321,7 +321,6 @@ export const RoomProvider = ({ children }) => {
           vertices: bounds,
         },
       });
-
       dispatch({
         type: RoomActions.boundsUpdated,
         payload: { bounds },

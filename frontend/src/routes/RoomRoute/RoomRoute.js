@@ -2,7 +2,7 @@ import React, { useEffect, useState, useContext, useCallback } from "react";
 import { useParams } from "react-router-dom";
 import { RoomContext } from "./RoomContext";
 
-import { Alert, Spinner } from "react-bootstrap";
+import { Spinner } from "react-bootstrap";
 import { BsGear, BsPlus } from "react-icons/bs";
 
 import RoomEditor from "../../components/RoomEditor/RoomEditor";
@@ -15,8 +15,6 @@ import SettingsModal from "../../components/modals/SettingsModal";
 
 import ErrorModal from "../../components/modals/ErrorModal";
 import IconButton from "../../components/IconButton/IconButton";
-
-import DataRequests from "../../controllers/DataRequests";
 
 import "./RoomRoute.scss";
 
@@ -189,7 +187,7 @@ export const RoomRouteNew = () => {
           console.log("layout updated");
         },
       }),
-    [toggleModal, cloneRoom]
+    [toggleModal, cloneRoom, id]
   );
 
   const onToggleItemEditorVisibility = useCallback(

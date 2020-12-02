@@ -136,6 +136,7 @@ class RoomEditor extends Component {
           break;
         case RoomActions.boundsUpdated:
           this.roomObject.setBoundaries(action.payload.bounds);
+          break;
         default:
           continue;
       }
