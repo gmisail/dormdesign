@@ -39,6 +39,7 @@ class SettingsModal extends React.Component {
             Cloning allows you to copy the layout, furniture, and properties
             from another room into your room. Note that once you clone a room,
             changes only apply to your copy, not the original.
+            <strong> This is not reversible.</strong>
           </p>
           <Form onSubmit={this.onCloneFormSubmit}>
             <Form.Row className="mb-3">
