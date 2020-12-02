@@ -1,0 +1,66 @@
+@import "./styles/variables.scss";
+
+body {
+  background-color: $background-color;
+  font-size: 15px;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5 {
+  font-family: "Arvo";
+  font-weight: 700;
+  color: $text-color-dark;
+}
+
+.main-content-container {
+  background-color: $background-color;
+}
+
+/* Remove default outline around buttons/inputs */
+button,
+input,
+textarea {
+  &:focus {
+    outline: 0;
+  }
+}
+
+.navbar-brand-logo {
+  font-family: "Arvo", serif;
+}
+
+.main-content-container {
+  padding-top: 56px; /* Offsets content of page from navbar (which is fixed to top) */
+  overflow: hidden;
+}
+
+.custom-card {
+  border-radius: $card-border-radius;
+  box-shadow: $box-shadow;
+}
+
+.custom-btn {
+  padding: 5px;
+  text-decoration: none;
+  border: none;
+  font-size: $btn-font-size;
+  font-family: $btn-font-family;
+  font-weight: $btn-font-weight;
+
+  border-radius: $btn-border-radius;
+  background-color: $color-primary;
+  color: $text-color-light;
+  box-shadow: $box-shadow;
+}
+
+#landing-jumbotron {
+  color: white;
+  text-shadow: 0px 8px 8px black;
+
+  background-image: url("https://www.mac.edu/ckfinder/connector?command=Proxy&lang=en&type=Files&currentFolder=%2F&hash=c245c263ce0eced480effe66bbede6b4d46c15ae&fileName=Autumn%27s-Dorm---%233%2Cv%2Cc%2Cweb.jpg");
+  background-size: cover;
+  background-repeat: no-repeat;
+}

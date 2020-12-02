@@ -2,6 +2,9 @@ package models
 
 import (
 	"errors"
+	"reflect"
+
+	"github.com/gmisail/dormdesign/utils"
 	rdb "gopkg.in/rethinkdb/rethinkdb-go.v6"
 )
 
@@ -13,6 +16,9 @@ type ListItem struct {
 	VisibleInEditor bool `json:"visibleInEditor" rethinkdb:"visibleInEditor"`
 	Dimensions ItemDimensions `json:"dimensions" rethinkdb:"dimensions"`
 	EditorPosition EditorPoint `json:"editorPosition"`
+	EditorRotation float64 `json:"editorRotation"`
+	EditorLocked bool `json:"editorLocked"`
+	EditorZIndex float64 `json:"editorZIndex"`
 }
 
 type ItemDimensions struct {
@@ -92,43 +98,33 @@ func RemoveListItem(database *rdb.Session, roomID string, itemID string) error {
 	return err;
 }
 
+func reflectValue(obj interface{}) reflect.Value {
+	var val reflect.Value
+
+	if reflect.TypeOf(obj).Kind() == reflect.Ptr {
+		val = reflect.ValueOf(obj).Elem()
+	} else {
+		val = reflect.ValueOf(obj)
+	}
+
+	return val
+}
+
 func EditListItem(database *rdb.Session, id string, itemID string, updated map[string]interface{}) (*ListItem, error) {
 	res, err := rdb.DB("dd_data").Table("lists").Get(id).Field("items").Filter(rdb.Row.Field("id").Eq(itemID)).Run(database)
 
-	var item ListItem;
-	res.One(&item);
+	var item ListItem
+	res.One(&item)
 
 	if err != nil {
 		return nil, err
 	}
 
-	defer res.Close();
-	
-	for property, value := range updated {
-		switch property {
-		case "name": 
-			item.Name = value.(string)
-		case "quantity":
-			item.Quantity = int(value.(float64))
-		case "claimedBy":
-			item.ClaimedBy = value.(string)
-		case "visibleInEditor":
-			item.VisibleInEditor = value.(bool)
-		case "dimensions":
-			dimensions := value.(map[string]interface{})
-			item.Dimensions.Width = dimensions["width"].(float64)
-			item.Dimensions.Length = dimensions["length"].(float64)
-			item.Dimensions.Height = dimensions["height"].(float64)
+	defer res.Close()
 
-		case "editorPosition":
-			coord := value.(map[string]interface{})
-		
-			item.EditorPosition.X = coord["x"].(float64)
-			item.EditorPosition.Y = coord["y"].(float64)
-
-		default:
-			return nil, errors.New("ERROR Updating ListItem. Unknown property: " + property)
-		}
+	err = utils.UpdateStructJSONFields(&item, &updated, true)
+	if err != nil {
+		return nil, err
 	}
 
 	err = rdb.DB("dd_data").Table("lists").Get(id).Update(map[string]interface{}{
@@ -136,7 +132,6 @@ func EditListItem(database *rdb.Session, id string, itemID string, updated map[s
 			return rdb.Branch(c.Field("id").Eq(itemID), item, c)
 		}),
 	}).Exec(database)
-	// log.Printf("%+v\n", response)
 	if err != nil {
 		return nil, err
 	}

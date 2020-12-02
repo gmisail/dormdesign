@@ -1,13 +1,19 @@
-import React from "react";
-import "./IconButton.css";
+import React, { forwardRef } from "react";
+import "./IconButton.scss";
 
-const IconButton = (props) => {
-  const { onClick, children } = props;
+const IconButton = forwardRef((props, ref) => {
+  const { onClick, children, className, disabled, style } = props;
   return (
-    <button className="icon-button" onClick={onClick}>
+    <button
+      ref={ref}
+      className={"icon-button " + className}
+      disabled={disabled}
+      onClick={onClick}
+      style={style}
+    >
       {children}
     </button>
   );
-};
+});
 
 export default IconButton;

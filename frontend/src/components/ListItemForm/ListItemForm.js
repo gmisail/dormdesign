@@ -7,17 +7,11 @@ class ListItemForm extends Component {
   constructor(props) {
     super(props);
     let item = props.item;
+
     // Name for new items should be blank
     const name = item ? item.name : "";
     if (!item) {
       item = new DormItem();
-    }
-
-    let width = "",
-      length = "";
-    if (item.dimensions) {
-      width = item.dimensions.width ?? "";
-      length = item.dimensions.length ?? "";
     }
 
     this.state = {
@@ -25,8 +19,8 @@ class ListItemForm extends Component {
       nameInputValue: name,
       qtyInputValue: item.quantity,
       claimedByInputValue: item.claimedBy ?? "",
-      widthInputValue: width,
-      lengthInputValue: length,
+      widthInputValue: item.dimensions?.width ?? "",
+      lengthInputValue: item.dimensions?.length ?? "",
       visibleInEditorValue: item.visibleInEditor,
       validated: false,
     };
@@ -54,76 +48,69 @@ class ListItemForm extends Component {
   };
 
   /*
-  Called when form is submitted. If form fields are valid, returns item ID and an object containing the DormItem
-  fields that were modified and their new values. Currently property values are in a form that is ready
-  to be sent and interpreted by the Golang backend, meaning undefined values are instead set to Golang
-  zero values (e.g. "" for strings)
+    Called when form is submitted. If form fields are valid, returns item ID and an object containing the 
+    DormItem fields that were modified and their new values.
   */
   onFormSubmit = (event) => {
     const form = event.currentTarget;
     event.preventDefault();
     this.setState({ validated: true });
+
+    // Don't continue if form isn't valid
     if (form.checkValidity() === false) {
       event.stopPropagation();
-    } else {
-      let {
-        nameInputValue,
-        qtyInputValue,
-        widthInputValue,
-        lengthInputValue,
-        visibleInEditorValue,
-        claimedByInputValue,
-      } = this.state;
-      let item = this.state.item;
-      let modifiedProperties = {};
-      if (nameInputValue !== item.name) {
-        modifiedProperties.name = nameInputValue;
-      }
-      if (qtyInputValue !== item.quantity) {
-        modifiedProperties.quantity = parseInt(qtyInputValue);
-      }
-
-      // If NaN set to 0 (which is treated like undefined)
-      widthInputValue = parseFloat(widthInputValue);
-      lengthInputValue = parseFloat(lengthInputValue);
-      if (isNaN(widthInputValue)) {
-        widthInputValue = 0;
-      }
-      if (isNaN(lengthInputValue)) {
-        lengthInputValue = 0;
-      }
-
-      // If dimension values aren't zero, compare them with old item dimensions. Otherwise, check if item values are undefined
-      const widthEqual =
-        widthInputValue !== 0
-          ? Math.abs(widthInputValue - item.dimensions.width) < 0.0001
-          : item.dimensions.width === undefined;
-      const lengthEqual =
-        lengthInputValue !== 0
-          ? Math.abs(lengthInputValue - item.dimensions.length) < 0.0001
-          : item.dimensions.length === undefined;
-      if (!widthEqual || !lengthEqual) {
-        modifiedProperties.dimensions = {
-          width: widthInputValue,
-          length: lengthInputValue,
-          height: 0, // TODO: replace when form has a height field
-        };
-      }
-
-      // claimbedBy == "" and a previous value of undefined means no change.
-      if (
-        (claimedByInputValue.length === 0 && item.claimedBy !== undefined) ||
-        (claimedByInputValue.length !== 0 &&
-          claimedByInputValue !== item.claimedBy)
-      ) {
-        modifiedProperties.claimedBy = claimedByInputValue;
-      }
-      if (visibleInEditorValue !== item.visibleInEditor) {
-        modifiedProperties.visibleInEditor = visibleInEditorValue;
-      }
-
-      this.props.onSubmit(item.id, modifiedProperties);
+      return;
     }
+
+    let {
+      nameInputValue,
+      qtyInputValue,
+      widthInputValue,
+      lengthInputValue,
+      visibleInEditorValue,
+      claimedByInputValue,
+    } = this.state;
+
+    let item = this.state.item;
+    let modifiedProperties = {};
+
+    if (nameInputValue !== item.name) {
+      modifiedProperties.name = nameInputValue;
+    }
+    if (qtyInputValue !== item.quantity) {
+      modifiedProperties.quantity = parseInt(qtyInputValue);
+    }
+
+    widthInputValue = parseFloat(widthInputValue) ?? null;
+    lengthInputValue = parseFloat(lengthInputValue) ?? null;
+
+    const widthEqual = widthInputValue
+      ? Math.abs(widthInputValue - item.dimensions.width) < 0.0001
+      : item.dimensions.width === null;
+    const lengthEqual = lengthInputValue
+      ? Math.abs(lengthInputValue - item.dimensions.length) < 0.0001
+      : item.dimensions.length === null;
+    if (!widthEqual || !lengthEqual) {
+      modifiedProperties.dimensions = {
+        width: widthInputValue,
+        length: lengthInputValue,
+        height: null, // TODO: replace when form has a height field
+      };
+    }
+
+    if (
+      (!claimedByInputValue && item.claimedBy) ||
+      (claimedByInputValue && claimedByInputValue !== item.claimedBy)
+    ) {
+      modifiedProperties.claimedBy = claimedByInputValue
+        ? claimedByInputValue
+        : null;
+    }
+    if (visibleInEditorValue !== item.visibleInEditor) {
+      modifiedProperties.visibleInEditor = visibleInEditorValue;
+    }
+
+    this.props.onSubmit(item.id, modifiedProperties);
   };
 
   render() {

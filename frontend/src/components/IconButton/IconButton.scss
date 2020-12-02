@@ -2,10 +2,10 @@
   border: none;
   text-align: center;
   padding: 5px 5px;
-  margin: 0;
   background-color: transparent;
-}
-.icon-button > * {
-  display: block;
-  margin: auto;
+
+  & > * {
+    display: block;
+    margin: auto;
+  }
 }
