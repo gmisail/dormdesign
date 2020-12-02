@@ -33,7 +33,6 @@ class VertexForm extends Component {
   };
 
   onFormSubmit = (event) => {
-    const form = event.currentTarget;
     event.preventDefault();
     this.props.onSubmit(this.state.vertices);
   };

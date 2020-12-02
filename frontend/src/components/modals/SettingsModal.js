@@ -1,5 +1,5 @@
 import React from "react";
-import { Button, Form, InputGroup, FormControl } from "react-bootstrap";
+import { Button, Form, InputGroup, FormControl, Col } from "react-bootstrap";
 import Modal from "react-bootstrap/Modal";
 import { RoomContext } from "../../routes/RoomRoute/RoomContext";
 import VertexForm from "../VertexForm/VertexForm";
@@ -7,22 +7,16 @@ import VertexForm from "../VertexForm/VertexForm";
 class SettingsModal extends React.Component {
   static contextType = RoomContext;
 
-  constructor() {
-    super();
-
-    this.state = {
-      id: "",
-    };
-
-    this.onClone = this.onClone.bind(this);
-    this.onChange = this.onChange.bind(this);
-  }
+  state = {
+    id: "",
+  };
 
   onChange = (evt) => {
     this.setState({ id: evt.target.value });
   };
 
-  onClone = (evt) => {
+  onCloneFormSubmit = (evt) => {
+    evt.preventDefault();
     this.props.onClone(this.state.id);
   };
 
@@ -46,19 +40,22 @@ class SettingsModal extends React.Component {
             from another room into your room. Note that once you clone a room,
             changes only apply to your copy, not the original.
           </p>
-          <Form>
-            <InputGroup className="mb-3">
-              <FormControl
-                onChange={this.onChange}
-                placeholder="Room ID"
-                aria-label="Room ID"
-                aria-describedby="Room Identifier"
-              />
-
-              <InputGroup.Append>
-                <Button onClick={this.onClone}>Clone</Button>
-              </InputGroup.Append>
-            </InputGroup>
+          <Form onSubmit={this.onCloneFormSubmit}>
+            <Form.Row className="mb-3">
+              <Col>
+                <div className="d-flex w-100">
+                  <FormControl
+                    onChange={this.onChange}
+                    placeholder="Room ID"
+                    aria-label="Room ID"
+                    aria-describedby="Room Identifier"
+                  />
+                  <button className="custom-btn ml-2" type="submit">
+                    Clone
+                  </button>
+                </div>
+              </Col>
+            </Form.Row>
           </Form>
         </Modal.Body>
       </Modal>
