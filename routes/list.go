@@ -11,45 +11,45 @@ import (
 	rdb "gopkg.in/rethinkdb/rethinkdb-go.v6"
 )
 
-type ListRoute struct {
+type RoomRoute struct {
 	Database *rdb.Session
 }
 
 // Generalized ItemForm for incoming item add/edit requests. Works with JSON or urlencoded form.
 type ItemForm struct {
-	ListID string `json:"listID" form:"listID"`
+	RoomID string `json:"roomID" form:"roomID"`
 	ItemID string `json:"id" form:"id"`
 	Name string `json:"name" form:"name"`
 	Quantity int `json:"quantity" form:"quantity"`
 }
 
-func (route *ListRoute) OnGetList(c echo.Context) error {
+func (route *RoomRoute) OnGetRoom(c echo.Context) error {
 	id := c.QueryParam("id")
 	
 	// No ID parameter in request, return 400 - Bad Request
 	if id == "" {
-		return echo.NewHTTPError(http.StatusBadRequest, "Missing list ID parameter in request")
+		return echo.NewHTTPError(http.StatusBadRequest, "Missing room ID parameter in request")
 	}
 
-	list, err := models.GetList(route.Database, id)
+	room, err := models.GetRoom(route.Database, id)
 
-	// Server failed to fetch list from DB, return 500 - Internal Server Error
+	// Server failed to fetch room from DB, return 500 - Internal Server Error
 	if err != nil {	
 		return echo.NewHTTPError(http.StatusInternalServerError)
 	}
 
-	return c.JSON(http.StatusOK, list)
+	return c.JSON(http.StatusOK, room)
 }
 
 /*
 
-Creates an empty list and returns the ID
+Creates an empty room and returns the ID
 
 */
-func (route *ListRoute) OnCreateList(c echo.Context) error {
+func (route *RoomRoute) OnCreateRoom(c echo.Context) error {
 	id := uuid.New().String()
 
-	err := models.CreateList(route.Database, id)
+	err := models.CreateRoom(route.Database, id)
 	if err != nil {
 		log.Println(err)
 		return echo.NewHTTPError(http.StatusInternalServerError)
@@ -63,7 +63,7 @@ func (route *ListRoute) OnCreateList(c echo.Context) error {
 Queries should be in the following format:
 
 {
-	listID: string
+	roomID: string
 	name: string
 	quantity: int
 	claimedBy: string
@@ -74,7 +74,7 @@ The editable field indicates whether or not the item is visible within
 the room editor.
 
 */
-func (route *ListRoute) OnAddListItem(c echo.Context) error {
+func (route *RoomRoute) OnAddRoomItem(c echo.Context) error {
 
 	form := new(ItemForm);
 
@@ -86,13 +86,13 @@ func (route *ListRoute) OnAddListItem(c echo.Context) error {
 	}
 
 	// Form Validation
-	listID := form.ListID;
-	if listID == "" {
-		return echo.NewHTTPError(http.StatusNotFound, "Missing list id")
+	roomID := form.RoomID;
+	if roomID == "" {
+		return echo.NewHTTPError(http.StatusNotFound, "Missing room id")
 	}
 
 	itemID := uuid.New().String()
-	item := models.ListItem{
+	item := models.RoomItem{
 		ID: itemID,
 		Name: form.Name,					// If not provided in form, will be ""
 		Quantity: form.Quantity,	// If not provided in form, will be 0
@@ -101,16 +101,16 @@ func (route *ListRoute) OnAddListItem(c echo.Context) error {
 		EditorPosition: models.EditorPoint{},
 	}
 
-	models.AddListItem(route.Database, listID, item)
+	models.AddRoomItem(route.Database, roomID, item)
 
 	return c.JSON(http.StatusOK, item)
 }
 
-func (route *ListRoute) OnCloneRoom(c echo.Context) error {
+func (route *RoomRoute) OnCloneRoom(c echo.Context) error {
 	id := c.QueryParam("id")
 	targetId := c.QueryParam("target_id")
 
-	data, err := models.GetList(route.Database, targetId)
+	data, err := models.GetRoom(route.Database, targetId)
 
 	if err != nil {
 		log.Println(err)
@@ -118,14 +118,14 @@ func (route *ListRoute) OnCloneRoom(c echo.Context) error {
 	}
 
 	/* remove all of the current items in the room */
-	models.ClearListItems(route.Database, id)
+	models.ClearRoomItems(route.Database, id)
 
 	/* replace the current vertices with the target room's vertices */
 	models.UpdateVertices(route.Database, id, data.Vertices)
 
-	/* loop through target and add them to current list. Ensures that ID's are new and unique */
+	/* loop through target and add them to current room. Ensures that ID's are new and unique */
 	for _, item := range data.Items {
-		models.AddListItem(route.Database, id, item)
+		models.AddRoomItem(route.Database, id, item)
 	}
 
 	return c.JSON(http.StatusOK, data)

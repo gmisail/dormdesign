@@ -24,17 +24,17 @@ func SetupSockets(e *echo.Echo, database *rdb.Session) {
 func SetupRoutes(e *echo.Echo, database *rdb.Session) {
 	SetupSockets(e, database)
 	
-	listRoute := routes.ListRoute{ Database: database }
+	roomRoute := routes.RoomRoute{ Database: database }
 
 	/* frontend host routes */
 	e.Static("/", "frontend/build")
 	e.File("/", "frontend/build/index.html")
 
-	/* list related routes*/
-	e.GET("/list/get", listRoute.OnGetList)
-	e.GET("/list/clone", listRoute.OnCloneRoom)
-	e.POST("/list/create", listRoute.OnCreateList)
-	e.POST("/list/add", listRoute.OnAddListItem)
+	/* room related routes*/
+	e.GET("/room/get", roomRoute.OnGetRoom)
+	e.GET("/room/clone", roomRoute.OnCloneRoom)
+	e.POST("/room/create", roomRoute.OnCreateRoom)
+	e.POST("/room/add", roomRoute.OnAddRoomItem)
 }
 
 // SetupServer: configures the Echo server and related middleware.

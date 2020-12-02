@@ -3,13 +3,12 @@ package models
 import (
 	"log"
 	"errors"
-	"reflect"
 
 	"github.com/gmisail/dormdesign/utils"
 	rdb "gopkg.in/rethinkdb/rethinkdb-go.v6"
 )
 
-type ListItem struct {
+type RoomItem struct {
 	ID string `json:"id" rethinkdb:"id"`
 	Name string `json:"name" rethinkdb:"name"`
 	Quantity int `json:"quantity" rethinkdb:"quantity"`
@@ -33,16 +32,16 @@ type EditorPoint struct {
 	Y float64 `json:"y" rethinkdb:"y"`
 }
 
-type List struct {
+type Room struct {
 	ID string `json:"id" rethinkdb:"id"`
-	Items []ListItem `json:"items" rethinkdb:"items"`
+	Items []RoomItem `json:"items" rethinkdb:"items"`
 	Vertices []EditorPoint `json:"vertices" rethinkdb:"vertices"`
 }
 
 /*
-	Create an empty list with the given ID
+	Create an empty room with the given ID
 */
-func CreateList(database *rdb.Session, id string) error {
+func CreateRoom(database *rdb.Session, id string) error {
 	/* 
 		unless another arrangement is provided, let the default
 		room layout just be a 10x10 square
@@ -53,9 +52,9 @@ func CreateList(database *rdb.Session, id string) error {
 	defaultVertices[2] = EditorPoint{ X: 10, Y: 10}
 	defaultVertices[3] = EditorPoint{ X: 0, Y: 10 }
 	
-	err := rdb.DB("dd_data").Table("lists").Insert(List{ 
+	err := rdb.DB("dd_data").Table("rooms").Insert(Room{ 
 		ID: id, 
-		Items: []ListItem{}, 
+		Items: []RoomItem{}, 
 		Vertices: defaultVertices,
 	}).Exec(database)
 
@@ -67,23 +66,23 @@ func CreateList(database *rdb.Session, id string) error {
 }
 
 /*
-	Returns a specific list
+	Returns a specific room
 */
-func GetList(database *rdb.Session, id string) (List, error) {
-	res, err := rdb.DB("dd_data").Table("lists").Get(id).Run(database)
+func GetRoom(database *rdb.Session, id string) (Room, error) {
+	res, err := rdb.DB("dd_data").Table("rooms").Get(id).Run(database)
 
 	if err != nil {
-		return List{}, err
+		return Room{}, err
 	}
 
-	var data List
+	var data Room
 	err = res.One(&data)
 
 	if err == rdb.ErrEmptyResult {
-		err = errors.New("List not found")
+		err = errors.New("Room not found")
 	}
 	if err != nil {
-		return List{}, err
+		return Room{}, err
 	}
 
 	defer res.Close()
@@ -91,8 +90,8 @@ func GetList(database *rdb.Session, id string) (List, error) {
 	return data, nil
 }
 
-func CopyList(database *rdb.Session, id string, target string) (List, error) {
-	data, err := GetList(database, target)
+func CopyRoom(database *rdb.Session, id string, target string) (Room, error) {
+	data, err := GetRoom(database, target)
 
 	if err != nil {
 		log.Println(err)
@@ -100,7 +99,7 @@ func CopyList(database *rdb.Session, id string, target string) (List, error) {
 	}
 
 	/* remove all of the current items in the room */
-	clearErr := ClearListItems(database, id)
+	clearErr := ClearRoomItems(database, id)
 
 	if clearErr != nil {
 		log.Println(clearErr)
@@ -115,18 +114,18 @@ func CopyList(database *rdb.Session, id string, target string) (List, error) {
 	//	return echo.NewHTTPError(http.StatusBadRequest, "Cannot update vertices with given ID.")
 	}
 
-	/* loop through target and add them to current list. Ensures that ID's are new and unique */
+	/* loop through target and add them to current room. Ensures that ID's are new and unique */
 	for _, item := range data.Items {
-		AddListItem(database, id, item)
+		AddRoomItem(database, id, item)
 	}
 
-	data, err = GetList(database, target)
+	data, err = GetRoom(database, target)
 
 	return data, nil
 }
 
 func UpdateVertices(database *rdb.Session, id string, verts []EditorPoint) error {
-	err := rdb.DB("dd_data").Table("lists").Get(id).Update(map[string]interface{}{
+	err := rdb.DB("dd_data").Table("rooms").Get(id).Update(map[string]interface{}{
 		"vertices": verts,
 	}).Exec(database)
 
@@ -134,10 +133,10 @@ func UpdateVertices(database *rdb.Session, id string, verts []EditorPoint) error
 }
 
 /*
-	Add a list item to the list at the given room ID
+	Add a room item to the room at the given room ID
 */
-func AddListItem(database *rdb.Session, roomID string, item ListItem) error {
-	err := rdb.DB("dd_data").Table("lists").Get(roomID).Update(map[string]interface{}{"items": rdb.Row.Field("items").Default([]ListItem{}).Append(item)}).Exec(database)
+func AddRoomItem(database *rdb.Session, roomID string, item RoomItem) error {
+	err := rdb.DB("dd_data").Table("rooms").Get(roomID).Update(map[string]interface{}{"items": rdb.Row.Field("items").Default([]RoomItem{}).Append(item)}).Exec(database)
 
 	if err != nil {
 		return err
@@ -146,8 +145,8 @@ func AddListItem(database *rdb.Session, roomID string, item ListItem) error {
 	return nil
 }
 
-func RemoveListItem(database *rdb.Session, roomID string, itemID string) error {
-	err := rdb.DB("dd_data").Table("lists").Get(roomID).Update(map[string]interface{}{
+func RemoveRoomItem(database *rdb.Session, roomID string, itemID string) error {
+	err := rdb.DB("dd_data").Table("rooms").Get(roomID).Update(map[string]interface{}{
 		"items": rdb.Row.Field("items").Filter(func(item rdb.Term) interface{} {
 			return item.Field("id").Ne(itemID)
 		}),
@@ -156,8 +155,8 @@ func RemoveListItem(database *rdb.Session, roomID string, itemID string) error {
 	return err
 }
 
-func ClearListItems(database *rdb.Session, roomID string) error {
-	err := rdb.DB("dd_data").Table("lists").Get(roomID).Update(
+func ClearRoomItems(database *rdb.Session, roomID string) error {
+	err := rdb.DB("dd_data").Table("rooms").Get(roomID).Update(
 		map[string]interface{}{
 			"items": nil,
 	}).Exec(database)
@@ -165,22 +164,10 @@ func ClearListItems(database *rdb.Session, roomID string) error {
 	return err
 }
 
-func reflectValue(obj interface{}) reflect.Value {
-	var val reflect.Value
+func EditRoomItem(database *rdb.Session, id string, itemID string, updated map[string]interface{}) (*RoomItem, error) {
+	res, err := rdb.DB("dd_data").Table("rooms").Get(id).Field("items").Filter(rdb.Row.Field("id").Eq(itemID)).Run(database)
 
-	if reflect.TypeOf(obj).Kind() == reflect.Ptr {
-		val = reflect.ValueOf(obj).Elem()
-	} else {
-		val = reflect.ValueOf(obj)
-	}
-
-	return val
-}
-
-func EditListItem(database *rdb.Session, id string, itemID string, updated map[string]interface{}) (*ListItem, error) {
-	res, err := rdb.DB("dd_data").Table("lists").Get(id).Field("items").Filter(rdb.Row.Field("id").Eq(itemID)).Run(database)
-
-	var item ListItem
+	var item RoomItem
 	res.One(&item)
 
 	if err != nil {
@@ -194,7 +181,7 @@ func EditListItem(database *rdb.Session, id string, itemID string, updated map[s
 		return nil, err
 	}
 
-	err = rdb.DB("dd_data").Table("lists").Get(id).Update(map[string]interface{}{
+	err = rdb.DB("dd_data").Table("rooms").Get(id).Update(map[string]interface{}{
 		"items": rdb.Row.Field("items").Map(func(c rdb.Term) interface{} {
 			return rdb.Branch(c.Field("id").Eq(itemID), item, c)
 		}),

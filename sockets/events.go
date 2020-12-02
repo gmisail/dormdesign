@@ -58,9 +58,9 @@ func (c *Client) translateMessage(reader io.Reader) (*Message, error) {
 		switch roomMessage.Event {
 		case "addItem":
 			/*
-				Create new ListItem model
+				Create new RoomItem model
 			*/
-			var item models.ListItem
+			var item models.RoomItem
 			err := json.Unmarshal(roomMessage.Data, &item)
 			if err != nil {
 				errorString = "Unable to translate addItem event: " + err.Error()
@@ -68,7 +68,7 @@ func (c *Client) translateMessage(reader io.Reader) (*Message, error) {
 			}
 			item.ID = uuid.New().String()
 			
-			err = models.AddListItem(c.hub.database, roomMessage.RoomID, item)
+			err = models.AddRoomItem(c.hub.database, roomMessage.RoomID, item)
 			if err != nil {
 				errorString = "Error adding item to database: " + err.Error()
 				break
@@ -83,7 +83,7 @@ func (c *Client) translateMessage(reader io.Reader) (*Message, error) {
 
 		case "updateItems":	
 			/*
-				Edit property/properties of multiple existing ListItems
+				Edit property/properties of multiple existing RoomItems
 			*/
 			type UpdatedItemsEvent struct {
 				Items []struct {
@@ -113,7 +113,7 @@ func (c *Client) translateMessage(reader io.Reader) (*Message, error) {
 					break eventHandler
 				}
 
-				_, err = models.EditListItem(c.hub.database, roomMessage.RoomID, item.ID, item.Updated)
+				_, err = models.EditRoomItem(c.hub.database, roomMessage.RoomID, item.ID, item.Updated)
 				if err != nil {
 					errorString = "Unable to update item in database: " + err.Error()
 					break eventHandler 
@@ -128,7 +128,7 @@ func (c *Client) translateMessage(reader io.Reader) (*Message, error) {
 
 		case "deleteItem":
 			/*
-				Delete ListItem
+				Delete RoomItem
 			*/
 			type DeleteItemEvent struct {
 				ID string `json:"id"`
@@ -145,7 +145,7 @@ func (c *Client) translateMessage(reader io.Reader) (*Message, error) {
 				break
 			}
 			
-			err = models.RemoveListItem(c.hub.database, roomMessage.RoomID, eventData.ID)
+			err = models.RemoveRoomItem(c.hub.database, roomMessage.RoomID, eventData.ID)
 			if err != nil {
 				errorString = fmt.Sprintf("Unable to remove item: %s", err)
 				break
@@ -182,6 +182,7 @@ func (c *Client) translateMessage(reader io.Reader) (*Message, error) {
 				errorString = "Error updating room layout in database: " + err.Error()
 				break
 			}
+			log.Printf("UPDATED LAYOUT %s", roomMessage.RoomID)
 
 			response = &MessageResponse{
 				Event: "updateLayout",
@@ -205,17 +206,19 @@ func (c *Client) translateMessage(reader io.Reader) (*Message, error) {
 				break
 			}
 
-			room, copyErr := models.CopyList(c.hub.database, eventData.Id, eventData.Target)
+			room, copyErr := models.CopyRoom(c.hub.database, eventData.Id, eventData.Target)
 
 			if copyErr != nil {
 				errorString = "Unable to copy the room: " + err.Error()
 				break
 			}
 
+			log.Printf("CLONED ROOM %s", eventData.Id)
+
 			response = &MessageResponse{
 				Event: "cloneRoom",
 				Data: struct{
-					Items []models.ListItem `json:"items"`
+					Items []models.RoomItem `json:"items"`
 					Vertices []models.EditorPoint `json:"vertices"`
 				}{
 					Items: room.Items,
