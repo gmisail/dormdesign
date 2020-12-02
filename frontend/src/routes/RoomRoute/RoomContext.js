@@ -12,7 +12,6 @@ export const RoomActions = {
   itemsUpdated: "ITEM_UPDATED",
   itemSelected: "ITEM_SELECTED",
   boundsUpdated: "BOUNDS_UPDATED",
-  cloneRoom: "CLONE_ROOM",
   loading: "LOADING",
   error: "ERROR",
   clearEditorActionQueue: "CLEAR_EDITOR_ACTION_QUEUE",
@@ -39,14 +38,8 @@ const roomReducer = (state, action) => {
         ...state,
         loading: false,
         bounds: action.payload.bounds,
-        items: action.payload.data,
-        socketConnection: action.payload.socketConnection,
-      };
-    case RoomActions.cloneRoom:
-      return {
-        ...state,
-        bounds: action.payload.bounds,
         items: action.payload.items,
+        socketConnection: action.payload.socketConnection,
       };
     case RoomActions.connectionClosed:
       return {
@@ -176,7 +169,7 @@ export const RoomProvider = ({ children }) => {
           dispatch({
             type: RoomActions.connectedToRoom,
             payload: {
-              data: data.items,
+              items: data.items,
               socketConnection: connection,
               bounds: data.vertices,
             },
@@ -218,7 +211,7 @@ export const RoomProvider = ({ children }) => {
           });
         });
 
-        connection.on("updateLayout", (data) => {
+        connection.on("layoutUpdated", (data) => {
           // TODO: add callback
           dispatch({
             type: RoomActions.boundsUpdated,
@@ -226,12 +219,7 @@ export const RoomProvider = ({ children }) => {
           });
         });
 
-        connection.on("cloneRoom", (data) => {
-          dispatch({
-            type: RoomActions.updateLayout,
-            payload: { items: data.items, bounds: data.vertices },
-          });
-
+        connection.on("roomCloned", (data) => {
           window.location.reload();
         });
       } catch (error) {

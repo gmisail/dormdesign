@@ -185,7 +185,7 @@ func (c *Client) translateMessage(reader io.Reader) (*Message, error) {
 			log.Printf("UPDATED LAYOUT %s", roomMessage.RoomID)
 
 			response = &MessageResponse{
-				Event: "updateLayout",
+				Event: "layoutUpdated",
 				Data: struct{
 					Vertices []models.EditorPoint `json:"vertices"`
 				}{
@@ -216,7 +216,7 @@ func (c *Client) translateMessage(reader io.Reader) (*Message, error) {
 			log.Printf("CLONED ROOM %s", eventData.ID)
 
 			response = &MessageResponse{
-				Event: "cloneRoom",
+				Event: "roomCloned",
 				Data: struct{
 					Items []models.RoomItem `json:"items"`
 					Vertices []models.EditorPoint `json:"vertices"`

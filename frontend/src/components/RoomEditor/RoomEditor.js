@@ -44,21 +44,16 @@ class RoomEditor extends Component {
     scene.backgroundColor = "#fff";
 
     // Points defining the edges of the room (in feet)
-    // Points defining the edges of the room (in feet)
-    let defaultRoom = [
+    let defaultBounds = [
       new Vector2(0, 0),
       new Vector2(10, 0),
       new Vector2(10, 10),
       new Vector2(0, 10),
     ];
 
-    if (this.context.bounds != undefined && this.context.bounds.length > 0) {
-      defaultRoom = this.context.bounds;
-    }
-
     const room = new RoomEditorObject({
       scene: scene,
-      boundaryPoints: defaultRoom,
+      boundaryPoints: defaultBounds,
       backgroundColor: "#fff",
       onObjectsUpdated: this.itemsUpdatedInEditor,
       onObjectSelected: this.itemSelectedInEditor,
@@ -116,11 +111,12 @@ class RoomEditor extends Component {
       */
       switch (action.type) {
         case RoomActions.connectedToRoom:
-          for (let i = 0; i < action.payload.data.length; i++) {
+          for (let i = 0; i < action.payload.items.length; i++) {
             const translatedItem = itemToEditorProperties(
-              action.payload.data[i]
+              action.payload.items[i]
             );
             this.roomObject.addItemToRoom(translatedItem);
+            this.roomObject.setBoundaries(action.payload.bounds);
           }
           break;
         case RoomActions.itemsUpdated:

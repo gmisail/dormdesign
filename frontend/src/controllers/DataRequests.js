@@ -98,7 +98,9 @@ class DataRequests {
 
     const itemResponse1 = await fetch("/room/add", {
       method: "POST",
-
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify({
         roomID: roomID,
         name: "Fridge",

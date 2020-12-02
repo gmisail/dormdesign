@@ -99,7 +99,6 @@ const useModal = () => {
 export const RoomRouteNew = () => {
   const {
     items,
-    bounds,
     loading,
     error,
     socketConnection,
