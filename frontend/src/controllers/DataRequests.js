@@ -35,7 +35,7 @@ import DormItem from "../models/DormItem";
 class DataRequests {
   // Creates a new room and returns room ID sent back from server
   static async createRoom() {
-    const response = await fetch("/list/create", {
+    const response = await fetch("/room/create", {
       method: "POST",
     });
     if (!response.ok) {
@@ -47,42 +47,62 @@ class DataRequests {
     return roomID;
   }
 
-  //Retrieves the List's data from the server.
+  // Retrieves the Room's data from the server.
   static async getRoomData(id) {
     if (!id) {
       throw new Error("Can't fetch room data. Room ID is undefined");
     }
 
-    const response = await fetch(`/list/get?id=${id}`);
+    const response = await fetch(`/room/get?id=${id}`);
     const data = await response.json();
 
     if (!response.ok) {
-      const message = `${response.status} Error fetching list: ${data.message}`;
+      const message = `${response.status} Error fetching room: ${data.message}`;
       throw new Error(message);
     }
 
     if (!data.items) {
-      throw new Error("ERROR Room items missing from fetch room response");
+      throw new Error("Room items missing from fetch room response");
     }
 
     const items = data.items.map((item) => {
       return new DormItem(item);
     });
 
-    return items;
+    return {
+      items,
+      vertices: data.vertices,
+    };
   }
 
-  // Sends request to create a list, adds some items to it, and returns the id of the list.
+  static async cloneRoom(id, target) {
+    if (!id || !target) {
+      throw new Error("Can't clone room; either ID or target ID is undefined.");
+    }
+
+    const response = await fetch(
+      "/room/clone?id=" + id + "&target_id=" + target
+    );
+    const data = response.json();
+
+    if (!data.message) {
+      window.location.reload();
+    } else {
+      throw new Error(data.message);
+    }
+  }
+
+  // Sends request to create a room, adds some items to it, and returns the id of the room.
   static async CREATE_TEST_ROOM() {
     const roomID = await DataRequests.createRoom();
 
-    const itemResponse1 = await fetch("/list/add", {
+    const itemResponse1 = await fetch("/room/add", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        listID: roomID,
+        roomID: roomID,
         name: "Fridge",
         quantity: 4,
       }),
@@ -93,13 +113,13 @@ class DataRequests {
       console.error(message);
     }
 
-    const itemResponse2 = await fetch("/list/add", {
+    const itemResponse2 = await fetch("/room/add", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        listID: roomID,
+        roomID: roomID,
         name: "Microwave",
         quantity: 1,
       }),

@@ -45,7 +45,7 @@ textarea {
 }
 
 .custom-btn {
-  padding: 5px;
+  padding: 6px 10px;
   text-decoration: none;
   border: none;
   font-size: $btn-font-size;
@@ -56,6 +56,10 @@ textarea {
   background-color: $color-primary;
   color: $text-color-light;
   box-shadow: $box-shadow;
+
+  &.custom-btn-secondary {
+    background-color: $color-secondary;
+  }
 }
 
 #landing-jumbotron {
