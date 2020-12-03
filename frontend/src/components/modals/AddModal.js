@@ -6,7 +6,7 @@ const AddModal = (props) => {
   return (
     <Modal show={props.show} onHide={props.onHide}>
       <Modal.Header closeButton>
-        <Modal.Title>Add an Item</Modal.Title>
+        <Modal.Title className="custom-modal-title">Add an Item</Modal.Title>
       </Modal.Header>
 
       <Modal.Body>
