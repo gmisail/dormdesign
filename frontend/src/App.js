@@ -1,31 +1,39 @@
 import React from "react";
+import "../node_modules/bootstrap/dist/css/bootstrap.min.css";
+import "./App.scss";
+
 import NavigationBar from "./components/navbar/NavigationBar";
 
-import { BrowserRouter as Router, Route } from "react-router-dom";
+import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
 
-import "../node_modules/bootstrap/dist/css/bootstrap.min.css";
 import HomeRoute from "./routes/HomeRoute/HomeRoute";
 import { IconContext } from "react-icons";
 
 import { RoomProvider } from "./routes/RoomRoute/RoomContext";
-import { RoomRouteNew } from "./routes/RoomRoute/RoomRoute";
+import { RoomRoute } from "./routes/RoomRoute/RoomRoute";
 
-import "./App.scss";
-
-function App() {
+const App = () => {
   return (
-    <Router>
-      <IconContext.Provider value={{ size: "1.6em" }}>
-        <NavigationBar></NavigationBar>
-        <div className="main-content-container">
+    <IconContext.Provider value={{ size: "1.6em" }}>
+      <Router>
+        <Switch>
           <Route exact path="/" component={HomeRoute} />
-          <RoomProvider>
-            <Route exact path="/room/:id" component={RoomRouteNew} />
-          </RoomProvider>
-        </div>
-      </IconContext.Provider>
-    </Router>
+          <Route component={MainRoutes} />
+        </Switch>
+      </Router>
+    </IconContext.Provider>
   );
-}
+};
+
+const MainRoutes = () => (
+  <div className="main-content-container">
+    <NavigationBar></NavigationBar>
+    <Route exact path="/room/:id">
+      <RoomProvider>
+        <RoomRoute />
+      </RoomProvider>
+    </Route>
+  </div>
+);
 
 export default App;

@@ -38,8 +38,10 @@ textarea {
 }
 
 .custom-card {
+  background-color: $foreground-color;
   border-radius: $card-border-radius;
   box-shadow: $box-shadow;
+  padding: 15px;
 }
 
 .custom-btn {

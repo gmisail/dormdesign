@@ -80,7 +80,7 @@ const useModal = () => {
   return [modalProps, toggleModal];
 };
 
-export const RoomRouteNew = () => {
+export const RoomRoute = () => {
   const {
     items,
     loading,
