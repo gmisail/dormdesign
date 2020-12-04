@@ -5,7 +5,12 @@ import "./App.scss";
 import NavigationBar from "./components/navbar/NavigationBar";
 import Footer from "./components/Footer/Footer";
 
-import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Route,
+  Switch,
+  Redirect,
+} from "react-router-dom";
 
 import HomeRoute from "./routes/HomeRoute/HomeRoute";
 import { IconContext } from "react-icons";
@@ -30,11 +35,14 @@ const App = () => {
 const MainRoutes = () => (
   <div className="main-content-container">
     <NavigationBar></NavigationBar>
-    <Route exact path="/room/:id">
-      <RoomProvider>
-        <RoomRoute />
-      </RoomProvider>
-    </Route>
+    <Switch>
+      <Redirect from="/room/" to="/" exact />
+      <Route exact path="/room/:id">
+        <RoomProvider>
+          <RoomRoute />
+        </RoomProvider>
+      </Route>
+    </Switch>
   </div>
 );
 

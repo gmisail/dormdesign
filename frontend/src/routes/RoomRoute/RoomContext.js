@@ -226,6 +226,7 @@ export const RoomProvider = ({ children }) => {
           window.location.reload();
         });
       } catch (error) {
+        console.error(error);
         dispatch({ type: RoomActions.error, payload: { error } });
       }
     },

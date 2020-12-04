@@ -98,6 +98,7 @@ class HomeRoute extends Component {
                   className="custom-btn flex-shrink-0 ml-2"
                   name="createRoomButton"
                   onClick={this.joinRoomClicked}
+                  disabled={this.state.joinRoomInput === ""}
                 >
                   Join Room
                 </button>

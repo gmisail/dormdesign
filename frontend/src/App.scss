@@ -61,16 +61,22 @@ textarea {
   color: $text-color-light;
   box-shadow: $box-shadow;
 
-  &:hover {
-    background-color: darken($color-primary, 6%);
+  @mixin button-effects($color) {
+    &:hover {
+      background-color: darken($color, 6%);
+    }
+
+    &:disabled {
+      background-color: lighten($color, 20%);
+    }
   }
+
+  @include button-effects($color-primary);
 
   &.custom-btn-secondary {
     background-color: $color-secondary;
 
-    &:hover {
-      background-color: darken($color-secondary, 6%);
-    }
+    @include button-effects($color-secondary);
   }
 }
 

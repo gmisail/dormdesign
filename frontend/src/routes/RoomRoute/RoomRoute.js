@@ -192,11 +192,18 @@ export const RoomRoute = () => {
     [updateItems]
   );
 
-  /* If there's an error and socketConnection has been reset, connection has been 
-  lost. 
-  TODO: Implement actual error types to make it easier to check what error 
-  happened? */
+  /* 
+    If there's an error and socketConnection has been reset, connection has been 
+    lost. 
+
+    If that's true and there are no items, then then the original room data fetch failed
+
+    TODO: Implement actual error types to make it easier to check what error 
+    happened
+  */
   const lostConnection = error !== null && socketConnection === null;
+  const dataFetchError =
+    error !== null && socketConnection === null && items === null;
   return (
     <>
       {loading ? (
@@ -205,12 +212,14 @@ export const RoomRoute = () => {
             <span className="sr-only">Loading...</span> ) :
           </Spinner>
         </div>
-      ) : lostConnection ? (
+      ) : lostConnection || dataFetchError ? (
         <p
           className="text-center mt-5"
           style={{ fontSize: 20, fontWeight: 500 }}
         >
-          Lost connection to room. Please refresh your browser.
+          {dataFetchError
+            ? "Error fetching room data. Make sure the room ID is valid."
+            : "Lost connection to room. Please refresh your browser."}
         </p>
       ) : (
         <div className="room-container">

@@ -92,7 +92,6 @@ class RoomEditorObject extends SceneObject {
   }
 
   setBoundaries(boundaryPoints) {
-    console.log(boundaryPoints);
     // Create copies of the points since we don't want to reference the passed in objects themselves
     const copied = [];
     if (boundaryPoints) {
@@ -114,7 +113,6 @@ class RoomEditorObject extends SceneObject {
     if (this.floorGrid !== undefined) {
       this.floorGrid.size = new Vector2(this.size.x, this.size.y);
     }
-    console.log(this);
   }
 
   // Calculates and sets offset points (used so that when drawing room border the lines won't overlap into the room)
@@ -230,8 +228,6 @@ class RoomEditorObject extends SceneObject {
       x: ctx.canvas.width / 2 - globalSize.x / 2,
       y: ctx.canvas.height / 2 - globalSize.y / 2,
     };
-
-    console.log(globalSize, position);
 
     // Only adjust position for padding if the padding actually affects it
     if (padding.left > position.x) {
