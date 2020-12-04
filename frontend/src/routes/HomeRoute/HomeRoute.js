@@ -3,7 +3,6 @@ import React, { Component } from "react";
 import { FormControl } from "react-bootstrap";
 
 import DataRequests from "../../controllers/DataRequests";
-import DormDesignLogo from "../../assets/logo.svg";
 import RoomGridObject from "../../room-editor/RoomGridObject";
 import SceneController from "../../room-editor/SceneController";
 import Vector2 from "../../room-editor/Vector2";
@@ -13,6 +12,10 @@ import { ReactComponent as Logo } from "../../assets/logo.svg";
 import "./HomeRoute.scss";
 
 class HomeRoute extends Component {
+  state = {
+    joinRoomInput: "",
+  };
+
   componentDidMount() {
     const scene = new SceneController(this.backgroundCanvasRef);
     scene.backgroundColor = "#f9f9f9";
@@ -51,6 +54,10 @@ class HomeRoute extends Component {
     this.props.history.push(`/room/${roomID}`);
   };
 
+  joinRoomClicked = () => {
+    this.props.history.push(`/room/${this.state.joinRoomInput}`);
+  };
+
   render() {
     return (
       <>
@@ -82,12 +89,15 @@ class HomeRoute extends Component {
                   className="flex-shrink-1"
                   placeholder="Room ID"
                   aria-label="Room Code"
+                  onChange={(evt) => {
+                    this.setState({ joinRoomInput: evt.target.value });
+                  }}
                   style={{ minWidth: 0 }}
                 />
                 <button
                   className="custom-btn flex-shrink-0 ml-2"
                   name="createRoomButton"
-                  onClick={this.createRoomClicked}
+                  onClick={this.joinRoomClicked}
                 >
                   Join Room
                 </button>

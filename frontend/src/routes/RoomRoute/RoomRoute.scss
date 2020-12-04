@@ -67,6 +67,17 @@ body {
     & > * {
       margin: 0;
     }
+
+    .room-header-buttons {
+      font-size: 1.3em;
+
+      * + * {
+        margin-left: 4px;
+      }
+
+      display: flex;
+      align-items: center;
+    }
   }
 
   .room-editor-container {

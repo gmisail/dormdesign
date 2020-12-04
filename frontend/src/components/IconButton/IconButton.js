@@ -6,7 +6,7 @@ const IconButton = forwardRef((props, ref) => {
   return (
     <button
       ref={ref}
-      className={"icon-button " + className}
+      className={"icon-button" + (className ? " " + className : "")}
       disabled={disabled}
       onClick={onClick}
       style={style}

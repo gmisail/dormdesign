@@ -17,19 +17,22 @@
   height: $footer-height;
 
   * + * {
-    margin-left: 20px;
+    margin-left: 15px;
   }
 
   font-weight: 600;
 
   .github-repo-link {
     height: 100%;
-    color: $footer-text-color;
+    button {
+      height: 100%;
+      color: $footer-text-color;
 
-    transition: 0.2s;
+      transition: 0.2s;
 
-    &:hover {
-      transform: scale(1.1);
+      &:hover {
+        transform: scale(1.1);
+      }
     }
   }
 }

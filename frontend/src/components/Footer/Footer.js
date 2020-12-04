@@ -6,9 +6,14 @@ import "./Footer.scss";
 const Footer = () => {
   return (
     <div className="footer">
-      <IconButton className="github-repo-link">
-        <GoMarkGithub />
-      </IconButton>
+      <a
+        href="https://github.com/gmisail/dormdesign"
+        className="github-repo-link"
+      >
+        <IconButton>
+          <GoMarkGithub />
+        </IconButton>
+      </a>
       <span>
         An <a href="https://rcos.io/">RCOS</a> Project
       </span>

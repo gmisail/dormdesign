@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import { RoomContext } from "./RoomContext";
 
 import { Spinner } from "react-bootstrap";
-import { BsGear, BsPlus } from "react-icons/bs";
+import { BsGear, BsPlus, BsBoxArrowUpRight } from "react-icons/bs";
 
 import RoomEditor from "../../components/RoomEditor/RoomEditor";
 import DormItemList from "../../components/DormItemList/DormItemList";
@@ -12,6 +12,7 @@ import AddModal from "../../components/modals/AddModal";
 import EditModal from "../../components/modals/EditModal";
 import NameModal from "../../components/modals/NameModal";
 import SettingsModal from "../../components/modals/SettingsModal";
+import ShareRoomModal from "../../components/modals/ShareRoomModal/ShareRoomModal";
 
 import ErrorModal from "../../components/modals/ErrorModal";
 import IconButton from "../../components/IconButton/IconButton";
@@ -24,6 +25,7 @@ const modalTypes = {
   chooseName: "CHOOSE_NAME",
   error: "ERROR",
   settings: "SETTINGS",
+  share: "SHARE",
 };
 
 // Modal component that returns a modal based on the passed 'type' prop and passes all props to that modal
@@ -36,9 +38,11 @@ const Modal = (props) => {
     case modalTypes.chooseName:
       return <NameModal {...props} />;
     case modalTypes.error:
-      return <ErrorModal {...props}></ErrorModal>;
+      return <ErrorModal {...props} />;
     case modalTypes.settings:
       return <SettingsModal {...props} />;
+    case modalTypes.share:
+      return <ShareRoomModal {...props} />;
     default:
       return null;
   }
@@ -216,12 +220,21 @@ export const RoomRoute = () => {
         <div className="room-container">
           <div className="room-header">
             <h2>Dorm Name - Room #</h2>
-            <IconButton
-              onClick={onClickSettingsButton}
-              style={{ fontSize: "1.25em" }}
-            >
-              <BsGear></BsGear>
-            </IconButton>
+            <div className="room-header-buttons">
+              <IconButton
+                onClick={() => {
+                  toggleModal(modalTypes.share, {
+                    id: id,
+                    link: window.location.href,
+                  });
+                }}
+              >
+                <BsBoxArrowUpRight />
+              </IconButton>
+              <IconButton onClick={onClickSettingsButton}>
+                <BsGear />
+              </IconButton>
+            </div>
           </div>
 
           <div className="room-editor-container custom-card">

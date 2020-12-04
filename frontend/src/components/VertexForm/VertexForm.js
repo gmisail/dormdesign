@@ -2,6 +2,8 @@ import React, { Component } from "react";
 import { Col, Form } from "react-bootstrap";
 import Vector2 from "../../room-editor/Vector2";
 
+import "./VertexForm.scss";
+
 class VertexForm extends Component {
   constructor(props) {
     super(props);
@@ -40,35 +42,38 @@ class VertexForm extends Component {
   render() {
     return (
       <Form onSubmit={this.onFormSubmit}>
-        {this.state.vertices.map((coord, idx) => (
-          <Form.Row key={idx}>
-            <Form.Group as={Col}>
-              <Form.Control
-                name="x"
-                placeholder="X"
-                data-index={idx}
-                onChange={this.onChange}
-                className="col"
-                type="number"
-                value={coord.x}
-                required
-              ></Form.Control>
-            </Form.Group>
+        <div className="vertices-container">
+          {this.state.vertices.map((coord, idx) => (
+            <Form.Row key={idx}>
+              <Form.Group as={Col}>
+                <Form.Control
+                  name="x"
+                  placeholder="X"
+                  data-index={idx}
+                  onChange={this.onChange}
+                  className="col"
+                  type="number"
+                  value={coord.x}
+                  required
+                ></Form.Control>
+              </Form.Group>
 
-            <Form.Group as={Col}>
-              <Form.Control
-                name="y"
-                placeholder="Y"
-                data-index={idx}
-                onChange={this.onChange}
-                className="col"
-                type="number"
-                value={coord.y}
-                required
-              ></Form.Control>
-            </Form.Group>
-          </Form.Row>
-        ))}
+              <Form.Group as={Col}>
+                <Form.Control
+                  name="y"
+                  placeholder="Y"
+                  data-index={idx}
+                  onChange={this.onChange}
+                  className="col"
+                  type="number"
+                  value={coord.y}
+                  required
+                ></Form.Control>
+              </Form.Group>
+            </Form.Row>
+          ))}
+        </div>
+
         <Form.Row className="justify-content-between">
           <Col>
             <div className="d-flex justify-content-between">
