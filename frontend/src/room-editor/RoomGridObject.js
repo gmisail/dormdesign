@@ -7,14 +7,13 @@ class RoomGridObject extends SceneObject {
       staticObject: true,
     });
 
-    const { opacity, lineColor, lineWidth } = props;
+    const { opacity, lineColor, lineWidth, backgroundColor, cellSize } = props;
 
-    this.floorColor = "#fff";
-    this.borderColor = "#555";
-    this.borderWidth = 0.08;
+    this.backgroundColor = backgroundColor ?? "#fff";
 
     this.lineColor = lineColor ?? "#888";
     this.lineWidth = lineWidth ?? 0.3;
+    this.cellSize = cellSize ?? 1;
     this.opacity = opacity ?? 1.0;
   }
 
@@ -22,13 +21,16 @@ class RoomGridObject extends SceneObject {
 
   draw(ctx) {
     // Draw grid (each cell represents 1 sq ft)
-    const numLinesX = Math.floor(this.size.x);
-    const numLinesY = Math.floor(this.size.y);
-    // Offsets to make sure grid is centered
-    const startX = this.position.x + (this.size.x - numLinesX) / 2;
-    const startY = this.position.y + (this.size.y - numLinesY) / 2;
+    const numLinesX = Math.floor(this.size.x / this.cellSize);
+    const numLinesY = Math.floor(this.size.y / this.cellSize);
 
-    ctx.fillStyle = this.floorColor;
+    // Offsets to make sure grid is centered
+    const startX =
+      this.position.x + (this.size.x - numLinesX * this.cellSize) / 2;
+    const startY =
+      this.position.y + (this.size.y - numLinesY * this.cellSize) / 2;
+
+    ctx.fillStyle = this.backgroundColor;
     ctx.fillRect(0, 0, this.size.x, this.size.y);
 
     ctx.globalAlpha = this.opacity;
@@ -38,14 +40,14 @@ class RoomGridObject extends SceneObject {
     ctx.lineCap = "round";
     for (let i = 0; i < numLinesX + 1; i++) {
       ctx.beginPath();
-      const currX = startX + i;
+      const currX = startX + i * this.cellSize;
       ctx.moveTo(currX, this.position.y);
       ctx.lineTo(currX, this.position.y + this.size.y);
       ctx.stroke();
     }
     for (let i = 0; i < numLinesY + 1; i++) {
       ctx.beginPath();
-      const currY = startY + i;
+      const currY = startY + i * this.cellSize;
       ctx.moveTo(this.position.x, currY);
       ctx.lineTo(this.position.x + this.size.x, currY);
       ctx.stroke();

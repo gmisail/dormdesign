@@ -20,6 +20,8 @@ class SceneController {
     this.deltaTime = undefined;
     // Set to true when if canvas has been resized this frame
     this.resized = false;
+    // Callback that is called when canvas has been resized
+    this.onResize = () => {};
 
     this.init();
   }
@@ -32,6 +34,9 @@ class SceneController {
     requestAnimationFrame(this.mainLoop.bind(this));
 
     this.resized = this.resizeCanvas(this.canvas);
+    if (this.resized) {
+      this.onResize();
+    }
 
     // Calculate time since last frame. Measured in seconds
     if (!currentTime) currentTime = performance.now(); // Needed because currentTime is undefined on first frame
@@ -43,7 +48,8 @@ class SceneController {
     this._rootObject._update();
 
     // Clear canvas
-    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    this.ctx.fillStyle = this.backgroundColor;
+    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
     this._rootObject._draw();
   }

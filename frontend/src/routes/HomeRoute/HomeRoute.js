@@ -23,42 +23,69 @@ class HomeRoute extends Component {
     const scene = new SceneController(this.backgroundCanvasRef);
     scene.backgroundColor = "#f9f9f9";
     // Points defining the edges of the room (in feet)
-    // const testBoundaryPath = [
-    //   new Vector2(1, 2),
-    //   new Vector2(2, 2),
-    //   new Vector2(2, 1),
-    //   new Vector2(7.3, 1),
-    //   new Vector2(7.3, 2),
-    //   new Vector2(8, 2),
-    //   new Vector2(8, 5),
-    //   new Vector2(9, 5),
-    //   new Vector2(9, 6),
-    //   new Vector2(8, 6),
-    //   new Vector2(8, 13),
-    //   new Vector2(4, 13),
-    //   new Vector2(4, 6.5),
-    //   new Vector2(0, 6.5),
-    //   new Vector2(0, 4),
-    //   new Vector2(3, 4),
-    //   new Vector2(3, 3),
-    //   new Vector2(0, 3),
-    //   new Vector2(0, -5),
-    //   new Vector2(1, -5),
-    // ];
+    const boundaryPoints = [
+      new Vector2(2, 1),
+      new Vector2(13, 1),
+      new Vector2(13, 3),
+      new Vector2(15, 3),
+      new Vector2(15, 9),
+      new Vector2(0, 9),
+      new Vector2(0, 3),
+      new Vector2(2, 3),
+    ];
     const room = new RoomEditorObject({
       scene: scene,
-      // boundaryPoints: testBoundaryPath,
-      backgroundColor: "#f9f9f9",
+      boundaryPoints: [],
+      boundaryWidth: 0,
+      backgroundColor: "#f9f9f9", //"#f9f9f9",
+      gridLineColor: "#ccc",
       onObjectsUpdated: this.itemsUpdatedInEditor,
       onObjectSelected: this.itemSelectedInEditor,
       selectedObjectID: undefined,
       fontFamily: "Source Sans Pro",
+      autoFitToCanvas: false,
     });
     scene.addChild(room);
 
     this.scene = scene;
     this.roomObject = room;
+
+    this.fitRoomToWindow();
+    scene.onResize = this.fitRoomToWindow;
+
+    room.addItemToRoom({
+      id: "item1",
+      width: 8.75,
+      height: 1.7,
+      position: new Vector2(room.size.x / 2, 250),
+      visible: true,
+      scale: new Vector2(100, 100),
+      color: "#ffffff00",
+    });
+    const item1 = room.roomItems.get("item1");
+    item1.selected = true;
   }
+
+  componentWillUnmount() {
+    this.scene.onResize = () => {};
+  }
+
+  fitRoomToWindow = () => {
+    this.roomObject.size = new Vector2(
+      this.backgroundCanvasRef.width,
+      this.backgroundCanvasRef.height
+    );
+
+    this.roomObject.floorGrid.cellSize = 80 * window.devicePixelRatio;
+    this.roomObject.floorGrid.lineWidth = 2 * window.devicePixelRatio;
+
+    this.roomObject.setBoundaries([
+      new Vector2(0, 0),
+      new Vector2(this.roomObject.size.x, 0),
+      new Vector2(this.roomObject.size.x, this.roomObject.size.y),
+      new Vector2(0, this.roomObject.size.y),
+    ]);
+  };
 
   createRoomClicked = async () => {
     const roomID = await DataRequests.CREATE_TEST_ROOM();
@@ -68,83 +95,53 @@ class HomeRoute extends Component {
   render() {
     return (
       <>
-        {/* <Jumbotron id="landing-jumbotron" fluid>
-          <Container>
-            <h1>Plan for college, together.</h1>
-            <p>An RCOS Project.</p>
-          </Container>
-        </Jumbotron> */}
         <canvas
           ref={(ref) => (this.backgroundCanvasRef = ref)}
           id="background-canvas"
         />
-        <div class="header-container">
-          <div class="logo">
-            <img
-              className="logo-svg"
-              src={DormDesignLogo}
-              alt="DormDesign"
-            ></img>
-          </div>
-        </div>
-        <div className="content-container">
-          <div className="create-room-container custom-card">
-            <h4>Create a Room</h4>
-            <p>Get started with a fresh room.</p>
-            <Button
-              variant="primary"
-              name="createRoomButton"
-              onClick={this.createRoomClicked}
-            >
-              Create New Room
-            </Button>
-          </div>
-          <div className="join-room-container custom-card">
-            <h4>Join a Room</h4>
-            <p>Enter the ID for an existing room.</p>
-            <InputGroup>
-              <FormControl placeholder="Room ID" aria-label="Room Code" />
-              <InputGroup.Append>
-                <Button
-                  variant="primary"
+        <div className="content-wrapper">
+          <div className="content-container">
+            <div className="header-container">
+              <div className="logo">
+                <img
+                  className="logo-svg"
+                  src={DormDesignLogo}
+                  alt="DormDesign"
+                ></img>
+              </div>
+            </div>
+            <div className="create-room-container custom-card">
+              <h4>Create a Room</h4>
+              <p>Get started with a fresh room.</p>
+              <button
+                className="custom-btn"
+                name="createRoomButton"
+                onClick={this.createRoomClicked}
+              >
+                Create New Room
+              </button>
+            </div>
+            <div className="join-room-container custom-card">
+              <h4>Join a Room</h4>
+              <p>Enter the ID for an existing room.</p>
+              <div className="d-flex w-100">
+                <FormControl
+                  className="flex-shrink-1"
+                  placeholder="Room ID"
+                  aria-label="Room Code"
+                  style={{ minWidth: 0 }}
+                />
+                <button
+                  className="custom-btn flex-shrink-0 ml-2"
                   name="createRoomButton"
                   onClick={this.createRoomClicked}
                 >
                   Join Room
-                </Button>
-              </InputGroup.Append>
-            </InputGroup>
+                </button>
+              </div>
+            </div>
           </div>
         </div>
-
-        {/* <Col>
-              <Card>
-                <Card.Body>
-                  <Card.Title>
-                    <h4>Join a Room</h4>
-                  </Card.Title>
-                  <p>Need to join an existing room?</p>
-
-                  <InputGroup>
-                    <FormControl
-                      placeholder="Room Code"
-                      aria-label="Room Code"
-                    />
-                    <InputGroup.Append>
-                      <Button
-                        variant="primary"
-                        name="createRoomButton"
-                        onClick={this.createRoomClicked}
-                      >
-                        Join Room
-                      </Button>
-                    </InputGroup.Append>
-                  </InputGroup>
-                </Card.Body>
-              </Card>
-            </Col>
-          </Row>
-        </Container> */}
       </>
     );
   }

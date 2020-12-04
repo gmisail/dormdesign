@@ -9,39 +9,52 @@
   }
 }
 
-.header-container {
-  padding: 200px 0 50px 0;
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  animation: fadein 4s ease forwards;
-
-  .logo {
-    flex-grow: 1;
-    grid-area: logo;
-    max-width: 800px;
-  }
-}
-
 .content-container {
-  padding: 50px 20px;
+  padding: 50px;
   max-width: 1200px;
-  margin: auto;
+  margin: 15vh auto 0 auto;
 
   display: grid;
   grid-template-rows: max-content;
   grid-template-columns: 1fr 1fr;
-  grid-template-areas: "create-room join-room";
+  grid-template-areas:
+    "header header"
+    "create-room join-room";
 
   gap: 50px;
+
+  @media screen and (max-width: 875px) {
+    max-width: 500px;
+    padding: 15px;
+    gap: 20px;
+    grid-template-areas:
+      "header"
+      "create-room"
+      "join-room";
+    grid-template-columns: 1fr;
+  }
 
   %homepage-custom-card {
     padding: 25px;
 
     opacity: 0;
-    animation: fadein 1.5s ease-out 1s forwards;
+    animation: fadein 1.5s ease 1s forwards;
+  }
+
+  .header-container {
+    grid-area: header;
+    // padding: 200px 0 50px 0;
+    // width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    .logo {
+      flex-grow: 1;
+      grid-area: logo;
+      max-width: 800px;
+      animation: fadein 2s ease forwards;
+    }
   }
 
   .create-room-container {
