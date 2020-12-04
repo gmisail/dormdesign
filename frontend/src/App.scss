@@ -16,8 +16,8 @@ h5 {
   color: $text-color-dark;
 }
 
-.main-content-container {
-  background-color: $background-color;
+a {
+  color: $color-primary;
 }
 
 /* Remove default outline around buttons/inputs */
@@ -34,7 +34,9 @@ textarea {
 }
 
 .main-content-container {
+  background-color: $background-color;
   padding-top: 56px; /* Offsets content of page from navbar (which is fixed to top) */
+  padding-bottom: $footer-height; /* Offsets content from footer */
   overflow: hidden;
 }
 

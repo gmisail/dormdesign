@@ -1,0 +1,35 @@
+@import "../../styles/variables.scss";
+
+.footer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 20;
+
+  padding: 5px;
+
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: center;
+  justify-content: center;
+
+  height: $footer-height;
+
+  * + * {
+    margin-left: 20px;
+  }
+
+  font-weight: 600;
+
+  .github-repo-link {
+    height: 100%;
+    color: $footer-text-color;
+
+    transition: 0.2s;
+
+    &:hover {
+      transform: scale(1.1);
+    }
+  }
+}

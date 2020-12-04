@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Button, Col, Form } from "react-bootstrap";
+import { Col, Form } from "react-bootstrap";
 import Vector2 from "../../room-editor/Vector2";
 
 class VertexForm extends Component {

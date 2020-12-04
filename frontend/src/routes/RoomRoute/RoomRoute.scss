@@ -15,7 +15,7 @@ body {
   $stack-breakpoint: 900px;
   $small-breakpoint: 500px;
 
-  $usable-height: calc(100vh - #{$navbar-height});
+  $usable-height: calc(100vh - #{$navbar-height} - #{$footer-height});
 
   margin: auto;
   overflow: hidden;

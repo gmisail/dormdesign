@@ -3,6 +3,7 @@ import "../node_modules/bootstrap/dist/css/bootstrap.min.css";
 import "./App.scss";
 
 import NavigationBar from "./components/navbar/NavigationBar";
+import Footer from "./components/Footer/Footer";
 
 import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
 
@@ -20,6 +21,7 @@ const App = () => {
           <Route exact path="/" component={HomeRoute} />
           <Route component={MainRoutes} />
         </Switch>
+        <Footer />
       </Router>
     </IconContext.Provider>
   );

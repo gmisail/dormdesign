@@ -1,24 +1,48 @@
 import React, { Component } from "react";
 
-import {
-  Container,
-  Row,
-  Col,
-  Card,
-  Button,
-  Jumbotron,
-  InputGroup,
-  FormControl,
-} from "react-bootstrap";
+import { FormControl } from "react-bootstrap";
 
 import DataRequests from "../../controllers/DataRequests";
 import DormDesignLogo from "../../assets/logo.svg";
-import RoomEditorObject from "../../room-editor/RoomEditorObject";
+import RoomGridObject from "../../room-editor/RoomGridObject";
 import SceneController from "../../room-editor/SceneController";
 import Vector2 from "../../room-editor/Vector2";
 import "./HomeRoute.scss";
 
 class HomeRoute extends Component {
+  componentDidMount() {
+    const scene = new SceneController(this.backgroundCanvasRef);
+    scene.backgroundColor = "#f9f9f9";
+    this.scene = scene;
+    const grid = new RoomGridObject({
+      scene: scene,
+      lineColor: "#c8c8c8",
+      lineWidth: 2,
+      backgroundColor: "#f9f9f9",
+    });
+    scene.addChild(grid);
+
+    this.scene = scene;
+    this.grid = grid;
+
+    this.fitGridToWindow();
+    scene.onResize = this.fitGridToWindow;
+  }
+
+  fitGridToWindow = () => {
+    this.grid.size = new Vector2(
+      this.backgroundCanvasRef.width,
+      this.backgroundCanvasRef.height
+    );
+    this.grid.cellSize = 80 * window.devicePixelRatio;
+    this.grid.lineWidth = 2 * window.devicePixelRatio;
+  };
+
+  componentWillUnmount() {
+    // Cleanup callback
+    this.scene.onResize = () => {};
+  }
+
   createRoomClicked = async () => {
     const roomID = await DataRequests.CREATE_TEST_ROOM();
     this.props.history.push(`/room/${roomID}`);
@@ -27,6 +51,10 @@ class HomeRoute extends Component {
   render() {
     return (
       <>
+        <canvas
+          ref={(ref) => (this.backgroundCanvasRef = ref)}
+          id="background-canvas"
+        />
         <div className="content-wrapper">
           <div className="content-container">
             <div className="header-container">
