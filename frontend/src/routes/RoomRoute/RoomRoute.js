@@ -217,7 +217,10 @@ export const RoomRouteNew = () => {
           <h2 className="room-header">Dorm Name - Room #</h2>
 
           <div className="d-flex justify-content-end room-header">
-            <IconButton onClick={onClickSettingsButton}>
+            <IconButton
+              onClick={onClickSettingsButton}
+              style={{ fontSize: "1.25em" }}
+            >
               <BsGear></BsGear>
             </IconButton>
           </div>

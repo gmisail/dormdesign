@@ -202,9 +202,9 @@ class ListItemForm extends Component {
           />
         </Form.Group>
         <div className="text-right">
-          <Button variant="primary" type="submit">
+          <button className="custom-btn" type="submit">
             Save
-          </Button>
+          </button>
         </div>
       </Form>
     );
