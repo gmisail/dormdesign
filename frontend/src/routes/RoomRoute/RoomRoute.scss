@@ -50,13 +50,23 @@ body {
     gap: $gap-y * 0.75 0;
 
     .room-header {
-      font-size: 28px;
+      & > * {
+        font-size: 1.5em;
+      }
     }
   }
 
   .room-header {
     grid-area: room-header;
-    margin: 0;
+
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: space-between;
+    align-items: center;
+
+    & > * {
+      margin: 0;
+    }
   }
 
   .room-editor-container {

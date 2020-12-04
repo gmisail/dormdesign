@@ -214,9 +214,8 @@ export const RoomRoute = () => {
         </p>
       ) : (
         <div className="room-container">
-          <h2 className="room-header">Dorm Name - Room #</h2>
-
-          <div className="d-flex justify-content-end room-header">
+          <div className="room-header">
+            <h2>Dorm Name - Room #</h2>
             <IconButton
               onClick={onClickSettingsButton}
               style={{ fontSize: "1.25em" }}
