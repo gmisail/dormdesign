@@ -42,6 +42,10 @@ class ListItemForm extends Component {
       value = value.substring(0, 30);
     }
 
+    if (name === "widthInputValue" || name === "lengthInputValue") {
+      value = Math.max(0, value);
+    }
+
     this.setState({
       [name]: value,
     });
@@ -198,9 +202,9 @@ class ListItemForm extends Component {
           />
         </Form.Group>
         <div className="text-right">
-          <Button variant="primary" type="submit">
+          <button className="custom-btn" type="submit">
             Save
-          </Button>
+          </button>
         </div>
       </Form>
     );

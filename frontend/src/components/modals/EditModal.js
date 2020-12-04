@@ -6,7 +6,7 @@ const EditModal = (props) => {
   return (
     <Modal show={props.show} onHide={props.onHide}>
       <Modal.Header closeButton>
-        <Modal.Title>Edit Item</Modal.Title>
+        <Modal.Title className="custom-modal-title">Edit Item</Modal.Title>
       </Modal.Header>
 
       <Modal.Body>

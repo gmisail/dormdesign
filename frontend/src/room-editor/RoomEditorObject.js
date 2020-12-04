@@ -1,8 +1,8 @@
-import SceneObject from "./SceneObject";
-import MouseController from "./MouseController";
 import Collisions from "./Collisions";
-import RoomRectObject from "./RoomRectObject";
+import MouseController from "./MouseController";
 import RoomGridObject from "./RoomGridObject";
+import RoomRectObject from "./RoomRectObject";
+import SceneObject from "./SceneObject";
 import Vector2 from "./Vector2";
 
 class RoomEditorObject extends SceneObject {
@@ -21,11 +21,8 @@ class RoomEditorObject extends SceneObject {
     // Map of item ids that have been added to room
     this.roomItems = new Map();
 
-    // Points that define room boundary (measured in feet). Must be in clockwise order
-    this.boundaryPoints = boundaryPoints;
-    this._offsetPoints = [];
-
     this.backgroundColor = backgroundColor ?? "#fff";
+    //this.backgroundColor = "red";
     this.textColor = "#222";
     this.borderColor = "#555";
     this.borderWidth = 0.07;
@@ -35,16 +32,6 @@ class RoomEditorObject extends SceneObject {
 
     this.onObjectsUpdated = onObjectsUpdated ?? (() => {});
     this.onObjectSelected = onObjectSelected ?? (() => {});
-
-    this._fitRoomToCanvas();
-    this._calculateOffsetPoints();
-
-    this.mouseController = new MouseController({
-      watchedElement: this.scene.canvas,
-      onMouseDown: this.onMouseDown.bind(this),
-      onMouseMove: this.onMouseMove.bind(this),
-      onMouseUp: this.onMouseUp.bind(this),
-    });
 
     const floorGrid = new RoomGridObject({
       scene: this.scene,
@@ -60,6 +47,15 @@ class RoomEditorObject extends SceneObject {
     this.addChild(floorGrid);
     this.floorGrid = floorGrid;
 
+    this.mouseController = new MouseController({
+      watchedElement: this.scene.canvas,
+      onMouseDown: this.onMouseDown.bind(this),
+      onMouseMove: this.onMouseMove.bind(this),
+      onMouseUp: this.onMouseUp.bind(this),
+    });
+
+    this.setBoundaries(boundaryPoints);
+
     this.selectedObject = null;
 
     this.objectColors = ["#0043E0", "#f28a00", "#C400E0", "#7EE016", "#0BE07B"];
@@ -71,6 +67,23 @@ class RoomEditorObject extends SceneObject {
     then be called on next update() cycle with updated position. Hopefully this reduces 
     unnecessary calls to onObjectUpdated */
     this._selectedObjectPositionUpdated = false;
+  }
+
+  setBoundaries(boundaryPoints) {
+    // Create copies of the points since we don't want to reference the passed in objects themselves
+    const copied = [];
+    for (let i = 0; i < boundaryPoints.length; i++) {
+      copied.push(new Vector2(boundaryPoints[i].x, boundaryPoints[i].y));
+    }
+
+    this.boundaryPoints = copied;
+    this._offsetPoints = [];
+
+    this._fitRoomToCanvas();
+    this._calculateOffsetPoints();
+
+    // Update size of grid to match any changes to size made in _fitRoomToCanvas()
+    this.floorGrid.size = new Vector2(this.size.x, this.size.y);
   }
 
   // Calculates and sets offset points (used so that when drawing room border the lines won't overlap into the room)
@@ -234,25 +247,9 @@ class RoomEditorObject extends SceneObject {
             }
             obj.selected = true;
             this.selectedObject = obj;
-
+            // Set zIndex to something very large so that when item zIndexes are normalized, this item is on top
             obj.zIndex = Infinity;
-            // const updated = [];
 
-            // const oldZIndex = obj.zIndex;
-            // obj.zIndex = this.roomItems.size - 1;
-            // updated.push({ id: obj.id, updated: { zIndex: obj.zIndex } });
-
-            // console.log("OLD,NEW ZINDEX", oldZIndex, obj.zIndex);
-            // console.log(this.roomItems.size);
-            // for (const item of this.roomItems.values()) {
-            //   if (item.id === obj.id) continue;
-            //   console.log("CHECKING", item.zIndex);
-            //   if (item.zIndex > oldZIndex) {
-            //     item.zIndex -= 1;
-            //     updated.push({ id: item.id, updated: { zIndex: item.zIndex } });
-            //   }
-            // }
-            // console.log(updated);
             this._needNormalizeItemZIndexes = true;
 
             this.onObjectSelected(obj);
@@ -399,10 +396,12 @@ class RoomEditorObject extends SceneObject {
     if (this.selectedObject && this.selectedObject.id === id) {
       this.selectedObject = null;
     }
+
     // Remove from scene if obj is in scene (visible in editor)
     if (this.scene.hasObjectWithID(id)) {
       this.removeChild(obj);
     }
+
     this.roomItems.delete(id);
 
     // Normalize zIndexes of items

@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import { RoomContext } from "./RoomContext";
 
 import { Spinner } from "react-bootstrap";
-import { BsPlus } from "react-icons/bs";
+import { BsGear, BsPlus } from "react-icons/bs";
 
 import RoomEditor from "../../components/RoomEditor/RoomEditor";
 import DormItemList from "../../components/DormItemList/DormItemList";
@@ -11,8 +11,10 @@ import DormItemList from "../../components/DormItemList/DormItemList";
 import AddModal from "../../components/modals/AddModal";
 import EditModal from "../../components/modals/EditModal";
 import NameModal from "../../components/modals/NameModal";
+import SettingsModal from "../../components/modals/SettingsModal";
 
 import ErrorModal from "../../components/modals/ErrorModal";
+import IconButton from "../../components/IconButton/IconButton";
 
 import "./RoomRoute.scss";
 
@@ -21,6 +23,7 @@ const modalTypes = {
   edit: "EDIT",
   chooseName: "CHOOSE_NAME",
   error: "ERROR",
+  settings: "SETTINGS",
 };
 
 // Modal component that returns a modal based on the passed 'type' prop and passes all props to that modal
@@ -34,6 +37,8 @@ const Modal = (props) => {
       return <NameModal {...props} />;
     case modalTypes.error:
       return <ErrorModal {...props}></ErrorModal>;
+    case modalTypes.settings:
+      return <SettingsModal {...props} />;
     default:
       return null;
   }
@@ -88,12 +93,14 @@ export const RoomRouteNew = () => {
     socketConnection,
     userName,
     connectToRoom,
+    cloneRoom,
     setUserName,
     addItem,
     updateItems,
     deleteItem,
     selectedItemID,
   } = useContext(RoomContext);
+
   const { id } = useParams();
   const [modalProps, toggleModal] = useModal();
 
@@ -160,6 +167,20 @@ export const RoomRouteNew = () => {
     [updateItems, userName]
   );
 
+  const onClickSettingsButton = useCallback(
+    () =>
+      toggleModal(modalTypes.settings, {
+        onClone: (target) => {
+          cloneRoom(id, target);
+        },
+
+        onUpdateLayout: () => {
+          console.log("layout updated");
+        },
+      }),
+    [toggleModal, cloneRoom, id]
+  );
+
   const onToggleItemEditorVisibility = useCallback(
     (item) =>
       updateItems([
@@ -194,6 +215,16 @@ export const RoomRouteNew = () => {
       ) : (
         <div className="room-container">
           <h2 className="room-header">Dorm Name - Room #</h2>
+
+          <div className="d-flex justify-content-end room-header">
+            <IconButton
+              onClick={onClickSettingsButton}
+              style={{ fontSize: "1.25em" }}
+            >
+              <BsGear></BsGear>
+            </IconButton>
+          </div>
+
           <div className="room-editor-container custom-card">
             <RoomEditor />
           </div>

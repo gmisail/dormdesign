@@ -58,9 +58,9 @@ func (c *Client) translateMessage(reader io.Reader) (*Message, error) {
 		switch roomMessage.Event {
 		case "addItem":
 			/*
-				Create new ListItem model
+				Create new RoomItem model
 			*/
-			var item models.ListItem
+			var item models.RoomItem
 			err := json.Unmarshal(roomMessage.Data, &item)
 			if err != nil {
 				errorString = "Unable to translate addItem event: " + err.Error()
@@ -68,7 +68,7 @@ func (c *Client) translateMessage(reader io.Reader) (*Message, error) {
 			}
 			item.ID = uuid.New().String()
 			
-			err = models.AddListItem(c.hub.database, roomMessage.RoomID, item)
+			err = models.AddRoomItem(c.hub.database, roomMessage.RoomID, item)
 			if err != nil {
 				errorString = "Error adding item to database: " + err.Error()
 				break
@@ -83,7 +83,7 @@ func (c *Client) translateMessage(reader io.Reader) (*Message, error) {
 
 		case "updateItems":	
 			/*
-				Edit property/properties of multiple existing ListItems
+				Edit property/properties of multiple existing RoomItems
 			*/
 			type UpdatedItemsEvent struct {
 				Items []struct {
@@ -113,7 +113,7 @@ func (c *Client) translateMessage(reader io.Reader) (*Message, error) {
 					break eventHandler
 				}
 
-				_, err = models.EditListItem(c.hub.database, roomMessage.RoomID, item.ID, item.Updated)
+				_, err = models.EditRoomItem(c.hub.database, roomMessage.RoomID, item.ID, item.Updated)
 				if err != nil {
 					errorString = "Unable to update item in database: " + err.Error()
 					break eventHandler 
@@ -128,7 +128,7 @@ func (c *Client) translateMessage(reader io.Reader) (*Message, error) {
 
 		case "deleteItem":
 			/*
-				Delete ListItem
+				Delete RoomItem
 			*/
 			type DeleteItemEvent struct {
 				ID string `json:"id"`
@@ -145,7 +145,7 @@ func (c *Client) translateMessage(reader io.Reader) (*Message, error) {
 				break
 			}
 			
-			err = models.RemoveListItem(c.hub.database, roomMessage.RoomID, eventData.ID)
+			err = models.RemoveRoomItem(c.hub.database, roomMessage.RoomID, eventData.ID)
 			if err != nil {
 				errorString = fmt.Sprintf("Unable to remove item: %s", err)
 				break
@@ -156,6 +156,74 @@ func (c *Client) translateMessage(reader io.Reader) (*Message, error) {
 			response = &MessageResponse{
 				Event: "itemDeleted",
 				Data: eventData,
+			}
+		case "updateLayout":
+			type UpdateVerticesEvent struct {
+				Vertices []models.EditorPoint `json:"vertices"`
+			}
+
+			var eventData UpdateVerticesEvent
+			err := json.Unmarshal(roomMessage.Data, &eventData)
+			if err != nil {
+				errorString = "Unable to translate updateVertices event: " + err.Error()
+				break
+			}
+
+			verts := eventData.Vertices
+			updatedVerts := make([]models.EditorPoint, len(verts))
+		
+			for i := range verts {
+				updatedVerts[i] = verts[i]
+			}
+
+			vertErr := models.UpdateVertices(c.hub.database, roomMessage.RoomID, updatedVerts)
+
+			if vertErr != nil {
+				errorString = "Error updating room layout in database: " + err.Error()
+				break
+			}
+			log.Printf("UPDATED LAYOUT %s", roomMessage.RoomID)
+
+			response = &MessageResponse{
+				Event: "layoutUpdated",
+				Data: struct{
+					Vertices []models.EditorPoint `json:"vertices"`
+				}{
+					Vertices: updatedVerts,
+				},
+			}
+		case "cloneRoom":
+			type CloneRoomEvent struct {
+				ID string `json:"id"`
+				Target string `json:"target_id"`
+			}
+
+			var eventData CloneRoomEvent
+			err := json.Unmarshal(roomMessage.Data, &eventData)
+
+			if err != nil {
+				errorString = "Unable to translate cloneRooms event: " + err.Error()
+				break
+			}
+
+			room, copyErr := models.CopyRoom(c.hub.database, eventData.ID, eventData.Target)
+
+			if copyErr != nil {
+				errorString = "Unable to copy the room: " + copyErr.Error()
+				break
+			}
+
+			log.Printf("CLONED ROOM %s", eventData.ID)
+
+			response = &MessageResponse{
+				Event: "roomCloned",
+				Data: struct{
+					Items []models.RoomItem `json:"items"`
+					Vertices []models.EditorPoint `json:"vertices"`
+				}{
+					Items: room.Items,
+					Vertices: room.Vertices,
+				},
 			}
 		default:
 			errorString = fmt.Sprintf("Unknown event '%s'", roomMessage.Event)
