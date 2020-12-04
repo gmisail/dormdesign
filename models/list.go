@@ -81,6 +81,7 @@ func GetRoom(database *rdb.Session, id string) (Room, error) {
 	if err == rdb.ErrEmptyResult {
 		err = errors.New("Room not found")
 	}
+
 	if err != nil {
 		return Room{}, err
 	}
@@ -90,12 +91,15 @@ func GetRoom(database *rdb.Session, id string) (Room, error) {
 	return data, nil
 }
 
+/*
+	Copy the contents of the room with ID 'target' into 'id'.
+*/
 func CopyRoom(database *rdb.Session, id string, target string) (Room, error) {
 	data, err := GetRoom(database, target)
 
 	if err != nil {
 		log.Println(err)
-	//	return echo.NewHTTPError(http.StatusBadRequest, "Cannot find room with given ID.")
+		return Room{}, err
 	}
 
 	/* remove all of the current items in the room */
@@ -103,7 +107,7 @@ func CopyRoom(database *rdb.Session, id string, target string) (Room, error) {
 
 	if clearErr != nil {
 		log.Println(clearErr)
-//		return echo.NewHTTPError(http.StatusBadRequest, "Cannot clear room with given ID.")
+		return Room{}, clearErr
 	}
 
 	/* replace the current vertices with the target room's vertices */
@@ -111,15 +115,29 @@ func CopyRoom(database *rdb.Session, id string, target string) (Room, error) {
 
 	if vertErr != nil {
 		log.Println(vertErr)
-	//	return echo.NewHTTPError(http.StatusBadRequest, "Cannot update vertices with given ID.")
+		return Room{}, vertErr
 	}
 
-	/* loop through target and add them to current room. Ensures that ID's are new and unique */
+	/* 
+		loop through target and add them to current room. We don't want to
+		re-use the ID's from 'target', so add them manually so that it
+		generates a unique ID.
+	*/
 	for _, item := range data.Items {
-		AddRoomItem(database, id, item)
+		roomErr := AddRoomItem(database, id, item)
+
+		if roomErr != nil {
+			log.Println(roomErr)
+			return Room{}, roomErr
+		}
 	}
 
 	data, err = GetRoom(database, target)
+
+	if err != nil {
+		log.Println(err)
+		return Room{}, err
+	}
 
 	return data, nil
 }

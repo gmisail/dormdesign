@@ -141,6 +141,9 @@ const handleSocketErrorEvent = (data) => {
     case "updateLayout":
       console.error("Error updating bounds. ", data.message);
       return "Failed to update room bounds.";
+    case "cloneRoom":
+      console.error("Error cloning room. ", data.message);
+      return "Cannot find room with the given ID.";
     default:
       console.error("Unknown socket event error.", data);
       return null;

@@ -42,15 +42,6 @@ const Modal = (props) => {
     default:
       return null;
   }
-
-  /**
-   * EventController.on("updateLayout", (data) => {
-      EventController.emit("layoutUpdated", data);
-      this.setState({ bounds: data.vertices });
-    });
-   * 
-
-   */
 };
 
 /*
@@ -226,7 +217,10 @@ export const RoomRoute = () => {
           <h2 className="room-header">Dorm Name - Room #</h2>
 
           <div className="d-flex justify-content-end room-header">
-            <IconButton onClick={onClickSettingsButton}>
+            <IconButton
+              onClick={onClickSettingsButton}
+              style={{ fontSize: "1.25em" }}
+            >
               <BsGear></BsGear>
             </IconButton>
           </div>

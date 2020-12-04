@@ -6,7 +6,9 @@ const NameModal = (props) => {
   return (
     <Modal show={props.show} onHide={props.onHide}>
       <Modal.Header closeButton>
-        <Modal.Title>Choose Your Name</Modal.Title>
+        <Modal.Title className="custom-modal-title">
+          Choose Your Name
+        </Modal.Title>
       </Modal.Header>
 
       <Modal.Body>

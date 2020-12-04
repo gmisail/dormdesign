@@ -1,0 +1,26 @@
+@import "../../styles/variables.scss";
+
+.custom-modal-title {
+  font-family: "Arvo", serif;
+  font-weight: 700;
+}
+
+.close {
+  opacity: 100%;
+  color: white;
+}
+
+.close:hover {
+  opacity: 80%;
+  color: white;
+}
+
+.modal-header {
+  background-color: $color-primary;
+  color: white;
+  border: 0 none;
+}
+
+.modal-footer {
+  border: 0 none;
+}

@@ -24,10 +24,10 @@ class SettingsModal extends React.Component {
     return (
       <Modal show={this.props.show} onHide={this.props.onHide}>
         <Modal.Header closeButton>
-          <Modal.Title>Settings</Modal.Title>
+          <Modal.Title className="custom-modal-title">Settings</Modal.Title>
         </Modal.Header>
 
-        <Modal.Body>
+        <Modal.Body className="custom-modal-card">
           <h5>Layout</h5>
           <VertexForm
             bounds={this.context.bounds}
