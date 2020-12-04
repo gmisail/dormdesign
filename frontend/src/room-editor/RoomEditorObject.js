@@ -11,36 +11,58 @@ class RoomEditorObject extends SceneObject {
 
     const {
       boundaryPoints,
-      opacity,
+      boundaryColor,
+      boundaryWidth,
+      gridLineColor,
+      gridLineWidth,
+      gridCellSize,
+      gridOpacity,
       backgroundColor,
+      opacity,
+      outsideBoundaryColor,
       onObjectsUpdated,
       onObjectSelected,
+      textColor,
       fontFamily,
+      autoFitToCanvas,
+      padding,
     } = props;
 
     // Map of item ids that have been added to room
     this.roomItems = new Map();
 
     this.backgroundColor = backgroundColor ?? "#fff";
-    //this.backgroundColor = "red";
-    this.textColor = "#222";
-    this.borderColor = "#555";
-    this.borderWidth = 0.07;
+    this.outsideBoundaryColor = outsideBoundaryColor ?? backgroundColor;
     this.opacity = opacity ?? 1.0;
 
+    this.boundaryColor = boundaryColor ?? "#555";
+    this.boundaryWidth = boundaryWidth ?? 0.07;
+
     this.fontFamily = fontFamily;
+    this.textColor = textColor ?? "#222";
 
     this.onObjectsUpdated = onObjectsUpdated ?? (() => {});
     this.onObjectSelected = onObjectSelected ?? (() => {});
+
+    this.autoFitToCanvas = autoFitToCanvas ?? true;
+    // Padding around room. Units are in portion of canvas, e.g. top: 0.02 = 2% canvas height, right: 0.02 = 2% canvas width
+    this.padding = padding ?? {
+      top: 0.02,
+      bottom: 0.02,
+      left: 0.02,
+      right: 0.02,
+    };
 
     const floorGrid = new RoomGridObject({
       scene: this.scene,
       position: new Vector2(0, 0),
       size: new Vector2(this.size.x, this.size.y),
       scale: new Vector2(1, 1),
-      opacity: 0.4,
-      lineColor: "#888",
-      lineWidth: 0.03,
+      opacity: gridOpacity ?? 1.0,
+      backgroundColor: this.backgroundColor,
+      lineColor: gridLineColor ?? "#ccc",
+      lineWidth: gridLineWidth ?? 0.03,
+      cellSize: gridCellSize ?? 1,
       staticObject: true,
       zIndex: -1,
     });
@@ -72,23 +94,30 @@ class RoomEditorObject extends SceneObject {
   setBoundaries(boundaryPoints) {
     // Create copies of the points since we don't want to reference the passed in objects themselves
     const copied = [];
-    for (let i = 0; i < boundaryPoints.length; i++) {
-      copied.push(new Vector2(boundaryPoints[i].x, boundaryPoints[i].y));
+    if (boundaryPoints) {
+      for (let i = 0; i < boundaryPoints.length; i++) {
+        copied.push(new Vector2(boundaryPoints[i].x, boundaryPoints[i].y));
+      }
     }
 
     this.boundaryPoints = copied;
     this._offsetPoints = [];
 
-    this._fitRoomToCanvas();
+    if (this.autoFitToCanvas) {
+      this._fitRoomToCanvas();
+    }
+
     this._calculateOffsetPoints();
 
     // Update size of grid to match any changes to size made in _fitRoomToCanvas()
-    this.floorGrid.size = new Vector2(this.size.x, this.size.y);
+    if (this.floorGrid !== undefined) {
+      this.floorGrid.size = new Vector2(this.size.x, this.size.y);
+    }
   }
 
   // Calculates and sets offset points (used so that when drawing room border the lines won't overlap into the room)
   _calculateOffsetPoints() {
-    const offset = this.borderWidth / 2;
+    const offset = this.boundaryWidth / 2;
     this._offsetPoints = [];
     for (let i = 0; i < this.boundaryPoints.length; i++) {
       this._offsetPoints.push(
@@ -116,14 +145,19 @@ class RoomEditorObject extends SceneObject {
   }
 
   _fitRoomToCanvas() {
-    const ctx = this.scene.ctx;
+    if (this.boundaryPoints === undefined || this.boundaryPoints.length === 0) {
+      this.size = new Vector2(0, 0);
+      this.position = new Vector2(0, 0);
+      return;
+    }
 
-    // Padding from edge of canvas
+    const ctx = this.scene.ctx;
+    // Calculate padding amount
     const padding = {
-      top: ctx.canvas.width * 0.02,
-      bottom: ctx.canvas.width * 0.02,
-      left: ctx.canvas.width * 0.02,
-      right: ctx.canvas.width * 0.02,
+      top: ctx.canvas.height * this.padding.top,
+      bottom: ctx.canvas.height * this.padding.bottom,
+      left: ctx.canvas.width * this.padding.left,
+      right: ctx.canvas.width * this.padding.right,
     };
 
     let xMax;
@@ -163,15 +197,25 @@ class RoomEditorObject extends SceneObject {
 
     // Compare canvas aspect ratio to room aspect ratio in to make sure room will fit in canvas
     if (roomAspect > canvasAspect) {
-      this.scale = new Vector2(
-        usableCanvasWidth / roomWidth,
-        usableCanvasWidth / roomWidth
-      );
+      if (roomWidth === 0) {
+        // Prevent divide-by-zero
+        this.scale = new Vector2(0, 0);
+      } else {
+        this.scale = new Vector2(
+          usableCanvasWidth / roomWidth,
+          usableCanvasWidth / roomWidth
+        );
+      }
     } else {
-      this.scale = new Vector2(
-        usableCanvasHeight / roomHeight,
-        usableCanvasHeight / roomHeight
-      );
+      // Prevent divide-by-zero
+      if (roomHeight === 0) {
+        this.scale = new Vector2(0, 0);
+      } else {
+        this.scale = new Vector2(
+          usableCanvasHeight / roomHeight,
+          usableCanvasHeight / roomHeight
+        );
+      }
     }
 
     this.size.x = roomWidth;
@@ -240,20 +284,7 @@ class RoomEditorObject extends SceneObject {
         const obj = this.children[clicked[i]];
         // Only able to selected objects that have "selected" property
         if ("selected" in obj) {
-          // Don't reselect if already selected
-          if (this.selectedObject?.id !== obj.id) {
-            if (this.selectedObject) {
-              this.selectedObject.selected = false;
-            }
-            obj.selected = true;
-            this.selectedObject = obj;
-            // Set zIndex to something very large so that when item zIndexes are normalized, this item is on top
-            obj.zIndex = Infinity;
-
-            this._needNormalizeItemZIndexes = true;
-
-            this.onObjectSelected(obj);
-          }
+          this.selectItem(obj.id);
           return;
         }
       }
@@ -282,6 +313,24 @@ class RoomEditorObject extends SceneObject {
   }
   onMouseUp() {}
 
+  selectItem(id) {
+    const obj = this.roomItems.get(id);
+    // Don't reselect if already selected
+    if (this.selectedObject?.id !== obj.id) {
+      if (this.selectedObject) {
+        this.selectedObject.selected = false;
+      }
+      obj.selected = true;
+      this.selectedObject = obj;
+      // Set zIndex to something very large so that when item zIndexes are normalized, this item is on top
+      obj.zIndex = Infinity;
+
+      this._needNormalizeItemZIndexes = true;
+
+      this.onObjectSelected(obj);
+    }
+  }
+
   // Takes name, dimensions, color and adds a new item to the room object/scene. Returns true if item was successfully added, false otherwise
   addItemToRoom({
     id,
@@ -293,12 +342,14 @@ class RoomEditorObject extends SceneObject {
     movementLocked,
     zIndex,
     visible,
+    scale,
+    color,
   }) {
     // Don't add object if another already exists with given id
     if (id && this.roomItems.has(id)) {
       return false;
     }
-    const color = this.objectColors[this.objectColorCounter];
+    color = color ?? this.objectColors[this.objectColorCounter];
     this.objectColorCounter++;
     if (this.objectColorCounter === this.objectColors.length) {
       this.objectColorCounter = 0;
@@ -324,6 +375,7 @@ class RoomEditorObject extends SceneObject {
       movementLocked: movementLocked ?? false,
       fontFamily: this.fontFamily,
       zIndex: zIndex ?? 0,
+      scale: scale,
     });
     this.roomItems.set(obj.id, obj);
 
@@ -412,7 +464,7 @@ class RoomEditorObject extends SceneObject {
 
   update() {
     // Resize if the canvas has been resized
-    if (this.scene.resized) {
+    if (this.scene.resized && this.autoFitToCanvas) {
       this._fitRoomToCanvas();
     }
 
@@ -448,31 +500,33 @@ class RoomEditorObject extends SceneObject {
   }
 
   draw(ctx) {
-    // Fill the area outside of the room with the background color.
-    ctx.beginPath();
-    // First outline this objects border path - Clockwise order
-    const offset = this.borderWidth;
-    ctx.moveTo(-offset, -offset);
-    ctx.lineTo(this.size.x + offset, -offset);
-    ctx.lineTo(this.size.x + offset, this.size.y + offset);
-    ctx.lineTo(-offset, this.size.y + offset);
-    ctx.lineTo(-offset, -offset);
-    ctx.closePath();
+    // Fill the area outside of the room with the background color. (Only if there are actually boundary points)
+    if (this.boundaryPoints.length > 0) {
+      ctx.beginPath();
+      // First outline this objects border path - Clockwise order
+      const offset = this.boundaryWidth;
+      ctx.moveTo(-offset, -offset);
+      ctx.lineTo(this.size.x + offset, -offset);
+      ctx.lineTo(this.size.x + offset, this.size.y + offset);
+      ctx.lineTo(-offset, this.size.y + offset);
+      ctx.lineTo(-offset, -offset);
+      ctx.closePath();
 
-    // Now outline the room border path using the given points - Counter clockwise order (reverse of the clockwise order they are given in)
-    for (let i = this.boundaryPoints.length - 1; i > 0; i--) {
-      const p1 = this.boundaryPoints[i];
-      const p2 = this.boundaryPoints[i - 1];
+      // Now outline the room border path using the given points - Counter clockwise order (reverse of the clockwise order they are given in)
+      for (let i = this.boundaryPoints.length - 1; i > 0; i--) {
+        const p1 = this.boundaryPoints[i];
+        const p2 = this.boundaryPoints[i - 1];
 
-      if (i === this.boundaryPoints.length - 1) {
-        ctx.moveTo(p1.x, p1.y);
+        if (i === this.boundaryPoints.length - 1) {
+          ctx.moveTo(p1.x, p1.y);
+        }
+        ctx.lineTo(p2.x, p2.y);
       }
-      ctx.lineTo(p2.x, p2.y);
-    }
-    ctx.closePath();
+      ctx.closePath();
 
-    ctx.fillStyle = this.backgroundColor;
-    ctx.fill();
+      ctx.fillStyle = this.outsideBoundaryColor;
+      ctx.fill();
+    }
 
     // Now actually draw the room borders
     ctx.beginPath();
@@ -486,8 +540,8 @@ class RoomEditorObject extends SceneObject {
       ctx.lineTo(p2.x, p2.y);
     }
     ctx.closePath();
-    ctx.strokeStyle = this.borderColor;
-    ctx.lineWidth = this.borderWidth;
+    ctx.strokeStyle = this.boundaryColor;
+    ctx.lineWidth = this.boundaryWidth;
     ctx.lineJoin = "butt";
     ctx.lineCap = "butt";
     ctx.stroke();

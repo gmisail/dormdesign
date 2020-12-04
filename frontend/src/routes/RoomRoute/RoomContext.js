@@ -226,6 +226,7 @@ export const RoomProvider = ({ children }) => {
           window.location.reload();
         });
       } catch (error) {
+        console.error(error);
         dispatch({ type: RoomActions.error, payload: { error } });
       }
     },
@@ -317,6 +318,7 @@ export const RoomProvider = ({ children }) => {
 
   const updateBounds = useCallback(
     (bounds) => {
+      console.log("BOUNDS UPDATED");
       state.socketConnection.send({
         event: "updateLayout",
         sendResponse: true,

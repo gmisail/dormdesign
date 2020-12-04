@@ -1,7 +1,6 @@
 @import "../../styles/variables.scss";
 
 .room-canvas-container {
-  background-color: $foreground-color;
   position: relative;
   width: 100%;
   height: 100%;
@@ -30,17 +29,16 @@
     z-index: 2;
     color: $text-color-dark;
     font-weight: 600;
-    bottom: 5px;
-    left: 10px;
+    bottom: 0;
+    left: 0;
   }
 
   .room-editor-toolbar {
     position: absolute;
-    top: 10px;
+    top: 0;
     left: 0;
     right: 0;
     z-index: 3;
-    padding: 0 10px;
     display: flex;
     flex-flow: row nowrap;
     justify-content: flex-end;
@@ -51,8 +49,7 @@
     }
 
     button {
-      width: 38px;
-      height: 38px;
+      padding: 8px;
       font-size: 0.9em;
       color: $text-color-light;
       background-color: $color-secondary;
@@ -60,7 +57,6 @@
       box-shadow: $box-shadow;
 
       transition: transform 0.2s ease;
-      transform: scale(1.07);
 
       &:disabled {
         background-color: lighten($color-secondary, 35%);

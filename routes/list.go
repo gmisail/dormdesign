@@ -33,9 +33,9 @@ func (route *RoomRoute) OnGetRoom(c echo.Context) error {
 
 	room, err := models.GetRoom(route.Database, id)
 
-	// Server failed to fetch room from DB, return 500 - Internal Server Error
+	// Server failed to fetch room from DB (likely because the ID is invalid), return 404 - Not found
 	if err != nil {	
-		return echo.NewHTTPError(http.StatusInternalServerError)
+		return echo.NewHTTPError(http.StatusNotFound)
 	}
 
 	return c.JSON(http.StatusOK, room)

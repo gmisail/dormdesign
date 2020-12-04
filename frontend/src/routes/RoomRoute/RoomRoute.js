@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import { RoomContext } from "./RoomContext";
 
 import { Spinner } from "react-bootstrap";
-import { BsGear, BsPlus } from "react-icons/bs";
+import { BsGear, BsPlus, BsBoxArrowUpRight } from "react-icons/bs";
 
 import RoomEditor from "../../components/RoomEditor/RoomEditor";
 import DormItemList from "../../components/DormItemList/DormItemList";
@@ -12,6 +12,7 @@ import AddModal from "../../components/modals/AddModal";
 import EditModal from "../../components/modals/EditModal";
 import NameModal from "../../components/modals/NameModal";
 import SettingsModal from "../../components/modals/SettingsModal";
+import ShareRoomModal from "../../components/modals/ShareRoomModal/ShareRoomModal";
 
 import ErrorModal from "../../components/modals/ErrorModal";
 import IconButton from "../../components/IconButton/IconButton";
@@ -24,6 +25,7 @@ const modalTypes = {
   chooseName: "CHOOSE_NAME",
   error: "ERROR",
   settings: "SETTINGS",
+  share: "SHARE",
 };
 
 // Modal component that returns a modal based on the passed 'type' prop and passes all props to that modal
@@ -36,9 +38,11 @@ const Modal = (props) => {
     case modalTypes.chooseName:
       return <NameModal {...props} />;
     case modalTypes.error:
-      return <ErrorModal {...props}></ErrorModal>;
+      return <ErrorModal {...props} />;
     case modalTypes.settings:
       return <SettingsModal {...props} />;
+    case modalTypes.share:
+      return <ShareRoomModal {...props} />;
     default:
       return null;
   }
@@ -85,7 +89,7 @@ const useModal = () => {
   return [modalProps, toggleModal];
 };
 
-export const RoomRouteNew = () => {
+export const RoomRoute = () => {
   const {
     items,
     loading,
@@ -173,10 +177,6 @@ export const RoomRouteNew = () => {
         onClone: (target) => {
           cloneRoom(id, target);
         },
-
-        onUpdateLayout: () => {
-          console.log("layout updated");
-        },
       }),
     [toggleModal, cloneRoom, id]
   );
@@ -192,11 +192,18 @@ export const RoomRouteNew = () => {
     [updateItems]
   );
 
-  /* If there's an error and socketConnection has been reset, connection has been 
-  lost. 
-  TODO: Implement actual error types to make it easier to check what error 
-  happened? */
+  /* 
+    If there's an error and socketConnection has been reset, connection has been 
+    lost. 
+
+    If that's true and there are no items, then then the original room data fetch failed
+
+    TODO: Implement actual error types to make it easier to check what error 
+    happened
+  */
   const lostConnection = error !== null && socketConnection === null;
+  const dataFetchError =
+    error !== null && socketConnection === null && items === null;
   return (
     <>
       {loading ? (
@@ -205,24 +212,37 @@ export const RoomRouteNew = () => {
             <span className="sr-only">Loading...</span> ) :
           </Spinner>
         </div>
-      ) : lostConnection ? (
+      ) : lostConnection || dataFetchError ? (
         <p
           className="text-center mt-5"
           style={{ fontSize: 20, fontWeight: 500 }}
         >
-          Lost connection to room. Please refresh your browser.
+          {dataFetchError
+            ? "Error fetching room data. Make sure the room ID is valid."
+            : "Lost connection to room. Please refresh your browser."}
         </p>
       ) : (
         <div className="room-container">
-          <h2 className="room-header">Dorm Name - Room #</h2>
-
-          <div className="d-flex justify-content-end room-header">
-            <IconButton
-              onClick={onClickSettingsButton}
-              style={{ fontSize: "1.25em" }}
-            >
-              <BsGear></BsGear>
-            </IconButton>
+          <div className="room-header">
+            <h2>Dorm Name - Room #</h2>
+            <div className="room-header-buttons">
+              <IconButton
+                onClick={() => {
+                  toggleModal(modalTypes.share, {
+                    id: id,
+                    link: window.location.href,
+                  });
+                }}
+              >
+                <BsBoxArrowUpRight />
+              </IconButton>
+              <IconButton
+                onClick={onClickSettingsButton}
+                style={{ fontSize: "0.97em" }}
+              >
+                <BsGear />
+              </IconButton>
+            </div>
           </div>
 
           <div className="room-editor-container custom-card">
