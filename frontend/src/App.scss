@@ -57,8 +57,16 @@ textarea {
   color: $text-color-light;
   box-shadow: $box-shadow;
 
+  &:hover {
+    background-color: darken($color-primary, 6%);
+  }
+
   &.custom-btn-secondary {
     background-color: $color-secondary;
+
+    &:hover {
+      background-color: darken($color-secondary, 6%);
+    }
   }
 }
 
