@@ -7,6 +7,9 @@ import DormDesignLogo from "../../assets/logo.svg";
 import RoomGridObject from "../../room-editor/RoomGridObject";
 import SceneController from "../../room-editor/SceneController";
 import Vector2 from "../../room-editor/Vector2";
+
+import { ReactComponent as Logo } from "../../assets/logo.svg";
+
 import "./HomeRoute.scss";
 
 class HomeRoute extends Component {
@@ -58,13 +61,7 @@ class HomeRoute extends Component {
         <div className="content-wrapper">
           <div className="content-container">
             <div className="header-container">
-              <div className="logo">
-                <img
-                  className="logo-svg"
-                  src={DormDesignLogo}
-                  alt="DormDesign"
-                ></img>
-              </div>
+              <Logo className="logo" />
             </div>
             <div className="create-room-container custom-card">
               <h4>Create a Room</h4>

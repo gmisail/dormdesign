@@ -38,13 +38,11 @@
     padding: 25px;
 
     opacity: 0;
-    animation: fadein 1.5s ease 1s forwards;
+    animation: fadein 2s ease forwards;
   }
 
   .header-container {
     grid-area: header;
-    // padding: 200px 0 50px 0;
-    // width: 100%;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -54,6 +52,10 @@
       grid-area: logo;
       max-width: 800px;
       animation: fadein 2s ease forwards;
+
+      path {
+        fill: $text-color-dark;
+      }
     }
   }
 
