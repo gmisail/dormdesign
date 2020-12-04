@@ -317,6 +317,7 @@ export const RoomProvider = ({ children }) => {
 
   const updateBounds = useCallback(
     (bounds) => {
+      console.log("BOUNDS UPDATED");
       state.socketConnection.send({
         event: "updateLayout",
         sendResponse: true,

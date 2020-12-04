@@ -1,6 +1,8 @@
 import React, { Component } from "react";
 import { Col, Form } from "react-bootstrap";
+import { BsX } from "react-icons/bs";
 import Vector2 from "../../room-editor/Vector2";
+import IconButton from "../IconButton/IconButton";
 
 import "./VertexForm.scss";
 
@@ -9,7 +11,7 @@ class VertexForm extends Component {
     super(props);
 
     this.state = {
-      vertices: props.bounds ?? [],
+      vertices: [...props.bounds] ?? [], // Don't want to mutate original array that's passed in
     };
   }
 
@@ -34,6 +36,16 @@ class VertexForm extends Component {
     this.setState({ vertices: verts });
   };
 
+  onRemovePoint = (index) => {
+    let verts = this.state.vertices;
+    const updated = [];
+    for (let i = 0; i < verts.length; i++) {
+      if (i === index) continue;
+      updated.push(verts[i]);
+    }
+    this.setState({ vertices: updated });
+  };
+
   onFormSubmit = (event) => {
     event.preventDefault();
     this.props.onSubmit(this.state.vertices);
@@ -51,7 +63,7 @@ class VertexForm extends Component {
                   placeholder="X"
                   data-index={idx}
                   onChange={this.onChange}
-                  className="col"
+                  className=""
                   type="number"
                   value={coord.x}
                   required
@@ -64,11 +76,22 @@ class VertexForm extends Component {
                   placeholder="Y"
                   data-index={idx}
                   onChange={this.onChange}
-                  className="col"
+                  className=""
                   type="number"
                   value={coord.y}
                   required
                 ></Form.Control>
+              </Form.Group>
+              <Form.Group
+                as={Col}
+                className="col-auto d-flex align-items-center pl-0"
+              >
+                <IconButton
+                  type="button"
+                  onClick={() => this.onRemovePoint(idx)}
+                >
+                  <BsX />
+                </IconButton>
               </Form.Group>
             </Form.Row>
           ))}
@@ -79,6 +102,7 @@ class VertexForm extends Component {
             <div className="d-flex justify-content-between">
               <button
                 className="custom-btn mr-2 custom-btn-secondary"
+                type="button"
                 onClick={this.onAddPoint}
               >
                 Add Point

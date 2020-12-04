@@ -177,10 +177,6 @@ export const RoomRoute = () => {
         onClone: (target) => {
           cloneRoom(id, target);
         },
-
-        onUpdateLayout: () => {
-          console.log("layout updated");
-        },
       }),
     [toggleModal, cloneRoom, id]
   );
@@ -231,7 +227,10 @@ export const RoomRoute = () => {
               >
                 <BsBoxArrowUpRight />
               </IconButton>
-              <IconButton onClick={onClickSettingsButton}>
+              <IconButton
+                onClick={onClickSettingsButton}
+                style={{ fontSize: "0.97em" }}
+              >
                 <BsGear />
               </IconButton>
             </div>
