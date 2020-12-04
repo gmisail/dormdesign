@@ -5,7 +5,14 @@
   font-weight: 700;
 }
 
-.custom-modal-card {
+.close {
+  opacity: 100%;
+  color: white;
+}
+
+.close:hover {
+  opacity: 80%;
+  color: white;
 }
 
 .modal-header {
