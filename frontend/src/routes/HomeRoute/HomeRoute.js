@@ -19,74 +19,6 @@ import Vector2 from "../../room-editor/Vector2";
 import "./HomeRoute.scss";
 
 class HomeRoute extends Component {
-  componentDidMount() {
-    const scene = new SceneController(this.backgroundCanvasRef);
-    scene.backgroundColor = "#f9f9f9";
-    // Points defining the edges of the room (in feet)
-    const boundaryPoints = [
-      new Vector2(2, 1),
-      new Vector2(13, 1),
-      new Vector2(13, 3),
-      new Vector2(15, 3),
-      new Vector2(15, 9),
-      new Vector2(0, 9),
-      new Vector2(0, 3),
-      new Vector2(2, 3),
-    ];
-    const room = new RoomEditorObject({
-      scene: scene,
-      boundaryPoints: [],
-      boundaryWidth: 0,
-      backgroundColor: "#f9f9f9", //"#f9f9f9",
-      gridLineColor: "#ccc",
-      onObjectsUpdated: this.itemsUpdatedInEditor,
-      onObjectSelected: this.itemSelectedInEditor,
-      selectedObjectID: undefined,
-      fontFamily: "Source Sans Pro",
-      autoFitToCanvas: false,
-    });
-    scene.addChild(room);
-
-    this.scene = scene;
-    this.roomObject = room;
-
-    this.fitRoomToWindow();
-    scene.onResize = this.fitRoomToWindow;
-
-    room.addItemToRoom({
-      id: "item1",
-      width: 8.75,
-      height: 1.7,
-      position: new Vector2(room.size.x / 2, 250),
-      visible: true,
-      scale: new Vector2(100, 100),
-      color: "#ffffff00",
-    });
-    const item1 = room.roomItems.get("item1");
-    item1.selected = true;
-  }
-
-  componentWillUnmount() {
-    this.scene.onResize = () => {};
-  }
-
-  fitRoomToWindow = () => {
-    this.roomObject.size = new Vector2(
-      this.backgroundCanvasRef.width,
-      this.backgroundCanvasRef.height
-    );
-
-    this.roomObject.floorGrid.cellSize = 80 * window.devicePixelRatio;
-    this.roomObject.floorGrid.lineWidth = 2 * window.devicePixelRatio;
-
-    this.roomObject.setBoundaries([
-      new Vector2(0, 0),
-      new Vector2(this.roomObject.size.x, 0),
-      new Vector2(this.roomObject.size.x, this.roomObject.size.y),
-      new Vector2(0, this.roomObject.size.y),
-    ]);
-  };
-
   createRoomClicked = async () => {
     const roomID = await DataRequests.CREATE_TEST_ROOM();
     this.props.history.push(`/room/${roomID}`);
@@ -95,10 +27,6 @@ class HomeRoute extends Component {
   render() {
     return (
       <>
-        <canvas
-          ref={(ref) => (this.backgroundCanvasRef = ref)}
-          id="background-canvas"
-        />
         <div className="content-wrapper">
           <div className="content-container">
             <div className="header-container">
