@@ -34,14 +34,15 @@ type EditorPoint struct {
 
 type Room struct {
 	ID string `json:"id" rethinkdb:"id"`
+	Name string `json:"name" rethinkdb:"name"`
 	Items []RoomItem `json:"items" rethinkdb:"items"`
 	Vertices []EditorPoint `json:"vertices" rethinkdb:"vertices"`
 }
 
 /*
-	Create an empty room with the given ID
+	Create an empty room with the given ID. Return created room struct on if successful
 */
-func CreateRoom(database *rdb.Session, id string) error {
+func CreateRoom(database *rdb.Session, id string, name string) (Room, error) {
 	/* 
 		unless another arrangement is provided, let the default
 		room layout just be a 10x10 square
@@ -51,18 +52,21 @@ func CreateRoom(database *rdb.Session, id string) error {
 	defaultVertices[1] = EditorPoint{ X: 10, Y: 0}
 	defaultVertices[2] = EditorPoint{ X: 10, Y: 10}
 	defaultVertices[3] = EditorPoint{ X: 0, Y: 10 }
-	
-	err := rdb.DB("dd_data").Table("rooms").Insert(Room{ 
-		ID: id, 
+
+	room := Room{ 
+		ID: id,
+		Name: name,
 		Items: []RoomItem{}, 
 		Vertices: defaultVertices,
-	}).Exec(database)
-
-	if err != nil {
-		return err
 	}
 	
-	return nil
+	err := rdb.DB("dd_data").Table("rooms").Insert(room).Exec(database)
+
+	if err != nil {
+		return Room{}, err
+	}
+	
+	return room, nil
 }
 
 /*

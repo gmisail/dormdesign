@@ -91,6 +91,7 @@ const useModal = () => {
 
 export const RoomRoute = () => {
   const {
+    roomName,
     items,
     loading,
     error,
@@ -110,6 +111,7 @@ export const RoomRoute = () => {
 
   // Called when component is first mounted
   useEffect(() => {
+    localStorage.clear();
     console.log("CONNECTING TO ROOM");
     connectToRoom(id);
   }, [connectToRoom, id]);
@@ -226,7 +228,7 @@ export const RoomRoute = () => {
       ) : (
         <div className="room-container">
           <div className="room-header">
-            <h2>Dorm Name - Room #</h2>
+            <h2>{roomName}</h2>
             <div className="room-header-buttons">
               <IconButton
                 onClick={() => {

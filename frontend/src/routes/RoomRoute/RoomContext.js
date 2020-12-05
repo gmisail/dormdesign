@@ -19,6 +19,7 @@ export const RoomActions = {
 
 const initialState = {
   items: null,
+  roomName: null,
   bounds: null,
   loading: true,
   error: null,
@@ -39,6 +40,7 @@ const roomReducer = (state, action) => {
         loading: false,
         bounds: action.payload.bounds,
         items: action.payload.items,
+        roomName: action.payload.roomName,
         socketConnection: action.payload.socketConnection,
       };
     case RoomActions.connectionClosed:
@@ -176,16 +178,17 @@ export const RoomProvider = ({ children }) => {
           dispatch({ type: RoomActions.setUserName, payload: { userName } });
         }
 
-        const data = await DataRequests.getRoomData(id);
+        const roomData = await DataRequests.getRoomData(id);
         const connection = new SocketConnection(id, () => {
           // Called when socket connection has been opened
           console.log("Successfully connected to Room");
           dispatch({
             type: RoomActions.connectedToRoom,
             payload: {
-              items: data.items,
+              items: roomData.items,
+              roomName: roomData.name,
               socketConnection: connection,
-              bounds: data.vertices,
+              bounds: roomData.vertices,
             },
           });
         });
