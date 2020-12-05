@@ -2,7 +2,7 @@
  
 #### A web application that aims to streamline the dorm packing and planning process. 
 
-DormDesign allows roommates to collaboratively design their room in realtime. Users can keep track of different items they will be bringing and position them in the room using the editor.
+DormDesign allows roommates to collaboratively design their room in realtime. Users can keep track of different items and position them in the room using the editor.
 
 ## Screenshots
 
