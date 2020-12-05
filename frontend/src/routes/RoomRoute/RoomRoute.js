@@ -153,7 +153,9 @@ export const RoomRoute = () => {
       toggleModal(modalTypes.edit, {
         editingItem: item,
         onSubmit: (id, updated) => {
-          updateItems([{ id, updated }]);
+          if (Object.keys(updated).length > 0) {
+            updateItems([{ id, updated }]);
+          }
           toggleModal();
         },
       }),

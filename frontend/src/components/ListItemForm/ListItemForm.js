@@ -43,7 +43,9 @@ class ListItemForm extends Component {
     }
 
     if (name === "widthInputValue" || name === "lengthInputValue") {
-      value = Math.max(0, value);
+      if (value.length !== 0) {
+        value = Math.max(0, value);
+      }
     }
 
     this.setState({
