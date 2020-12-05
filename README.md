@@ -1,3 +1,10 @@
-# DormDesign
+<img src="/frontend/src/assets/logo.svg" alt="DormDesign" width="400"/>
  
-DormDesign is a web application that aims to streamline the dorm packing process. It is made up of two tools: the editor and packing list. The editor is a room editor based off of RPI’s floor plans, that allows users to design their room in real time. For instance, one could select “Bray Hall” as a template and then configure the default furniture in their room to visualize what their room will look like beforehand. The other tool is the packing list, which is a list of items that can be shared with the user’s roommates. This list, much like the room editor, can be edited in real time. 
+#### A web application that aims to streamline the dorm packing and planning process. 
+
+DormDesign allows roommates to collaboratively design their room in realtime. Users can keep track of different items they will be bringing and position them in the room using the editor.
+
+## Screenshots
+
+<img src="/screenshots/room-route.png" alt="room editor screenshot" width="800" />
+
