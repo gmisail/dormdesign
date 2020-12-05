@@ -20,7 +20,7 @@ const (
 	pingPeriod = (pongWait * 9) / 10
 
 	// Maximum message size allowed from peer.
-	maxMessageSize = 512
+	maxMessageSize = 1024
 )
 
 var upgrader = websocket.Upgrader{
@@ -61,7 +61,9 @@ func (c *Client) readPump() {
 		_, reader, err := c.conn.NextReader()
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
-				log.Printf("error: %v", err)
+				log.Printf("Error: %v", err)
+			} else if err == websocket.ErrReadLimit {
+				log.Println("Error: websocket message read limit exceeded");
 			}
 			break
 		}

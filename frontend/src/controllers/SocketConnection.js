@@ -11,6 +11,10 @@ class SocketConnection {
       }
     };
 
+    this.connection.onerror = (err) => {
+      console.error("Socket ERROR:", err);
+    };
+
     this.connection.onmessage = (evt) => {
       let data = undefined;
       try {
@@ -28,6 +32,7 @@ class SocketConnection {
 
   set onClose(callback) {
     this.connection.onclose = (evt) => {
+      console.log(evt);
       callback(evt);
     };
   }

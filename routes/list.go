@@ -35,6 +35,7 @@ func (route *RoomRoute) OnGetRoom(c echo.Context) error {
 
 	// Server failed to fetch room from DB (likely because the ID is invalid), return 404 - Not found
 	if err != nil {	
+		log.Printf("Error getting room: %s", err);
 		return echo.NewHTTPError(http.StatusNotFound)
 	}
 
