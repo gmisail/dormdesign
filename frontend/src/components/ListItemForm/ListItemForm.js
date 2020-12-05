@@ -160,7 +160,7 @@ class ListItemForm extends Component {
           <Form.Control
             name="claimedByInputValue"
             value={this.state.claimedByInputValue}
-            placeholder="Name of the person that this belongs too"
+            placeholder="Name of the person this item belongs to"
             onChange={this.handleInputChange}
           />
         </Form.Group>
