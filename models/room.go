@@ -169,7 +169,6 @@ func EditRoomItem(database *rdb.Session, id string, itemID string, updated map[s
 	if err != nil {
 		return err
 	}
-	log.Printf("UPDATED %+v\n", updated);
 	
 	return nil
 }
