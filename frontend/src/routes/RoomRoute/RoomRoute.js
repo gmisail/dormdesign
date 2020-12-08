@@ -111,7 +111,6 @@ export const RoomRoute = () => {
 
   // Called when component is first mounted
   useEffect(() => {
-    localStorage.clear();
     console.log("CONNECTING TO ROOM");
     connectToRoom(id);
   }, [connectToRoom, id]);
