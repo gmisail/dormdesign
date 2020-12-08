@@ -43,7 +43,9 @@ class ListItemForm extends Component {
     }
 
     if (name === "widthInputValue" || name === "lengthInputValue") {
-      value = Math.max(0, value);
+      if (value.length !== 0) {
+        value = Math.max(0, value);
+      }
     }
 
     this.setState({
@@ -160,7 +162,7 @@ class ListItemForm extends Component {
           <Form.Control
             name="claimedByInputValue"
             value={this.state.claimedByInputValue}
-            placeholder="Name of the person that this belongs too"
+            placeholder="Name of the person this item belongs to"
             onChange={this.handleInputChange}
           />
         </Form.Group>

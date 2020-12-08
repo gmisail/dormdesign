@@ -6,14 +6,15 @@ import DataRequests from "../../controllers/DataRequests";
 import RoomGridObject from "../../room-editor/RoomGridObject";
 import SceneController from "../../room-editor/SceneController";
 import Vector2 from "../../room-editor/Vector2";
-
 import { ReactComponent as Logo } from "../../assets/logo.svg";
+import CreateRoomModal from "../../components/modals/CreateRoomModal";
 
 import "./HomeRoute.scss";
 
 class HomeRoute extends Component {
   state = {
     joinRoomInput: "",
+    showModal: false,
   };
 
   componentDidMount() {
@@ -49,13 +50,13 @@ class HomeRoute extends Component {
     this.scene.onResize = () => {};
   }
 
-  createRoomClicked = async () => {
-    const roomID = await DataRequests.CREATE_TEST_ROOM();
-    this.props.history.push(`/room/${roomID}`);
-  };
-
   joinRoomClicked = () => {
     this.props.history.push(`/room/${this.state.joinRoomInput}`);
+  };
+
+  onSubmitCreateRoomModal = async (name) => {
+    const roomID = await DataRequests.CREATE_TEST_ROOM(name);
+    this.props.history.push(`/room/${roomID}`);
   };
 
   render() {
@@ -76,7 +77,7 @@ class HomeRoute extends Component {
               <button
                 className="custom-btn"
                 name="createRoomButton"
-                onClick={this.createRoomClicked}
+                onClick={() => this.setState({ showModal: true })}
               >
                 Create New Room
               </button>
@@ -106,6 +107,13 @@ class HomeRoute extends Component {
             </div>
           </div>
         </div>
+        <CreateRoomModal
+          show={this.state.showModal}
+          onSubmit={this.onSubmitCreateRoomModal}
+          onHide={() => {
+            this.setState({ showModal: false });
+          }}
+        />
       </>
     );
   }

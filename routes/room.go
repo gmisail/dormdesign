@@ -15,6 +15,11 @@ type RoomRoute struct {
 	Database *rdb.Session
 }
 
+// Generalized RoomForm for incoming create room requests. Works with JSON or urlencoded form.
+type CreateRoomForm struct {
+	Name string `json:"name" form:"name"`
+}
+
 // Generalized ItemForm for incoming item add/edit requests. Works with JSON or urlencoded form.
 type ItemForm struct {
 	RoomID string `json:"roomID" form:"roomID"`
@@ -50,13 +55,27 @@ Creates an empty room and returns the ID
 func (route *RoomRoute) OnCreateRoom(c echo.Context) error {
 	id := uuid.New().String()
 
-	err := models.CreateRoom(route.Database, id)
+	form := new(CreateRoomForm);
+
+	// Failed to bind ItemForm to Echo context, return 400 - Bad Request
+	err := c.Bind(form);
+	if err != nil {
+		log.Println(err);
+		return echo.NewHTTPError(http.StatusBadRequest, "Error processing request data")
+	}
+	
+	// Handle missing name
+	if form.Name == "" {
+		form.Name = "New Room"
+	}
+
+	room, err := models.CreateRoom(route.Database, id, form.Name)
 	if err != nil {
 		log.Println(err)
 		return echo.NewHTTPError(http.StatusInternalServerError)
 	}
  
-	return c.JSON(http.StatusOK, id)
+	return c.JSON(http.StatusOK, room)
 }
 
 /*

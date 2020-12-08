@@ -34,9 +34,15 @@ import DormItem from "../models/DormItem";
  */
 class DataRequests {
   // Creates a new room and returns room ID sent back from server
-  static async createRoom() {
+  static async createRoom(name) {
     const response = await fetch("/room/create", {
       method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        name: name,
+      }),
     });
 
     const data = await response.json();
@@ -74,8 +80,8 @@ class DataRequests {
     });
 
     return {
+      ...data,
       items,
-      vertices: data.vertices,
     };
   }
 
@@ -97,8 +103,9 @@ class DataRequests {
   }
 
   // Sends request to create a room, adds some items to it, and returns the id of the room.
-  static async CREATE_TEST_ROOM() {
-    const roomID = await DataRequests.createRoom();
+  static async CREATE_TEST_ROOM(name) {
+    const roomData = await DataRequests.createRoom(name);
+    const roomID = roomData.id;
 
     const itemResponse1 = await fetch("/room/add", {
       method: "POST",

@@ -61,9 +61,11 @@ textarea {
   color: $text-color-light;
   box-shadow: $box-shadow;
 
+  transition: background-color 0.2s ease;
+
   @mixin button-effects($color) {
     &:hover {
-      background-color: darken($color, 6%);
+      background-color: darken($color, 10%);
     }
 
     &:disabled {

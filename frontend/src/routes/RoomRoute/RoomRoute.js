@@ -91,6 +91,7 @@ const useModal = () => {
 
 export const RoomRoute = () => {
   const {
+    roomName,
     items,
     loading,
     error,
@@ -153,7 +154,9 @@ export const RoomRoute = () => {
       toggleModal(modalTypes.edit, {
         editingItem: item,
         onSubmit: (id, updated) => {
-          updateItems([{ id, updated }]);
+          if (Object.keys(updated).length > 0) {
+            updateItems([{ id, updated }]);
+          }
           toggleModal();
         },
       }),
@@ -224,7 +227,7 @@ export const RoomRoute = () => {
       ) : (
         <div className="room-container">
           <div className="room-header">
-            <h2>Dorm Name - Room #</h2>
+            <h2>{roomName}</h2>
             <div className="room-header-buttons">
               <IconButton
                 onClick={() => {

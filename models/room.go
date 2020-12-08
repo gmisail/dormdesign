@@ -4,7 +4,6 @@ import (
 	"log"
 	"errors"
 
-	"github.com/gmisail/dormdesign/utils"
 	rdb "gopkg.in/rethinkdb/rethinkdb-go.v6"
 )
 
@@ -15,10 +14,10 @@ type RoomItem struct {
 	ClaimedBy string `json:"claimedBy" rethinkdb:"claimedBy"`
 	VisibleInEditor bool `json:"visibleInEditor" rethinkdb:"visibleInEditor"`
 	Dimensions ItemDimensions `json:"dimensions" rethinkdb:"dimensions"`
-	EditorPosition EditorPoint `json:"editorPosition"`
-	EditorRotation float64 `json:"editorRotation"`
-	EditorLocked bool `json:"editorLocked"`
-	EditorZIndex float64 `json:"editorZIndex"`
+	EditorPosition EditorPoint `json:"editorPosition" rethinkdb:"editorPosition"`
+	EditorRotation float64 `json:"editorRotation" rethinkdb:"editorRotation"`
+	EditorLocked bool `json:"editorLocked" rethinkdb:"editorLocked"`
+	EditorZIndex float64 `json:"editorZIndex" rethinkdb:"editorZIndex"`
 }
 
 type ItemDimensions struct {
@@ -34,14 +33,15 @@ type EditorPoint struct {
 
 type Room struct {
 	ID string `json:"id" rethinkdb:"id"`
+	Name string `json:"name" rethinkdb:"name"`
 	Items []RoomItem `json:"items" rethinkdb:"items"`
 	Vertices []EditorPoint `json:"vertices" rethinkdb:"vertices"`
 }
 
 /*
-	Create an empty room with the given ID
+	Create an empty room with the given ID. Return created room struct on if successful
 */
-func CreateRoom(database *rdb.Session, id string) error {
+func CreateRoom(database *rdb.Session, id string, name string) (Room, error) {
 	/* 
 		unless another arrangement is provided, let the default
 		room layout just be a 10x10 square
@@ -51,18 +51,21 @@ func CreateRoom(database *rdb.Session, id string) error {
 	defaultVertices[1] = EditorPoint{ X: 10, Y: 0}
 	defaultVertices[2] = EditorPoint{ X: 10, Y: 10}
 	defaultVertices[3] = EditorPoint{ X: 0, Y: 10 }
-	
-	err := rdb.DB("dd_data").Table("rooms").Insert(Room{ 
-		ID: id, 
+
+	room := Room{ 
+		ID: id,
+		Name: name,
 		Items: []RoomItem{}, 
 		Vertices: defaultVertices,
-	}).Exec(database)
-
-	if err != nil {
-		return err
 	}
 	
-	return nil
+	err := rdb.DB("dd_data").Table("rooms").Insert(room).Exec(database)
+
+	if err != nil {
+		return Room{}, err
+	}
+	
+	return room, nil
 }
 
 /*
@@ -95,6 +98,7 @@ func GetRoom(database *rdb.Session, id string) (Room, error) {
 	Copy the contents of the room with ID 'target' into 'id'.
 */
 func CopyRoom(database *rdb.Session, id string, target string) (Room, error) {
+	// Get target room data(room that will be cloned)
 	data, err := GetRoom(database, target)
 
 	if err != nil {
@@ -102,38 +106,10 @@ func CopyRoom(database *rdb.Session, id string, target string) (Room, error) {
 		return Room{}, err
 	}
 
-	/* remove all of the current items in the room */
-	clearErr := ClearRoomItems(database, id)
-
-	if clearErr != nil {
-		log.Println(clearErr)
-		return Room{}, clearErr
-	}
-
-	/* replace the current vertices with the target room's vertices */
-	vertErr := UpdateVertices(database, id, data.Vertices)
-
-	if vertErr != nil {
-		log.Println(vertErr)
-		return Room{}, vertErr
-	}
-
-	/* 
-		loop through target and add them to current room. We don't want to
-		re-use the ID's from 'target', so add them manually so that it
-		generates a unique ID.
-	*/
-	for _, item := range data.Items {
-		roomErr := AddRoomItem(database, id, item)
-
-		if roomErr != nil {
-			log.Println(roomErr)
-			return Room{}, roomErr
-		}
-	}
-
-	data, err = GetRoom(database, target)
-
+	// Set change ID of target to this room's id
+	data.ID = id
+	// Update this room with target's data
+	_, err = rdb.DB("dd_data").Table("rooms").Get(id).Update(data).RunWrite(database)
 	if err != nil {
 		log.Println(err)
 		return Room{}, err
@@ -182,31 +158,17 @@ func ClearRoomItems(database *rdb.Session, roomID string) error {
 	return err
 }
 
-func EditRoomItem(database *rdb.Session, id string, itemID string, updated map[string]interface{}) (*RoomItem, error) {
-	res, err := rdb.DB("dd_data").Table("rooms").Get(id).Field("items").Filter(rdb.Row.Field("id").Eq(itemID)).Run(database)
+func EditRoomItem(database *rdb.Session, id string, itemID string, updated map[string]interface{}) error {
 
-	var item RoomItem
-	res.One(&item)
-
-	if err != nil {
-		return nil, err
-	}
-
-	defer res.Close()
-
-	err = utils.UpdateStructJSONFields(&item, &updated, true)
-	if err != nil {
-		return nil, err
-	}
-
-	err = rdb.DB("dd_data").Table("rooms").Get(id).Update(map[string]interface{}{
+	err := rdb.DB("dd_data").Table("rooms").Get(id).Update(map[string]interface{}{
+		// Loop over items. When item with matching id is found, merge it with updates
 		"items": rdb.Row.Field("items").Map(func(c rdb.Term) interface{} {
-			return rdb.Branch(c.Field("id").Eq(itemID), item, c)
+			return rdb.Branch(c.Field("id").Eq(itemID), c.Merge(updated), c)
 		}),
 	}).Exec(database)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	
-	return &item, nil
+	return nil
 }

@@ -1,5 +1,4 @@
 import React, { Component } from "react";
-import { Button } from "react-bootstrap";
 import Form from "react-bootstrap/Form";
 
 class ChooseNameForm extends Component {
@@ -14,7 +13,7 @@ class ChooseNameForm extends Component {
 
   handleInputChange = (event) => {
     const target = event.target;
-    var value = target.value;
+    const value = target.value;
 
     this.setState({
       name: value,
@@ -55,9 +54,9 @@ class ChooseNameForm extends Component {
         </Form.Group>
 
         <div className="text-right">
-          <Button variant="primary" type="submit">
+          <button className="custom-btn" type="submit">
             Save
-          </Button>
+          </button>
         </div>
       </Form>
     );

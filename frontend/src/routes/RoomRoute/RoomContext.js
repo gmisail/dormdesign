@@ -19,6 +19,7 @@ export const RoomActions = {
 
 const initialState = {
   items: null,
+  roomName: null,
   bounds: null,
   loading: true,
   error: null,
@@ -39,6 +40,7 @@ const roomReducer = (state, action) => {
         loading: false,
         bounds: action.payload.bounds,
         items: action.payload.items,
+        roomName: action.payload.roomName,
         socketConnection: action.payload.socketConnection,
       };
     case RoomActions.connectionClosed:
@@ -77,9 +79,19 @@ const roomReducer = (state, action) => {
       };
     case RoomActions.itemsUpdated:
       const updatedItems = {};
+      let selectedItemID = state.selectedItemID;
       for (let i = 0; i < action.payload.items.length; i++) {
-        updatedItems[action.payload.items[i].id] =
-          action.payload.items[i].updated;
+        const id = action.payload.items[i].id;
+        const updated = action.payload.items[i].updated;
+        // If item was removed from editor and it was selected, deselect it
+        if (
+          selectedItemID !== null &&
+          selectedItemID === id &&
+          updated.visibleInEditor === false
+        ) {
+          selectedItemID = null;
+        }
+        updatedItems[id] = updated;
       }
 
       const oldItemArray = state.items;
@@ -95,6 +107,7 @@ const roomReducer = (state, action) => {
 
       return {
         ...state,
+        selectedItemID: selectedItemID,
         items: itemArray,
       };
     case RoomActions.itemSelected:
@@ -165,16 +178,17 @@ export const RoomProvider = ({ children }) => {
           dispatch({ type: RoomActions.setUserName, payload: { userName } });
         }
 
-        const data = await DataRequests.getRoomData(id);
+        const roomData = await DataRequests.getRoomData(id);
         const connection = new SocketConnection(id, () => {
           // Called when socket connection has been opened
           console.log("Successfully connected to Room");
           dispatch({
             type: RoomActions.connectedToRoom,
             payload: {
-              items: data.items,
+              items: roomData.items,
+              roomName: roomData.name,
               socketConnection: connection,
-              bounds: data.vertices,
+              bounds: roomData.vertices,
             },
           });
         });
@@ -271,6 +285,7 @@ export const RoomProvider = ({ children }) => {
   name of an item) */
   const updateItems = useCallback(
     (items) => {
+      if (items.length === 0) return;
       state.socketConnection.send({
         event: "updateItems",
         sendResponse: true,
