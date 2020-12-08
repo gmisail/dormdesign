@@ -113,7 +113,7 @@ func (c *Client) translateMessage(reader io.Reader) (*Message, error) {
 					break eventHandler
 				}
 
-				_, err = models.EditRoomItem(c.hub.database, roomMessage.RoomID, item.ID, item.Updated)
+				err = models.EditRoomItem(c.hub.database, roomMessage.RoomID, item.ID, item.Updated)
 				if err != nil {
 					errorString = "Unable to update item in database: " + err.Error()
 					break eventHandler 
