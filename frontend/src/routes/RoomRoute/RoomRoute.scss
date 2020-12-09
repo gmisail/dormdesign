@@ -80,6 +80,13 @@ body {
     }
   }
 
+  .room-name {
+    /* any room name properties */
+    &:hover {
+      color: lighten($text-color-dark, 10%);
+    }
+  }
+
   .room-editor-container {
     grid-area: room-editor;
   }

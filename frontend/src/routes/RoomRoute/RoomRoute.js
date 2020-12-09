@@ -18,11 +18,13 @@ import ErrorModal from "../../components/modals/ErrorModal";
 import IconButton from "../../components/IconButton/IconButton";
 
 import "./RoomRoute.scss";
+import RoomNameModal from "../../components/modals/RoomNameModal";
 
 const modalTypes = {
   add: "ADD",
   edit: "EDIT",
   chooseName: "CHOOSE_NAME",
+  updateRoomName: "UPDATE_ROOM_NAME",
   error: "ERROR",
   settings: "SETTINGS",
   share: "SHARE",
@@ -37,6 +39,8 @@ const Modal = (props) => {
       return <EditModal {...props} />;
     case modalTypes.chooseName:
       return <NameModal {...props} />;
+    case modalTypes.updateRoomName:
+      return <RoomNameModal {...props} />;
     case modalTypes.error:
       return <ErrorModal {...props} />;
     case modalTypes.settings:
@@ -98,6 +102,7 @@ export const RoomRoute = () => {
     socketConnection,
     userName,
     connectToRoom,
+    updateRoomName,
     cloneRoom,
     setUserName,
     addItem,
@@ -184,6 +189,18 @@ export const RoomRoute = () => {
     [toggleModal, cloneRoom, id]
   );
 
+  const onClickRoomName = useCallback(
+    () =>
+      toggleModal(modalTypes.updateRoomName, {
+        onSubmit: (roomName) => {
+          updateRoomName(roomName);
+          toggleModal();
+        },
+        onHide: () => toggleModal(),
+      }),
+    [toggleModal, updateRoomName]
+  );
+
   const onToggleItemEditorVisibility = useCallback(
     (item) =>
       updateItems([
@@ -227,7 +244,9 @@ export const RoomRoute = () => {
       ) : (
         <div className="room-container">
           <div className="room-header">
-            <h2>{roomName}</h2>
+            <h2 onClick={onClickRoomName} className="room-name">
+              {roomName}
+            </h2>
             <div className="room-header-buttons">
               <IconButton
                 onClick={() => {

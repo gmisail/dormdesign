@@ -20,7 +20,15 @@ const RoomForm = (props) => {
       return;
     }
 
-    props.onSubmit(nameValue.trim());
+    const roomName = nameValue.trim();
+
+    if (roomName.length === 0) {
+      setValidated(false);
+      event.stopPropagation();
+      return;
+    }
+
+    props.onSubmit(roomName);
   };
 
   return (
