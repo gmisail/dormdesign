@@ -243,8 +243,9 @@ export const RoomProvider = ({ children }) => {
         });
 
         connection.on("updateRoomName", (data) => {
+          console.log(data);
           dispatch({
-            type: RoomActions.updateRoomName,
+            type: RoomActions.roomNameUpdated,
             payload: { roomName: data.name },
           });
         });
