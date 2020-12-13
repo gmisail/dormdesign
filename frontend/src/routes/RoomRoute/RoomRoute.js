@@ -193,12 +193,12 @@ export const RoomRoute = () => {
     () =>
       toggleModal(modalTypes.updateRoomName, {
         onSubmit: (roomName) => {
-          updateRoomName(roomName);
+          updateRoomName(id, roomName);
           toggleModal();
         },
         onHide: () => toggleModal(),
       }),
-    [toggleModal, updateRoomName]
+    [toggleModal, updateRoomName, id]
   );
 
   const onToggleItemEditorVisibility = useCallback(

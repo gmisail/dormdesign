@@ -242,6 +242,13 @@ export const RoomProvider = ({ children }) => {
           });
         });
 
+        connection.on("updateRoomName", (data) => {
+          dispatch({
+            type: RoomActions.updateRoomName,
+            payload: { roomName: data.name },
+          });
+        });
+
         connection.on("roomCloned", (data) => {
           window.location.reload();
         });
@@ -355,12 +362,13 @@ export const RoomProvider = ({ children }) => {
   );
 
   const updateRoomName = useCallback(
-    (roomName) => {
+    (id, roomName) => {
       state.socketConnection.send({
         event: "updateRoomName",
         sendResponse: true,
         data: {
-          roomName,
+          id,
+          name: roomName,
         },
       });
 
