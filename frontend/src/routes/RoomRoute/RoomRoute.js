@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import { RoomContext } from "./RoomContext";
 
 import { Spinner } from "react-bootstrap";
-import { BsGear, BsPlus, BsBoxArrowUpRight } from "react-icons/bs";
+import { BsGear, BsPlus, BsBoxArrowUpRight, BsPencil } from "react-icons/bs";
 
 import RoomEditor from "../../components/RoomEditor/RoomEditor";
 import DormItemList from "../../components/DormItemList/DormItemList";
@@ -18,11 +18,13 @@ import ErrorModal from "../../components/modals/ErrorModal";
 import IconButton from "../../components/IconButton/IconButton";
 
 import "./RoomRoute.scss";
+import RoomNameModal from "../../components/modals/RoomNameModal";
 
 const modalTypes = {
   add: "ADD",
   edit: "EDIT",
   chooseName: "CHOOSE_NAME",
+  updateRoomName: "UPDATE_ROOM_NAME",
   error: "ERROR",
   settings: "SETTINGS",
   share: "SHARE",
@@ -37,6 +39,8 @@ const Modal = (props) => {
       return <EditModal {...props} />;
     case modalTypes.chooseName:
       return <NameModal {...props} />;
+    case modalTypes.updateRoomName:
+      return <RoomNameModal {...props} />;
     case modalTypes.error:
       return <ErrorModal {...props} />;
     case modalTypes.settings:
@@ -98,6 +102,7 @@ export const RoomRoute = () => {
     socketConnection,
     userName,
     connectToRoom,
+    updateRoomName,
     cloneRoom,
     setUserName,
     addItem,
@@ -136,6 +141,10 @@ export const RoomRoute = () => {
       });
     }
   }, [error, socketConnection, toggleModal]);
+
+  useEffect(() => {
+    document.title = `DormDesign | ${roomName}`;
+  }, [roomName]);
 
   const onClickAddItemButton = useCallback(
     () =>
@@ -184,6 +193,22 @@ export const RoomRoute = () => {
     [toggleModal, cloneRoom, id]
   );
 
+  const onClickRoomName = useCallback(
+    () =>
+      toggleModal(modalTypes.updateRoomName, {
+        name: roomName,
+        onSubmit: (updatedRoomName) => {
+          // Only update if name actually changed
+          if (updatedRoomName !== roomName) {
+            updateRoomName(updatedRoomName);
+          }
+          toggleModal();
+        },
+        onHide: () => toggleModal(),
+      }),
+    [toggleModal, updateRoomName, roomName]
+  );
+
   const onToggleItemEditorVisibility = useCallback(
     (item) =>
       updateItems([
@@ -227,7 +252,12 @@ export const RoomRoute = () => {
       ) : (
         <div className="room-container">
           <div className="room-header">
-            <h2>{roomName}</h2>
+            <div className="room-name-container">
+              <h2 onClick={onClickRoomName} className="room-name">
+                {roomName}
+              </h2>
+              <BsPencil className="room-name-edit-icon" />
+            </div>
             <div className="room-header-buttons">
               <IconButton
                 onClick={() => {

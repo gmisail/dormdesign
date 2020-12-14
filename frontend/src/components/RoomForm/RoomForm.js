@@ -2,10 +2,12 @@ import React, { useState } from "react";
 import Form from "react-bootstrap/Form";
 
 const RoomForm = (props) => {
-  const [nameValue, setNameValue] = useState("");
+  const [nameValue, setNameValue] = useState(props.name ?? "");
   const [validated, setValidated] = useState(false);
 
   const handleInputChange = (event) => {
+    if (event.target.value.length > 40) return;
+
     // If other inputs are added to form, will need to determine which state variable to set depending on which input is changed
     setNameValue(event.target.value);
   };
@@ -20,7 +22,15 @@ const RoomForm = (props) => {
       return;
     }
 
-    props.onSubmit(nameValue.trim());
+    const roomName = nameValue.trim();
+
+    if (roomName.length === 0) {
+      setValidated(false);
+      event.stopPropagation();
+      return;
+    }
+
+    props.onSubmit(roomName);
   };
 
   return (
