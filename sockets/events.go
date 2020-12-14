@@ -227,7 +227,6 @@ func (c *Client) translateMessage(reader io.Reader) (*Message, error) {
 			}
 		case "updateRoomName":
 			type UpdateRoomNameEvent struct {
-				ID string `json:"id"`
 				Name string `json:"name"`
 			}
 
@@ -238,20 +237,19 @@ func (c *Client) translateMessage(reader io.Reader) (*Message, error) {
 				errorString = "Unable to update the room name: " + err.Error()
 				break
 			}
-
-			updateErr := models.UpdateRoomName(c.hub.database, eventData.ID, eventData.Name)
+	
+			updateErr := models.UpdateRoomName(c.hub.database, roomMessage.RoomID, eventData.Name)
 
 			if updateErr != nil {
 				errorString = "Unable to update the room name: " + err.Error()
 				break
 			}
+			
+			log.Printf("UPDATED ROOM NAME %s %s", roomMessage.RoomID, eventData.Name)
 
 			response = &MessageResponse{
-				Event: "updateRoomName",
-				Data: UpdateRoomNameEvent {
-					ID: eventData.ID,
-					Name: eventData.Name,
-				},
+				Event: "roomNameUpdated",
+				Data: eventData,
 			}
 		default:
 			errorString = fmt.Sprintf("Unknown event '%s'", roomMessage.Event)

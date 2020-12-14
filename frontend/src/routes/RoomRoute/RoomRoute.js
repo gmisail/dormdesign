@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import { RoomContext } from "./RoomContext";
 
 import { Spinner } from "react-bootstrap";
-import { BsGear, BsPlus, BsBoxArrowUpRight } from "react-icons/bs";
+import { BsGear, BsPlus, BsBoxArrowUpRight, BsPencil } from "react-icons/bs";
 
 import RoomEditor from "../../components/RoomEditor/RoomEditor";
 import DormItemList from "../../components/DormItemList/DormItemList";
@@ -192,13 +192,17 @@ export const RoomRoute = () => {
   const onClickRoomName = useCallback(
     () =>
       toggleModal(modalTypes.updateRoomName, {
-        onSubmit: (roomName) => {
-          updateRoomName(id, roomName);
+        name: roomName,
+        onSubmit: (updatedRoomName) => {
+          // Only update if name actually changed
+          if (updatedRoomName !== roomName) {
+            updateRoomName(updatedRoomName);
+          }
           toggleModal();
         },
         onHide: () => toggleModal(),
       }),
-    [toggleModal, updateRoomName, id]
+    [toggleModal, updateRoomName, id, roomName]
   );
 
   const onToggleItemEditorVisibility = useCallback(
@@ -244,9 +248,12 @@ export const RoomRoute = () => {
       ) : (
         <div className="room-container">
           <div className="room-header">
-            <h2 onClick={onClickRoomName} className="room-name">
-              {roomName}
-            </h2>
+            <div className="room-name-container">
+              <h2 onClick={onClickRoomName} className="room-name">
+                {roomName}
+              </h2>
+              <BsPencil className="room-name-edit-icon" />
+            </div>
             <div className="room-header-buttons">
               <IconButton
                 onClick={() => {

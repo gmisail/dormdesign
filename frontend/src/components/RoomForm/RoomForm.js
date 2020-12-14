@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import Form from "react-bootstrap/Form";
 
 const RoomForm = (props) => {
-  const [nameValue, setNameValue] = useState("");
+  const [nameValue, setNameValue] = useState(props.name ?? "");
   const [validated, setValidated] = useState(false);
 
   const handleInputChange = (event) => {

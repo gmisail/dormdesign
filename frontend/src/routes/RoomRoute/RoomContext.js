@@ -242,8 +242,7 @@ export const RoomProvider = ({ children }) => {
           });
         });
 
-        connection.on("updateRoomName", (data) => {
-          console.log(data);
+        connection.on("roomNameUpdated", (data) => {
           dispatch({
             type: RoomActions.roomNameUpdated,
             payload: { roomName: data.name },
@@ -363,12 +362,11 @@ export const RoomProvider = ({ children }) => {
   );
 
   const updateRoomName = useCallback(
-    (id, roomName) => {
+    (roomName) => {
       state.socketConnection.send({
         event: "updateRoomName",
         sendResponse: true,
         data: {
-          id,
           name: roomName,
         },
       });
