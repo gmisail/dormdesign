@@ -142,6 +142,10 @@ export const RoomRoute = () => {
     }
   }, [error, socketConnection, toggleModal]);
 
+  useEffect(() => {
+    document.title = `DormDesign | ${roomName}`;
+  }, [roomName]);
+
   const onClickAddItemButton = useCallback(
     () =>
       toggleModal(modalTypes.add, {

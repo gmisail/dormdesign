@@ -18,6 +18,8 @@ class HomeRoute extends Component {
   };
 
   componentDidMount() {
+    document.title = "DormDesign";
+
     const scene = new SceneController(this.backgroundCanvasRef);
     scene.backgroundColor = "#f9f9f9";
     this.scene = scene;
