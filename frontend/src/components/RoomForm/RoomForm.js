@@ -6,6 +6,8 @@ const RoomForm = (props) => {
   const [validated, setValidated] = useState(false);
 
   const handleInputChange = (event) => {
+    if (event.target.value.length > 40) return;
+
     // If other inputs are added to form, will need to determine which state variable to set depending on which input is changed
     setNameValue(event.target.value);
   };
