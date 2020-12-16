@@ -92,6 +92,7 @@ const useModal = () => {
 export const RoomRoute = () => {
   const {
     roomName,
+    templateId,
     items,
     loading,
     error,
@@ -233,6 +234,7 @@ export const RoomRoute = () => {
                 onClick={() => {
                   toggleModal(modalTypes.share, {
                     id: id,
+                    templateId: templateId,
                     link: window.location.href,
                   });
                 }}

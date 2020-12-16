@@ -4,7 +4,7 @@ import Modal from "react-bootstrap/Modal";
 import "./ShareRoomModal.scss";
 
 const ShareRoomModal = (props) => {
-  const { id, link } = props;
+  const { id, templateId, link } = props;
   return (
     <Modal show={props.show} onHide={props.onHide}>
       <Modal.Header closeButton>
@@ -18,6 +18,13 @@ const ShareRoomModal = (props) => {
         </p>
         <strong>Room ID:</strong>
         <p className="emphasized-section">{id ?? "Unknown ID"}</p>
+        <strong>Room Template ID:</strong>
+        <p>
+          You can share the Template ID with other users so that they can copy
+          your room. Unlike the Room ID, the Template ID does <b>not</b> allow
+          other users to edit your room.
+        </p>
+        <p className="emphasized-section">{templateId ?? "Unknown ID"}</p>
         <strong>Direct Link:</strong>
         <p className="emphasized-section">{link ?? "Unknown link"}</p>
       </Modal.Body>

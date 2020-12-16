@@ -19,6 +19,7 @@ export const RoomActions = {
 
 const initialState = {
   items: null,
+  templateId: null,
   roomName: null,
   bounds: null,
   loading: true,
@@ -35,9 +36,11 @@ const roomReducer = (state, action) => {
   }
   switch (action.type) {
     case RoomActions.connectedToRoom:
+      console.log(action.payload);
       return {
         ...state,
         loading: false,
+        templateId: action.payload.templateId,
         bounds: action.payload.bounds,
         items: action.payload.items,
         roomName: action.payload.roomName,
@@ -186,6 +189,7 @@ export const RoomProvider = ({ children }) => {
             type: RoomActions.connectedToRoom,
             payload: {
               items: roomData.items,
+              templateId: roomData.templateId,
               roomName: roomData.name,
               socketConnection: connection,
               bounds: roomData.vertices,

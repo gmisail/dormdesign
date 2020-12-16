@@ -34,6 +34,7 @@ type EditorPoint struct {
 type Room struct {
 	ID string `json:"id" rethinkdb:"id"`
 	Name string `json:"name" rethinkdb:"name"`
+	TemplateID string `json:"templateId" rethinkdb:"templateId"`
 	Items []RoomItem `json:"items" rethinkdb:"items"`
 	Vertices []EditorPoint `json:"vertices" rethinkdb:"vertices"`
 }
@@ -52,10 +53,18 @@ func CreateRoom(database *rdb.Session, id string, name string) (Room, error) {
 	defaultVertices[2] = EditorPoint{ X: 10, Y: 10}
 	defaultVertices[3] = EditorPoint{ X: 0, Y: 10 }
 
+
+	template, templateErr := CreateTemplate(database, id)
+	if templateErr != nil {
+		log.Println(templateErr)
+		return Room{}, templateErr
+	}
+
 	room := Room{ 
 		ID: id,
 		Name: name,
-		Items: []RoomItem{}, 
+		Items: []RoomItem{},
+		TemplateID: template.TargetID, 
 		Vertices: defaultVertices,
 	}
 	
