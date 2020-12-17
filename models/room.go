@@ -126,14 +126,15 @@ func CopyRoom(database *rdb.Session, id string, target string) (Room, error) {
 	// Set change ID of target to this room's id
 	data.ID = initData.ID
 	data.TemplateID = initData.TemplateID
+	data.Name = initData.Name
 
-	updatedRoomNameLen := len(initData.Name)
+	// updatedRoomNameLen := len(initData.Name)
 	
-	if 33 <= len(initData.Name) + 7 {
-		updatedRoomNameLen = 33
-	}
+	// if 33 <= len(initData.Name) + 7 {
+	// 	updatedRoomNameLen = 33
+	// }
 
-	data.Name = fmt.Sprintf("(Copy) %s", initData.Name[0:updatedRoomNameLen])
+	// data.Name = fmt.Sprintf("(Copy) %s", initData.Name[0:updatedRoomNameLen])
 
 	// Update this room with target's data
 	_, err = rdb.DB("dd_data").Table("rooms").Get(id).Update(data).RunWrite(database)
