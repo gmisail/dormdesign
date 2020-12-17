@@ -3,6 +3,7 @@ package models
 import (
 	"log"
 	"errors"
+	"fmt"
 
 	rdb "gopkg.in/rethinkdb/rethinkdb-go.v6"
 )
@@ -64,7 +65,7 @@ func CreateRoom(database *rdb.Session, id string, name string) (Room, error) {
 		ID: id,
 		Name: name,
 		Items: []RoomItem{},
-		TemplateID: template.TargetID, 
+		TemplateID: template.ID, 
 		Vertices: defaultVertices,
 	}
 	
@@ -107,8 +108,15 @@ func GetRoom(database *rdb.Session, id string) (Room, error) {
 	Copy the contents of the room with ID 'target' into 'id'.
 */
 func CopyRoom(database *rdb.Session, id string, target string) (Room, error) {
-	// Get target room data(room that will be cloned)
-	data, err := GetRoom(database, target)
+	initData, initErr := GetRoom(database, id)
+
+	if initErr != nil {
+		log.Println(initErr)
+		return Room{}, initErr
+	}
+
+	template, _ := GetTemplate(database, target)
+	data, err := GetRoom(database, template.TargetID)
 
 	if err != nil {
 		log.Println(err)
@@ -116,7 +124,17 @@ func CopyRoom(database *rdb.Session, id string, target string) (Room, error) {
 	}
 
 	// Set change ID of target to this room's id
-	data.ID = id
+	data.ID = initData.ID
+	data.TemplateID = initData.TemplateID
+
+	updatedRoomNameLen := len(initData.Name)
+	
+	if 33 <= len(initData.Name) + 7 {
+		updatedRoomNameLen = 33
+	}
+
+	data.Name = fmt.Sprintf("(Copy) %s", initData.Name[0:updatedRoomNameLen])
+
 	// Update this room with target's data
 	_, err = rdb.DB("dd_data").Table("rooms").Get(id).Update(data).RunWrite(database)
 	if err != nil {
