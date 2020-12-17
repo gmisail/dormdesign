@@ -8,7 +8,6 @@ import (
 	"io"
 
 	"github.com/gmisail/dormdesign/models"
-	"github.com/google/uuid"
 )
 
 type MessageResponse struct {
@@ -66,9 +65,8 @@ func (c *Client) translateMessage(reader io.Reader) (*Message, error) {
 				errorString = "Unable to translate addItem event: " + err.Error()
 				break
 			}
-			item.ID = uuid.New().String()
 			
-			err = models.AddRoomItem(c.hub.database, roomMessage.RoomID, item)
+			item, err = models.AddRoomItem(c.hub.database, roomMessage.RoomID, item)
 			if err != nil {
 				errorString = "Error adding item to database: " + err.Error()
 				break

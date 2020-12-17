@@ -14,13 +14,15 @@ DormDesign allows roommates to collaboratively design and plan our their dorm ro
 
 <img src="/screenshots/room-route.png" alt="room editor screenshot" width="800" />
 
+## Development
+
+1. Install docker and docker-compose
+2. Navigate to the root of the project and run docker-compose -f docker-compose.dev.yml up --build
+3. Site can be viewed at localhost:3000
+
 ## Deployment
 
-DormDesign requires that Go, Echo, and React be installed in order to build and deploy. To build the backend, please refer to the `BACKEND_README` document. As for the frontend, all of its dependencies can be installed by navigating to the `frontend` directory and running `npm install`. Once this is complete, the production frontend must be built so that the server can host it. To do this, run `npm run build`. The respective files will be output to the `frontend/build` directory.
+1. Install docker and docker-compose
+2. Navigate to the root of the project and run docker-compose up --build -d
+3. Site is served on port 5500
 
-Once everything is built, deployment is as easy as launching the database and server:
-```
-rethinkdb
-./dormdesign
-```
-You can then navigate to the service by going to the IP address that Echo specifies, or by navigating to wherever you're hosting it from.

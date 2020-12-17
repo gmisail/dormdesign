@@ -1,0 +1,16 @@
+FROM node:alpine
+
+WORKDIR /app
+
+# copyies package-lock.json and package.json
+COPY package*.json ./
+
+# install dependencies
+RUN npm install
+
+# copy everything over to environment
+COPY . .
+
+EXPOSE 3000
+
+CMD ["npm", "start"]
