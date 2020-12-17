@@ -37,7 +37,6 @@ const roomReducer = (state, action) => {
   }
   switch (action.type) {
     case RoomActions.connectedToRoom:
-      console.log(action.payload);
       return {
         ...state,
         loading: false,
