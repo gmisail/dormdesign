@@ -18,15 +18,16 @@ const ShareRoomModal = (props) => {
         </p>
         <strong>Room ID:</strong>
         <p className="emphasized-section">{id ?? "Unknown ID"}</p>
-        <strong>Room Template ID:</strong>
-        <p>
-          You can share the Template ID with other users so that they can copy
-          your room. Unlike the Room ID, the Template ID does <b>not</b> allow
-          other users to edit your room.
-        </p>
-        <p className="emphasized-section">{templateId ?? "Unknown ID"}</p>
         <strong>Direct Link:</strong>
         <p className="emphasized-section">{link ?? "Unknown link"}</p>
+
+        <p className="mt-5">
+          The Template ID can be used to clone the contents of this room. Unlike
+          the Room ID, the Template ID does <b>not</b> allow other users to edit
+          your room.
+        </p>
+        <strong>Room Template ID:</strong>
+        <p className="emphasized-section">{templateId ?? "Unknown ID"}</p>
       </Modal.Body>
     </Modal>
   );

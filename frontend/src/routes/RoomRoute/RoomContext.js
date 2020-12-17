@@ -159,7 +159,7 @@ const handleSocketErrorEvent = (data) => {
       return "Failed to update room bounds.";
     case "cloneRoom":
       console.error("Error cloning room. ", data.message);
-      return "Cannot find room with the given ID.";
+      return "Failed to clone room from given ID. Make sure you are using a valid template ID.";
     default:
       console.error("Unknown socket event error.", data);
       return null;

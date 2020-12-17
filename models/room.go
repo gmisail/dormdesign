@@ -3,7 +3,6 @@ package models
 import (
 	"log"
 	"errors"
-	"fmt"
 
 	rdb "gopkg.in/rethinkdb/rethinkdb-go.v6"
 )
@@ -105,9 +104,10 @@ func GetRoom(database *rdb.Session, id string) (Room, error) {
 }
 
 /*
-	Copy the contents of the room with ID 'target' into 'id'.
+	Copy the contents of the room with pointed to by 'templateID' into 'id'.
 */
-func CopyRoom(database *rdb.Session, id string, target string) (Room, error) {
+func CopyRoomFromTemplate(database *rdb.Session, id string, templateID string) (Room, error) {
+	// Get original room
 	initData, initErr := GetRoom(database, id)
 
 	if initErr != nil {
@@ -115,7 +115,8 @@ func CopyRoom(database *rdb.Session, id string, target string) (Room, error) {
 		return Room{}, initErr
 	}
 
-	template, _ := GetTemplate(database, target)
+	// Get template data
+	template, err := GetTemplate(database, templateID)
 	data, err := GetRoom(database, template.TargetID)
 
 	if err != nil {
@@ -123,20 +124,12 @@ func CopyRoom(database *rdb.Session, id string, target string) (Room, error) {
 		return Room{}, err
 	}
 
-	// Set change ID of target to this room's id
+	// Replace template data with static data from original room
 	data.ID = initData.ID
 	data.TemplateID = initData.TemplateID
 	data.Name = initData.Name
 
-	// updatedRoomNameLen := len(initData.Name)
-	
-	// if 33 <= len(initData.Name) + 7 {
-	// 	updatedRoomNameLen = 33
-	// }
-
-	// data.Name = fmt.Sprintf("(Copy) %s", initData.Name[0:updatedRoomNameLen])
-
-	// Update this room with target's data
+	// Update original room with template data
 	_, err = rdb.DB("dd_data").Table("rooms").Get(id).Update(data).RunWrite(database)
 	if err != nil {
 		log.Println(err)

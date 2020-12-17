@@ -16,7 +16,7 @@ type Template struct {
 	Create a template ID for a given room
 */
 func CreateTemplate(database *rdb.Session, id string) (Template, error) {
-	targetId := uuid.New().String()
+	templateID := uuid.New().String()
 
 	/*
 		Templates act as a fast lookup table for other rooms. Thus, the new ID
@@ -24,7 +24,7 @@ func CreateTemplate(database *rdb.Session, id string) (Template, error) {
 		ID to)
 	*/
 	template := Template{ 
-		ID: targetId,
+		ID: templateID,
 		TargetID: id,
 	}
 	

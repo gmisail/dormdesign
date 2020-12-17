@@ -34,11 +34,11 @@ class SettingsModal extends React.Component {
             onSubmit={this.context.updateBounds}
           ></VertexForm>
           <hr />
-          <h5>Clone Existing Room</h5>
+          <h5>Clone from Template</h5>
           <p>
-            Cloning allows you to copy the layout, furniture, and properties
-            from another room into your room. Note that once you clone a room,
-            changes only apply to your copy, not the original.
+            Template cloning allows you to copy the layout, furniture, and
+            properties from another room into your room. Note that once you
+            clone a room, changes only apply to your copy, not the original.
             <strong> This is not reversible.</strong>
           </p>
           <Form onSubmit={this.onCloneFormSubmit}>
@@ -47,11 +47,16 @@ class SettingsModal extends React.Component {
                 <div className="d-flex w-100">
                   <FormControl
                     onChange={this.onChange}
-                    placeholder="Room ID"
-                    aria-label="Room ID"
+                    placeholder="Room Template ID"
+                    aria-label="Room Template ID"
                     aria-describedby="Room Identifier"
                   />
-                  <button className="custom-btn ml-2" type="submit">
+
+                  <button
+                    className="custom-btn ml-2"
+                    disabled={this.state.id === "" ? true : false}
+                    type="submit"
+                  >
                     Clone
                   </button>
                 </div>
