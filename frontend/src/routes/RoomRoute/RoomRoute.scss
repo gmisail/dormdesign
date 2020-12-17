@@ -10,7 +10,7 @@ body {
   $padding-x: 25px;
   $padding-y: 15px;
   $gap-x: 20px;
-  $gap-y: 20px;
+  $gap-y: 10px;
 
   $stack-breakpoint: 900px;
   $small-breakpoint: 500px;
@@ -35,7 +35,11 @@ body {
 
   @media screen and (max-width: $stack-breakpoint) {
     grid-template-columns: 100%;
-    column-gap: 0;
+    gap: $gap-y 0;
+
+    .room-item-list-container {
+      padding-top: 5px;
+    }
 
     grid-template-rows: max-content 60% minmax(0, 1fr);
 
@@ -47,7 +51,6 @@ body {
 
   @media screen and (max-width: $small-breakpoint) {
     padding: $padding-y 10px;
-    gap: $gap-y * 0.75 0;
 
     .room-header {
       & > * {
@@ -66,6 +69,30 @@ body {
 
     & > * {
       margin: 0;
+    }
+    .room-name-container {
+      display: flex;
+      flex-flow: row nowrap;
+      align-items: center;
+
+      .room-name {
+        margin: 0;
+      }
+      .room-name-edit-icon {
+        margin-left: 10px;
+        display: none;
+      }
+
+      &:hover {
+        cursor: pointer;
+        color: lighten($text-color-dark, 10%);
+        .room-name {
+          color: inherit;
+        }
+        .room-name-edit-icon {
+          display: block;
+        }
+      }
     }
 
     .room-header-buttons {

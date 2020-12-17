@@ -12,6 +12,7 @@ export const RoomActions = {
   itemsUpdated: "ITEM_UPDATED",
   itemSelected: "ITEM_SELECTED",
   boundsUpdated: "BOUNDS_UPDATED",
+  roomNameUpdated: "ROOM_NAME_UPDATED",
   loading: "LOADING",
   error: "ERROR",
   clearEditorActionQueue: "CLEAR_EDITOR_ACTION_QUEUE",
@@ -123,6 +124,11 @@ const roomReducer = (state, action) => {
       };
     case RoomActions.loading:
       return initialState;
+    case RoomActions.roomNameUpdated:
+      return {
+        ...state,
+        roomName: action.payload.roomName,
+      };
     case RoomActions.error:
       return { ...state, loading: false, error: action.payload.error };
     default:
@@ -240,6 +246,13 @@ export const RoomProvider = ({ children }) => {
           });
         });
 
+        connection.on("roomNameUpdated", (data) => {
+          dispatch({
+            type: RoomActions.roomNameUpdated,
+            payload: { roomName: data.name },
+          });
+        });
+
         connection.on("roomCloned", (data) => {
           window.location.reload();
         });
@@ -337,7 +350,6 @@ export const RoomProvider = ({ children }) => {
 
   const updateBounds = useCallback(
     (bounds) => {
-      console.log("BOUNDS UPDATED");
       state.socketConnection.send({
         event: "updateLayout",
         sendResponse: true,
@@ -348,6 +360,24 @@ export const RoomProvider = ({ children }) => {
       dispatch({
         type: RoomActions.boundsUpdated,
         payload: { bounds },
+      });
+    },
+    [state.socketConnection, dispatch]
+  );
+
+  const updateRoomName = useCallback(
+    (roomName) => {
+      state.socketConnection.send({
+        event: "updateRoomName",
+        sendResponse: true,
+        data: {
+          name: roomName,
+        },
+      });
+
+      dispatch({
+        type: RoomActions.roomNameUpdated,
+        payload: { roomName },
       });
     },
     [state.socketConnection, dispatch]
@@ -374,6 +404,7 @@ export const RoomProvider = ({ children }) => {
     addItem,
     updateItems,
     updateBounds,
+    updateRoomName,
     updatedItems,
     setUserName,
     deleteItem,

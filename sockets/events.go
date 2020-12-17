@@ -225,6 +225,32 @@ func (c *Client) translateMessage(reader io.Reader) (*Message, error) {
 					Vertices: room.Vertices,
 				},
 			}
+		case "updateRoomName":
+			type UpdateRoomNameEvent struct {
+				Name string `json:"name"`
+			}
+
+			var eventData UpdateRoomNameEvent
+			err := json.Unmarshal(roomMessage.Data, &eventData)
+
+			if err != nil {
+				errorString = "Unable to update the room name: " + err.Error()
+				break
+			}
+	
+			updateErr := models.UpdateRoomName(c.hub.database, roomMessage.RoomID, eventData.Name)
+
+			if updateErr != nil {
+				errorString = "Unable to update the room name: " + err.Error()
+				break
+			}
+			
+			log.Printf("UPDATED ROOM NAME %s %s", roomMessage.RoomID, eventData.Name)
+
+			response = &MessageResponse{
+				Event: "roomNameUpdated",
+				Data: eventData,
+			}
 		default:
 			errorString = fmt.Sprintf("Unknown event '%s'", roomMessage.Event)
 		}

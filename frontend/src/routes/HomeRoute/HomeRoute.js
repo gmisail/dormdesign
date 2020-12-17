@@ -7,7 +7,7 @@ import RoomGridObject from "../../room-editor/RoomGridObject";
 import SceneController from "../../room-editor/SceneController";
 import Vector2 from "../../room-editor/Vector2";
 import { ReactComponent as Logo } from "../../assets/logo.svg";
-import CreateRoomModal from "../../components/modals/CreateRoomModal";
+import RoomNameModal from "../../components/modals/RoomNameModal";
 
 import "./HomeRoute.scss";
 
@@ -18,6 +18,8 @@ class HomeRoute extends Component {
   };
 
   componentDidMount() {
+    document.title = "DormDesign";
+
     const scene = new SceneController(this.backgroundCanvasRef);
     scene.backgroundColor = "#f9f9f9";
     this.scene = scene;
@@ -107,7 +109,8 @@ class HomeRoute extends Component {
             </div>
           </div>
         </div>
-        <CreateRoomModal
+        <RoomNameModal
+          title={"Create a Room"}
           show={this.state.showModal}
           onSubmit={this.onSubmitCreateRoomModal}
           onHide={() => {

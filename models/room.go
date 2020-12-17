@@ -147,6 +147,14 @@ func UpdateVertices(database *rdb.Session, id string, verts []EditorPoint) error
 	return err
 }
 
+func UpdateRoomName(database *rdb.Session, id string, name string) error {
+	err := rdb.DB("dd_data").Table("rooms").Get(id).Update(map[string]interface{}{
+		"name": name,
+	}).Exec(database)
+
+	return err
+}
+
 /*
 	Add a room item to the room at the given room ID
 */
