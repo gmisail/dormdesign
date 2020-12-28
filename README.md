@@ -14,15 +14,13 @@ DormDesign allows roommates to collaboratively design and plan our their dorm ro
 
 <img src="/screenshots/room-route.png" alt="room editor screenshot" width="800" />
 
-## Development
+## Development Environment
 
 1. Install docker and docker-compose
 2. Navigate to the root of the project and run `docker-compose -f docker-compose.dev.yml up --build`
-3. Site can be viewed at `localhost:3000`
+3. Site is served on port `5500`
 
 ## Deployment
 
-1. Install docker and docker-compose
-2. Navigate to the root of the project and run `docker-compose up --build -d`
-3. Site is served on port `5500`
+Same as development, but instead run `docker-compose up --build -d`
 
