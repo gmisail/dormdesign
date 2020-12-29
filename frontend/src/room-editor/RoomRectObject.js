@@ -81,37 +81,6 @@ class RoomRectObject extends SceneObject {
   update() {
     // Animates the dashed selection outline
     this._animateSelection();
-
-    if (this.parent) {
-      // Restrict position to parent borders
-      const xLimit = Math.min(this.parent.size.x, Math.max(0, this.position.x));
-      const yLimit = Math.min(this.parent.size.y, Math.max(0, this.position.y));
-
-      if (
-        !Vector2.floatEquals(xLimit, this.position.x) ||
-        !Vector2.floatEquals(yLimit, this.position.y)
-      ) {
-        this.position = new Vector2(xLimit, yLimit);
-      }
-
-      // Check for collisions. Currently only checks if object collides with one of the room boundary edges.
-      const offset = 0.015; // Small "error" allows for things such as a 1' x 1' obj fitting in a 1' x 1' space without counting as collision
-      let bbox = this.getLocalBoundingBox();
-      bbox.p1.x += offset;
-      bbox.p1.y += offset;
-      bbox.p2.x -= offset;
-      bbox.p2.y -= offset;
-      this.outOfBounds = false;
-      if (this.parent.boundaryPoints) {
-        for (let i = 0; i < this.parent.boundaryPoints.length - 1; i++) {
-          const v1 = this.parent.boundaryPoints[i];
-          const v2 = this.parent.boundaryPoints[i + 1];
-          if (Collisions.segmentIntersectsRect(v1, v2, bbox.p1, bbox.p2)) {
-            this.outOfBounds = true;
-          }
-        }
-      }
-    }
   }
 
   // Animates the selection border
@@ -150,7 +119,7 @@ class RoomRectObject extends SceneObject {
     ctx.resetTransform();
 
     // Draw text on top of object - For some reason the context using the transformation matrix seems to draw the text differently on firefox and chrome resulting in it being offset. So its being drawn by manually scaling the necessary values.
-    const globalPos = this.localToGlobalPoint(this.position);
+    const globalPos = this.parent.localToGlobalPoint(this.position);
 
     const fontSize = 0.325;
     this._setContextTextStyle(ctx, fontSize);

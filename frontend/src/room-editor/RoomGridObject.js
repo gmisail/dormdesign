@@ -25,10 +25,8 @@ class RoomGridObject extends SceneObject {
     const numLinesY = Math.floor(this.size.y / this.cellSize);
 
     // Offsets to make sure grid is centered
-    const startX =
-      this.position.x + (this.size.x - numLinesX * this.cellSize) / 2;
-    const startY =
-      this.position.y + (this.size.y - numLinesY * this.cellSize) / 2;
+    const startX = (this.size.x - numLinesX * this.cellSize) / 2;
+    const startY = (this.size.y - numLinesY * this.cellSize) / 2;
 
     ctx.fillStyle = this.backgroundColor;
     ctx.fillRect(0, 0, this.size.x, this.size.y);
@@ -41,15 +39,15 @@ class RoomGridObject extends SceneObject {
     for (let i = 0; i < numLinesX + 1; i++) {
       ctx.beginPath();
       const currX = startX + i * this.cellSize;
-      ctx.moveTo(currX, this.position.y);
-      ctx.lineTo(currX, this.position.y + this.size.y);
+      ctx.moveTo(currX, 0);
+      ctx.lineTo(currX, 0 + this.size.y);
       ctx.stroke();
     }
     for (let i = 0; i < numLinesY + 1; i++) {
       ctx.beginPath();
       const currY = startY + i * this.cellSize;
-      ctx.moveTo(this.position.x, currY);
-      ctx.lineTo(this.position.x + this.size.x, currY);
+      ctx.moveTo(0, currY);
+      ctx.lineTo(0 + this.size.x, currY);
       ctx.stroke();
     }
 

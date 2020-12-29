@@ -69,31 +69,6 @@ class RoomEditor extends Component {
     this.handleEditorQueue();
   }
 
-  /*
-
-  ...
-
-    const room = new RoomEditorObject({
-      scene: scene,
-      boundaryPoints: defaultRoom,
-      canvasLayer: 1,
-      backgroundColor: "#fff",
-      onObjectUpdated: this.editorItemUpdated,
-      onObjectSelected: this.editorItemSelected,
-      selectedObjectID: undefined,
-    });
-    scene.addObject(room);
-
-    this.scene = scene;
-    this.roomEditor = room;
-
-    this.updateVisibleItems(this.props.items);
-  
-    EventController.on("layoutUpdated", (payload) => {
-      this.roomEditor.setBoundaries(payload.vertices);
-    });
-  */
-
   handleEditorQueue() {
     const { editorActionQueue, clearEditorActionQueue } = this.context;
     for (let i = 0; i < editorActionQueue.length; i++) {
@@ -202,28 +177,31 @@ class RoomEditor extends Component {
       : false;
     return (
       <div className="room-canvas-container">
-        <div className="room-editor-toolbar">
-          <IconButton
-            onClick={this.lockSelectedItem}
-            disabled={selectedItemID === null}
-            style={{ fontSize: "0.95em" }}
-          >
-            {locked ? <BsLock></BsLock> : <BsUnlock></BsUnlock>}
-          </IconButton>
-          <IconButton
-            onClick={this.rotateSelectedItem}
-            disabled={selectedItemID === null || locked}
-          >
-            <BsArrowClockwise></BsArrowClockwise>
-          </IconButton>
+        <div className="room-canvas-overlay">
+          <div className="room-editor-toolbar">
+            <IconButton
+              onClick={this.lockSelectedItem}
+              disabled={selectedItemID === null}
+              style={{ fontSize: "0.95em" }}
+            >
+              {locked ? <BsLock></BsLock> : <BsUnlock></BsUnlock>}
+            </IconButton>
+            <IconButton
+              onClick={this.rotateSelectedItem}
+              disabled={selectedItemID === null || locked}
+            >
+              <BsArrowClockwise></BsArrowClockwise>
+            </IconButton>
+          </div>
+          <div className="room-canvas-footer">
+            <span>1 Cell = 1 Square Foot</span>
+          </div>
         </div>
+
         <canvas
           ref={(ref) => (this.mainCanvasRef = ref)}
           className="room-canvas"
         ></canvas>
-        <div className="room-canvas-footer">
-          <span>1 Cell = 1 Square Foot</span>
-        </div>
       </div>
     );
   }

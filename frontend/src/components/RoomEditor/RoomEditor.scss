@@ -6,64 +6,78 @@
   height: 100%;
   border-radius: inherit;
 
+  padding: 15px;
+
+  .room-canvas-overlay {
+    position: relative;
+    width: 100%;
+    height: 100%;
+
+    .room-canvas-footer {
+      position: absolute;
+      z-index: 2;
+      color: $text-color-dark;
+      font-weight: 600;
+      bottom: 0;
+      left: 0;
+    }
+
+    .room-editor-toolbar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 3;
+      display: flex;
+      flex-flow: row nowrap;
+      justify-content: flex-end;
+      align-items: center;
+
+      & > * + * {
+        margin-left: 10px;
+      }
+
+      button {
+        padding: 8px;
+        font-size: 0.9em;
+        color: $text-color-light;
+        background-color: $color-secondary;
+        border-radius: 50px;
+        box-shadow: $box-shadow;
+
+        transition: transform 0.2s ease;
+
+        &:disabled {
+          background-color: lighten($color-secondary, 35%);
+          box-shadow: none;
+
+          transform: scale(0.9);
+        }
+      }
+    }
+  }
+
   .room-canvas {
     position: absolute;
     /* 
       For some reason using just top, bottom, left, right doesn't properly stretch canvas. So
       instead we manually set width and height
     */
-    $top-offset: 50px;
-    $bottom-offset: 25px;
-    $left-offset: 15px;
-    $right-offset: 15px;
-    width: calc(100% - #{$left-offset} - #{$right-offset});
-    height: calc(100% - #{$top-offset} - #{$bottom-offset});
-    top: $top-offset;
-    left: $left-offset;
-
-    border-radius: inherit;
-  }
-
-  .room-canvas-footer {
-    position: absolute;
-    z-index: 2;
-    color: $text-color-dark;
-    font-weight: 600;
-    bottom: 0;
-    left: 0;
-  }
-
-  .room-editor-toolbar {
-    position: absolute;
+    // $top-offset: 50px;
+    // $bottom-offset: 25px;
+    // $left-offset: 15px;
+    // $right-offset: 15px;
+    // width: calc(100% - #{$left-offset} - #{$right-offset});
+    // height: calc(100% - #{$top-offset} - #{$bottom-offset});
+    // top: $top-offset;
+    // left: $left-offset;
+    width: 100%;
+    height: 100%;
     top: 0;
     left: 0;
     right: 0;
-    z-index: 3;
-    display: flex;
-    flex-flow: row nowrap;
-    justify-content: flex-end;
-    align-items: center;
+    bottom: 0;
 
-    & > * + * {
-      margin-left: 10px;
-    }
-
-    button {
-      padding: 8px;
-      font-size: 0.9em;
-      color: $text-color-light;
-      background-color: $color-secondary;
-      border-radius: 50px;
-      box-shadow: $box-shadow;
-
-      transition: transform 0.2s ease;
-
-      &:disabled {
-        background-color: lighten($color-secondary, 35%);
-        box-shadow: none;
-
-        transform: scale(0.9);
-      }
-    }
+    border-radius: inherit;
   }
 }
