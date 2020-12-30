@@ -1,27 +1,49 @@
 @import "../../styles/variables.scss";
 
-.room-canvas-container {
+.room-editor {
+  $editor-button-box-shadow: 0px 2px 5px 2px rgba(0, 0, 0, 0.15);
+
   position: relative;
   width: 100%;
   height: 100%;
   border-radius: inherit;
 
-  padding: 15px 15px 8px 15px;
+  padding: 10px;
 
-  .room-canvas-overlay {
+  .room-editor-overlay {
     position: relative;
     width: 100%;
     height: 100%;
 
-    .room-canvas-footer {
+    & > * {
+      z-index: 3;
+    }
+
+    .room-editor-footer {
       position: absolute;
-      z-index: 2;
       color: $text-color-dark;
       font-weight: 600;
       bottom: 0;
       left: 0;
-
       pointer-events: none;
+    }
+
+    .room-editor-corner-controls {
+      position: absolute;
+      right: 0;
+      bottom: 0;
+      button {
+        padding: 6px;
+        color: $text-color-light;
+        font-size: 16px;
+        background-color: $color-secondary;
+        border-radius: 50px;
+        box-shadow: $editor-button-box-shadow;
+
+        &:hover {
+          background-color: darken($color-secondary, 10%);
+        }
+      }
     }
 
     .room-editor-toolbar {
@@ -29,7 +51,6 @@
       top: 0;
       left: 0;
       right: 0;
-      z-index: 3;
       display: flex;
       flex-flow: row nowrap;
       justify-content: flex-end;
@@ -45,12 +66,16 @@
         padding: 8px;
         font-size: 0.9em;
         color: $text-color-light;
-        background-color: $color-secondary;
+        background-color: $color-primary;
         border-radius: 50px;
-        box-shadow: $box-shadow;
+        box-shadow: $editor-button-box-shadow;
         pointer-events: initial;
 
-        transition: transform 0.2s ease;
+        transition: transform 0.2s ease, background-color 0.15s ease;
+
+        &:hover {
+          background-color: darken($color-primary, 10%);
+        }
 
         &:disabled {
           box-shadow: none;

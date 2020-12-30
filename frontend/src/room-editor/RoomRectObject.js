@@ -16,11 +16,11 @@ class RoomRectObject extends SceneObject {
       snapOffset,
       movementLocked,
       fontFamily,
+      textColor,
     } = props;
 
     this.color = color;
-    this.textColor = "#222";
-    this.selectionColor = "#444";
+    this.textColor = textColor ?? "#222";
     this.opacity = opacity ?? 1.0;
 
     this.nameText = nameText;
@@ -30,9 +30,11 @@ class RoomRectObject extends SceneObject {
     this.outOfBoundsColor = "#ff0000";
 
     this.selected = false;
-    this._selectionLineSpeed = 0.4;
-    this._selectionLineWidth = 0.05;
-    this._selectionLineDash = [0.18, 0.15]; // [Line dash length, space length]
+    this._selectionColorBackground = "#333";
+    this._selectionColorForeground = "#ccc";
+    this._selectionLineSpeed = 0.5;
+    this._selectionLineWidth = 0.105;
+    this._selectionLineDash = [0.25, 0.22]; // [Line dash length, space length]
 
     this.movementLocked = movementLocked ?? false;
 
@@ -102,10 +104,18 @@ class RoomRectObject extends SceneObject {
 
     // Draw dotted selection outline
     if (this.selected) {
-      ctx.strokeStyle = this.selectionColor;
+      ctx.strokeStyle = this._selectionColorBackground;
       ctx.setLineDash(this._selectionLineDash);
       ctx.lineDashOffset = -this._selectionOutlineOffset;
       ctx.lineWidth = this._selectionLineWidth;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ctx.strokeRect(0, 0, this.size.x, this.size.y);
+
+      ctx.strokeStyle = this._selectionColorForeground;
+      ctx.setLineDash(this._selectionLineDash);
+      ctx.lineDashOffset = -this._selectionOutlineOffset;
+      ctx.lineWidth = this._selectionLineWidth * 0.5;
       ctx.lineCap = "round";
       ctx.lineJoin = "round";
       ctx.strokeRect(0, 0, this.size.x, this.size.y);

@@ -79,7 +79,7 @@ class RoomEditorObject extends SceneObject {
       onScroll: this.onScroll.bind(this),
     });
     this.panning = false;
-    this.panSpeed = 2.0;
+    this.panSpeed = 1.0;
     this.zoomSpeed = 0.01;
 
     this.selectedObject = null;
@@ -94,12 +94,12 @@ class RoomEditorObject extends SceneObject {
     unnecessary calls to onObjectUpdated */
     this._selectedObjectPositionUpdated = false;
 
-    this._fitRoomBoundaries();
+    this.centerView();
   }
 
   setBounds(points) {
     this.bounds.points = points;
-    this._fitRoomBoundaries();
+    this.centerView();
   }
 
   setScale(scale) {
@@ -115,12 +115,12 @@ class RoomEditorObject extends SceneObject {
   }
 
   // Scale and position the editor so that the entire room (boundary) is in view
-  _fitRoomBoundaries() {
+  centerView() {
     const ctx = this.scene.ctx;
     // Space around room boundaries
     const padding = {
-      x: 0.1 * ctx.canvas.width,
-      y: 0.1 * ctx.canvas.height,
+      x: 0.2 * ctx.canvas.width,
+      y: 0.2 * ctx.canvas.height,
     };
     let xMax;
     let yMax;

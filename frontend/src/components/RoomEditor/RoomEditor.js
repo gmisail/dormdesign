@@ -4,6 +4,7 @@ import SceneController from "../../room-editor/SceneController";
 import RoomEditorObject from "../../room-editor/RoomEditorObject";
 import IconButton from "../IconButton/IconButton";
 import { BsArrowClockwise, BsUnlock, BsLock } from "react-icons/bs";
+import { MdFilterCenterFocus } from "react-icons/md";
 import "./RoomEditor.scss";
 
 // Converts DormItem properties to properties expected by RoomEditorObject
@@ -166,25 +167,36 @@ class RoomEditor extends Component {
       ? this.roomObject.roomItems.get(selectedItemID).movementLocked
       : false;
     return (
-      <div className="room-canvas-container">
-        <div className="room-canvas-overlay">
+      <div className="room-editor">
+        <div className="room-editor-overlay">
           <div className="room-editor-toolbar">
             <IconButton
               onClick={this.lockSelectedItem}
               disabled={selectedItemID === null}
               style={{ fontSize: "0.95em" }}
             >
-              {locked ? <BsLock></BsLock> : <BsUnlock></BsUnlock>}
+              {locked ? <BsLock /> : <BsUnlock />}
             </IconButton>
             <IconButton
               onClick={this.rotateSelectedItem}
               disabled={selectedItemID === null || locked}
             >
-              <BsArrowClockwise></BsArrowClockwise>
+              <BsArrowClockwise />
             </IconButton>
           </div>
-          <div className="room-canvas-footer">
+          <div className="room-editor-footer">
             <span>1 Cell = 1 Square Foot</span>
+          </div>
+          <div className="room-editor-corner-controls">
+            <IconButton
+              onClick={() => {
+                if (this.roomObject !== undefined) {
+                  this.roomObject.centerView();
+                }
+              }}
+            >
+              <MdFilterCenterFocus />
+            </IconButton>
           </div>
         </div>
 
