@@ -1,7 +1,7 @@
 @import "../../styles/variables.scss";
 
 .room-editor {
-  $editor-button-box-shadow: 0px 2px 5px 2px rgba(0, 0, 0, 0.15);
+  $editor-box-shadow: 0px 2px 5px 2px rgba(0, 0, 0, 0.15);
 
   position: relative;
   width: 100%;
@@ -32,16 +32,39 @@
       position: absolute;
       right: 0;
       bottom: 0;
+
+      display: flex;
+      flex-flow: column nowrap;
+
+      * + * {
+        // margin-top: 5px;
+        // padding-top: 2px;
+      }
+
+      box-shadow: $editor-box-shadow;
+
+      background-color: #aaa;
+      border-radius: 25px;
+
+      & > :first-child {
+        border-top-left-radius: inherit;
+        border-top-right-radius: inherit;
+      }
+      & > :last-child {
+        border-bottom-left-radius: inherit;
+        border-bottom-right-radius: inherit;
+      }
+
       button {
-        padding: 6px;
+        padding: 4px;
         color: $text-color-light;
         font-size: 16px;
-        background-color: $color-secondary;
-        border-radius: 50px;
-        box-shadow: $editor-button-box-shadow;
+        // background-color: $color-secondary;
+        // box-shadow: $editor-box-shadow;
+        transition: background-color 0.15s ease;
 
         &:hover {
-          background-color: darken($color-secondary, 10%);
+          background-color: #888;
         }
       }
     }
@@ -68,7 +91,7 @@
         color: $text-color-light;
         background-color: $color-primary;
         border-radius: 50px;
-        box-shadow: $editor-button-box-shadow;
+        box-shadow: $editor-box-shadow;
         pointer-events: initial;
 
         transition: transform 0.2s ease, background-color 0.15s ease;

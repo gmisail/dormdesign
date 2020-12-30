@@ -12,6 +12,39 @@ class MouseController {
     this.pressed = false;
     this._position = undefined;
 
+    this.watchedElement.addEventListener(
+      "touchstart",
+      (e) => {
+        const touch = e.touches[0];
+        const mouseEvent = new MouseEvent("mousedown", {
+          clientX: touch.clientX,
+          clientY: touch.clientY,
+        });
+        this.watchedElement.dispatchEvent(mouseEvent);
+      },
+      false
+    );
+    this.watchedElement.addEventListener(
+      "touchend",
+      (e) => {
+        const mouseEvent = new MouseEvent("mouseup", {});
+        this.watchedElement.dispatchEvent(mouseEvent);
+      },
+      false
+    );
+    this.watchedElement.addEventListener(
+      "touchmove",
+      (e) => {
+        const touch = e.touches[0];
+        const mouseEvent = new MouseEvent("mousemove", {
+          clientX: touch.clientX,
+          clientY: touch.clientY,
+        });
+        this.watchedElement.dispatchEvent(mouseEvent);
+      },
+      false
+    );
+
     this.watchedElement.addEventListener("mousedown", (e) => {
       const rect = this.watchedElement.getBoundingClientRect();
       const position = new Vector2(

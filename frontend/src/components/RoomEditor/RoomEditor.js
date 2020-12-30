@@ -4,8 +4,11 @@ import SceneController from "../../room-editor/SceneController";
 import RoomEditorObject from "../../room-editor/RoomEditorObject";
 import IconButton from "../IconButton/IconButton";
 import { BsArrowClockwise, BsUnlock, BsLock } from "react-icons/bs";
-import { MdFilterCenterFocus } from "react-icons/md";
+import { MdFilterCenterFocus, MdZoomIn, MdZoomOut } from "react-icons/md";
+import { CgZoomIn, CgZoomOut } from "react-icons/cg";
+import { BiPlus, BiMinus } from "react-icons/bi";
 import "./RoomEditor.scss";
+import Vector2 from "../../room-editor/Vector2";
 
 // Converts DormItem properties to properties expected by RoomEditorObject
 const itemToEditorProperties = (props) => {
@@ -58,6 +61,8 @@ class RoomEditor extends Component {
 
     // Handle any actions that have accumlated in editorActionQueue
     this.handleEditorQueue();
+
+    this.zoomScale = 1.3;
   }
 
   handleEditorQueue() {
@@ -191,11 +196,41 @@ class RoomEditor extends Component {
             <IconButton
               onClick={() => {
                 if (this.roomObject !== undefined) {
+                  this.roomObject.scaleAbout(
+                    new Vector2(this.zoomScale, this.zoomScale),
+                    new Vector2(
+                      this.scene.canvas.width / 2,
+                      this.scene.canvas.height / 2
+                    )
+                  );
+                }
+              }}
+            >
+              <BiPlus />
+            </IconButton>
+            <IconButton
+              onClick={() => {
+                if (this.roomObject !== undefined) {
                   this.roomObject.centerView();
                 }
               }}
             >
               <MdFilterCenterFocus />
+            </IconButton>
+            <IconButton
+              onClick={() => {
+                if (this.roomObject !== undefined) {
+                  this.roomObject.scaleAbout(
+                    new Vector2(1 / this.zoomScale, 1 / this.zoomScale),
+                    new Vector2(
+                      this.scene.canvas.width / 2,
+                      this.scene.canvas.height / 2
+                    )
+                  );
+                }
+              }}
+            >
+              <BiMinus />
             </IconButton>
           </div>
         </div>

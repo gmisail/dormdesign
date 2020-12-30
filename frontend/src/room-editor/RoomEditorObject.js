@@ -114,6 +114,31 @@ class RoomEditorObject extends SceneObject {
     );
   }
 
+  // Scales object by dScale about provided point (point should be in the parent's local coordinate system)
+  scaleAbout(dScale, point) {
+    const oldScale = this.scale;
+    this.setScale(
+      new Vector2(this.scale.x * dScale.x, this.scale.y * dScale.y)
+    );
+    // Amount that object has actually been scaled
+    dScale = new Vector2(this.scale.x / oldScale.x, this.scale.y / oldScale.y);
+    // Vector from the origin of this object to the point where the point is
+    const relativeToOrigin = new Vector2(
+      point.x - this.position.x,
+      point.y - this.position.y
+    );
+    // Scaled version of previous vector
+    const relativeToOriginScaled = new Vector2(
+      relativeToOrigin.x * dScale.x,
+      relativeToOrigin.y * dScale.y
+    );
+    // Calculate the amount to move the object using the difference between the original and scaled vectors
+    this.position = new Vector2(
+      this.position.x - (relativeToOriginScaled.x - relativeToOrigin.x),
+      this.position.y - (relativeToOriginScaled.y - relativeToOrigin.y)
+    );
+  }
+
   // Scale and position the editor so that the entire room (boundary) is in view
   centerView() {
     const ctx = this.scene.ctx;
@@ -293,33 +318,10 @@ class RoomEditorObject extends SceneObject {
   onScroll(dx, dy, mousePosition) {
     if (isNaN(dx)) dx = 0;
     if (isNaN(dy)) dy = 0;
-    const oldScale = this.scale;
-    this.setScale(
-      new Vector2(
-        this.scale.x * (1 + dy * this.zoomSpeed),
-        this.scale.y * (1 + dy * this.zoomSpeed)
-      )
-    );
-    /* Adjust object position so scaling is done about the mouse position */
-    // Amount that object has been scaled
-    const dScale = new Vector2(
-      this.scale.x / oldScale.x,
-      this.scale.y / oldScale.y
-    );
-    // Vector from the origin of this object to the point where the mouse is
-    const relativeToOrigin = new Vector2(
-      mousePosition.x - this.position.x,
-      mousePosition.y - this.position.y
-    );
-    // Scaled version of previous vector
-    const relativeToOriginScaled = new Vector2(
-      relativeToOrigin.x * dScale.x,
-      relativeToOrigin.y * dScale.y
-    );
-    // Calculate the amount to move the object using the difference between the original and scaled vectors
-    this.position = new Vector2(
-      this.position.x - (relativeToOriginScaled.x - relativeToOrigin.x),
-      this.position.y - (relativeToOriginScaled.y - relativeToOrigin.y)
+
+    this.scaleAbout(
+      new Vector2(1 + dy * this.zoomSpeed, 1 + dy * this.zoomSpeed),
+      mousePosition
     );
   }
 
