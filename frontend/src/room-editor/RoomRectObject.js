@@ -31,7 +31,7 @@ class RoomRectObject extends SceneObject {
 
     this.selected = false;
     this._selectionColorBackground = "#444";
-    this._selectionColorForeground = "#aaa";
+    this._selectionColorForeground = "#bbb";
     this._selectionLineSpeed = 0.5;
     this._selectionLineWidth = 0.105;
     this._selectionLineDash = [0.25, 0.22]; // [Line dash length, space length]
