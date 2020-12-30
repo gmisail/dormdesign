@@ -9,3 +9,5 @@ rethinkdb_data/metadata
 log.txt
 
 dormdesign
+
+.DS_Store

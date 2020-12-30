@@ -205,6 +205,7 @@ class RoomEditor extends Component {
             <IconButton
               onClick={() => {
                 if (this.roomObject !== undefined) {
+                  // Scale about the center of the canvas
                   this.roomObject.scaleAbout(
                     new Vector2(this.zoomScale, this.zoomScale),
                     new Vector2(
@@ -229,6 +230,7 @@ class RoomEditor extends Component {
             <IconButton
               onClick={() => {
                 if (this.roomObject !== undefined) {
+                  // Scale about the center of the canvas
                   this.roomObject.scaleAbout(
                     new Vector2(1 / this.zoomScale, 1 / this.zoomScale),
                     new Vector2(
