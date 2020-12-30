@@ -3,10 +3,9 @@ import { RoomContext, RoomActions } from "../../routes/RoomRoute/RoomContext";
 import SceneController from "../../room-editor/SceneController";
 import RoomEditorObject from "../../room-editor/RoomEditorObject";
 import IconButton from "../IconButton/IconButton";
-import { BsArrowClockwise, BsUnlock, BsLock } from "react-icons/bs";
-import { MdFilterCenterFocus, MdZoomIn, MdZoomOut } from "react-icons/md";
-import { CgZoomIn, CgZoomOut } from "react-icons/cg";
-import { BiPlus, BiMinus } from "react-icons/bi";
+import { MdFilterCenterFocus } from "react-icons/md";
+import { BiPlus, BiMinus, BiLockOpenAlt, BiLockAlt } from "react-icons/bi";
+import { RiClockwiseLine } from "react-icons/ri";
 import "./RoomEditor.scss";
 import Vector2 from "../../room-editor/Vector2";
 
@@ -41,6 +40,9 @@ const editorToItemProperties = (props) => {
 
 class RoomEditor extends Component {
   static contextType = RoomContext;
+  state = {
+    lastSelectedItemID: null,
+  };
 
   componentDidMount() {
     const scene = new SceneController(this.mainCanvasRef);
@@ -136,6 +138,9 @@ class RoomEditor extends Component {
   itemSelectedInEditor = (obj) => {
     const { itemSelected } = this.context;
     itemSelected(obj === null ? null : obj.id);
+    if (obj !== null) {
+      this.setState({ lastSelectedItemID: obj.id });
+    }
   };
 
   rotateSelectedItem = () => {
@@ -168,25 +173,29 @@ class RoomEditor extends Component {
 
   render() {
     const { selectedItemID } = this.context;
-    const locked = selectedItemID
-      ? this.roomObject.roomItems.get(selectedItemID).movementLocked
+    /* Determine locked from lastSelectedItemID rather than current selectedItemID so that it doesn't 
+    switch during button fade animation */
+    const locked = this.state.lastSelectedItemID
+      ? this.roomObject.roomItems.get(this.state.lastSelectedItemID)
+          .movementLocked
       : false;
     return (
       <div className="room-editor">
         <div className="room-editor-overlay">
           <div className="room-editor-toolbar">
             <IconButton
-              onClick={this.lockSelectedItem}
-              disabled={selectedItemID === null}
-              style={{ fontSize: "0.95em" }}
+              onClick={this.rotateSelectedItem}
+              disabled={locked}
+              data-hidden={selectedItemID === null ? "true" : "false"}
             >
-              {locked ? <BsLock /> : <BsUnlock />}
+              <RiClockwiseLine />
             </IconButton>
             <IconButton
-              onClick={this.rotateSelectedItem}
-              disabled={selectedItemID === null || locked}
+              onClick={this.lockSelectedItem}
+              data-hidden={selectedItemID === null ? "true" : "false"}
+              style={{ fontSize: "0.95em" }}
             >
-              <BsArrowClockwise />
+              {locked ? <BiLockAlt /> : <BiLockOpenAlt />}
             </IconButton>
           </div>
           <div className="room-editor-footer">

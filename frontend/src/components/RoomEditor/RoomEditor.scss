@@ -101,9 +101,12 @@
         }
 
         &:disabled {
+          background-color: lighten($color-primary, 20%);
           box-shadow: none;
-          pointer-events: none;
+        }
 
+        &[data-hidden="true"] {
+          box-shadow: none;
           transform: scale(0);
         }
       }
