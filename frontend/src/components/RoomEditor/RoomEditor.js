@@ -2,7 +2,6 @@ import React, { Component } from "react";
 import { RoomContext, RoomActions } from "../../routes/RoomRoute/RoomContext";
 import SceneController from "../../room-editor/SceneController";
 import RoomEditorObject from "../../room-editor/RoomEditorObject";
-import Vector2 from "../../room-editor/Vector2";
 import IconButton from "../IconButton/IconButton";
 import { BsArrowClockwise, BsUnlock, BsLock } from "react-icons/bs";
 import "./RoomEditor.scss";
@@ -43,17 +42,8 @@ class RoomEditor extends Component {
     const scene = new SceneController(this.mainCanvasRef);
     scene.backgroundColor = "#fff";
 
-    // Points defining the edges of the room (in feet)
-    let defaultBounds = [
-      new Vector2(0, 0),
-      new Vector2(10, 0),
-      new Vector2(10, 10),
-      new Vector2(0, 10),
-    ];
-
     const room = new RoomEditorObject({
       scene: scene,
-      boundaryPoints: defaultBounds,
       backgroundColor: "#fff",
       onObjectsUpdated: this.itemsUpdatedInEditor,
       onObjectSelected: this.itemSelectedInEditor,
@@ -91,7 +81,7 @@ class RoomEditor extends Component {
               action.payload.items[i]
             );
             this.roomObject.addItemToRoom(translatedItem);
-            this.roomObject.setBoundaries(action.payload.bounds);
+            this.roomObject.setBounds(action.payload.bounds);
           }
           break;
         case RoomActions.itemsUpdated:
@@ -110,7 +100,7 @@ class RoomEditor extends Component {
           this.roomObject.removeItemFromRoom(action.payload.id);
           break;
         case RoomActions.boundsUpdated:
-          this.roomObject.setBoundaries(action.payload.bounds);
+          this.roomObject.setBounds(action.payload.bounds);
           break;
         default:
           continue;

@@ -1,6 +1,5 @@
 import SceneObject from "./SceneObject";
 import Vector2 from "./Vector2";
-import Collisions from "./Collisions";
 
 class RoomRectObject extends SceneObject {
   constructor(props) {

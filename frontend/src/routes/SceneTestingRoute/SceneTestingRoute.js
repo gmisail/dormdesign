@@ -4,7 +4,6 @@ import RectObject from "../../room-editor/RectObject";
 
 import "./SceneTestingRoute.scss";
 import Vector2 from "../../room-editor/Vector2";
-import EllipseObject from "../../room-editor/EllipseObject";
 
 class HomeRoute extends Component {
   state = {

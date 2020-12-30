@@ -22,7 +22,7 @@ class SceneObject {
     this._position = position ?? new Vector2(0, 0);
     this._scale = scale ?? new Vector2(1, 1);
     this._rotation = rotation ?? 0.0;
-    this._size = size ?? new Vector2(1, 1);
+    this._size = size ?? new Vector2(0, 0);
     this._zIndex = zIndex ?? 0;
     this._origin = origin ?? new Vector2(0, 0);
     this.staticObject = staticObject ?? false;
@@ -52,10 +52,6 @@ class SceneObject {
     matrix.translateSelf(this._position.x, this._position.y);
     matrix.rotateSelf(0, 0, this._rotation);
     matrix.scaleSelf(this._scale.x, this._scale.y);
-    // matrix.translateSelf(
-    //   -this._origin.x * this._size.x,
-    //   -this._origin.y * this._size.y
-    // );
 
     return new DOMMatrixReadOnly(matrix);
   }

@@ -48,10 +48,10 @@ func CreateRoom(database *rdb.Session, name string) (Room, error) {
 		room layout just be a 10x10 square
 	*/	
 	defaultVertices := make([]EditorPoint, 4)
-	defaultVertices[0] = EditorPoint{ X: 0, Y: 0 }
-	defaultVertices[1] = EditorPoint{ X: 10, Y: 0}
-	defaultVertices[2] = EditorPoint{ X: 10, Y: 10}
-	defaultVertices[3] = EditorPoint{ X: 0, Y: 10 }
+	defaultVertices[0] = EditorPoint{ X: -5, Y: -5 }
+	defaultVertices[1] = EditorPoint{ X: 5, Y: -5}
+	defaultVertices[2] = EditorPoint{ X: 5, Y: 5}
+	defaultVertices[3] = EditorPoint{ X: -5, Y: 5 }
 
 	room := Room{ 
 		ID: uuid.New().String(),
