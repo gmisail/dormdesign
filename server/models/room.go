@@ -54,6 +54,7 @@ func CreateRoom(database *rdb.Session, name string) (Room, error) {
 	defaultVertices[2] = EditorPoint{ X: 10, Y: 10}
 	defaultVertices[3] = EditorPoint{ X: 0, Y: 10 }
 
+	id := uuid.New().String()
 
 	template, templateErr := CreateTemplate(database, id)
 	if templateErr != nil {
@@ -62,7 +63,7 @@ func CreateRoom(database *rdb.Session, name string) (Room, error) {
 	}
 
 	room := Room{ 
-		ID: uuid.New().String(),
+		ID: id,
 		Name: name,
 		Items: []RoomItem{},
 		TemplateID: template.ID, 
