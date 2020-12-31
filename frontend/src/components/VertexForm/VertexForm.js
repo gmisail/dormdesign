@@ -19,6 +19,10 @@ class VertexForm extends Component {
     let verts = this.state.vertices;
     let value = evt.target.value;
 
+    if (value.length !== 0) {
+      value = parseFloat(value);
+    }
+
     if (evt.target.name === "x") verts[evt.target.dataset.index].x = value;
     else if (evt.target.name === "y") verts[evt.target.dataset.index].y = value;
 
