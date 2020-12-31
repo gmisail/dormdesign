@@ -35,6 +35,7 @@ type EditorPoint struct {
 type Room struct {
 	ID string `json:"id" rethinkdb:"id"`
 	Name string `json:"name" rethinkdb:"name"`
+	TemplateID string `json:"templateId" rethinkdb:"templateId"`
 	Items []RoomItem `json:"items" rethinkdb:"items"`
 	Vertices []EditorPoint `json:"vertices" rethinkdb:"vertices"`
 }
@@ -53,10 +54,18 @@ func CreateRoom(database *rdb.Session, name string) (Room, error) {
 	defaultVertices[2] = EditorPoint{ X: 5, Y: 5}
 	defaultVertices[3] = EditorPoint{ X: -5, Y: 5 }
 
+
+	template, templateErr := CreateTemplate(database, id)
+	if templateErr != nil {
+		log.Println(templateErr)
+		return Room{}, templateErr
+	}
+
 	room := Room{ 
 		ID: uuid.New().String(),
 		Name: name,
-		Items: []RoomItem{}, 
+		Items: []RoomItem{},
+		TemplateID: template.ID, 
 		Vertices: defaultVertices,
 	}
 	
@@ -98,20 +107,32 @@ func GetRoom(database *rdb.Session, id string) (Room, error) {
 }
 
 /*
-	Copy the contents of the room with ID 'target' into 'id'.
+	Copy the contents of the room with pointed to by 'templateID' into 'id'.
 */
-func CopyRoom(database *rdb.Session, id string, target string) (Room, error) {
-	// Get target room data(room that will be cloned)
-	data, err := GetRoom(database, target)
+func CopyRoomFromTemplate(database *rdb.Session, id string, templateID string) (Room, error) {
+	// Get original room
+	initData, initErr := GetRoom(database, id)
+
+	if initErr != nil {
+		log.Println(initErr)
+		return Room{}, initErr
+	}
+
+	// Get template data
+	template, err := GetTemplate(database, templateID)
+	data, err := GetRoom(database, template.TargetID)
 
 	if err != nil {
 		log.Println(err)
 		return Room{}, err
 	}
 
-	// Set change ID of target to this room's id
-	data.ID = id
-	// Update this room with target's data
+	// Replace template data with static data from original room
+	data.ID = initData.ID
+	data.TemplateID = initData.TemplateID
+	data.Name = initData.Name
+
+	// Update original room with template data
 	_, err = rdb.DB("dd_data").Table("rooms").Get(id).Update(data).RunWrite(database)
 	if err != nil {
 		log.Println(err)

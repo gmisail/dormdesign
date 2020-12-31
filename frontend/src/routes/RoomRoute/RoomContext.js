@@ -20,6 +20,7 @@ export const RoomActions = {
 
 const initialState = {
   items: null,
+  templateId: null,
   roomName: null,
   bounds: null,
   loading: true,
@@ -39,6 +40,7 @@ const roomReducer = (state, action) => {
       return {
         ...state,
         loading: false,
+        templateId: action.payload.templateId,
         bounds: action.payload.bounds,
         items: action.payload.items,
         roomName: action.payload.roomName,
@@ -162,7 +164,7 @@ const handleSocketErrorEvent = (data) => {
       return "Failed to update room bounds.";
     case "cloneRoom":
       console.error("Error cloning room. ", data.message);
-      return "Cannot find room with the given ID.";
+      return "Failed to clone room from given ID. Make sure you are using a valid template ID.";
     default:
       console.error("Unknown socket event error.", data);
       return null;
@@ -192,6 +194,7 @@ export const RoomProvider = ({ children }) => {
             type: RoomActions.connectedToRoom,
             payload: {
               items: roomData.items,
+              templateId: roomData.templateId,
               roomName: roomData.name,
               socketConnection: connection,
               bounds: roomData.vertices,

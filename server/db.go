@@ -24,5 +24,10 @@ func SetupDatabase(url string) *rdb.Session {
 		log.Println("Created table 'rooms'")
 	}
 
+	_, err = rdb.DB("dd_data").TableCreate("templates").RunWrite(session)
+	if err == nil {
+		log.Println("Created table 'templates'")
+	}
+
 	return session
 }

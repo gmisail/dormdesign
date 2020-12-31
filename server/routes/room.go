@@ -123,9 +123,11 @@ func (route *RoomRoute) OnAddRoomItem(c echo.Context) error {
 
 func (route *RoomRoute) OnCloneRoom(c echo.Context) error {
 	id := c.QueryParam("id")
-	targetId := c.QueryParam("target_id")
+	template, _ := models.GetTemplate(route.Database, c.QueryParam("target_id"))
 
-	data, err := models.GetRoom(route.Database, targetId)
+	log.Println(template)
+
+	data, err := models.GetRoom(route.Database, template.TargetID)
 
 	if err != nil {
 		log.Println(err)
