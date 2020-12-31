@@ -1,7 +1,6 @@
 <img src="/frontend/src/assets/logo.svg" alt="DormDesign" width="400"/>
  
 #### A web application that aims to streamline the dorm packing and planning process. 
-
 DormDesign allows roommates to collaboratively design and plan our their dorm room. Users can keep track of different items and position them in the room using the editor. All actions are updated and displayed to all users viewing the room in realtime.
 
 ## Key Features
@@ -11,16 +10,13 @@ DormDesign allows roommates to collaboratively design and plan our their dorm ro
 - Changes are synced in realtime
 
 ## Screenshots
-
 <img src="/screenshots/room-route.png" alt="room editor screenshot" width="800" />
 
+## Development Environment
+1. Install docker and docker-compose
+2. Navigate to the `/frontend` folder and run `npm install`
+3. Then from the root of the project directory run `docker-compose -f docker-compose.dev.yml up --build` to start the server. The site can then be accessed at `localhost:5500`
+
 ## Deployment
+Same as development, but instead start the production environment with the command `docker-compose up --build -d`
 
-DormDesign requires that Go, Echo, and React be installed in order to build and deploy. To build the backend, please refer to the `BACKEND_README` document. As for the frontend, all of its dependencies can be installed by navigating to the `frontend` directory and running `npm install`. Once this is complete, the production frontend must be built so that the server can host it. To do this, run `npm run build`. The respective files will be output to the `frontend/build` directory.
-
-Once everything is built, deployment is as easy as launching the database and server:
-```
-rethinkdb
-./dormdesign
-```
-You can then navigate to the service by going to the IP address that Echo specifies, or by navigating to wherever you're hosting it from.

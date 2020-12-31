@@ -7,7 +7,6 @@ import (
 	"github.com/labstack/echo/v4"
 	"net/http"
 
-	"github.com/google/uuid"
 	rdb "gopkg.in/rethinkdb/rethinkdb-go.v6"
 )
 
@@ -49,12 +48,10 @@ func (route *RoomRoute) OnGetRoom(c echo.Context) error {
 
 /*
 
-Creates an empty room and returns the ID
+Creates an empty room and returns the room data
 
 */
 func (route *RoomRoute) OnCreateRoom(c echo.Context) error {
-	id := uuid.New().String()
-
 	form := new(CreateRoomForm);
 
 	// Failed to bind ItemForm to Echo context, return 400 - Bad Request
@@ -69,7 +66,7 @@ func (route *RoomRoute) OnCreateRoom(c echo.Context) error {
 		form.Name = "New Room"
 	}
 
-	room, err := models.CreateRoom(route.Database, id, form.Name)
+	room, err := models.CreateRoom(route.Database, form.Name)
 	if err != nil {
 		log.Println(err)
 		return echo.NewHTTPError(http.StatusInternalServerError)
@@ -111,9 +108,7 @@ func (route *RoomRoute) OnAddRoomItem(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusNotFound, "Missing room id")
 	}
 
-	itemID := uuid.New().String()
 	item := models.RoomItem{
-		ID: itemID,
 		Name: form.Name,					// If not provided in form, will be ""
 		Quantity: form.Quantity,	// If not provided in form, will be 0
 		VisibleInEditor: false,

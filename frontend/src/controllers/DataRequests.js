@@ -35,7 +35,7 @@ import DormItem from "../models/DormItem";
 class DataRequests {
   // Creates a new room and returns room ID sent back from server
   static async createRoom(name) {
-    const response = await fetch("/room/create", {
+    const response = await fetch("/api/room/create", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -63,7 +63,7 @@ class DataRequests {
       throw new Error("Can't fetch room data. Room ID is undefined");
     }
 
-    const response = await fetch(`/room/get?id=${id}`);
+    const response = await fetch(`/api/room/get?id=${id}`);
     const data = await response.json();
 
     if (!response.ok) {
@@ -91,7 +91,7 @@ class DataRequests {
     }
 
     const response = await fetch(
-      "/room/clone?id=" + id + "&target_id=" + target
+      "/api/room/clone?id=" + id + "&target_id=" + target
     );
     const data = response.json();
 
@@ -107,7 +107,7 @@ class DataRequests {
     const roomData = await DataRequests.createRoom(name);
     const roomID = roomData.id;
 
-    const itemResponse1 = await fetch("/room/add", {
+    const itemResponse1 = await fetch("/api/room/add", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -124,7 +124,7 @@ class DataRequests {
       console.error(message);
     }
 
-    const itemResponse2 = await fetch("/room/add", {
+    const itemResponse2 = await fetch("/api/room/add", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

@@ -143,7 +143,7 @@ export const RoomRoute = () => {
   }, [error, socketConnection, toggleModal]);
 
   useEffect(() => {
-    document.title = `DormDesign | ${roomName}`;
+    document.title = `DormDesign ${roomName ? "| " + roomName : ""}`;
   }, [roomName]);
 
   const onClickAddItemButton = useCallback(

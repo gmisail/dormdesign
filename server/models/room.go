@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	rdb "gopkg.in/rethinkdb/rethinkdb-go.v6"
+	"github.com/google/uuid"
 )
 
 type RoomItem struct {
@@ -41,7 +42,7 @@ type Room struct {
 /*
 	Create an empty room with the given ID. Return created room struct on if successful
 */
-func CreateRoom(database *rdb.Session, id string, name string) (Room, error) {
+func CreateRoom(database *rdb.Session, name string) (Room, error) {
 	/* 
 		unless another arrangement is provided, let the default
 		room layout just be a 10x10 square
@@ -53,7 +54,7 @@ func CreateRoom(database *rdb.Session, id string, name string) (Room, error) {
 	defaultVertices[3] = EditorPoint{ X: 0, Y: 10 }
 
 	room := Room{ 
-		ID: id,
+		ID: uuid.New().String(),
 		Name: name,
 		Items: []RoomItem{}, 
 		Vertices: defaultVertices,
@@ -64,6 +65,8 @@ func CreateRoom(database *rdb.Session, id string, name string) (Room, error) {
 	if err != nil {
 		return Room{}, err
 	}
+
+	log.Println("ROOM CREATED", room.ID)
 	
 	return room, nil
 }
@@ -137,14 +140,15 @@ func UpdateRoomName(database *rdb.Session, id string, name string) error {
 /*
 	Add a room item to the room at the given room ID
 */
-func AddRoomItem(database *rdb.Session, roomID string, item RoomItem) error {
+func AddRoomItem(database *rdb.Session, roomID string, item RoomItem) (RoomItem, error) {
+	item.ID = uuid.New().String()
 	err := rdb.DB("dd_data").Table("rooms").Get(roomID).Update(map[string]interface{}{"items": rdb.Row.Field("items").Default([]RoomItem{}).Append(item)}).Exec(database)
 
 	if err != nil {
-		return err
+		return RoomItem{}, err
 	}
 
-	return nil
+	return item, nil;
 }
 
 func RemoveRoomItem(database *rdb.Session, roomID string, itemID string) error {

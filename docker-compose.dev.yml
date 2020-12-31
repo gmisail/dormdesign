@@ -1,0 +1,44 @@
+version: "3.8"
+services:
+  db:
+    image: rethinkdb:latest
+    ports:
+      - 8080:8080
+      - 29015:29015
+      - 28015:28015
+    volumes:
+      - "./rethinkdb_data:/data/rethinkdb_data"
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    stdin_open: true
+    volumes:
+      - './frontend:/app'
+      - '/app/node_modules'
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    depends_on:
+      - server
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    environment:
+      - DATABASE_ADDRESS=db:28015
+    depends_on:
+      - db
+  proxy:
+    build:
+      dockerfile: Dockerfile
+      context: ./nginx
+    ports:
+      - '5500:80'
+    depends_on:
+      - frontend
+      - server
+      - db
+
+  
+  
+  

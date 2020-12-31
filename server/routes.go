@@ -26,15 +26,11 @@ func SetupRoutes(e *echo.Echo, database *rdb.Session) {
 	
 	roomRoute := routes.RoomRoute{ Database: database }
 
-	/* frontend host routes */
-	e.Static("/", "frontend/build")
-	e.File("/", "frontend/build/index.html")
-
 	/* room related routes*/
-	e.GET("/room/get", roomRoute.OnGetRoom)
-	e.GET("/room/clone", roomRoute.OnCloneRoom)
-	e.POST("/room/create", roomRoute.OnCreateRoom)
-	e.POST("/room/add", roomRoute.OnAddRoomItem)
+	e.GET("/api/room/get", roomRoute.OnGetRoom)
+	e.GET("/api/room/clone", roomRoute.OnCloneRoom)
+	e.POST("/api/room/create", roomRoute.OnCreateRoom)
+	e.POST("/api/room/add", roomRoute.OnAddRoomItem)
 }
 
 // SetupServer: configures the Echo server and related middleware.

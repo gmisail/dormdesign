@@ -1,0 +1,40 @@
+version: "3.8"
+services:
+  db:
+    image: rethinkdb:latest
+    restart: unless-stopped
+    ports:
+      - 8080:8080
+      - 29015:29015
+      - 28015:28015
+    volumes:
+      - "./rethinkdb_data:/data/rethinkdb_data"
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      - DATABASE_ADDRESS=db:28015
+    depends_on:
+      - db
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      - server
+  proxy:
+    build:
+      dockerfile: Dockerfile
+      context: ./nginx
+    restart: unless-stopped
+    ports:
+      - '5500:80'
+    depends_on:
+      - frontend
+      - server
+      - db
+
+  
