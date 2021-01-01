@@ -116,7 +116,7 @@ class SceneObject {
   set rotation(degs) {
     this._rotation = degs;
     // Prevent unnecessary small/large rotation values
-    if (this._rotation > 360) {
+    if (this._rotation >= 360) {
       this._rotation = this._rotation - 360;
     } else if (this._rotation < 0) {
       this._rotation = 360 + this._rotation;
