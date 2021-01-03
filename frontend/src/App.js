@@ -12,11 +12,12 @@ import {
   Redirect,
 } from "react-router-dom";
 
-import HomeRoute from "./routes/HomeRoute/HomeRoute";
 import { IconContext } from "react-icons";
 
 import { RoomProvider } from "./routes/RoomRoute/RoomContext";
 import { RoomRoute } from "./routes/RoomRoute/RoomRoute";
+import HomeRoute from "./routes/HomeRoute/HomeRoute";
+import SceneTestingRoute from "./routes/SceneTestingRoute/SceneTestingRoute";
 
 const App = () => {
   return (
@@ -42,6 +43,7 @@ const MainRoutes = () => (
           <RoomRoute />
         </RoomProvider>
       </Route>
+      <Route exact path="/scene-test" component={SceneTestingRoute} />
     </Switch>
   </div>
 );

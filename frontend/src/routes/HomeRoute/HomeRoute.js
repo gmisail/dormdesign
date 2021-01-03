@@ -22,7 +22,6 @@ class HomeRoute extends Component {
 
     const scene = new SceneController(this.backgroundCanvasRef);
     scene.backgroundColor = "#f9f9f9";
-    this.scene = scene;
     const grid = new RoomGridObject({
       scene: scene,
       lineColor: "#c8c8c8",

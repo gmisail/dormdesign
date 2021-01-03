@@ -1,15 +1,55 @@
 import Vector2 from "./Vector2";
 
 class MouseController {
-  constructor({ watchedElement, onMouseDown, onMouseMove, onMouseUp }) {
+  constructor({
+    watchedElement,
+    onMouseDown,
+    onMouseMove,
+    onMouseUp,
+    onScroll,
+  }) {
     this.watchedElement = watchedElement;
     this.pressed = false;
     this._position = undefined;
 
+    this.watchedElement.addEventListener(
+      "touchstart",
+      (e) => {
+        const touch = e.touches[0];
+        const mouseEvent = new MouseEvent("mousedown", {
+          clientX: touch.clientX,
+          clientY: touch.clientY,
+        });
+        this.watchedElement.dispatchEvent(mouseEvent);
+      },
+      false
+    );
+    this.watchedElement.addEventListener(
+      "touchend",
+      (e) => {
+        const mouseEvent = new MouseEvent("mouseup", {});
+        this.watchedElement.dispatchEvent(mouseEvent);
+      },
+      false
+    );
+    this.watchedElement.addEventListener(
+      "touchmove",
+      (e) => {
+        const touch = e.touches[0];
+        const mouseEvent = new MouseEvent("mousemove", {
+          clientX: touch.clientX,
+          clientY: touch.clientY,
+        });
+        this.watchedElement.dispatchEvent(mouseEvent);
+      },
+      false
+    );
+
     this.watchedElement.addEventListener("mousedown", (e) => {
+      const rect = this.watchedElement.getBoundingClientRect();
       const position = new Vector2(
-        e.offsetX * window.devicePixelRatio,
-        e.offsetY * window.devicePixelRatio
+        (e.clientX - rect.left) * window.devicePixelRatio,
+        (e.clientY - rect.top) * window.devicePixelRatio
       );
       this.pressed = true;
       this._position = position;
@@ -18,16 +58,25 @@ class MouseController {
 
     this.watchedElement.addEventListener("mousemove", (e) => {
       if (this.pressed) {
+        const rect = this.watchedElement.getBoundingClientRect();
+        const posX = (e.clientX - rect.left) * window.devicePixelRatio;
+        const posY = (e.clientY - rect.top) * window.devicePixelRatio;
         const delta = new Vector2(
-          e.offsetX * window.devicePixelRatio - this._position.x,
-          e.offsetY * window.devicePixelRatio - this._position.y
+          posX - this._position.x,
+          posY - this._position.y
         );
-        this._position = new Vector2(
-          e.offsetX * window.devicePixelRatio,
-          e.offsetY * window.devicePixelRatio
-        );
+        this._position = new Vector2(posX, posY);
         onMouseMove(delta);
       }
+    });
+    this.watchedElement.addEventListener("wheel", (e) => {
+      e.preventDefault();
+      const rect = this.watchedElement.getBoundingClientRect();
+      const position = new Vector2(
+        (e.clientX - rect.left) * window.devicePixelRatio,
+        (e.clientY - rect.top) * window.devicePixelRatio
+      );
+      onScroll(e.deltaX, e.deltaY, position);
     });
 
     this.watchedElement.addEventListener("mouseup", () => {

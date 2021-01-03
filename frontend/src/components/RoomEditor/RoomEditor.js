@@ -2,10 +2,12 @@ import React, { Component } from "react";
 import { RoomContext, RoomActions } from "../../routes/RoomRoute/RoomContext";
 import SceneController from "../../room-editor/SceneController";
 import RoomEditorObject from "../../room-editor/RoomEditorObject";
-import Vector2 from "../../room-editor/Vector2";
 import IconButton from "../IconButton/IconButton";
-import { BsArrowClockwise, BsUnlock, BsLock } from "react-icons/bs";
+import { MdFilterCenterFocus } from "react-icons/md";
+import { BiPlus, BiMinus, BiLockOpenAlt, BiLockAlt } from "react-icons/bi";
+import { RiClockwiseLine } from "react-icons/ri";
 import "./RoomEditor.scss";
+import Vector2 from "../../room-editor/Vector2";
 
 // Converts DormItem properties to properties expected by RoomEditorObject
 const itemToEditorProperties = (props) => {
@@ -38,22 +40,16 @@ const editorToItemProperties = (props) => {
 
 class RoomEditor extends Component {
   static contextType = RoomContext;
+  state = {
+    lastSelectedItemID: null,
+  };
 
   componentDidMount() {
     const scene = new SceneController(this.mainCanvasRef);
     scene.backgroundColor = "#fff";
 
-    // Points defining the edges of the room (in feet)
-    let defaultBounds = [
-      new Vector2(0, 0),
-      new Vector2(10, 0),
-      new Vector2(10, 10),
-      new Vector2(0, 10),
-    ];
-
     const room = new RoomEditorObject({
       scene: scene,
-      boundaryPoints: defaultBounds,
       backgroundColor: "#fff",
       onObjectsUpdated: this.itemsUpdatedInEditor,
       onObjectSelected: this.itemSelectedInEditor,
@@ -67,32 +63,9 @@ class RoomEditor extends Component {
 
     // Handle any actions that have accumlated in editorActionQueue
     this.handleEditorQueue();
+
+    this.zoomScale = 1.3;
   }
-
-  /*
-
-  ...
-
-    const room = new RoomEditorObject({
-      scene: scene,
-      boundaryPoints: defaultRoom,
-      canvasLayer: 1,
-      backgroundColor: "#fff",
-      onObjectUpdated: this.editorItemUpdated,
-      onObjectSelected: this.editorItemSelected,
-      selectedObjectID: undefined,
-    });
-    scene.addObject(room);
-
-    this.scene = scene;
-    this.roomEditor = room;
-
-    this.updateVisibleItems(this.props.items);
-  
-    EventController.on("layoutUpdated", (payload) => {
-      this.roomEditor.setBoundaries(payload.vertices);
-    });
-  */
 
   handleEditorQueue() {
     const { editorActionQueue, clearEditorActionQueue } = this.context;
@@ -116,7 +89,7 @@ class RoomEditor extends Component {
               action.payload.items[i]
             );
             this.roomObject.addItemToRoom(translatedItem);
-            this.roomObject.setBoundaries(action.payload.bounds);
+            this.roomObject.setBounds(action.payload.bounds);
           }
           break;
         case RoomActions.itemsUpdated:
@@ -135,7 +108,7 @@ class RoomEditor extends Component {
           this.roomObject.removeItemFromRoom(action.payload.id);
           break;
         case RoomActions.boundsUpdated:
-          this.roomObject.setBoundaries(action.payload.bounds);
+          this.roomObject.setBounds(action.payload.bounds);
           break;
         default:
           continue;
@@ -165,6 +138,9 @@ class RoomEditor extends Component {
   itemSelectedInEditor = (obj) => {
     const { itemSelected } = this.context;
     itemSelected(obj === null ? null : obj.id);
+    if (obj !== null) {
+      this.setState({ lastSelectedItemID: obj.id });
+    }
   };
 
   rotateSelectedItem = () => {
@@ -197,33 +173,83 @@ class RoomEditor extends Component {
 
   render() {
     const { selectedItemID } = this.context;
-    const locked = selectedItemID
-      ? this.roomObject.roomItems.get(selectedItemID).movementLocked
+    /* Determine locked from lastSelectedItemID rather than current selectedItemID so that it doesn't 
+    switch during button fade animation */
+    const locked = this.state.lastSelectedItemID
+      ? this.roomObject.roomItems.get(this.state.lastSelectedItemID)
+          .movementLocked
       : false;
     return (
-      <div className="room-canvas-container">
-        <div className="room-editor-toolbar">
-          <IconButton
-            onClick={this.lockSelectedItem}
-            disabled={selectedItemID === null}
-            style={{ fontSize: "0.95em" }}
-          >
-            {locked ? <BsLock></BsLock> : <BsUnlock></BsUnlock>}
-          </IconButton>
-          <IconButton
-            onClick={this.rotateSelectedItem}
-            disabled={selectedItemID === null || locked}
-          >
-            <BsArrowClockwise></BsArrowClockwise>
-          </IconButton>
+      <div className="room-editor">
+        <div className="room-editor-overlay">
+          <div className="room-editor-toolbar">
+            <IconButton
+              onClick={this.rotateSelectedItem}
+              disabled={locked}
+              data-hidden={selectedItemID === null ? "true" : "false"}
+            >
+              <RiClockwiseLine />
+            </IconButton>
+            <IconButton
+              onClick={this.lockSelectedItem}
+              data-hidden={selectedItemID === null ? "true" : "false"}
+              style={{ fontSize: "0.95em" }}
+            >
+              {locked ? <BiLockAlt /> : <BiLockOpenAlt />}
+            </IconButton>
+          </div>
+          <div className="room-editor-footer">
+            <span>1 Cell = 1 Square Foot</span>
+          </div>
+          <div className="room-editor-corner-controls">
+            <IconButton
+              onClick={() => {
+                if (this.roomObject !== undefined) {
+                  // Scale about the center of the canvas
+                  this.roomObject.scaleAbout(
+                    new Vector2(this.zoomScale, this.zoomScale),
+                    new Vector2(
+                      this.scene.canvas.width / 2,
+                      this.scene.canvas.height / 2
+                    )
+                  );
+                }
+              }}
+            >
+              <BiPlus />
+            </IconButton>
+            <IconButton
+              onClick={() => {
+                if (this.roomObject !== undefined) {
+                  this.roomObject.centerView();
+                }
+              }}
+            >
+              <MdFilterCenterFocus />
+            </IconButton>
+            <IconButton
+              onClick={() => {
+                if (this.roomObject !== undefined) {
+                  // Scale about the center of the canvas
+                  this.roomObject.scaleAbout(
+                    new Vector2(1 / this.zoomScale, 1 / this.zoomScale),
+                    new Vector2(
+                      this.scene.canvas.width / 2,
+                      this.scene.canvas.height / 2
+                    )
+                  );
+                }
+              }}
+            >
+              <BiMinus />
+            </IconButton>
+          </div>
         </div>
+
         <canvas
           ref={(ref) => (this.mainCanvasRef = ref)}
           className="room-canvas"
         ></canvas>
-        <div className="room-canvas-footer">
-          <span>1 Cell = 1 Square Foot</span>
-        </div>
       </div>
     );
   }

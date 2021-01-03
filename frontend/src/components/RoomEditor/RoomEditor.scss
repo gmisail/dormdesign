@@ -1,69 +1,121 @@
 @import "../../styles/variables.scss";
 
-.room-canvas-container {
+.room-editor {
+  $editor-box-shadow: 0px 2px 5px 2px rgba(0, 0, 0, 0.15);
+
   position: relative;
   width: 100%;
   height: 100%;
   border-radius: inherit;
 
+  padding: 10px;
+
+  .room-editor-overlay {
+    position: relative;
+    width: 100%;
+    height: 100%;
+
+    & > * {
+      z-index: 3;
+    }
+
+    .room-editor-footer {
+      position: absolute;
+      color: $text-color-dark;
+      font-weight: 600;
+      bottom: 0;
+      left: 0;
+      pointer-events: none;
+    }
+
+    .room-editor-corner-controls {
+      position: absolute;
+      right: 0;
+      bottom: 0;
+
+      display: flex;
+      flex-flow: column nowrap;
+
+      box-shadow: $editor-box-shadow;
+
+      background-color: #aaa;
+      border-radius: 25px;
+
+      & > :first-child {
+        border-top-left-radius: inherit;
+        border-top-right-radius: inherit;
+      }
+      & > :last-child {
+        border-bottom-left-radius: inherit;
+        border-bottom-right-radius: inherit;
+      }
+
+      button {
+        padding: 4px;
+        color: $text-color-light;
+        font-size: 16px;
+        transition: background-color 0.15s ease;
+
+        &:hover {
+          background-color: #888;
+        }
+      }
+    }
+
+    .room-editor-toolbar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      display: flex;
+      flex-flow: row nowrap;
+      justify-content: flex-end;
+      align-items: center;
+
+      pointer-events: none;
+
+      & > * + * {
+        margin-left: 10px;
+      }
+
+      button {
+        padding: 8px;
+        font-size: 0.9em;
+        color: $text-color-light;
+        background-color: $color-primary;
+        border-radius: 50px;
+        box-shadow: $editor-box-shadow;
+        pointer-events: initial;
+
+        transition: transform 0.2s ease, background-color 0.15s ease;
+
+        &:hover {
+          background-color: darken($color-primary, 10%);
+        }
+
+        &:disabled {
+          background-color: lighten($color-primary, 20%);
+          box-shadow: none;
+          cursor: default;
+        }
+
+        &[data-hidden="true"] {
+          box-shadow: none;
+          transform: scale(0);
+        }
+      }
+    }
+  }
+
   .room-canvas {
     position: absolute;
-    /* 
-      For some reason using just top, bottom, left, right doesn't properly stretch canvas. So
-      instead we manually set width and height
-    */
-    $top-offset: 50px;
-    $bottom-offset: 25px;
-    $left-offset: 15px;
-    $right-offset: 15px;
-    width: calc(100% - #{$left-offset} - #{$right-offset});
-    height: calc(100% - #{$top-offset} - #{$bottom-offset});
-    top: $top-offset;
-    left: $left-offset;
-
-    border-radius: inherit;
-  }
-
-  .room-canvas-footer {
-    position: absolute;
-    z-index: 2;
-    color: $text-color-dark;
-    font-weight: 600;
-    bottom: 0;
-    left: 0;
-  }
-
-  .room-editor-toolbar {
-    position: absolute;
+    width: 100%;
+    height: 100%;
     top: 0;
     left: 0;
     right: 0;
-    z-index: 3;
-    display: flex;
-    flex-flow: row nowrap;
-    justify-content: flex-end;
-    align-items: center;
+    bottom: 0;
 
-    & > * + * {
-      margin-left: 10px;
-    }
-
-    button {
-      padding: 8px;
-      font-size: 0.9em;
-      color: $text-color-light;
-      background-color: $color-secondary;
-      border-radius: 50px;
-      box-shadow: $box-shadow;
-
-      transition: transform 0.2s ease;
-
-      &:disabled {
-        background-color: lighten($color-secondary, 35%);
-        box-shadow: none;
-
-        transform: scale(0.9);
-      }
-    }
+    border-radius: inherit;
   }
 }

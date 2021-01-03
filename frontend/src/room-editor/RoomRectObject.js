@@ -1,6 +1,5 @@
 import SceneObject from "./SceneObject";
 import Vector2 from "./Vector2";
-import Collisions from "./Collisions";
 
 class RoomRectObject extends SceneObject {
   constructor(props) {
@@ -17,11 +16,11 @@ class RoomRectObject extends SceneObject {
       snapOffset,
       movementLocked,
       fontFamily,
+      textColor,
     } = props;
 
     this.color = color;
-    this.textColor = "#222";
-    this.selectionColor = "#444";
+    this.textColor = textColor ?? "#222";
     this.opacity = opacity ?? 1.0;
 
     this.nameText = nameText;
@@ -31,9 +30,11 @@ class RoomRectObject extends SceneObject {
     this.outOfBoundsColor = "#ff0000";
 
     this.selected = false;
-    this._selectionLineSpeed = 0.4;
-    this._selectionLineWidth = 0.05;
-    this._selectionLineDash = [0.18, 0.15]; // [Line dash length, space length]
+    this._selectionColorBackground = "#444";
+    this._selectionColorForeground = "#bbb";
+    this._selectionLineSpeed = 0.5;
+    this._selectionLineWidth = 0.105;
+    this._selectionLineDash = [0.25, 0.22]; // [Line dash length, space length]
 
     this.movementLocked = movementLocked ?? false;
 
@@ -81,37 +82,6 @@ class RoomRectObject extends SceneObject {
   update() {
     // Animates the dashed selection outline
     this._animateSelection();
-
-    if (this.parent) {
-      // Restrict position to parent borders
-      const xLimit = Math.min(this.parent.size.x, Math.max(0, this.position.x));
-      const yLimit = Math.min(this.parent.size.y, Math.max(0, this.position.y));
-
-      if (
-        !Vector2.floatEquals(xLimit, this.position.x) ||
-        !Vector2.floatEquals(yLimit, this.position.y)
-      ) {
-        this.position = new Vector2(xLimit, yLimit);
-      }
-
-      // Check for collisions. Currently only checks if object collides with one of the room boundary edges.
-      const offset = 0.015; // Small "error" allows for things such as a 1' x 1' obj fitting in a 1' x 1' space without counting as collision
-      let bbox = this.getLocalBoundingBox();
-      bbox.p1.x += offset;
-      bbox.p1.y += offset;
-      bbox.p2.x -= offset;
-      bbox.p2.y -= offset;
-      this.outOfBounds = false;
-      if (this.parent.boundaryPoints) {
-        for (let i = 0; i < this.parent.boundaryPoints.length - 1; i++) {
-          const v1 = this.parent.boundaryPoints[i];
-          const v2 = this.parent.boundaryPoints[i + 1];
-          if (Collisions.segmentIntersectsRect(v1, v2, bbox.p1, bbox.p2)) {
-            this.outOfBounds = true;
-          }
-        }
-      }
-    }
   }
 
   // Animates the selection border
@@ -134,10 +104,18 @@ class RoomRectObject extends SceneObject {
 
     // Draw dotted selection outline
     if (this.selected) {
-      ctx.strokeStyle = this.selectionColor;
+      ctx.strokeStyle = this._selectionColorBackground;
       ctx.setLineDash(this._selectionLineDash);
       ctx.lineDashOffset = -this._selectionOutlineOffset;
       ctx.lineWidth = this._selectionLineWidth;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ctx.strokeRect(0, 0, this.size.x, this.size.y);
+
+      ctx.strokeStyle = this._selectionColorForeground;
+      ctx.setLineDash(this._selectionLineDash);
+      ctx.lineDashOffset = -this._selectionOutlineOffset;
+      ctx.lineWidth = this._selectionLineWidth * 0.5;
       ctx.lineCap = "round";
       ctx.lineJoin = "round";
       ctx.strokeRect(0, 0, this.size.x, this.size.y);
@@ -150,7 +128,7 @@ class RoomRectObject extends SceneObject {
     ctx.resetTransform();
 
     // Draw text on top of object - For some reason the context using the transformation matrix seems to draw the text differently on firefox and chrome resulting in it being offset. So its being drawn by manually scaling the necessary values.
-    const globalPos = this.localToGlobalPoint(this.position);
+    const globalPos = this.parent.localToGlobalPoint(this.position);
 
     const fontSize = 0.325;
     this._setContextTextStyle(ctx, fontSize);

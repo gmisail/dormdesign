@@ -17,10 +17,10 @@ class VertexForm extends Component {
 
   onChange = (evt) => {
     let verts = this.state.vertices;
-
     let value = evt.target.value;
+
     if (value.length !== 0) {
-      value = Math.max(0, value);
+      value = parseFloat(value);
     }
 
     if (evt.target.name === "x") verts[evt.target.dataset.index].x = value;

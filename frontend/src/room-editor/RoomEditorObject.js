@@ -2,6 +2,7 @@ import Collisions from "./Collisions";
 import MouseController from "./MouseController";
 import RoomGridObject from "./RoomGridObject";
 import RoomRectObject from "./RoomRectObject";
+import RoomBoundsObject from "./RoomBoundsObject";
 import SceneObject from "./SceneObject";
 import Vector2 from "./Vector2";
 
@@ -18,25 +19,25 @@ class RoomEditorObject extends SceneObject {
       gridCellSize,
       gridOpacity,
       backgroundColor,
-      opacity,
       outsideBoundaryColor,
       onObjectsUpdated,
       onObjectSelected,
       textColor,
       fontFamily,
-      autoFitToCanvas,
-      padding,
     } = props;
+
+    this.size = new Vector2(100, 100);
+    this.origin = new Vector2(0.5, 0.5);
+    this.position = new Vector2(
+      this.scene.canvas.width / 2,
+      this.scene.canvas.height / 2
+    );
 
     // Map of item ids that have been added to room
     this.roomItems = new Map();
 
     this.backgroundColor = backgroundColor ?? "#fff";
-    this.outsideBoundaryColor = outsideBoundaryColor ?? backgroundColor;
-    this.opacity = opacity ?? 1.0;
-
-    this.boundaryColor = boundaryColor ?? "#555";
-    this.boundaryWidth = boundaryWidth ?? 0.07;
+    this.outsideBoundaryColor = outsideBoundaryColor ?? "#000";
 
     this.fontFamily = fontFamily;
     this.textColor = textColor ?? "#222";
@@ -44,18 +45,12 @@ class RoomEditorObject extends SceneObject {
     this.onObjectsUpdated = onObjectsUpdated ?? (() => {});
     this.onObjectSelected = onObjectSelected ?? (() => {});
 
-    this.autoFitToCanvas = autoFitToCanvas ?? true;
-    // Padding around room. Units are in portion of canvas, e.g. top: 0.02 = 2% canvas height, right: 0.02 = 2% canvas width
-    this.padding = padding ?? {
-      top: 0.02,
-      bottom: 0.02,
-      left: 0.02,
-      right: 0.02,
-    };
-
-    const floorGrid = new RoomGridObject({
+    this.floorGrid = new RoomGridObject({
       scene: this.scene,
-      position: new Vector2(0, 0),
+      position: new Vector2(
+        -this.size.x * this.origin.x,
+        -this.size.y * this.origin.y
+      ),
       size: new Vector2(this.size.x, this.size.y),
       scale: new Vector2(1, 1),
       opacity: gridOpacity ?? 1.0,
@@ -66,17 +61,26 @@ class RoomEditorObject extends SceneObject {
       staticObject: true,
       zIndex: -1,
     });
-    this.addChild(floorGrid);
-    this.floorGrid = floorGrid;
+    this.addChild(this.floorGrid);
+
+    this.bounds = new RoomBoundsObject({
+      scene: this.scene,
+      points: boundaryPoints ?? [],
+      color: boundaryColor ?? "#555",
+      edgeWidth: boundaryWidth ?? 0.07,
+    });
+    this.addChild(this.bounds);
 
     this.mouseController = new MouseController({
       watchedElement: this.scene.canvas,
       onMouseDown: this.onMouseDown.bind(this),
       onMouseMove: this.onMouseMove.bind(this),
       onMouseUp: this.onMouseUp.bind(this),
+      onScroll: this.onScroll.bind(this),
     });
-
-    this.setBoundaries(boundaryPoints);
+    this.panning = false;
+    this.panSpeed = 1.0;
+    this.zoomSpeed = 0.01;
 
     this.selectedObject = null;
 
@@ -89,146 +93,123 @@ class RoomEditorObject extends SceneObject {
     then be called on next update() cycle with updated position. Hopefully this reduces 
     unnecessary calls to onObjectUpdated */
     this._selectedObjectPositionUpdated = false;
+
+    this.centerView();
   }
 
-  setBoundaries(boundaryPoints) {
-    // Create copies of the points since we don't want to reference the passed in objects themselves
-    const copied = [];
-    if (boundaryPoints) {
-      for (let i = 0; i < boundaryPoints.length; i++) {
-        copied.push(new Vector2(boundaryPoints[i].x, boundaryPoints[i].y));
-      }
-    }
-
-    this.boundaryPoints = copied;
-    this._offsetPoints = [];
-
-    if (this.autoFitToCanvas) {
-      this._fitRoomToCanvas();
-    }
-
-    this._calculateOffsetPoints();
-
-    // Update size of grid to match any changes to size made in _fitRoomToCanvas()
-    if (this.floorGrid !== undefined) {
-      this.floorGrid.size = new Vector2(this.size.x, this.size.y);
-    }
+  setBounds(points) {
+    this.bounds.points = points;
+    this.centerView();
   }
 
-  // Calculates and sets offset points (used so that when drawing room border the lines won't overlap into the room)
-  _calculateOffsetPoints() {
-    const offset = this.boundaryWidth / 2;
-    this._offsetPoints = [];
-    for (let i = 0; i < this.boundaryPoints.length; i++) {
-      this._offsetPoints.push(
-        new Vector2(this.boundaryPoints[i].x, this.boundaryPoints[i].y)
-      );
-    }
-    // Add reference to first point to end of list so its properly updated by last edge
-    this._offsetPoints.push(this._offsetPoints[0]);
-    for (let i = 0; i < this._offsetPoints.length - 1; i++) {
-      const p1 = this._offsetPoints[i];
-      const p2 = this._offsetPoints[i + 1];
+  setScale(scale) {
+    const limitMinX = this.scene.canvas.width / this.size.x;
+    const limitMinY = this.scene.canvas.height / this.size.y;
+    const min = 30;
+    const max = 200;
 
-      if (Vector2.floatEquals(p1.x, p2.x)) {
-        // Vertical line
-        const direction = p2.y > p1.y ? 1 : -1;
-        p1.x = p1.x + offset * direction;
-        p2.x = p2.x + offset * direction;
-      } else {
-        // Horizontal line
-        const direction = p2.x > p1.x ? 1 : -1;
-        p1.y = p1.y - offset * direction;
-        p2.y = p2.y - offset * direction;
-      }
-    }
+    this.scale = new Vector2(
+      Math.min(max, Math.max(scale.x, limitMinX, min)),
+      Math.min(max, Math.max(scale.y, limitMinY, min))
+    );
   }
 
-  _fitRoomToCanvas() {
-    if (this.boundaryPoints === undefined || this.boundaryPoints.length === 0) {
-      this.size = new Vector2(0, 0);
-      this.position = new Vector2(0, 0);
-      return;
-    }
+  // Scales object by dScale about provided point (point should be in the parent's local coordinate system)
+  scaleAbout(dScale, point) {
+    const oldScale = this.scale;
+    this.setScale(
+      new Vector2(this.scale.x * dScale.x, this.scale.y * dScale.y)
+    );
+    // Amount that object has actually been scaled
+    dScale = new Vector2(this.scale.x / oldScale.x, this.scale.y / oldScale.y);
+    // Vector from the origin of this object to the point where the point is
+    const relativeToOrigin = new Vector2(
+      point.x - this.position.x,
+      point.y - this.position.y
+    );
+    // Scaled version of previous vector
+    const relativeToOriginScaled = new Vector2(
+      relativeToOrigin.x * dScale.x,
+      relativeToOrigin.y * dScale.y
+    );
+    // Calculate the amount to move the object using the difference between the original and scaled vectors
+    this.position = new Vector2(
+      this.position.x - (relativeToOriginScaled.x - relativeToOrigin.x),
+      this.position.y - (relativeToOriginScaled.y - relativeToOrigin.y)
+    );
+  }
 
+  // Scale and position the editor so that the entire room (boundary) is in view
+  centerView() {
     const ctx = this.scene.ctx;
-    // Calculate padding amount
+    // Space around room boundaries
     const padding = {
-      top: ctx.canvas.height * this.padding.top,
-      bottom: ctx.canvas.height * this.padding.bottom,
-      left: ctx.canvas.width * this.padding.left,
-      right: ctx.canvas.width * this.padding.right,
+      x: 0.2 * ctx.canvas.width,
+      y: 0.2 * ctx.canvas.height,
     };
-
     let xMax;
     let yMax;
     let xMin;
     let yMin;
-    for (let i = 0; i < this.boundaryPoints.length; i++) {
-      if (xMax === undefined || this.boundaryPoints[i].x > xMax) {
-        xMax = this.boundaryPoints[i].x;
+    for (let i = 0; i < this.bounds.points.length; i++) {
+      if (xMax === undefined || this.bounds.points[i].x > xMax) {
+        xMax = this.bounds.points[i].x;
       }
-      if (yMax === undefined || this.boundaryPoints[i].y > yMax) {
-        yMax = this.boundaryPoints[i].y;
+      if (yMax === undefined || this.bounds.points[i].y > yMax) {
+        yMax = this.bounds.points[i].y;
       }
-      if (xMin === undefined || this.boundaryPoints[i].x < xMin) {
-        xMin = this.boundaryPoints[i].x;
+      if (xMin === undefined || this.bounds.points[i].x < xMin) {
+        xMin = this.bounds.points[i].x;
       }
-      if (yMin === undefined || this.boundaryPoints[i].y < yMin) {
-        yMin = this.boundaryPoints[i].y;
+      if (yMin === undefined || this.bounds.points[i].y < yMin) {
+        yMin = this.bounds.points[i].y;
       }
     }
-
-    // Translate points so min is at 0,0
-    for (let i = 0; i < this.boundaryPoints.length; i++) {
-      this.boundaryPoints[i].x -= xMin;
-      this.boundaryPoints[i].y -= yMin;
-    }
-
+    xMax = xMax ?? 0;
+    yMax = yMax ?? 0;
+    xMin = xMin ?? 0;
+    yMin = yMin ?? 0;
     const roomWidth = xMax - xMin;
     const roomHeight = yMax - yMin;
+    const roomAspect = roomWidth / roomHeight;
 
-    let roomAspect = roomWidth / roomHeight;
-    let canvasAspect = ctx.canvas.width / ctx.canvas.height;
+    const usableCanvasWidth = ctx.canvas.width - padding.x;
+    const usableCanvasHeight = ctx.canvas.height - padding.y;
+    const canvasAspect = usableCanvasWidth / usableCanvasHeight;
 
-    const usableCanvasWidth = ctx.canvas.width - (padding.left + padding.right);
-    const usableCanvasHeight =
-      ctx.canvas.height - (padding.top + padding.bottom);
-
-    // Compare canvas aspect ratio to room aspect ratio in to make sure room will fit in canvas
+    // Compare canvas aspect ratio to bounds aspect ratio in order to fit bounds in canvas
     if (roomAspect > canvasAspect) {
       if (roomWidth === 0) {
         // Prevent divide-by-zero
-        this.scale = new Vector2(0, 0);
+        this.setScale(new Vector2(0, 0));
       } else {
-        this.scale = new Vector2(
-          usableCanvasWidth / roomWidth,
-          usableCanvasWidth / roomWidth
+        this.setScale(
+          new Vector2(
+            usableCanvasWidth / roomWidth,
+            usableCanvasWidth / roomWidth
+          )
         );
       }
     } else {
       // Prevent divide-by-zero
       if (roomHeight === 0) {
-        this.scale = new Vector2(0, 0);
+        this.setScale(new Vector2(0, 0));
       } else {
-        this.scale = new Vector2(
-          usableCanvasHeight / roomHeight,
-          usableCanvasHeight / roomHeight
+        this.setScale(
+          new Vector2(
+            usableCanvasHeight / roomHeight,
+            usableCanvasHeight / roomHeight
+          )
         );
       }
     }
-
-    this.size.x = roomWidth;
-    this.size.y = roomHeight;
-
+    // this.size = new Vector2(roomWidth, roomHeight);
     const bbox = this.getGlobalBoundingBox();
     const globalSize = { x: bbox.p2.x - bbox.p1.x, y: bbox.p2.y - bbox.p1.y };
-
     let position = {
       x: ctx.canvas.width / 2 - globalSize.x / 2,
       y: ctx.canvas.height / 2 - globalSize.y / 2,
     };
-
     // Only adjust position for padding if the padding actually affects it
     if (padding.left > position.x) {
       position.x += padding.left - position.x;
@@ -237,7 +218,18 @@ class RoomEditorObject extends SceneObject {
       position.y += padding.top - position.y;
     }
 
-    this.position = new Vector2(position.x, position.y);
+    // Set the position so the view is centered on the object (room bounds)
+    const roomCenterGlobal = this.localToGlobalPoint(
+      new Vector2(xMin + roomWidth / 2, yMin + roomHeight / 2)
+    );
+    const relativeToOrigin = new Vector2(
+      roomCenterGlobal.x - this.position.x,
+      roomCenterGlobal.y - this.position.y
+    );
+    this.position = new Vector2(
+      ctx.canvas.width / 2 - relativeToOrigin.x,
+      ctx.canvas.height / 2 - relativeToOrigin.y
+    );
   }
 
   // Finds all (direct) children that the given point lies within
@@ -282,10 +274,13 @@ class RoomEditorObject extends SceneObject {
     if (clicked.length > 0) {
       for (let i = 0; i < clicked.length; i++) {
         const obj = this.children[clicked[i]];
-        // Only able to selected objects that have "selected" property
-        if ("selected" in obj) {
+        if (this.roomItems.has(obj.id)) {
+          // Clicked room item
           this.selectItem(obj.id);
           return;
+        } else if (obj.id === this.floorGrid.id) {
+          // Clicked floor grid
+          this.panning = true;
         }
       }
     }
@@ -302,16 +297,33 @@ class RoomEditorObject extends SceneObject {
         return;
       }
       const unsnappedPos = selectedObject.getUnsnappedPosition();
-      const globalPos = selectedObject.localToGlobalPoint(unsnappedPos);
+      const globalPos = this.localToGlobalPoint(unsnappedPos);
       selectedObject.setPosition(
-        selectedObject.globalToLocalPoint(
+        this.globalToLocalPoint(
           new Vector2(globalPos.x + delta.x, globalPos.y + delta.y)
         )
       );
       this._selectedObjectPositionUpdated = true;
     }
+    if (this.panning) {
+      this.position = new Vector2(
+        this.position.x + delta.x * this.panSpeed,
+        this.position.y + delta.y * this.panSpeed
+      );
+    }
   }
-  onMouseUp() {}
+  onMouseUp() {
+    this.panning = false;
+  }
+  onScroll(dx, dy, mousePosition) {
+    if (isNaN(dx)) dx = 0;
+    if (isNaN(dy)) dy = 0;
+
+    this.scaleAbout(
+      new Vector2(1 + dy * this.zoomSpeed, 1 + dy * this.zoomSpeed),
+      mousePosition
+    );
+  }
 
   selectItem(id) {
     const obj = this.roomItems.get(id);
@@ -342,7 +354,6 @@ class RoomEditorObject extends SceneObject {
     movementLocked,
     zIndex,
     visible,
-    scale,
     color,
   }) {
     // Don't add object if another already exists with given id
@@ -355,11 +366,6 @@ class RoomEditorObject extends SceneObject {
       this.objectColorCounter = 0;
     }
 
-    // If no position given or position is invalid, assign a position in center of room
-    let assignPosition = !position || !position.x || !position.y;
-    if (assignPosition) {
-      position = new Vector2(this.size.x / 2, this.size.y / 2);
-    }
     const obj = new RoomRectObject({
       id: id,
       scene: this.scene,
@@ -375,18 +381,12 @@ class RoomEditorObject extends SceneObject {
       movementLocked: movementLocked ?? false,
       fontFamily: this.fontFamily,
       zIndex: zIndex ?? 0,
-      scale: scale,
     });
     this.roomItems.set(obj.id, obj);
 
     // If item has visible property, actually add it to scene
     if (visible) {
       this.addChild(obj);
-    }
-
-    // If new position was assigned, call
-    if (assignPosition) {
-      this.onObjectsUpdated([{ id: id, updated: { position: position } }]);
     }
 
     // Normalize zIndexes of items
@@ -486,6 +486,92 @@ class RoomEditorObject extends SceneObject {
       ]);
       this._selectedObjectPositionUpdated = false;
     }
+
+    // Prevent grid from panning out of view
+    const bbox = this.getBoundingBox();
+    const actualSize = new Vector2(
+      bbox.p2.x - bbox.p1.x,
+      bbox.p2.y - bbox.p1.y
+    );
+    const restrictedPosition = new Vector2(
+      Math.min(
+        actualSize.x * (1 - this.origin.x),
+        Math.max(
+          this.scene.canvas.width - actualSize.x * this.origin.x,
+          this.position.x
+        )
+      ),
+      Math.min(
+        actualSize.y * (1 - this.origin.y),
+        Math.max(
+          this.scene.canvas.height - actualSize.y * this.origin.y,
+          this.position.y
+        )
+      )
+    );
+    if (
+      !Vector2.floatEquals(restrictedPosition.x, this.position.x) ||
+      !Vector2.floatEquals(restrictedPosition.y, this.position.y)
+    ) {
+      this.position = restrictedPosition;
+    }
+
+    // Check for room item edge collisions
+    for (let i = 0; i < this.children.length; i++) {
+      const obj = this.children[i];
+      // Ignore objects that aren't room items
+      if (!this.roomItems.has(obj.id)) continue;
+
+      // Restrict position to parent borders
+      let bbox = obj.getBoundingBox();
+      const actualSize = new Vector2(
+        bbox.p2.x - bbox.p1.x,
+        bbox.p2.y - bbox.p1.y
+      );
+      const restrictedPosition = new Vector2(
+        Math.min(
+          this.size.x * (1 - this.origin.x) - actualSize.x * (1 - obj.origin.x),
+          Math.max(
+            -this.size.x * this.origin.x + actualSize.x * obj.origin.x,
+            obj.position.x
+          )
+        ),
+        Math.min(
+          this.size.y * (1 - this.origin.y) - actualSize.y * (1 - obj.origin.y),
+          Math.max(
+            -this.size.y * this.origin.y + actualSize.y * obj.origin.y,
+            obj.position.y
+          )
+        )
+      );
+
+      if (
+        !Vector2.floatEquals(restrictedPosition.x, obj.position.x) ||
+        !Vector2.floatEquals(restrictedPosition.y, obj.position.y)
+      ) {
+        obj.position = restrictedPosition;
+      }
+
+      // Check for collisions. Currently only checks if object collides with one of the room boundary edges.
+      // Small "error" allows for things such as a 1' x 1' obj fitting in a 1' x 1' space without counting as collision
+      const error = 0.015;
+      bbox.p1.x += error;
+      bbox.p1.y += error;
+      bbox.p2.x -= error;
+      bbox.p2.y -= error;
+      obj.outOfBounds = false;
+      if (this.bounds.points) {
+        for (let i = 0; i < this.bounds.points.length; i++) {
+          const v1 = this.bounds.points[i];
+          const v2 = this.bounds.points[
+            i === this.bounds.points.length - 1 ? 0 : i + 1
+          ];
+          if (Collisions.segmentIntersectsRect(v1, v2, bbox.p1, bbox.p2)) {
+            obj.outOfBounds = true;
+          }
+        }
+      }
+    }
   }
 
   // Configures the context to draw text with these styles
@@ -499,53 +585,7 @@ class RoomEditorObject extends SceneObject {
     ctx.fillStyle = this.textColor;
   }
 
-  draw(ctx) {
-    // Fill the area outside of the room with the background color. (Only if there are actually boundary points)
-    if (this.boundaryPoints.length > 0) {
-      ctx.beginPath();
-      // First outline this objects border path - Clockwise order
-      const offset = this.boundaryWidth;
-      ctx.moveTo(-offset, -offset);
-      ctx.lineTo(this.size.x + offset, -offset);
-      ctx.lineTo(this.size.x + offset, this.size.y + offset);
-      ctx.lineTo(-offset, this.size.y + offset);
-      ctx.lineTo(-offset, -offset);
-      ctx.closePath();
-
-      // Now outline the room border path using the given points - Counter clockwise order (reverse of the clockwise order they are given in)
-      for (let i = this.boundaryPoints.length - 1; i > 0; i--) {
-        const p1 = this.boundaryPoints[i];
-        const p2 = this.boundaryPoints[i - 1];
-
-        if (i === this.boundaryPoints.length - 1) {
-          ctx.moveTo(p1.x, p1.y);
-        }
-        ctx.lineTo(p2.x, p2.y);
-      }
-      ctx.closePath();
-
-      ctx.fillStyle = this.outsideBoundaryColor;
-      ctx.fill();
-    }
-
-    // Now actually draw the room borders
-    ctx.beginPath();
-    for (let i = 0; i < this._offsetPoints.length - 1; i++) {
-      const p1 = this._offsetPoints[i];
-      const p2 = this._offsetPoints[i + 1];
-
-      if (i === 0) {
-        ctx.moveTo(p1.x, p1.y);
-      }
-      ctx.lineTo(p2.x, p2.y);
-    }
-    ctx.closePath();
-    ctx.strokeStyle = this.boundaryColor;
-    ctx.lineWidth = this.boundaryWidth;
-    ctx.lineJoin = "butt";
-    ctx.lineCap = "butt";
-    ctx.stroke();
-  }
+  draw(ctx) {}
 }
 
 export default RoomEditorObject;
