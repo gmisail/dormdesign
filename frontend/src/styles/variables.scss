@@ -1,6 +1,7 @@
 $color-primary: #2b7cff; //#0c69ff;
 $color-secondary: #8a8a8a;
-$color-danger: #dc3545;
+$color-danger: #f0353b;
+$color-success: #2ed95b;
 $color-light-grey: #d8d8d8;
 
 $text-color-dark: #333;
@@ -22,3 +23,16 @@ $btn-border-radius: 4px;
 
 $footer-height: 50px;
 $footer-text-color: $text-color-dark;
+
+@mixin button-background-color($background-color) {
+  background-color: $background-color;
+  &:hover {
+    background-color: darken($background-color, 10%);
+  }
+
+  &:disabled {
+    background-color: lighten($background-color, 20%);
+    box-shadow: none;
+    cursor: default;
+  }
+}

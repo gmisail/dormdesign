@@ -21,6 +21,7 @@ class VertexForm extends Component {
 
     if (value.length !== 0) {
       value = parseFloat(value);
+      console.log(value);
     }
 
     if (evt.target.name === "x") verts[evt.target.dataset.index].x = value;

@@ -22,6 +22,8 @@ class RoomEditorObject extends SceneObject {
       outsideBoundaryColor,
       onObjectsUpdated,
       onObjectSelected,
+      onBoundsUpdated,
+      onBoundaryPointSelected,
       textColor,
       fontFamily,
     } = props;
@@ -44,6 +46,8 @@ class RoomEditorObject extends SceneObject {
 
     this.onObjectsUpdated = onObjectsUpdated ?? (() => {});
     this.onObjectSelected = onObjectSelected ?? (() => {});
+    this.onBoundsUpdated = onBoundsUpdated ?? (() => {});
+    this.onBoundaryPointSelected = onBoundaryPointSelected ?? (() => {});
 
     this.floorGrid = new RoomGridObject({
       scene: this.scene,
@@ -68,6 +72,7 @@ class RoomEditorObject extends SceneObject {
       points: boundaryPoints ?? [],
       color: boundaryColor ?? "#555",
       edgeWidth: boundaryWidth ?? 0.07,
+      onPointSelected: this.onBoundaryPointSelected,
     });
     this.addChild(this.bounds);
 
@@ -94,11 +99,6 @@ class RoomEditorObject extends SceneObject {
     unnecessary calls to onObjectUpdated */
     this._selectedObjectPositionUpdated = false;
 
-    this.centerView();
-  }
-
-  setBounds(points) {
-    this.bounds.points = points;
     this.centerView();
   }
 
@@ -274,8 +274,8 @@ class RoomEditorObject extends SceneObject {
     if (clicked.length > 0) {
       for (let i = 0; i < clicked.length; i++) {
         const obj = this.children[clicked[i]];
-        if (this.roomItems.has(obj.id)) {
-          // Clicked room item
+        if (this.roomItems.has(obj.id) && !this.bounds.editing) {
+          // Clicked room item (don't allow if bounds are being edited)
           this.selectItem(obj.id);
           return;
         } else if (obj.id === this.floorGrid.id) {
@@ -285,31 +285,31 @@ class RoomEditorObject extends SceneObject {
       }
     }
     if (this.selectedObject) {
-      this.selectedObject.selected = false;
-      this.selectedObject = null;
-      this.onObjectSelected(null);
+      this.selectItem(null);
     }
   }
   onMouseMove(delta) {
-    if (this.selectedObject && !this.selectedObject.staticObject) {
-      const selectedObject = this.selectedObject;
-      if (selectedObject.movementLocked) {
-        return;
+    if (this.mouseController.pressed) {
+      if (this.selectedObject && !this.selectedObject.staticObject) {
+        const selectedObject = this.selectedObject;
+        if (selectedObject.movementLocked) {
+          return;
+        }
+        const unsnappedPos = selectedObject.getUnsnappedPosition();
+        const globalPos = this.localToGlobalPoint(unsnappedPos);
+        selectedObject.setPosition(
+          this.globalToLocalPoint(
+            new Vector2(globalPos.x + delta.x, globalPos.y + delta.y)
+          )
+        );
+        this._selectedObjectPositionUpdated = true;
       }
-      const unsnappedPos = selectedObject.getUnsnappedPosition();
-      const globalPos = this.localToGlobalPoint(unsnappedPos);
-      selectedObject.setPosition(
-        this.globalToLocalPoint(
-          new Vector2(globalPos.x + delta.x, globalPos.y + delta.y)
-        )
-      );
-      this._selectedObjectPositionUpdated = true;
-    }
-    if (this.panning) {
-      this.position = new Vector2(
-        this.position.x + delta.x * this.panSpeed,
-        this.position.y + delta.y * this.panSpeed
-      );
+      if (this.panning) {
+        this.position = new Vector2(
+          this.position.x + delta.x * this.panSpeed,
+          this.position.y + delta.y * this.panSpeed
+        );
+      }
     }
   }
   onMouseUp() {
@@ -326,6 +326,12 @@ class RoomEditorObject extends SceneObject {
   }
 
   selectItem(id) {
+    if (id === null) {
+      this.selectedObject.selected = false;
+      this.selectedObject = null;
+      this.onObjectSelected(null);
+      return;
+    }
     const obj = this.roomItems.get(id);
     // Don't reselect if already selected
     if (this.selectedObject?.id !== obj.id) {
