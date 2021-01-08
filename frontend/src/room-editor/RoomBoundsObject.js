@@ -185,19 +185,22 @@ class RoomBoundsObject extends SceneObject {
       }
     }
     // Check if there's a valid new point that can be created from mouse position
-    const newPoint = this._getNewPointLocation(localMousePos);
-    if (newPoint !== null) {
-      const newPoints = [];
-      for (let i = 0; i < this._points.length; i++) {
-        newPoints.push(this._points[i]);
-        if (i === newPoint[1] - 1) {
-          newPoints.push(newPoint[0]);
+    if (this.selectedPointIndex === null) {
+      const newPoint = this._getNewPointLocation(localMousePos);
+      if (newPoint !== null) {
+        const newPoints = [];
+        for (let i = 0; i < this._points.length; i++) {
+          newPoints.push(this._points[i]);
+          if (i === newPoint[1] - 1) {
+            newPoints.push(newPoint[0]);
+          }
         }
+        this.points = newPoints;
+        this.selectPointAtIndex(newPoint[1]);
+        return;
       }
-      this.points = newPoints;
-      this.selectPointAtIndex(newPoint[1]);
-      return;
     }
+
     // Otherwise deselect any selected points
     if (this.selectedPointIndex !== null) {
       this.selectPointAtIndex(null);
@@ -280,9 +283,9 @@ class RoomBoundsObject extends SceneObject {
       // Check if hovering over any of the points
       if (localMousePos !== null) {
         let hovering = false;
-        for (let i = 0; i < this._offsetPoints.length; i++) {
+        for (let i = 0; i < this._points.length; i++) {
           const size = this._pointSelectionSize;
-          const rect = this._getPointRect(this._offsetPoints[i], size);
+          const rect = this._getPointRect(this._points[i], size);
           if (Collisions.pointInRect(localMousePos, rect)) {
             this._hoverPointIndex = i;
             hovering = true;

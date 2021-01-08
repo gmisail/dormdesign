@@ -1,5 +1,4 @@
 import SceneObject from "./SceneObject";
-import Vector2 from "./Vector2";
 
 class RectObject extends SceneObject {
   constructor(props) {

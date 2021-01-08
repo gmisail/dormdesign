@@ -84,7 +84,7 @@ class RoomEditorObject extends SceneObject {
     });
     this.panning = false;
     this.panSpeed = 1.0;
-    this.zoomSpeed = -0.005;
+    this.zoomSpeed = -0.04;
 
     this.selectedObject = null;
 
@@ -317,6 +317,9 @@ class RoomEditorObject extends SceneObject {
   onScroll(dx, dy, mousePosition) {
     if (isNaN(dx)) dx = 0;
     if (isNaN(dy)) dy = 0;
+
+    // Limit scroll dy since browsers seem to have vastly different scroll speeds
+    dy = Math.max(-3, Math.min(dy, 3));
 
     this.scaleAbout(
       new Vector2(1 + dy * this.zoomSpeed, 1 + dy * this.zoomSpeed),
