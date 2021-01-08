@@ -7,28 +7,39 @@ class RoomBoundsObject extends SceneObject {
   constructor(props) {
     super(props);
 
-    const { points, color, edgeWidth, editingColor, onPointSelected } = props;
+    const {
+      points,
+      color,
+      edgeWidth,
+      editingColor,
+      onPointSelected,
+      onPointsUpdated,
+    } = props;
 
     this.color = color ?? "#555";
     this.edgeWidth = edgeWidth ?? 0.07;
     this._pointSize = this.edgeWidth * 3;
-    this._pointSelectionSize = this._pointSize * 1.65;
+    this._pointSelectionSize = this._pointSize * 1.5;
 
     this._editing = false;
     this.editingColor = editingColor ?? "#2b7cff";
     this._newPointPreview = null;
     this._hoverPointIndex = null;
+    this._movingPoint = false;
 
     this._points = [];
     this._offsetPoints = [];
     this.points = points;
 
+    this.onPointsUpdated = onPointsUpdated ?? (() => {});
     this.onPointSelected = onPointSelected ?? (() => {});
     this.selectedPointIndex = null;
 
     this.mouseController = new MouseController({
       watchedElement: this.scene.canvas,
       onMouseDown: this.onMouseDown.bind(this),
+      onMouseMove: this.onMouseMove.bind(this),
+      onMouseUp: this.onMouseUp.bind(this),
     });
   }
 
@@ -39,6 +50,14 @@ class RoomBoundsObject extends SceneObject {
 
   get editing() {
     return this._editing;
+  }
+
+  get movingPoint() {
+    return this._movingPoint;
+  }
+
+  get pointsLength() {
+    return this._points.length;
   }
 
   /* Whenever "points" property is set or retrieved, set/return copies instead of references */
@@ -73,71 +92,136 @@ class RoomBoundsObject extends SceneObject {
     return new Vector2(this._points[index].x, this._points[index].y);
   }
 
-  // Calculates and sets offset points (used so that when drawing room border the lines won't overlap into the room)
+  selectPointAtIndex(index) {
+    this.selectedPointIndex = index;
+    // Don't pass actual reference, so use the getPointAtIndex function which returns a copy
+    this.onPointSelected(index === null ? null : this.getPointAtIndex(index));
+  }
+
+  deletePointAtIndex(index) {
+    if (index === null) return;
+    const newPoints = [];
+    for (let i = 0; i < this._points.length; i++) {
+      if (i !== index) {
+        newPoints.push(this._points[i]);
+      }
+    }
+
+    this._points = newPoints;
+
+    const newOffsetPoints = [];
+    for (let i = 0; i < this._offsetPoints.length; i++) {
+      if (i !== index) {
+        newOffsetPoints.push(this._offsetPoints[i]);
+      }
+    }
+    this._offsetPoints = newOffsetPoints;
+
+    if (index === this.selectedPointIndex) {
+      this.selectPointAtIndex(null);
+    }
+  }
+
+  // Calculates the amount of shift the points in an edge based on the given offset
+  _offsetEdge(p1, p2, offset) {
+    const dx = p2.x - p1.x;
+    const dy = p2.y - p1.y;
+    const norm = Vector2.normalized(new Vector2(dy, -dx));
+
+    return new Vector2(offset * norm.x, offset * norm.y);
+  }
+
+  // Offsets the corner between two edges (used so that when drawing room border the lines won't overlap into the room)
   _calculateOffsetPoints() {
-    const offset = this.edgeWidth / 2;
     this._offsetPoints = [];
     for (let i = 0; i < this._points.length; i++) {
       this._offsetPoints.push(
         new Vector2(this._points[i].x, this._points[i].y)
       );
     }
-    // Add reference to first point to end of list so its properly updated by last edge
-    if (this._offsetPoints.length > 0) {
-      this._offsetPoints.push(this._offsetPoints[0]);
-    }
-    for (let i = 0; i < this._offsetPoints.length - 1; i++) {
+    if (this._offsetPoints.length < 3) return;
+    // Add references to the first two items to the end of the array to make things easier
+    this._offsetPoints.push(this._offsetPoints[0], this._offsetPoints[1]);
+    const offsetAmount = this.edgeWidth / 2;
+    for (let i = 0; i < this._offsetPoints.length - 2; i++) {
       const p1 = this._offsetPoints[i];
-      const p2 = this._offsetPoints[i + 1];
+      let p2 = this._offsetPoints[i + 1];
+      const p3 = this._offsetPoints[i + 2];
+      // Find how much to offset the two edges
+      const offset1 = this._offsetEdge(p1, p2, offsetAmount);
+      const offset2 = this._offsetEdge(p2, p3, offsetAmount);
+      // Find the new point where the two offset segments intersect
+      const newCorner = Collisions.linesIntersect(
+        new Vector2(p1.x + offset1.x, p1.y + offset1.y),
+        new Vector2(p2.x + offset1.x, p2.y + offset1.y),
+        new Vector2(p2.x + offset2.x, p2.y + offset2.y),
+        new Vector2(p3.x + offset2.x, p3.y + offset2.y)
+      );
 
-      if (Vector2.floatEquals(p1.x, p2.x)) {
-        // Vertical line
-        const direction = p2.y > p1.y ? 1 : -1;
-        p1.x = p1.x + offset * direction;
-        p2.x = p2.x + offset * direction;
+      if (newCorner !== null) {
+        p2.x = newCorner.x;
+        p2.y = newCorner.y;
       } else {
-        // Horizontal line
-        const direction = p2.x > p1.x ? 1 : -1;
-        p1.y = p1.y - offset * direction;
-        p2.y = p2.y - offset * direction;
+        // If no intersection is found (e.g. edges are parallel or coincident) then just use the offset of the first edge
+        p2.x += offset1.x;
+        p2.y += offset1.y;
       }
     }
+    this._offsetPoints.pop();
+    this._offsetPoints.pop();
   }
 
   onMouseDown(position) {
     if (!this.editing) return;
     const localMousePos = this.globalToLocalPoint(position);
-    for (let i = 0; i < this._offsetPoints.length; i++) {
+    // Check if point has been clicked on
+    for (let i = 0; i < this._points.length; i++) {
       const size = this._pointSelectionSize;
-      const rect = this._getPointRect(this._offsetPoints[i], size);
+      const rect = this._getPointRect(this._points[i], size);
       if (Collisions.pointInRect(localMousePos, rect)) {
-        this.selectedPointIndex = i;
-        // Don't return actual reference, so use the getPointAtIndex function which returns a copy
-        this.onPointSelected(this.getPointAtIndex(i));
+        this._movingPoint = true;
+        this.selectPointAtIndex(i);
         return;
       }
     }
+    // Check if there's a valid new point that can be created from mouse position
     const newPoint = this._getNewPointLocation(localMousePos);
     if (newPoint !== null) {
-      console.log(newPoint);
       const newPoints = [];
-      let inserted = false;
       for (let i = 0; i < this._points.length; i++) {
-        if (i === newPoint[1] && !inserted) {
+        newPoints.push(this._points[i]);
+        if (i === newPoint[1] - 1) {
           newPoints.push(newPoint[0]);
-          inserted = true;
-          i--;
-        } else {
-          newPoints.push(this._points[i]);
         }
       }
       this.points = newPoints;
+      this.selectPointAtIndex(newPoint[1]);
       return;
     }
+    // Otherwise deselect any selected points
     if (this.selectedPointIndex !== null) {
-      this.selectedPointIndex = null;
-      this.onPointSelected(null);
+      this.selectPointAtIndex(null);
     }
+  }
+
+  onMouseMove(delta) {
+    if (!this.editing) return;
+    // Click and drag on selected point to move it
+    if (this.selectedPointIndex !== null && this._movingPoint) {
+      const p = this._points[this.selectedPointIndex];
+      const globalPointPos = this.localToGlobalPoint(p);
+      globalPointPos.x += delta.x;
+      globalPointPos.y += delta.y;
+      const newPointPos = this.globalToLocalPoint(globalPointPos);
+      p.x = Number(newPointPos.x.toFixed(2));
+      p.y = Number(newPointPos.y.toFixed(2));
+      this._calculateOffsetPoints();
+      this.onPointsUpdated(this.points);
+    }
+  }
+
+  onMouseUp() {
+    this._movingPoint = false;
   }
 
   _getPointRect(point, size) {
@@ -158,9 +242,10 @@ class RoomBoundsObject extends SceneObject {
     let minProjected = null;
     // Index where new point would be
     let minIndex = null;
-    for (let i = 0; i < this._offsetPoints.length - 1; i++) {
-      const p1 = this._offsetPoints[i];
-      const p2 = this._offsetPoints[i + 1];
+    for (let i = 0; i < this._points.length; i++) {
+      const p1 = this._points[i];
+      const p2 =
+        i === this._points.length - 1 ? this._points[0] : this._points[i + 1];
       // Vector from p1 to p2
       const a = new Vector2(p2.x - p1.x, p2.y - p1.y);
       // Vector from p1 to mouse position
@@ -189,15 +274,14 @@ class RoomBoundsObject extends SceneObject {
         this.mouseController.position === null
           ? null
           : this.globalToLocalPoint(this.mouseController.position);
+
       this._newPointPreview = null;
 
+      // Check if hovering over any of the points
       if (localMousePos !== null) {
         let hovering = false;
         for (let i = 0; i < this._offsetPoints.length; i++) {
-          const size =
-            i === this._hoverPointIndex
-              ? this._pointSelectionSize
-              : this._pointSelectionSize;
+          const size = this._pointSelectionSize;
           const rect = this._getPointRect(this._offsetPoints[i], size);
           if (Collisions.pointInRect(localMousePos, rect)) {
             this._hoverPointIndex = i;
@@ -210,11 +294,22 @@ class RoomBoundsObject extends SceneObject {
         }
       }
 
-      // Only look for new point preview if no point is currently selected or being hovered over
+      // Check if there's a valid new point preview (only if no point is currently selected or being hovered over)
       if (this.selectedPointIndex === null && this._hoverPointIndex === null) {
         const newPoint = this._getNewPointLocation(localMousePos);
         if (newPoint !== null) {
-          this._newPointPreview = newPoint[0];
+          // New point position (not offset yet)
+          const p = newPoint[0];
+          /* If the new index will be the final point (i.e. the new point is on the last edge), use the index of the 1st point to find offset edge */
+          const index = newPoint[1] === this._points.length ? 0 : newPoint[1];
+
+          // Calculate offset position for drawing the preview
+          const p1 = new Vector2(p.x, p.y);
+          const p2 = new Vector2(this._points[index].x, this._points[index].y);
+          const offset = this._offsetEdge(p1, p2, this.edgeWidth / 2);
+          p1.x += offset.x;
+          p1.y += offset.y;
+          this._newPointPreview = p;
         }
       }
     }
@@ -230,13 +325,27 @@ class RoomBoundsObject extends SceneObject {
         ctx.moveTo(p1.x, p1.y);
       }
       ctx.lineTo(p2.x, p2.y);
+    }
+    ctx.closePath();
+    ctx.strokeStyle = this.editing ? this.editingColor : this.color;
+    ctx.lineWidth = this.edgeWidth;
+    ctx.lineJoin = "butt";
+    ctx.lineCap = "butt";
+    if (this.editing) {
+      ctx.globalAlpha = 0.6;
+    }
 
-      if (this.editing) {
+    ctx.stroke();
+
+    // Draw points
+    if (this.editing) {
+      for (let i = 0; i < this._points.length; i++) {
         const size =
           i === this.selectedPointIndex || i === this._hoverPointIndex
             ? this._pointSelectionSize
             : this._pointSize;
-        const rect = this._getPointRect(this._offsetPoints[i], size);
+        const rect = this._getPointRect(this._points[i], size);
+        ctx.globalAlpha = 1.0;
         ctx.fillStyle = this.editingColor;
         ctx.fillRect(
           rect.p1.x,
@@ -246,19 +355,11 @@ class RoomBoundsObject extends SceneObject {
         );
       }
     }
-    ctx.closePath();
-    ctx.strokeStyle = this.editing ? this.editingColor : this.color;
-    ctx.lineWidth = this.edgeWidth;
-    ctx.lineJoin = "butt";
-    ctx.lineCap = "butt";
-    ctx.stroke();
 
+    // Draw new point preview (if set)
     if (this.editing && this._newPointPreview !== null) {
-      const rect = this._getPointRect(
-        this._newPointPreview,
-        this._pointSelectionSize
-      );
-      ctx.globalAlpha = 0.6;
+      const rect = this._getPointRect(this._newPointPreview, this._pointSize);
+      ctx.globalAlpha = 1.0;
       ctx.fillRect(
         rect.p1.x,
         rect.p1.y,

@@ -57,6 +57,7 @@ class RoomEditor extends Component {
       backgroundColor: "#fff",
       onObjectsUpdated: this.itemsUpdatedInEditor,
       onObjectSelected: this.itemSelectedInEditor,
+      onBoundsUpdated: this.onBoundsUpdated,
       onBoundaryPointSelected: this.onBoundaryPointSelected,
       selectedObjectID: undefined,
       fontFamily: "Source Sans Pro",
@@ -187,6 +188,23 @@ class RoomEditor extends Component {
     });
   };
 
+  onClickDeleteSelectedPoint = () => {
+    this.roomObject.bounds.deletePointAtIndex(
+      this.roomObject.bounds.selectedPointIndex
+    );
+  };
+
+  onBoundsUpdated = (points) => {
+    const selectedPointIndex = this.roomObject.bounds.selectedPointIndex;
+    if (selectedPointIndex !== null) {
+      const selectedPoint = points[selectedPointIndex];
+      this.setState({
+        selectedPointX: selectedPoint.x,
+        selectedPointY: selectedPoint.y,
+      });
+    }
+  };
+
   onPointInputChanged = (evt) => {
     let value = evt.target.value;
     const name = evt.target.name;
@@ -247,6 +265,12 @@ class RoomEditor extends Component {
     const boundaryPointSelected =
       this.state.editingBounds &&
       this.roomObject.bounds.selectedPointIndex !== null;
+
+    const canDeleteSelectedPoint =
+      this.roomObject === undefined
+        ? false
+        : this.roomObject.bounds.pointsLength > 3;
+
     return (
       <div className="room-editor">
         <div className="room-editor-overlay">
@@ -254,22 +278,33 @@ class RoomEditor extends Component {
             <div className="room-editor-toolbar-left">
               {this.state.editingBounds ? (
                 boundaryPointSelected ? (
-                  <div className="room-editor-point-viewer">
-                    <input
-                      value={this.state.selectedPointX}
-                      type="number"
-                      name="selectedPointX"
-                      placeholder="X"
-                      onChange={this.onPointInputChanged}
-                    />
-                    <input
-                      value={this.state.selectedPointY}
-                      type="number"
-                      name="selectedPointY"
-                      placeholder="Y"
-                      onChange={this.onPointInputChanged}
-                    />
-                  </div>
+                  <>
+                    <div className="room-editor-point-viewer">
+                      <div>
+                        <input
+                          value={this.state.selectedPointX}
+                          type="number"
+                          name="selectedPointX"
+                          placeholder="X"
+                          onChange={this.onPointInputChanged}
+                        />
+                        <input
+                          value={this.state.selectedPointY}
+                          type="number"
+                          name="selectedPointY"
+                          placeholder="Y"
+                          onChange={this.onPointInputChanged}
+                        />
+                      </div>
+                      <button
+                        className="room-editor-point-delete-btn"
+                        onClick={this.onClickDeleteSelectedPoint}
+                        disabled={!canDeleteSelectedPoint}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </>
                 ) : null
               ) : (
                 <>

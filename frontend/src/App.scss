@@ -58,11 +58,8 @@ textarea {
   font-weight: $btn-font-weight;
 
   border-radius: $btn-border-radius;
-  background-color: $color-primary;
   color: $text-color-light;
   box-shadow: $box-shadow;
-
-  transition: background-color 0.2s ease;
 
   @include button-background-color($color-primary);
 

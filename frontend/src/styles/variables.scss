@@ -26,6 +26,7 @@ $footer-text-color: $text-color-dark;
 
 @mixin button-background-color($background-color) {
   background-color: $background-color;
+  transition: background-color 0.2s ease;
   &:hover {
     background-color: darken($background-color, 10%);
   }

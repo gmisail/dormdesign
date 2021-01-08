@@ -168,6 +168,11 @@ func (c *Client) translateMessage(reader io.Reader) (*Message, error) {
 			}
 
 			verts := eventData.Vertices
+			// Don't allow updates that reduce size of layout to less than 3 points
+			if len(verts) < 3 {
+				errorString = "Error updating room layout: Not enough vertices"
+				break
+			}
 			updatedVerts := make([]models.EditorPoint, len(verts))
 		
 			for i := range verts {

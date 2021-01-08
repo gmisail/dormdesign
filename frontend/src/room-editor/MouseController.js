@@ -9,7 +9,7 @@ class MouseController {
     onScroll,
   }) {
     this.watchedElement = watchedElement;
-    this.pressed = false;
+    this._pressed = false;
     this.position = null;
 
     this.onMouseDown = onMouseDown ?? (() => {});
@@ -31,13 +31,17 @@ class MouseController {
     this.watchedElement.addEventListener("mouseleave", this._mouseLeave);
   }
 
+  get pressed() {
+    return this._pressed;
+  }
+
   _mouseDown = (e) => {
     const rect = this.watchedElement.getBoundingClientRect();
     const position = new Vector2(
       (e.clientX - rect.left) * window.devicePixelRatio,
       (e.clientY - rect.top) * window.devicePixelRatio
     );
-    this.pressed = true;
+    this._pressed = true;
     this.position = position;
     this.onMouseDown(position);
   };
@@ -53,12 +57,12 @@ class MouseController {
     this.onMouseMove(delta, this.position);
   };
   _mouseUp = (e) => {
-    this.pressed = false;
+    this._pressed = false;
     this.onMouseUp();
   };
   _mouseLeave = (e) => {
-    if (this.pressed) {
-      this.pressed = false;
+    if (this._pressed) {
+      this._pressed = false;
       this.position = null;
       this.onMouseUp();
     }

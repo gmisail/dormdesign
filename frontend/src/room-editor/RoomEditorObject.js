@@ -46,8 +46,6 @@ class RoomEditorObject extends SceneObject {
 
     this.onObjectsUpdated = onObjectsUpdated ?? (() => {});
     this.onObjectSelected = onObjectSelected ?? (() => {});
-    this.onBoundsUpdated = onBoundsUpdated ?? (() => {});
-    this.onBoundaryPointSelected = onBoundaryPointSelected ?? (() => {});
 
     this.floorGrid = new RoomGridObject({
       scene: this.scene,
@@ -72,7 +70,8 @@ class RoomEditorObject extends SceneObject {
       points: boundaryPoints ?? [],
       color: boundaryColor ?? "#555",
       edgeWidth: boundaryWidth ?? 0.07,
-      onPointSelected: this.onBoundaryPointSelected,
+      onPointSelected: onBoundaryPointSelected,
+      onPointsUpdated: onBoundsUpdated,
     });
     this.addChild(this.bounds);
 
@@ -85,7 +84,7 @@ class RoomEditorObject extends SceneObject {
     });
     this.panning = false;
     this.panSpeed = 1.0;
-    this.zoomSpeed = 0.01;
+    this.zoomSpeed = -0.005;
 
     this.selectedObject = null;
 
@@ -289,7 +288,7 @@ class RoomEditorObject extends SceneObject {
     }
   }
   onMouseMove(delta) {
-    if (this.mouseController.pressed) {
+    if (this.mouseController.pressed && !this.bounds.movingPoint) {
       if (this.selectedObject && !this.selectedObject.staticObject) {
         const selectedObject = this.selectedObject;
         if (selectedObject.movementLocked) {
