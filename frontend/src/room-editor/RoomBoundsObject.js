@@ -100,22 +100,11 @@ class RoomBoundsObject extends SceneObject {
 
   deletePointAtIndex(index) {
     if (index === null) return;
-    const newPoints = [];
-    for (let i = 0; i < this._points.length; i++) {
-      if (i !== index) {
-        newPoints.push(this._points[i]);
-      }
-    }
 
-    this._points = newPoints;
-
-    const newOffsetPoints = [];
-    for (let i = 0; i < this._offsetPoints.length; i++) {
-      if (i !== index) {
-        newOffsetPoints.push(this._offsetPoints[i]);
-      }
-    }
-    this._offsetPoints = newOffsetPoints;
+    this._points = this._points.filter((_point, id) => id !== index);
+    this._offsetPoints = this._offsetPoints.filter(
+      (_offsetPoint, id) => id !== index
+    );
 
     if (index === this.selectedPointIndex) {
       this.selectPointAtIndex(null);
