@@ -19,7 +19,7 @@ class RoomBoundsObject extends SceneObject {
     this.color = color ?? "#555";
     this.edgeWidth = edgeWidth ?? 0.07;
     this._pointSize = this.edgeWidth * 3;
-    this._pointSelectionSize = this._pointSize * 1.5;
+    this._pointSelectionSize = this._pointSize * 1.4;
 
     this._editing = false;
     this.editingColor = editingColor ?? "#2b7cff";
@@ -257,8 +257,13 @@ class RoomBoundsObject extends SceneObject {
       if (Vector2.dotProduct(a, b) < 0) continue;
 
       const c = Vector2.project(b, a);
-      // Dont allow points that go past end of edge
-      if (c.magnitude() > a.magnitude()) continue;
+      // Dont allow points that go past end of edge or are too close to endpoints
+      const minDistanceFromEndpoints = this._pointSelectionSize * 0.75;
+      if (
+        c.magnitude() > a.magnitude() - minDistanceFromEndpoints ||
+        c.magnitude() < minDistanceFromEndpoints
+      )
+        continue;
 
       const dist = new Vector2(c.x - b.x, c.y - b.y).magnitude();
       if (dist <= cutoff && (minDistance === null || dist < minDistance)) {
