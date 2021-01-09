@@ -123,11 +123,11 @@ class RoomBoundsObject extends SceneObject {
   // Offsets the corner between two edges (used so that when drawing room border the lines won't overlap into the room)
   _calculateOffsetPoints() {
     this._offsetPoints = [];
-    for (let i = 0; i < this._points.length; i++) {
-      this._offsetPoints.push(
-        new Vector2(this._points[i].x, this._points[i].y)
-      );
-    }
+
+    this._points.forEach((point) =>
+      this._offsetPoints.push(new Vector2(point.x, point.y))
+    );
+
     if (this._offsetPoints.length < 3) return;
     // Add references to the first two items to the end of the array to make things easier
     this._offsetPoints.push(this._offsetPoints[0], this._offsetPoints[1]);
