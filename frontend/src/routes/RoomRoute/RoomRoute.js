@@ -173,6 +173,10 @@ export const RoomRoute = () => {
     [updateItems, toggleModal]
   );
 
+  const onClickDuplicateItemButton = useCallback((item) => addItem(item), [
+    addItem,
+  ]);
+
   const onClickClaimItemButton = useCallback(
     (item) =>
       updateItems([
@@ -296,6 +300,7 @@ export const RoomRoute = () => {
               items={items}
               selectedItemID={selectedItemID}
               onEditItem={onClickEditItemButton}
+              onDuplicateItem={onClickDuplicateItemButton}
               onClaimItem={onClickClaimItemButton}
               onDeleteItem={deleteItem}
               onToggleEditorVisibility={onToggleItemEditorVisibility}
