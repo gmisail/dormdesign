@@ -144,12 +144,22 @@ class RoomBoundsObject extends SceneObject {
         new Vector2(p1.x + offset1.x, p1.y + offset1.y),
         new Vector2(p2.x + offset1.x, p2.y + offset1.y),
         new Vector2(p2.x + offset2.x, p2.y + offset2.y),
-        new Vector2(p3.x + offset2.x, p3.y + offset2.y)
+        new Vector2(p3.x + offset2.x, p3.y + offset2.y),
+        false
       );
 
       if (newCorner !== null) {
-        p2.x = newCorner.x;
-        p2.y = newCorner.y;
+        let cornerOffset = new Vector2(newCorner.x - p2.x, newCorner.y - p2.y);
+        const maxLength = 1;
+        if (cornerOffset.magnitude() > maxLength) {
+          const normalized = Vector2.normalized(cornerOffset);
+          cornerOffset = new Vector2(
+            normalized.x * maxLength,
+            normalized.y * maxLength
+          );
+        }
+        p2.x += cornerOffset.x;
+        p2.y += cornerOffset.y;
       } else {
         // If no intersection is found (e.g. edges are parallel or coincident) then just use the offset of the first edge
         p2.x += offset1.x;
@@ -265,6 +275,50 @@ class RoomBoundsObject extends SceneObject {
     return [minProjected, minIndex];
   }
 
+  // Checks whether a boundary edge is valid
+  _edgeValid(p1, p2, p1Index) {
+    const TEST_SEGMENT_LENGTH = 1000;
+    const dx = (p2.x - p1.x) / 2;
+    const dy = (p2.y - p1.y) / 2;
+    const a = new Vector2(p1.x + dx, p1.y + dy);
+    const b = new Vector2(
+      a.x + -dy * TEST_SEGMENT_LENGTH,
+      a.y + dx * TEST_SEGMENT_LENGTH
+    );
+
+    let valid = false;
+    const prevEdgeIndex =
+      p1Index === 0 ? this._offsetPoints.length - 1 : p1Index - 1;
+    const nextEdgeIndex =
+      p1Index === this._offsetPoints.length - 1 ? 0 : p1Index + 1;
+    for (let i = 0; i < this._offsetPoints.length; i++) {
+      if (i === p1Index) continue;
+
+      const q1 = this._offsetPoints[i];
+      const q2 = this._offsetPoints[
+        i === this._offsetPoints.length - 1 ? 0 : i + 1
+      ];
+      /*  
+        If the edge intersects any of the other edges in the 
+        boundary (except for adjacent edges which it will obviously 
+        intersect since they share a point), it' invalid
+      */
+      if (
+        i !== prevEdgeIndex &&
+        i !== nextEdgeIndex &&
+        Collisions.linesIntersect(p1, p2, q1, q2)
+      ) {
+        return false;
+      }
+      /*  
+        If the line perpendicular to the right side of the edge doesn't intersect
+        any other edges, then the edge is invalid
+      */
+      if (Collisions.linesIntersect(a, b, q1, q2) !== null) valid = true;
+    }
+    return valid;
+  }
+
   update() {
     if (this.editing) {
       const localMousePos =
@@ -313,6 +367,7 @@ class RoomBoundsObject extends SceneObject {
   }
 
   draw(ctx) {
+    // Draw edges
     ctx.beginPath();
     for (let i = 0; i < this._offsetPoints.length - 1; i++) {
       const p1 = this._offsetPoints[i];
@@ -328,11 +383,51 @@ class RoomBoundsObject extends SceneObject {
     ctx.lineWidth = this.edgeWidth;
     ctx.lineJoin = "butt";
     ctx.lineCap = "butt";
+
     if (this.editing) {
       ctx.globalAlpha = 0.6;
     }
-
     ctx.stroke();
+
+    // Check if each edge is valid. If not, draw a red line over it
+    if (this.editing) {
+      ctx.globalAlpha = 1.0;
+      for (let i = 0; i < this._offsetPoints.length; i++) {
+        const p1 = this._offsetPoints[i];
+        const p2 = this._offsetPoints[
+          i === this._offsetPoints.length - 1 ? 0 : i + 1
+        ];
+        const valid = this._edgeValid(p1, p2, i);
+
+        if (!valid) {
+          ctx.strokeStyle = "#ff6b6b";
+          ctx.beginPath();
+          ctx.moveTo(p1.x, p1.y);
+          ctx.lineTo(p2.x, p2.y);
+          ctx.stroke();
+        }
+
+        /*
+         The following code draws normal lines coming off of each edge 
+         that are used to determine if the orientation is correct 
+         
+         (used for debugging)
+        */
+        // const TEST_SEGMENT_LENGTH = 1000;
+        // const dx = (p2.x - p1.x) / 2;
+        // const dy = (p2.y - p1.y) / 2;
+        // const a = new Vector2(p1.x + dx, p1.y + dy);
+        // const b = new Vector2(
+        //   a.x + -dy * TEST_SEGMENT_LENGTH,
+        //   a.y + dx * TEST_SEGMENT_LENGTH
+        // );
+        // ctx.strokeStyle = "#00ff00";
+        // ctx.beginPath();
+        // ctx.moveTo(a.x, a.y);
+        // ctx.lineTo(b.x, b.y);
+        // ctx.stroke();
+      }
+    }
 
     // Draw points
     if (this.editing) {
