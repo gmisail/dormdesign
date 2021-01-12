@@ -7,6 +7,7 @@ import {
   BsPersonDash,
   BsEye,
   BsEyeSlash,
+  BsFiles,
 } from "react-icons/bs";
 import { usePopper } from "react-popper";
 import { RoomContext } from "../../routes/RoomRoute/RoomContext";
@@ -20,6 +21,7 @@ const ListItem = (props) => {
     onEdit,
     onClaim,
     onDelete,
+    onDuplicate,
     onToggleEditorVisibility,
     className,
   } = props;
@@ -102,9 +104,13 @@ const ListItem = (props) => {
           {...attributes.popper}
         >
           <ul>
-            <li id="top" onClick={() => menuOptionClicked(onEdit)}>
+            <li onClick={() => menuOptionClicked(onEdit)}>
               <BsPencil />
               Edit
+            </li>
+            <li onClick={() => menuOptionClicked(onDuplicate)}>
+              <BsFiles />
+              Duplicate
             </li>
             <li onClick={() => menuOptionClicked(onClaim)}>
               {item.claimedBy === userName ? (

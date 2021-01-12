@@ -7,6 +7,7 @@ const DormItemList = (props) => {
     items,
     selectedItemID,
     onEditItem,
+    onDuplicateItem,
     onClaimItem,
     onDeleteItem,
     onToggleEditorVisibility,
@@ -27,6 +28,7 @@ const DormItemList = (props) => {
                 onEdit={() => onEditItem(item)}
                 onClaim={() => onClaimItem(item)}
                 onDelete={() => onDeleteItem(item)}
+                onDuplicate={() => onDuplicateItem(item)}
                 onToggleEditorVisibility={() => onToggleEditorVisibility(item)}
               />
             );
