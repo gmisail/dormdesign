@@ -104,11 +104,11 @@ const ListItem = (props) => {
           {...attributes.popper}
         >
           <ul>
-            <li id="top" onClick={() => menuOptionClicked(onEdit)}>
+            <li onClick={() => menuOptionClicked(onEdit)}>
               <BsPencil />
               Edit
             </li>
-            <li id="top" onClick={() => menuOptionClicked(onDuplicate)}>
+            <li onClick={() => menuOptionClicked(onDuplicate)}>
               <BsFiles />
               Duplicate
             </li>
