@@ -2,7 +2,6 @@ import React from "react";
 import { Form, FormControl, Col } from "react-bootstrap";
 import Modal from "react-bootstrap/Modal";
 import { RoomContext } from "../../routes/RoomRoute/RoomContext";
-import VertexForm from "../VertexForm/VertexForm";
 
 class SettingsModal extends React.Component {
   static contextType = RoomContext;
@@ -28,12 +27,6 @@ class SettingsModal extends React.Component {
         </Modal.Header>
 
         <Modal.Body className="custom-modal-card">
-          <h5>Layout</h5>
-          <VertexForm
-            bounds={this.context.bounds}
-            onSubmit={this.context.updateBounds}
-          ></VertexForm>
-          <hr />
           <h5>Clone from Template</h5>
           <p>
             Template cloning allows you to copy the layout, furniture, and

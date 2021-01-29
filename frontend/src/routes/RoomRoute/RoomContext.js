@@ -238,7 +238,6 @@ export const RoomProvider = ({ children }) => {
         });
 
         connection.on("layoutUpdated", (data) => {
-          // TODO: add callback
           dispatch({
             type: RoomActions.boundsUpdated,
             payload: { bounds: data.vertices },
@@ -356,12 +355,8 @@ export const RoomProvider = ({ children }) => {
           vertices: bounds,
         },
       });
-      dispatch({
-        type: RoomActions.boundsUpdated,
-        payload: { bounds },
-      });
     },
-    [state.socketConnection, dispatch]
+    [state.socketConnection]
   );
 
   const updateRoomName = useCallback(

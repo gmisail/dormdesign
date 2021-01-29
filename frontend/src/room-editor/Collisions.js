@@ -1,3 +1,5 @@
+import Vector2 from "./Vector2";
+
 class Collisions {
   static pointInRect(point, bbox) {
     return (
@@ -50,6 +52,44 @@ class Collisions {
     if (p.y < a.y && q.y < a.y) return false; // Line is below
 
     return true;
+  }
+
+  /*
+   line intercept math by Paul Bourke http://paulbourke.net/geometry/pointlineplane/
+
+   If the 'segments' parameter is false the function will find the intersection between the infinite lines the segments lie on
+  */
+  static linesIntersect(p1, p2, q1, q2, segments) {
+    // Check if none of the lines are of length 0
+    if ((p1.x === p2.x && p1.y === p2.y) || (q1.x === q2.x && q1.y === q2.y)) {
+      return null;
+    }
+
+    const denominator =
+      (q2.y - q1.y) * (p2.x - p1.x) - (q2.x - q1.x) * (p2.y - p1.y);
+
+    // Lines are parallel
+    if (denominator === 0) {
+      return null;
+    }
+
+    let ua =
+      ((q2.x - q1.x) * (p1.y - q1.y) - (q2.y - q1.y) * (p1.x - q1.x)) /
+      denominator;
+    let ub =
+      ((p2.x - p1.x) * (p1.y - q1.y) - (p2.y - p1.y) * (p1.x - q1.x)) /
+      denominator;
+
+    // is the intersection along the segments
+    if (segments !== false && (ua < 0 || ua > 1 || ub < 0 || ub > 1)) {
+      return null;
+    }
+
+    // Return a object with the x and y coordinates of the intersection
+    let x = p1.x + ua * (p2.x - p1.x);
+    let y = p1.y + ua * (p2.y - p1.y);
+
+    return new Vector2(x, y);
   }
 }
 

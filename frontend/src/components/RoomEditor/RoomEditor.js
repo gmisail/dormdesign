@@ -3,6 +3,7 @@ import { RoomContext, RoomActions } from "../../routes/RoomRoute/RoomContext";
 import SceneController from "../../room-editor/SceneController";
 import RoomEditorObject from "../../room-editor/RoomEditorObject";
 import IconButton from "../IconButton/IconButton";
+import { BsBoundingBox, BsX, BsCheck } from "react-icons/bs";
 import { MdFilterCenterFocus } from "react-icons/md";
 import { BiPlus, BiMinus, BiLockOpenAlt, BiLockAlt } from "react-icons/bi";
 import { RiClockwiseLine } from "react-icons/ri";
@@ -42,6 +43,9 @@ class RoomEditor extends Component {
   static contextType = RoomContext;
   state = {
     lastSelectedItemID: null,
+    editingBounds: false,
+    selectedPointX: "",
+    selectedPointY: "",
   };
 
   componentDidMount() {
@@ -53,6 +57,8 @@ class RoomEditor extends Component {
       backgroundColor: "#fff",
       onObjectsUpdated: this.itemsUpdatedInEditor,
       onObjectSelected: this.itemSelectedInEditor,
+      onBoundsUpdated: this.onBoundsUpdated,
+      onBoundaryPointSelected: this.onBoundaryPointSelected,
       selectedObjectID: undefined,
       fontFamily: "Source Sans Pro",
     });
@@ -89,7 +95,8 @@ class RoomEditor extends Component {
               action.payload.items[i]
             );
             this.roomObject.addItemToRoom(translatedItem);
-            this.roomObject.setBounds(action.payload.bounds);
+            this.roomObject.bounds.points = action.payload.bounds;
+            this.roomObject.centerView();
           }
           break;
         case RoomActions.itemsUpdated:
@@ -108,7 +115,10 @@ class RoomEditor extends Component {
           this.roomObject.removeItemFromRoom(action.payload.id);
           break;
         case RoomActions.boundsUpdated:
-          this.roomObject.setBounds(action.payload.bounds);
+          // If bounds are currently being edited, don't update them locally with external changes
+          if (!this.state.editingBounds) {
+            this.roomObject.bounds.points = action.payload.bounds;
+          }
           break;
         default:
           continue;
@@ -171,6 +181,78 @@ class RoomEditor extends Component {
     ]);
   };
 
+  onBoundaryPointSelected = (point) => {
+    this.setState({
+      selectedPointX: point !== null ? point.x : "",
+      selectedPointY: point !== null ? point.y : "",
+    });
+  };
+
+  onClickDeleteSelectedPoint = () => {
+    this.roomObject.bounds.deletePointAtIndex(
+      this.roomObject.bounds.selectedPointIndex
+    );
+  };
+
+  onBoundsUpdated = (points) => {
+    const selectedPointIndex = this.roomObject.bounds.selectedPointIndex;
+    if (selectedPointIndex !== null) {
+      const selectedPoint = points[selectedPointIndex];
+      this.setState({
+        selectedPointX: selectedPoint.x,
+        selectedPointY: selectedPoint.y,
+      });
+    }
+  };
+
+  onPointInputChanged = (evt) => {
+    let value = evt.target.value;
+    const name = evt.target.name;
+    if (value.length !== 0) {
+      value = parseFloat(value);
+      // Prevent really big/small values
+      value = Math.min(Math.max(value, -500), 500);
+      const editedPoint = new Vector2(
+        this.state.selectedPointX,
+        this.state.selectedPointY
+      );
+      if (name === "selectedPointX") {
+        editedPoint.x = value;
+      } else {
+        editedPoint.y = value;
+      }
+      // Update edited point value in the scene
+      this.roomObject.bounds.setPointAtIndex(
+        this.roomObject.bounds.selectedPointIndex,
+        editedPoint
+      );
+    }
+    this.setState({
+      [name]: value,
+    });
+  };
+
+  toggleEditingBounds = (saveEdits) => {
+    const editing = !this.state.editingBounds;
+    this.roomObject.bounds.editing = editing;
+    if (editing) {
+      // this.editedBounds = this.roomObject.bounds.points;
+    } else {
+      if (saveEdits) {
+        // Save the edits made by updating the bounds
+        this.context.updateBounds(this.roomObject.bounds.points);
+      } else {
+        // Don't save the edits, revert them to pre-edited state
+        this.roomObject.bounds.points = this.context.bounds;
+      }
+    }
+    if (this.roomObject.selectedObject) {
+      this.roomObject.selectItem(null);
+    }
+
+    this.setState({ editingBounds: editing });
+  };
+
   render() {
     const { selectedItemID } = this.context;
     /* Determine locked from lastSelectedItemID rather than current selectedItemID so that it doesn't 
@@ -179,24 +261,103 @@ class RoomEditor extends Component {
       ? this.roomObject.roomItems.get(this.state.lastSelectedItemID)
           .movementLocked
       : false;
+    // Determine whether or not a boundary point is currently selected
+    const boundaryPointSelected =
+      this.state.editingBounds &&
+      this.roomObject.bounds.selectedPointIndex !== null;
+
+    const canDeleteSelectedPoint =
+      this.roomObject === undefined
+        ? false
+        : this.roomObject.bounds.pointsLength > 3;
+
     return (
       <div className="room-editor">
         <div className="room-editor-overlay">
           <div className="room-editor-toolbar">
-            <IconButton
-              onClick={this.rotateSelectedItem}
-              disabled={locked}
-              data-hidden={selectedItemID === null ? "true" : "false"}
-            >
-              <RiClockwiseLine />
-            </IconButton>
-            <IconButton
-              onClick={this.lockSelectedItem}
-              data-hidden={selectedItemID === null ? "true" : "false"}
-              style={{ fontSize: "0.95em" }}
-            >
-              {locked ? <BiLockAlt /> : <BiLockOpenAlt />}
-            </IconButton>
+            <div className="room-editor-toolbar-left">
+              {this.state.editingBounds ? (
+                boundaryPointSelected ? (
+                  <>
+                    <div className="room-editor-point-viewer">
+                      <div>
+                        <input
+                          value={this.state.selectedPointX}
+                          type="number"
+                          name="selectedPointX"
+                          placeholder="X"
+                          onChange={this.onPointInputChanged}
+                        />
+                        <input
+                          value={this.state.selectedPointY}
+                          type="number"
+                          name="selectedPointY"
+                          placeholder="Y"
+                          onChange={this.onPointInputChanged}
+                        />
+                      </div>
+                      <button
+                        className="room-editor-point-delete-btn"
+                        onClick={this.onClickDeleteSelectedPoint}
+                        disabled={!canDeleteSelectedPoint}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </>
+                ) : null
+              ) : (
+                <>
+                  <IconButton
+                    className="room-editor-toolbar-btn"
+                    onClick={this.lockSelectedItem}
+                    data-hidden={selectedItemID === null ? "true" : "false"}
+                  >
+                    {locked ? <BiLockAlt /> : <BiLockOpenAlt />}
+                  </IconButton>
+                  <IconButton
+                    className="room-editor-toolbar-btn"
+                    onClick={this.rotateSelectedItem}
+                    disabled={locked}
+                    data-hidden={selectedItemID === null ? "true" : "false"}
+                  >
+                    <RiClockwiseLine />
+                  </IconButton>
+                </>
+              )}
+            </div>
+            <div className="room-editor-toolbar-right">
+              {this.state.editingBounds ? (
+                <>
+                  <IconButton
+                    className="room-editor-toolbar-btn room-editor-toolbar-btn-success"
+                    onClick={() => {
+                      this.toggleEditingBounds(true);
+                    }}
+                  >
+                    <BsCheck />
+                  </IconButton>
+                  <IconButton
+                    className="room-editor-toolbar-btn room-editor-toolbar-btn-danger"
+                    onClick={() => {
+                      this.toggleEditingBounds(false);
+                    }}
+                  >
+                    <BsX />
+                  </IconButton>
+                </>
+              ) : (
+                <IconButton
+                  className="room-editor-toolbar-btn"
+                  onClick={() => {
+                    this.toggleEditingBounds();
+                  }}
+                  style={{ padding: "9px" }}
+                >
+                  <BsBoundingBox />
+                </IconButton>
+              )}
+            </div>
           </div>
           <div className="room-editor-footer">
             <span>1 Cell = 1 Square Foot</span>
