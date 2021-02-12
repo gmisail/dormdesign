@@ -23,6 +23,8 @@ Server.setup = function(app, port)
 
     app.use(express.static('public'));
 
+    app.use('/room', require('./routes/room'));
+
     server.listen(port, () => console.log("Listening on localhost:" + port));
 }
 
