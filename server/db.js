@@ -1,12 +1,10 @@
-exports.module = class Database
+const rethinkdb = require("rethinkdb");
+
+let Database = {};
+
+Database.connect = function()
 {
-    constructor()
-    {
-
-    }
-
-    setup()
-    {
-        console.log("db");
-    }
+    
 }
+
+module.exports = Database;

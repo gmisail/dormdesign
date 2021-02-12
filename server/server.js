@@ -1,7 +1,9 @@
 const express = require('express');
-const hub = require('./hub');
 const ws = require("ws");
 const http = require('http');
+
+const hub = require('./hub');
+const database = require('./db');
 
 let Server = {};
 
@@ -19,10 +21,11 @@ Server.setup = function(app, port)
         });
     });
 
+    database.connect();
+
     hub.setup(this.sockets);
 
     app.use(express.static('public'));
-
     app.use('/room', require('./routes/room'));
 
     server.listen(port, () => console.log("Listening on localhost:" + port));
