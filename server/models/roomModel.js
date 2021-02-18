@@ -1,7 +1,12 @@
 let Room = {};
 
 Room.create = function(){ }
-Room.get = function(){}
+
+Room.get = function(id)
+{
+    return {};
+}
+
 Room.copyFrom = function(){}
 Room.updateVertices = function(){}
 Room.updateRoomName = function(){}

@@ -4,7 +4,7 @@ const app = express();
 /* load .env into process.env */
 require('dotenv').config();
 
-const port = 5050;
+const port = 5500;
 
 let server = require('./server');
 
