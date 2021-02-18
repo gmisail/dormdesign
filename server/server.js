@@ -21,8 +21,7 @@ Server.setup = function(app, port)
         });
     });
 
-    database.connect();
-
+    database.setup();
     hub.setup(this.sockets);
 
     app.use(express.static('public'));

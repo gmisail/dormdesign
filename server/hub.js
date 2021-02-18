@@ -2,7 +2,7 @@ const { v4: uuidv4 } = require('uuid');
 const events = require('events');
 const chalk = require('chalk');
 
-const PONG_TIME = 10000;    // check every 30 seconds
+const PONG_TIME = 30000;    // check every 30 seconds
 
 let Hub = {};
 Hub.connections = new Map();
