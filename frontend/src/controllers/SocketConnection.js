@@ -4,7 +4,9 @@ class SocketConnection {
   constructor(id, onOpen) {
     this.id = id;
     this.eventController = new EventController();
-    this.connection = new WebSocket("ws://localhost:5500/ws?id=" + this.id);
+    this.connection = new WebSocket(
+      `ws://${window.location.host}/ws?id=${this.id}`
+    );
     this.connection.onopen = () => {
       if (onOpen !== undefined) {
         onOpen();

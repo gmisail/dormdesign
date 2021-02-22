@@ -2,9 +2,10 @@ package main
 
 import (
 	"os"
-	"github.com/labstack/echo/v4"
+
 	"github.com/gmisail/dormdesign/routes"
 	"github.com/gmisail/dormdesign/sockets"
+	"github.com/labstack/echo/v4"
 
 	rdb "gopkg.in/rethinkdb/rethinkdb-go.v6"
 )

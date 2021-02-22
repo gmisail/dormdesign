@@ -255,7 +255,7 @@ export const RoomProvider = ({ children }) => {
           window.location.reload();
         });
       } catch (error) {
-        console.error(error);
+        console.error("Failed to connect to room: " + error);
         dispatch({ type: RoomActions.error, payload: { error } });
       }
     },
