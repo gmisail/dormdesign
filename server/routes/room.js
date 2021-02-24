@@ -1,9 +1,9 @@
 const { Router } = require('express');
-let Room = require("../models/roomModel");
+let Room = require("../models/room.model");
 
 const router = Router();
 
-router.get('/get', (req, res) => {
+router.get('/get', async (req, res) => {
     const id = req.query.id;
 
     if(id === undefined || id.length <= 0)
@@ -11,7 +11,7 @@ router.get('/get', (req, res) => {
         throw new Error("Missing room ID parameter.");
     }
 
-    const room = Room.get(id);
+    const room = await Room.get(id);
 
     res.json(room);
 });
@@ -20,7 +20,19 @@ router.get('/clone', (req, res) => {
     
 });
 
-router.post('/create', (req, res) => console.log("got create request"));
+router.post('/create', async (req, res) => {
+    const name = req.query.name;
+
+    if(name === undefined || name.length <= 0)
+    {
+        throw new Error("Missing room name parameter.");
+    }
+
+    const room = await Room.create(name);
+
+    res.json(room);    
+});
+
 router.post('/add', (req, res) => console.log("got add request"));
 
 module.exports = router;

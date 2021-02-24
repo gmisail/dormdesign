@@ -7,7 +7,7 @@ const database = require('./db');
 
 let Server = {};
 
-Server.setup = function(app, port) 
+Server.setup = async function(app, port) 
 {
     console.log("setup server")
 
@@ -21,7 +21,7 @@ Server.setup = function(app, port)
         });
     });
 
-    database.setup();
+    await database.setup();
     hub.setup(this.sockets);
 
     app.use(express.static('public'));
