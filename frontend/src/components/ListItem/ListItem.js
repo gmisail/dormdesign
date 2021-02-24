@@ -35,7 +35,6 @@ const ListItem = (props) => {
     Note that this could be an issue if two users input the same userName
   */
   const { userName, setUserName } = useContext(RoomContext);
-  console.log(userName);
   const [modalProps, toggleModal] = useModal();
   const [showMenu, setShowMenu] = useState(false);
   const menuButtonRef = useRef(null);
