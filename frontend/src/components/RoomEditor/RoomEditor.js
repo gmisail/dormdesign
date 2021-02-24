@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { RoomContext, RoomActions } from "../../routes/RoomRoute/RoomContext";
+import { RoomContext, RoomActions } from "../../context/RoomContext";
 import SceneController from "../../room-editor/SceneController";
 import RoomEditorObject from "../../room-editor/RoomEditorObject";
 import IconButton from "../IconButton/IconButton";

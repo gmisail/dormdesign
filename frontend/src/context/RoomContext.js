@@ -1,7 +1,7 @@
 import React, { useReducer, useCallback, createContext } from "react";
-import DataRequests from "../../controllers/DataRequests";
-import SocketConnection from "../../controllers/SocketConnection";
-import DormItem from "../../models/DormItem";
+import DataRequests from "../controllers/DataRequests";
+import SocketConnection from "../controllers/SocketConnection";
+import DormItem from "../models/DormItem";
 
 export const RoomActions = {
   connectedToRoom: "CONNECTED_TO_ROOM",
@@ -264,6 +264,7 @@ export const RoomProvider = ({ children }) => {
 
   const setUserName = useCallback(
     (userName) => {
+      if (userName.length === 0) userName = null;
       window.localStorage.setItem("userName", userName);
       dispatch({ type: RoomActions.setUserName, payload: { userName } });
     },
@@ -361,6 +362,7 @@ export const RoomProvider = ({ children }) => {
 
   const updateRoomName = useCallback(
     (roomName) => {
+      if (roomName == null || roomName.length === 0) return;
       state.socketConnection.send({
         event: "updateRoomName",
         sendResponse: true,
