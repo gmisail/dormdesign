@@ -1,3 +1,4 @@
+const rethinkdb = require("rethinkdb");
 const { v4: uuidv4 } = require('uuid');
 const database = require('../db');
 
@@ -11,9 +12,9 @@ Template.create = async function(id)
         targetId: id
     };
 
-    await Template.db.db("dd_data").table("templates").insert(template).exec(database.connection);
+    await rethinkdb.db("dd_data").table("templates").insert(template).run(database.connection);
 
-    return template;
+    return templateId;
 }
 
 Template.get = function(id)

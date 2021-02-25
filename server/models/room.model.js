@@ -57,11 +57,10 @@ Room.create = async function(name)
         items: [],
         templateId,
         vertices
-    };
-
-    const res = await rethinkdb.db("dd_data").table("rooms").insert(room).exec(database.connection);
-	console.log(res)
-
+	};
+	
+    const res = await rethinkdb.db("dd_data").table("rooms").insert(room).run(database.connection);
+	
     return room;
 }
 
