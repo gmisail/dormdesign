@@ -49,7 +49,7 @@ Room.create = async function(name)
     ];
 
     const id = uuidv4();
-	const templateId = Template.create(id);
+	const templateId = await Template.create(id);
 
     const room = {
         id,
@@ -61,14 +61,26 @@ Room.create = async function(name)
 	
     const res = await rethinkdb.db("dd_data").table("rooms").insert(room).run(database.connection);
 	
+	if(res === null)
+	{
+		console.error("Could not insert room.");
+		return {};
+	}
+
     return room;
 }
 
 Room.get = async function(id)
 {
-   const room = await rethinkdb.db("dd_data").table('rooms').get(id).run(database.connection);
+	const room = await rethinkdb.db("dd_data").table('rooms').get(id).run(database.connection);
    
-   return room;
+	if(room === null)
+	{
+		console.log("Could not get room with id " + id);
+		return {};
+	}
+
+	return room;
 }
 
 Room.copyFrom = function(){}

@@ -13,7 +13,7 @@ Template.create = async function(id)
     };
 
     await rethinkdb.db("dd_data").table("templates").insert(template).run(database.connection);
-
+    
     return templateId;
 }
 
