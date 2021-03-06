@@ -85,7 +85,12 @@ Room.get = async function(id)
 
 Room.copyFrom = function(){}
 Room.updateVertices = function(){}
-Room.updateRoomName = function(){}
+
+Room.updateRoomName = async function(id, name)
+{
+	await rethinkdb.db('dd_data').table("rooms").get(id).update({ "name": name });
+}
+
 Room.addItem = function(){}
 Room.removeItem = function(){}
 Room.clearItems = function(){}
