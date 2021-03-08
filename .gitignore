@@ -13,3 +13,5 @@ dormdesign
 .DS_Store
 .vscode/
 
+certbot/
+data/
