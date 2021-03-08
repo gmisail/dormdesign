@@ -26,9 +26,6 @@ services:
     depends_on:
       - server
   nginx:
-    # build:
-    #   dockerfile: Dockerfile
-    #   context: ./nginx
     image: nginx:alpine
     restart: unless-stopped
     ports:

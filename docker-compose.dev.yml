@@ -28,10 +28,10 @@ services:
       - DATABASE_ADDRESS=db:28015
     depends_on:
       - db
-  proxy:
-    build:
-      dockerfile: Dockerfile
-      context: ./nginx
+  nginx:
+    image: nginx:alpine
+    volumes:
+      - ./nginx/nginx.dev.conf:/etc/nginx/conf.d/default.conf
     ports:
       - "5500:80"
     depends_on:
