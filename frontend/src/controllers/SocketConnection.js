@@ -5,7 +5,7 @@ class SocketConnection {
     this.id = id;
     this.eventController = new EventController();
     this.connection = new WebSocket(
-      `ws://${window.location.host}/ws?id=${this.id}`
+      `wss://${window.location.host}/ws?id=${this.id}`
     );
     this.connection.onopen = () => {
       if (onOpen !== undefined) {
