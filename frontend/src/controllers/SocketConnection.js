@@ -4,7 +4,7 @@ class SocketConnection {
   constructor(id, onOpen) {
     this.id = id;
     this.eventController = new EventController();
-    const protocol = window.location.protocol !== "https" ? "ws" : "wss";
+    const protocol = window.location.protocol === "https:" ? "wss" : "ws";
     this.connection = new WebSocket(
       `${protocol}://${window.location.host}/ws?id=${this.id}`
     );
