@@ -25,7 +25,9 @@ services:
       context: ./server
       dockerfile: Dockerfile
     environment:
-      - DATABASE_ADDRESS=db:28015
+      - DATABASE_ADDRESS=db
+    ports:
+      - '8000:8000'
     depends_on:
       - db
   proxy:
@@ -38,7 +40,3 @@ services:
       - frontend
       - server
       - db
-
-  
-  
-  

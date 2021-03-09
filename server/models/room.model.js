@@ -39,6 +39,10 @@ type Room struct {
 }
  */
 
+/**
+ * Create a new room with a given name
+ * @param { string } name 
+ */
 Room.create = async function(name)
 {
     let vertices = [
@@ -70,6 +74,10 @@ Room.create = async function(name)
     return room;
 }
 
+/**
+ * Get the JSON data from a room at an ID
+ * @param { string } id 
+ */
 Room.get = async function(id)
 {
 	const room = await rethinkdb.db("dd_data").table('rooms').get(id).run(database.connection);
@@ -84,11 +92,47 @@ Room.get = async function(id)
 }
 
 Room.copyFrom = function(){}
-Room.updateVertices = function(){}
 
+/**
+ * Updates the given property in a room.
+ * @param { string } id 
+ * @param { JSON } data 
+ */
+Room.updateProperty = async function(id, data) 
+{
+	let res = await rethinkdb.db('dd_data').table("rooms").get(id).update(data).run(database.connection);
+	
+	/* res.skipped refers to how many operations it skips; if it skips a non-zero amount then we know something is up. */
+	if(res.skipped !== 0) 
+	{
+		console.log("Could not update property: " + JSON.stringify(data) + ", at ID " + id);
+		
+		return res;
+	}
+	
+	return null;
+}
+
+/**
+ * Update the vertices of a given room
+ * @param { string } id 
+ * @param { array[{ x: number, y: number }] } vertices 
+ */
+Room.updateVertices = async function(id, vertices) 
+{
+	let res = await Room.updateProperty(id, { "vertices": vertices });
+	return res;
+}
+
+/**
+ * Update the name of a given room
+ * @param { string } id 
+ * @param { string } name 
+ */
 Room.updateRoomName = async function(id, name)
 {
-	await rethinkdb.db('dd_data').table("rooms").get(id).update({ "name": name });
+	let res = await Room.updateProperty(id, { "name": name });
+	return res;
 }
 
 Room.addItem = function(){}

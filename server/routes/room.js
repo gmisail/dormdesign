@@ -8,7 +8,7 @@ router.get('/get', async (req, res) => {
 
     if(id === undefined || id.length <= 0)
     {
-        throw new Error("Missing room ID parameter.");
+        throw new Error("Missing room ID parameter for route 'get'.");
     }
 
     const room = await Room.get(id);
@@ -17,7 +17,14 @@ router.get('/get', async (req, res) => {
 });
 
 router.get('/clone', (req, res) => {
-    
+    const id = req.query.id;
+
+    if(id === undefined || id.length <= 0)
+    {
+        throw new Error("Missing room ID parameter for route 'clone'.");
+    }
+
+    res.json({});
 });
 
 router.post('/create', async (req, res) => {
