@@ -128,8 +128,23 @@ Room.removeItem = async function(id)
 	await Room.updateProperty(id, { "items": [] });
 }
 
-Room.clearItems = function(){}
+/**
+ * Clear all of the items in a room
+ * @param { string } id 
+ */
+Room.clearItems = function(id)
+{
 
-Room.editItem = function(){}
+}
+
+/**
+ * Edit the properties of an item in the room
+ * @param { string } id
+ * @param { string } itemId
+ */
+Room.editItem = function(id, itemId)
+{
+	
+}
 
 module.exports = Room;
