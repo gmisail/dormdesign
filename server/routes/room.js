@@ -13,7 +13,7 @@ router.get('/get', async (req, res) => {
     }
 
     let room = await Room.get(id);
-   
+    
     res.json(room);
 });
 
