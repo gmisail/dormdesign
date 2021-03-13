@@ -13,9 +13,7 @@ router.get('/get', async (req, res) => {
     }
 
     let room = await Room.get(id);
-
-    await Room.editItem(id, "b63fbdbd-0944-43c0-9e44-086e7a331f99", { "name": "very good room", "quantity": 2, "visibleInEditor": true });
-
+   
     res.json(room);
 });
 

@@ -17,9 +17,12 @@ Template.create = async function(id)
     return templateId;
 }
 
-Template.get = function(id)
+Template.get = async function(id)
 {
+    console.log(id)
+    const template = await rethinkdb.db("dd_data").table("templates").get(id).run(database.connection);
 
+    return template;
 }
 
 module.exports = Template;

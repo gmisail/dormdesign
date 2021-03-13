@@ -57,7 +57,19 @@ Room.get = async function(id)
 	return room;
 }
 
-Room.copyFrom = function(){}
+
+Room.copyFrom = async function(id, templateId)
+{
+	const room = await Room.get(id);
+	const template = await Template.get(templateId);
+	const templateData = await Room.get(template.targetId);
+
+	templateData.id = room.id;
+	templateData.templateId = room.templateId;
+	templateData.name = room.name
+
+	await Room.updateProperty(id, templateData);
+}
 
 /**
  * Updates the given property in a room.
