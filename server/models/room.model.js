@@ -123,7 +123,7 @@ Room.addItem = async function(id, item)
  * Clear the items of a given room
  * @param { string } id 
  */
-Room.removeItem = async function(id)
+Room.clearItems = async function(id)
 {
 	await Room.updateProperty(id, { "items": [] });
 }
@@ -132,19 +132,42 @@ Room.removeItem = async function(id)
  * Clear all of the items in a room
  * @param { string } id 
  */
-Room.clearItems = function(id)
+Room.removeItem = async function(id, itemId)
 {
+	let res = await Room.get(id);
 
+	if(res.items === undefined || res.items.length == 0)
+		return;
+
+	let items = res.items.filter(item => item.id !== itemId);
+
+	await Room.updateProperty(id, { "items": items });
 }
 
 /**
  * Edit the properties of an item in the room
  * @param { string } id
  * @param { string } itemId
+ * @param { object } properties
  */
-Room.editItem = function(id, itemId)
+Room.editItem = async function(id, itemId, properties)
 {
-	
+	let res = await Room.get(id);
+
+	if(res.items === undefined || res.items.length == 0)
+		return;
+
+	for (let i = 0; i < res.items.length; i++) {
+		if(res.items[i].id === itemId) {
+			for (const property in properties) {
+				res.items[i][property] = properties[property];
+			}
+
+			await Room.updateProperty(id, { "items": res.items });
+
+			return;
+		}
+	}
 }
 
 module.exports = Room;
