@@ -13,7 +13,7 @@ router.get('/get', async (req, res) => {
     }
 
     let room = await Room.get(id);
-    
+
     res.json(room);
 });
 
@@ -28,8 +28,8 @@ router.get('/clone', (req, res) => {
     res.json({});
 });
 
-router.post('/create', async (req, res) => {
-    const name = req.query.name;
+router.post('/create', async (req, res) => {    
+    const name = req.body.name;
 
     if(name === undefined || name.length <= 0)
     {
@@ -40,7 +40,5 @@ router.post('/create', async (req, res) => {
 
     res.json(room);    
 });
-
-router.post('/add', (req, res) => console.log("got add request"));
 
 module.exports = router;

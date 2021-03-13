@@ -1,8 +1,10 @@
 const { v4: uuidv4 } = require('uuid');
 const events = require('events');
 const chalk = require('chalk');
+const querystring = require('querystring');
 
-const PONG_TIME = 30000;    // check every 30 seconds
+const USE_DEBUGGER = true;  // print contents of every room for every ping
+const PONG_TIME = 5000;    // check every 30 seconds
 
 let Hub = {};
 Hub.connections = new Map();
@@ -24,7 +26,7 @@ Hub.addClient = function(data)
     }
     
     Hub.rooms.get(room).set(id, true);
-    Hub.connections[id].room = room;
+    Hub.connections.get(id).room = room;
 }
 
 /*
@@ -35,12 +37,18 @@ Hub.removeClient = function(id, room)
 {
     console.log(chalk.red(`Client ${id} has disconnected from room ${room}.`));
  
+    if(Hub.rooms.get(room) === undefined)
+    {
+        Hub.connections.delete(id);
+        return;
+    }
+
     Hub.rooms.get(room).delete(id);
 
     if(Hub.rooms.get(room).size <= 0)
     {
         Hub.rooms.delete(room);
-        console.log("deleting room " + room)
+        console.log(chalk.red(`Deleting room ${room}.`));
     }
 
     Hub.connections.delete(id);
@@ -64,22 +72,13 @@ Hub.send = function(id, room, data)
 }
 
 /*
-    When pinged, ensure that this socket is still active by
-    setting the active flag. If not, then it will be assumed
-    that this socket is "dead".
-*/
-Hub.onPong = function(socket)
-{
-    socket.active = true;
-}
-
-/*
     Called every PONG_TIME milliseconds. This is to check if
     every socket is still alive. If not, then remove the client.
 */
 Hub.onPing = function()
 {
-    Hub.connections.forEach((id, socket) => {
+    for (let [id, socket] of Hub.connections) 
+    {
         /*
             If inactive:
                 - remove the client from the current room
@@ -92,50 +91,57 @@ Hub.onPing = function()
         }
 
         socket.active = false;
-        socket.ping(() => {});
-    });
+        socket.ping(() => {});        
+    }
+   
+    if(!USE_DEBUGGER)
+        return;
 
     if(Hub.rooms.size > 0) 
+    {
         console.log(chalk.bgGray("============== Rooms  =============="));
     
         Hub.rooms.forEach((clients, room) => {
-        console.log(chalk.blue(room));
-        clients.forEach((client, val) => {
-            console.log(val);
-            Hub.send(val, room, { msg: "hello world" });
+            console.log(chalk.blue(room));
         });
-    });
+    }
 }
 
 /*
     Called when socket is initially connected. Used for setting
     up the socket events.
 */
-Hub.onConnection = function(socket) 
+Hub.onConnection = function(socket, req) 
 {
     const id = uuidv4();
-
+    const url = req.url;
+    const params = querystring.parse(url);
+    
     /*
         Add the id, room, and active properties to the socket object so that
         it's easier to look up which room this socket needs to send data to.
     */
-    Hub.connections[id] = socket;
+    Hub.connections.set(id, socket);
     socket.id = id;
-    socket.room = undefined;
+    socket.room = params["/ws?id"];
     socket.active = true;
 
-    socket.on('pong', Hub.onPong);
+    Hub.addClient(socket);
+
+    socket.on('pong', function onPing(){
+        socket.active = true;
+    });
 
     socket.on('close', () => {
         Hub.removeClient(socket.id, socket.room);
     });
     
-    socket.on('message', (data) => {
-        const res = JSON.parse(data);
-        const { room, event } = res;
+    socket.on('message', (msg) => {
+        const res = JSON.parse(msg);
+        const { room, event, data } = res;
 
         // emit the event with the data that was sent to the server & the socket's id
-        Hub.events.emit(event, { id: socket.id, ...res });
+        Hub.events.emit(event, { id: socket.id, ...data });
     });
 }
 

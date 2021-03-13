@@ -1,6 +1,7 @@
 const express = require('express');
 const ws = require("ws");
 const http = require('http');
+const bodyParser = require('body-parser');
 
 const hub = require('./hub');
 const database = require('./db');
@@ -24,8 +25,11 @@ Server.setup = async function(app, port)
     await database.setup();
     hub.setup(this.sockets);
 
+    app.use(bodyParser.json());
+    app.use(bodyParser.urlencoded({extended: true}));
+
     app.use(express.static('public'));
-    app.use('/room', require('./routes/room'));
+    app.use('/api/room', require('./routes/room'));
 
     server.listen(port, () => console.log("Listening on localhost:" + port));
 }
