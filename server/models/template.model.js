@@ -4,6 +4,10 @@ const database = require('../db');
 
 var Template = {};
 
+/**
+ * Create a template within the database
+ * @param { string } id 
+ */
 Template.create = async function(id)
 {
     const templateId = uuidv4();

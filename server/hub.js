@@ -3,8 +3,11 @@ const events = require('events');
 const chalk = require('chalk');
 const querystring = require('querystring');
 
+const Room = require('./models/room.model');
+const Item = require('./models/item.model');
+
 const USE_DEBUGGER = true;  // print contents of every room for every ping
-const PONG_TIME = 5000;    // check every 30 seconds
+const PONG_TIME = 15 * 1000;    // check every 15 seconds
 
 let Hub = {};
 Hub.connections = new Map();
@@ -62,12 +65,93 @@ Hub.send = function(id, room, data)
     }
 
     Hub.rooms.get(room).forEach((state, client) => {
-        let socket = Hub.connections[client];
+        let socket = Hub.connections.get(client);
 
         if(client !== id)
         {
             socket.send(JSON.stringify(data));
         }
+    });
+}
+
+Hub.addItem = function({ socket, room, data }) 
+{
+    console.log(chalk.greenBright(`Adding item to room ${room}`));
+
+    Room.addItem(room, Item.create(data));
+
+    Hub.send(socket.id, room, {
+        event: "itemAdded",
+        data
+    });
+}
+
+Hub.updateItems = function({ socket, room, data }) 
+{
+    console.log(chalk.greenBright(`Updating item in room ${room}`));
+    
+    if(data.items !== undefined && data.items.length > 0) 
+    {
+        data.items.forEach(function(item){
+            Room.editItem(room, item.id, item.updated);
+        });
+
+        Hub.send(socket.id, room, {
+            event: "itemsUpdated",
+            data
+        });
+    }
+}
+
+Hub.deleteItem = function({ socket, room, data })
+{
+    console.log(chalk.greenBright(`Deleting item to room ${room}`));
+
+    if(data === undefined || data.id === undefined)
+        return;
+
+    Room.deleteItem(room, data.id);
+
+    Hub.send(socket.id, room, {
+        event: "itemDeleted",
+        data
+    });
+}
+
+Hub.updateLayout = function({ socket, room, data })
+{
+    console.log(chalk.greenBright(`Updating layout of room ${room}`));
+
+    if(data.vertices === undefined || data.vertices.length <= 0)
+        return;
+
+    Room.updateVertices(room, data.vertices);
+
+    Hub.send(socket.id, room, {
+        event: "layoutUpdated",
+        data
+    });
+}
+
+Hub.cloneRoom = function({ socket, room, data })
+{
+    console.log(chalk.greenBright(`Cloning room ${room}`));
+
+    console.log(data);
+}
+
+Hub.updateRoomName = async function({ socket, room, data })
+{
+    console.log(chalk.greenBright(`Updating name of room ${room}`));
+
+    if(data.name === undefined || data.name.length <= 0)
+        return;
+
+    await Room.updateRoomName(room, data.name);
+
+    Hub.send(socket.id, room, {
+        event: "roomNameUpdated",
+        data
     });
 }
 
@@ -140,8 +224,10 @@ Hub.onConnection = function(socket, req)
         const res = JSON.parse(msg);
         const { room, event, data } = res;
 
+        console.log(room, event, JSON.stringify(data));
+
         // emit the event with the data that was sent to the server & the socket's id
-        Hub.events.emit(event, { id: socket.id, ...data });
+        Hub.events.emit(event, { socket, room, id: socket.id, data });
     });
 }
 
@@ -152,7 +238,14 @@ Hub.setup = function(sockets)
     Hub.sockets = sockets;
     Hub.events = new events.EventEmitter();
 
+    /* register the socket events */
     Hub.events.addListener("joinRoom", Hub.addClient);
+    Hub.events.addListener("addItem", Hub.addItem);
+    Hub.events.addListener("updateItems", Hub.updateItems);
+    Hub.events.addListener("deleteItem", Hub.deleteItem);
+    Hub.events.addListener("updateLayout", Hub.updateLayout);
+    Hub.events.addListener("cloneRoom", Hub.cloneRoom);
+    Hub.events.addListener("updateRoomName", Hub.updateRoomName);
 
     sockets.on('connection', Hub.onConnection);
 

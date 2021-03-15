@@ -1,38 +1,23 @@
 let Item = {};
 
-/**vtype RoomItem struct {
-	ID string `json:"id" rethinkdb:"id"`
-	Name string `json:"name" rethinkdb:"name"`
-	Quantity int `json:"quantity" rethinkdb:"quantity"`
-	ClaimedBy string `json:"claimedBy" rethinkdb:"claimedBy"`
-	VisibleInEditor bool `json:"visibleInEditor" rethinkdb:"visibleInEditor"`
-	Dimensions ItemDimensions `json:"dimensions" rethinkdb:"dimensions"`
-	EditorPosition EditorPoint `json:"editorPosition" rethinkdb:"editorPosition"`
-	EditorRotation float64 `json:"editorRotation" rethinkdb:"editorRotation"`
-	EditorLocked bool `json:"editorLocked" rethinkdb:"editorLocked"`
-	EditorZIndex float64 `json:"editorZIndex" rethinkdb:"editorZIndex"`
-}
-
-type ItemDimensions struct {
-	Width float64 `json:"width" rethinkdb:"width"`
-	Length float64 `json:"length" rethinkdb:"length"`
-	Height float64 `json:"height" rethinkdb:"height"`
-} */
-
-Item.create = function(name, quantity) 
+/**
+ * Create an item based off of the given parameters & initialize each of the other parameters to their default values
+ * @param { object } item 
+ */
+Item.create = function(item) 
 {
     return {
-        "name": name,
-        "quantity": quantity,
-        visibleInEditor: false,
+        "name": item.name,
+        "quantity": item.quantity || 1,
+        visibleInEditor: item.visibleInEditor || false,
         dimensions: {
-            width: 1,
-            height: 1,
-            length: 1
+            width: (item.dimensions !== undefined && item.dimensions.width !== undefined) ? item.dimensions.width : 1,
+            height: (item.dimensions !== undefined && item.dimensions.height !== undefined) ? item.dimensions.height : 1,
+            length: (item.dimensions !== undefined && item.dimensions.length !== undefined) ? item.dimensions.length : 1
         },
         editorPosition: {
-            x: 0,
-            y: 0
+            x: (item.editorPosition !== undefined && item.editorPosition.x !== undefined) ? item.editorPosition.x : 0,
+            y: (item.editorPosition !== undefined && item.editorPosition.y !== undefined) ? item.editorPosition.y : 0
         }
     };
 }
