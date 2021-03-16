@@ -14,9 +14,15 @@ DormDesign allows roommates to collaboratively design and plan our their dorm ro
 
 ## Development Environment
 1. Install `docker` and `docker-compose`
-2. Navigate to the `/frontend` folder and run `npm install`
-3. Then from the root of the project directory run `docker-compose -f docker-compose.dev.yml up --build` to start the server. Depending on your permissions, you may need to run this command using `sudo`. The site can then be accessed at `localhost:5500`
+2. Clone repository
+3. Navigate to the `/frontend` folder and run `npm install`
+4. Then from the root of the project directory run `docker-compose -f docker-compose.dev.yml up --build` to start the server. Depending on your permissions, you may need to run this command using `sudo`. The site can then be accessed at `localhost:5500`
 
 ## Deployment
-Same as development, but instead start the production environment with the command `docker-compose up --build -d`. Similar to the development environment, it may be necessary to run this command using `sudo`.
-
+### Steps for setting up server from scratch (only needs to be done once):
+1. Install docker and docker-compose
+2. Clone repository
+3. Navigate to the root of the project directory and run `sudo chmod +x ./init-letsencrypt.sh`
+4. Run `sudo ./init-letsencrypt.sh`
+### How to start production server
+Run `docker-compose up --build -d`. Similar to the development environment, it may be necessary to run this command using `sudo`.
