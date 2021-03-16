@@ -141,11 +141,19 @@ Hub.updateLayout = function({ socket, room, data, sendResponse })
     });
 }
 
-Hub.cloneRoom = function({ socket, room, data })
+Hub.cloneRoom = async function({ socket, room, data, sendResponse })
 {
-    console.log(chalk.greenBright(`Cloning room ${room}`));
+    const target = data.target_id;
 
-    console.log(data);
+    console.log(chalk.greenBright(`Cloning template ${target} into ${room}`));
+
+    await Room.copyFrom(room, target);
+
+    Hub.send(socket.id, room, {
+        event: "roomCloned",
+        sendResponse,
+        data
+    });
 }
 
 Hub.updateRoomName = async function({ socket, room, data, sendResponse })

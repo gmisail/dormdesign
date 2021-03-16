@@ -63,7 +63,7 @@ Room.get = async function(id)
  * Copy data from templateId into room with ID id
  * @param { string } id 
  * @param { string } templateId 
- * @returns { boolean } true if there is an error, false otherwise
+ * @returns { object } null if there is an error, returns new data otherwise
  */
 Room.copyFrom = async function(id, templateId)
 {
@@ -80,10 +80,10 @@ Room.copyFrom = async function(id, templateId)
 	if(err) 
 	{
 		console.error("Could not copy room " + templateId + " to " + id);
-		return err;
+		return null;
 	}
 
-	return false;
+	return templateData;
 }
 
 /**
