@@ -4,7 +4,6 @@ services:
     image: rethinkdb:latest
     restart: unless-stopped
     ports:
-      - 8080:8080
       - 29015:29015
       - 28015:28015
     volumes:
