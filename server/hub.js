@@ -67,26 +67,31 @@ Hub.send = function(id, room, data)
     Hub.rooms.get(room).forEach((state, client) => {
         let socket = Hub.connections.get(client);
 
-        if(client !== id)
+        if((data.sendResponse && client === id) || client != id)
         {
             socket.send(JSON.stringify(data));
         }
     });
 }
 
-Hub.addItem = function({ socket, room, data }) 
+Hub.addItem = async function({ socket, room, data, sendResponse }) 
 {
     console.log(chalk.greenBright(`Adding item to room ${room}`));
 
-    Room.addItem(room, Item.create(data));
+    console.log(data);
+
+    const item = await Room.addItem(room, data);
+
+    console.log(item)
 
     Hub.send(socket.id, room, {
         event: "itemAdded",
-        data
+        sendResponse,
+        data: item
     });
 }
 
-Hub.updateItems = function({ socket, room, data }) 
+Hub.updateItems = function({ socket, room, data, sendResponse }) 
 {
     console.log(chalk.greenBright(`Updating item in room ${room}`));
     
@@ -98,27 +103,29 @@ Hub.updateItems = function({ socket, room, data })
 
         Hub.send(socket.id, room, {
             event: "itemsUpdated",
+            sendResponse,
             data
         });
     }
 }
 
-Hub.deleteItem = function({ socket, room, data })
+Hub.deleteItem = function({ socket, room, data, sendResponse })
 {
     console.log(chalk.greenBright(`Deleting item to room ${room}`));
 
     if(data === undefined || data.id === undefined)
         return;
 
-    Room.deleteItem(room, data.id);
+    Room.removeItem(room, data.id);
 
     Hub.send(socket.id, room, {
         event: "itemDeleted",
+        sendResponse,
         data
     });
 }
 
-Hub.updateLayout = function({ socket, room, data })
+Hub.updateLayout = function({ socket, room, data, sendResponse })
 {
     console.log(chalk.greenBright(`Updating layout of room ${room}`));
 
@@ -129,6 +136,7 @@ Hub.updateLayout = function({ socket, room, data })
 
     Hub.send(socket.id, room, {
         event: "layoutUpdated",
+        sendResponse,
         data
     });
 }
@@ -140,7 +148,7 @@ Hub.cloneRoom = function({ socket, room, data })
     console.log(data);
 }
 
-Hub.updateRoomName = async function({ socket, room, data })
+Hub.updateRoomName = async function({ socket, room, data, sendResponse })
 {
     console.log(chalk.greenBright(`Updating name of room ${room}`));
 
@@ -151,6 +159,7 @@ Hub.updateRoomName = async function({ socket, room, data })
 
     Hub.send(socket.id, room, {
         event: "roomNameUpdated",
+        sendResponse,
         data
     });
 }
@@ -222,12 +231,12 @@ Hub.onConnection = function(socket, req)
     
     socket.on('message', (msg) => {
         const res = JSON.parse(msg);
-        const { room, event, data } = res;
+        const { room, event, sendResponse, data } = res;
 
         console.log(room, event, JSON.stringify(data));
 
         // emit the event with the data that was sent to the server & the socket's id
-        Hub.events.emit(event, { socket, room, id: socket.id, data });
+        Hub.events.emit(event, { socket, room, sendResponse, id: socket.id, data });
     });
 }
 
