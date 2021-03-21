@@ -259,7 +259,7 @@ class RoomEditor extends Component {
     switch during button fade animation */
     const locked = this.state.lastSelectedItemID
       ? this.roomObject.roomItems.get(this.state.lastSelectedItemID)
-          .movementLocked
+          ?.movementLocked
       : false;
     // Determine whether or not a boundary point is currently selected
     const boundaryPointSelected =
