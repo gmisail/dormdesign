@@ -12,6 +12,7 @@ import { useState, useCallback } from "react";
 */
 
 const initialModalState = {
+  centered: false,
   show: false,
   type: null,
 };

@@ -6,7 +6,7 @@ import "./ShareRoomModal.scss";
 const ShareRoomModal = (props) => {
   const { id, templateId, link } = props;
   return (
-    <Modal show={props.show} onHide={props.onHide}>
+    <Modal show={props.show} onHide={props.onHide} centered={props.centered}>
       <Modal.Header closeButton>
         <Modal.Title className="custom-modal-title">Share</Modal.Title>
       </Modal.Header>
