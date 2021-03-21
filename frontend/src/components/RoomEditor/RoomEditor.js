@@ -94,10 +94,11 @@ class RoomEditor extends Component {
             const translatedItem = itemToEditorProperties(
               action.payload.items[i]
             );
+            console.log("CONNECTED", action);
             this.roomObject.addItemToRoom(translatedItem);
-            this.roomObject.bounds.points = action.payload.bounds;
-            this.roomObject.centerView();
           }
+          this.roomObject.bounds.points = action.payload.bounds;
+          this.roomObject.centerView();
           break;
         case RoomActions.itemsUpdated:
           for (let i = 0; i < action.payload.items.length; i++) {
@@ -115,6 +116,7 @@ class RoomEditor extends Component {
           this.roomObject.removeItemFromRoom(action.payload.id);
           break;
         case RoomActions.boundsUpdated:
+          console.log("NEW BOUNDS", action.payload.bounds);
           // If bounds are currently being edited, don't update them locally with external changes
           if (!this.state.editingBounds) {
             this.roomObject.bounds.points = action.payload.bounds;
