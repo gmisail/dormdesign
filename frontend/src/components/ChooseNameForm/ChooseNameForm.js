@@ -36,7 +36,7 @@ const ChooseNameForm = (props) => {
           disabled={nameValue === "" ? true : false}
           type="submit"
         >
-          Save
+          {props.saveButtonText ?? "Save"}
         </button>
       </div>
     </Form>

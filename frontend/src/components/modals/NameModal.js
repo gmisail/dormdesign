@@ -16,7 +16,10 @@ const NameModal = (props) => {
           Choose a name so that other people in the room know who you are. This
           data will only be stored locally in your browser.
         </p>
-        <ChooseNameForm onSubmit={props.onSubmit} />
+        <ChooseNameForm
+          onSubmit={props.onSubmit}
+          saveButtonText={props.saveButtonText}
+        />
       </Modal.Body>
     </Modal>
   );

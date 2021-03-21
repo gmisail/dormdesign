@@ -3,7 +3,7 @@
 .navbar {
   background-color: $color-primary;
   font-weight: 700;
-  height: 56px;
+  height: $navbar-height;
 
   .navbar-brand-logo {
     height: 100%;

@@ -1,10 +1,5 @@
 @import "../../styles/variables.scss";
 
-body {
-  // Prevent page scrolling on RoomRoute page
-  overflow: hidden;
-}
-
 .room-container {
   $navbar-height: 56px;
   $padding-x: 25px;

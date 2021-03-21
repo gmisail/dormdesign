@@ -11,7 +11,11 @@ const RoomNameModal = (props) => {
         </Modal.Title>
       </Modal.Header>
       <Modal.Body>
-        <ChooseNameForm name={props.name} onSubmit={props.onSubmit} />
+        <ChooseNameForm
+          name={props.name}
+          onSubmit={props.onSubmit}
+          saveButtonText={props.saveButtonText}
+        />
       </Modal.Body>
     </Modal>
   );
