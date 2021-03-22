@@ -4,7 +4,7 @@ import ListItemForm from "../ListItemForm/ListItemForm";
 
 const EditModal = (props) => {
   return (
-    <Modal show={props.show} onHide={props.onHide}>
+    <Modal show={props.show} onHide={props.onHide} centered={props.centered}>
       <Modal.Header closeButton>
         <Modal.Title className="custom-modal-title">Edit Item</Modal.Title>
       </Modal.Header>

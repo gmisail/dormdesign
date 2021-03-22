@@ -115,6 +115,7 @@ class HomeRoute extends Component {
           onHide={() => {
             this.setState({ showModal: false });
           }}
+          saveButtonText={"Create"}
         />
       </>
     );
