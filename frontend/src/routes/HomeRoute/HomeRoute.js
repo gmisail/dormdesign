@@ -14,7 +14,7 @@ import "./HomeRoute.scss";
 class HomeRoute extends Component {
   state = {
     joinRoomInput: "",
-    showModal: false,
+    showModal: false
   };
 
   componentDidMount() {
