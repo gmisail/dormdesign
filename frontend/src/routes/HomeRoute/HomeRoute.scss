@@ -20,10 +20,10 @@
 
     display: grid;
     grid-template-rows: max-content;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr;
     grid-template-areas:
-      "header header"
-      "create-room join-room";
+      "header header header"
+      "create-room join-room my-rooms";
 
     gap: 50px;
 
@@ -34,7 +34,8 @@
       grid-template-areas:
         "header"
         "create-room"
-        "join-room";
+        "join-room"
+        "my-rooms";
       grid-template-columns: 1fr;
     }
 
@@ -72,6 +73,26 @@
       @extend %homepage-custom-card;
       grid-area: join-room;
     }
+
+    .my-rooms-container {
+      @extend %homepage-custom-card;
+      grid-area: my-rooms;
+    }
+  }
+}
+
+.scrollable-button-list {
+  height: 64px;
+  
+  list-style-type: none;
+
+  overflow: hidden; 
+  overflow-y: scroll;
+
+  width: 100%;
+
+  button {
+    margin: 2px;
   }
 }
 

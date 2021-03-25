@@ -12,6 +12,7 @@ import { modalTypes, Modal } from "../../components/modals/Modal";
 import useModal from "../../hooks/useModal";
 
 import "./RoomRoute.scss";
+import StorageController from "../../controllers/StorageController";
 
 export const RoomRoute = () => {
   const {
@@ -34,6 +35,8 @@ export const RoomRoute = () => {
 
   const { id } = useParams();
   const [modalProps, toggleModal] = useModal();
+
+  StorageController.addRoomToHistory(id, roomName);
 
   // Called when component is first mounted
   useEffect(() => {
@@ -64,6 +67,8 @@ export const RoomRoute = () => {
   }, [error, socketConnection, toggleModal]);
 
   useEffect(() => {
+    StorageController.addRoomToHistory(id, roomName);
+
     document.title = `DormDesign ${roomName ? "| " + roomName : ""}`;
   }, [roomName]);
 

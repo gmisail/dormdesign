@@ -25,14 +25,26 @@ export default class StorageController {
      * allow for any duplicates.
      * @param {*} roomId 
      */
-    static addRoomToHistory(roomId) {
+    static addRoomToHistory(roomId, name) {
         let history = StorageController.getRoomsFromHistory();
-        let duplicates = history.filter(page => page === roomId);
+        let duplicates = false;
+        
+        history.forEach((page, id) => {
+            if(page.id === roomId) {
+                duplicates = true;
 
-        if(duplicates.length > 0) 
-            return;
+                if(page.name !== name) {
+                    history[id].name = name;
+                }
+            }
+        });
 
-        history.push(roomId);
+        if(!duplicates) {
+            history.push({
+                id: roomId,
+                name
+            });    
+        }
 
         StorageController.set("history", JSON.stringify(history));
     }
@@ -41,7 +53,7 @@ export default class StorageController {
      * Get array of room ID's that are stored in the browser
      */
     static getRoomsFromHistory() {
-        const historyData = StorageController.get("history");
+        let historyData = StorageController.get("history");
 
         if(historyData == null)
             historyData = "[]";

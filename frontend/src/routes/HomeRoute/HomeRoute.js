@@ -10,15 +10,19 @@ import { ReactComponent as Logo } from "../../assets/logo.svg";
 import RoomNameModal from "../../components/modals/RoomNameModal";
 
 import "./HomeRoute.scss";
+import StorageController from "../../controllers/StorageController";
 
 class HomeRoute extends Component {
   state = {
     joinRoomInput: "",
-    showModal: false
+    showModal: false,
+    roomHistory: []
   };
 
   componentDidMount() {
     document.title = "DormDesign";
+
+    this.setState({ roomHistory: StorageController.getRoomsFromHistory() });
 
     const scene = new SceneController(this.backgroundCanvasRef);
     scene.backgroundColor = "#f9f9f9";
@@ -55,10 +59,40 @@ class HomeRoute extends Component {
     this.props.history.push(`/room/${this.state.joinRoomInput}`);
   };
 
+  joinExistingRoom = (event) => {
+    const roomId = event.target.value;
+
+    this.props.history.push(`/room/${roomId}`);
+  };
+
   onSubmitCreateRoomModal = async (name) => {
     const roomID = await DataRequests.CREATE_TEST_ROOM(name);
     this.props.history.push(`/room/${roomID}`);
   };
+
+  renderExistingRooms = () => {
+    if(this.state.roomHistory.length <= 0)
+      return <i>You have not visited any rooms!</i>;
+
+    return (
+      <div className="scrollable-button-list">
+        {
+          this.state.roomHistory.map((room, id) => (
+            <>
+              <button
+                className="custom-btn flex-shrink-0 ml-2"
+                name="createRoomButton"
+                key={id}
+                value={room.id}
+                onClick={this.joinExistingRoom}>
+                { room.name }
+              </button>
+            </>
+          ))
+        }
+      </div>
+    );
+  }
 
   render() {
     return (
@@ -104,6 +138,13 @@ class HomeRoute extends Component {
                 >
                   Join Room
                 </button>
+              </div>
+            </div>
+            <div className="my-rooms-container custom-card">
+              <h4>My Rooms</h4>
+              <p>Return to a room that you have recently modified.</p>
+              <div className="d-flex w-100">
+                { this.renderExistingRooms() }
               </div>
             </div>
           </div>
