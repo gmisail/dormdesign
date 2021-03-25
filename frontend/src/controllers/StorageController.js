@@ -3,7 +3,7 @@
  * allows the user to save / get data without messing around with the
  * browser. Handles the serialization of Javascript objects.
  */
-class StorageController {
+export default class StorageController {
 
     /**
      * Set the username that is stored in the browser.
