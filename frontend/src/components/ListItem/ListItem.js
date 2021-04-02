@@ -10,8 +10,10 @@ import {
   BsFiles,
 } from "react-icons/bs";
 import { usePopper } from "react-popper";
-import { RoomContext } from "../../routes/RoomRoute/RoomContext";
+import { RoomContext } from "../../context/RoomContext";
 import IconButton from "../IconButton/IconButton";
+import { modalTypes, Modal } from "../../components/modals/Modal";
+import useModal from "../../hooks/useModal";
 
 import "./ListItem.scss";
 
@@ -32,8 +34,8 @@ const ListItem = (props) => {
 
     Note that this could be an issue if two users input the same userName
   */
-  const { userName } = useContext(RoomContext);
-
+  const { userName, setUserName } = useContext(RoomContext);
+  const [modalProps, toggleModal] = useModal();
   const [showMenu, setShowMenu] = useState(false);
   const menuButtonRef = useRef(null);
   const menuRef = useRef(null);
@@ -53,6 +55,17 @@ const ListItem = (props) => {
 
   // Called when a button in menu is clicked. Closes the menu and calls passed callback
   const menuOptionClicked = (callback) => {
+    if (callback === onClaim && userName === null) {
+      toggleModal(modalTypes.chooseName, {
+        onSubmit: (newName) => {
+          setUserName(newName);
+          toggleModal();
+        },
+      });
+
+      return;
+    }
+
     setShowMenu(false);
     callback();
   };
@@ -75,6 +88,7 @@ const ListItem = (props) => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [menuRef]);
+
   return (
     <div className={`list-item ${className}`}>
       <div className="list-item-content">
@@ -113,7 +127,7 @@ const ListItem = (props) => {
               Duplicate
             </li>
             <li onClick={() => menuOptionClicked(onClaim)}>
-              {item.claimedBy === userName ? (
+              {item.claimedBy !== null && item.claimedBy === userName ? (
                 <>
                   <BsPersonDash />
                   Unclaim
@@ -150,6 +164,7 @@ const ListItem = (props) => {
           </ul>
         </div>
       </div>
+      <Modal {...modalProps}></Modal>
     </div>
   );
 };

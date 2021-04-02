@@ -14,7 +14,7 @@ import {
 
 import { IconContext } from "react-icons";
 
-import { RoomProvider } from "./routes/RoomRoute/RoomContext";
+import { RoomProvider } from "./context/RoomContext";
 import { RoomRoute } from "./routes/RoomRoute/RoomRoute";
 import HomeRoute from "./routes/HomeRoute/HomeRoute";
 import SceneTestingRoute from "./routes/SceneTestingRoute/SceneTestingRoute";
@@ -23,18 +23,20 @@ const App = () => {
   return (
     <IconContext.Provider value={{ size: "1.6em" }}>
       <Router>
-        <Switch>
-          <Route exact path="/" component={HomeRoute} />
-          <Route component={MainRoutes} />
-        </Switch>
-        <Footer />
+        <div className="main-content-container offset-from-footer">
+          <Switch>
+            <Route exact path="/" component={HomeRoute} />
+            <Route component={MainRoutes} />
+          </Switch>
+          <Footer />
+        </div>
       </Router>
     </IconContext.Provider>
   );
 };
 
 const MainRoutes = () => (
-  <div className="main-content-container">
+  <div className="offset-from-navbar">
     <NavigationBar></NavigationBar>
     <Switch>
       <Redirect from="/room/" to="/" exact />

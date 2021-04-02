@@ -4,7 +4,7 @@ import ChooseNameForm from "../ChooseNameForm/ChooseNameForm";
 
 const NameModal = (props) => {
   return (
-    <Modal show={props.show} onHide={props.onHide}>
+    <Modal show={props.show} onHide={props.onHide} centered={props.centered}>
       <Modal.Header closeButton>
         <Modal.Title className="custom-modal-title">
           Choose Your Name
@@ -12,10 +12,14 @@ const NameModal = (props) => {
       </Modal.Header>
 
       <Modal.Body>
-        Choose a name so that other people in the room know who you are. This
-        data will only be stored locally in your browser.
-        <hr />
-        <ChooseNameForm onSubmit={props.onSubmit} />
+        <p className="mb-3">
+          Choose a name so that other people in the room know who you are. This
+          data will only be stored locally in your browser.
+        </p>
+        <ChooseNameForm
+          onSubmit={props.onSubmit}
+          saveButtonText={props.saveButtonText}
+        />
       </Modal.Body>
     </Modal>
   );

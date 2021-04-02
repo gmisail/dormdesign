@@ -4,7 +4,10 @@ class SocketConnection {
   constructor(id, onOpen) {
     this.id = id;
     this.eventController = new EventController();
-    this.connection = new WebSocket("ws://localhost:5500/ws?id=" + this.id);
+    const protocol = window.location.protocol === "https:" ? "wss" : "ws";
+    this.connection = new WebSocket(
+      `${protocol}://${window.location.host}/ws?id=${this.id}`
+    );
     this.connection.onopen = () => {
       if (onOpen !== undefined) {
         onOpen();

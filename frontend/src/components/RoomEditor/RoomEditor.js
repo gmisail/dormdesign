@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { RoomContext, RoomActions } from "../../routes/RoomRoute/RoomContext";
+import { RoomContext, RoomActions } from "../../context/RoomContext";
 import SceneController from "../../room-editor/SceneController";
 import RoomEditorObject from "../../room-editor/RoomEditorObject";
 import IconButton from "../IconButton/IconButton";
@@ -95,9 +95,9 @@ class RoomEditor extends Component {
               action.payload.items[i]
             );
             this.roomObject.addItemToRoom(translatedItem);
-            this.roomObject.bounds.points = action.payload.bounds;
-            this.roomObject.centerView();
           }
+          this.roomObject.bounds.points = action.payload.bounds;
+          this.roomObject.centerView();
           break;
         case RoomActions.itemsUpdated:
           for (let i = 0; i < action.payload.items.length; i++) {
@@ -259,7 +259,7 @@ class RoomEditor extends Component {
     switch during button fade animation */
     const locked = this.state.lastSelectedItemID
       ? this.roomObject.roomItems.get(this.state.lastSelectedItemID)
-          .movementLocked
+          ?.movementLocked
       : false;
     // Determine whether or not a boundary point is currently selected
     const boundaryPointSelected =

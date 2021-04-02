@@ -36,10 +36,15 @@ textarea {
 
 .main-content-container {
   height: 100vh;
-  background-color: $background-color;
-  padding-top: 56px; /* Offsets content of page from navbar (which is fixed to top) */
-  padding-bottom: $footer-height; /* Offsets content from footer */
   overflow: hidden;
+}
+
+.offset-from-navbar {
+  padding-top: $navbar-height; /* Offsets content of page from navbar (which is fixed to top) */
+}
+
+.offset-from-footer {
+  padding-bottom: $footer-height; /* Offsets content from footer */
 }
 
 .custom-card {

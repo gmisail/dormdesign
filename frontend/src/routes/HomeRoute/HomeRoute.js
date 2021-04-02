@@ -58,7 +58,7 @@ class HomeRoute extends Component {
   onSubmitCreateRoomModal = async (name) => {
     const roomData = await DataRequests.createRoom(name);
     const roomID = roomData.id;
-    
+
     this.props.history.push(`/room/${roomID}`);
   };
 
@@ -117,6 +117,7 @@ class HomeRoute extends Component {
           onHide={() => {
             this.setState({ showModal: false });
           }}
+          saveButtonText={"Create"}
         />
       </>
     );

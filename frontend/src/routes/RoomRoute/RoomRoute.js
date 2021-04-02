@@ -1,97 +1,17 @@
-import React, { useEffect, useState, useContext, useCallback } from "react";
+import React, { useEffect, useContext, useCallback } from "react";
 import { useParams } from "react-router-dom";
-import { RoomContext } from "./RoomContext";
 
 import { Spinner } from "react-bootstrap";
 import { BsGear, BsPlus, BsBoxArrowUpRight, BsPencil } from "react-icons/bs";
 
+import { RoomContext } from "../../context/RoomContext";
 import RoomEditor from "../../components/RoomEditor/RoomEditor";
 import DormItemList from "../../components/DormItemList/DormItemList";
-
-import AddModal from "../../components/modals/AddModal";
-import EditModal from "../../components/modals/EditModal";
-import NameModal from "../../components/modals/NameModal";
-import SettingsModal from "../../components/modals/SettingsModal";
-import ShareRoomModal from "../../components/modals/ShareRoomModal/ShareRoomModal";
-
-import ErrorModal from "../../components/modals/ErrorModal";
 import IconButton from "../../components/IconButton/IconButton";
+import { modalTypes, Modal } from "../../components/modals/Modal";
+import useModal from "../../hooks/useModal";
 
 import "./RoomRoute.scss";
-import RoomNameModal from "../../components/modals/RoomNameModal";
-
-const modalTypes = {
-  add: "ADD",
-  edit: "EDIT",
-  chooseName: "CHOOSE_NAME",
-  updateRoomName: "UPDATE_ROOM_NAME",
-  error: "ERROR",
-  settings: "SETTINGS",
-  share: "SHARE",
-};
-
-// Modal component that returns a modal based on the passed 'type' prop and passes all props to that modal
-const Modal = (props) => {
-  switch (props.type) {
-    case modalTypes.add:
-      return <AddModal {...props} />;
-    case modalTypes.edit:
-      return <EditModal {...props} />;
-    case modalTypes.chooseName:
-      return <NameModal {...props} />;
-    case modalTypes.updateRoomName:
-      return <RoomNameModal {...props} />;
-    case modalTypes.error:
-      return <ErrorModal {...props} />;
-    case modalTypes.settings:
-      return <SettingsModal {...props} />;
-    case modalTypes.share:
-      return <ShareRoomModal {...props} />;
-    default:
-      return null;
-  }
-};
-
-/*
-  Keeps track of modal props. Returns current modalProps and toggleModal function
-  which takes (type, data) parameters, type is the modal type that should be 
-  displayed and data is additional props that should be passed to the modal.
-
-  Calling toggleModal() with no parameters resets the modalProps so the current
-  modal will be hidden.
-*/
-
-const initialModalState = {
-  show: false,
-  type: null,
-};
-
-const useModal = () => {
-  const [modalProps, setModalProps] = useState(initialModalState);
-  const toggleModal = useCallback((type, props) => {
-    if (type !== undefined) {
-      setModalProps({
-        ...initialModalState,
-        ...props,
-        show: true,
-        type: type,
-        onHide: () => toggleModal(),
-      });
-    } else {
-      /* 
-        When toggling the modal off, we don't want to reset the type variable
-        since we still want that modal to be rendered (so the Bootstrap modal hide animation has time to be shown)
-      */
-      setModalProps((prevState) => ({
-        ...initialModalState,
-        type: prevState.type,
-        onHide: () => toggleModal(),
-      }));
-    }
-  }, []);
-
-  return [modalProps, toggleModal];
-};
 
 export const RoomRoute = () => {
   const {
@@ -194,8 +114,24 @@ export const RoomRoute = () => {
         onClone: (target) => {
           cloneRoom(id, target);
         },
+        userName: userName,
+        onChangeUserName: (name) => {
+          setUserName(name);
+        },
+        roomName: roomName,
+        onChangeRoomName: (name) => {
+          updateRoomName(name);
+        },
       }),
-    [toggleModal, cloneRoom, id]
+    [
+      toggleModal,
+      cloneRoom,
+      id,
+      userName,
+      setUserName,
+      roomName,
+      updateRoomName,
+    ]
   );
 
   const onClickRoomName = useCallback(
