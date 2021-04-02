@@ -1,17 +1,23 @@
+# rethinkdb
 *.rdb
 rethinkdb_data/
 rethinkdb_data/log_file
 rethinkdb_data/metadata
 
+# ide & runtime stuff
 .idea
 .env
-
-log.txt
-
-dormdesign
-
 .DS_Store
 .vscode/
 
+log.txt
+
+# builds
+dormdesign
+
+# https related stuff
 certbot/
 data/
+
+# node.js
+/node_modules
