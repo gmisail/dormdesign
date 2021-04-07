@@ -120,7 +120,7 @@ export const RoomRoute = () => {
         },
         roomName: roomName,
         onChangeRoomName: (name) => {
-          updateRoomName(name);
+          updateRoomName(id, name);
         },
       }),
     [
@@ -141,13 +141,13 @@ export const RoomRoute = () => {
         onSubmit: (updatedRoomName) => {
           // Only update if name actually changed
           if (updatedRoomName !== roomName) {
-            updateRoomName(updatedRoomName);
+            updateRoomName(id, updatedRoomName);
           }
           toggleModal();
         },
         onHide: () => toggleModal(),
       }),
-    [toggleModal, updateRoomName, roomName]
+    [toggleModal, updateRoomName, roomName, id]
   );
 
   const onToggleItemEditorVisibility = useCallback(

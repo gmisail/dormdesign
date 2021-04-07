@@ -366,7 +366,7 @@ export const RoomProvider = ({ children }) => {
   );
 
   const updateRoomName = useCallback(
-    (roomName) => {
+    (id, roomName) => {
       if (roomName == null || roomName.length === 0) return;
       state.socketConnection.send({
         event: "updateRoomName",
@@ -375,6 +375,8 @@ export const RoomProvider = ({ children }) => {
           name: roomName,
         },
       });
+
+      StorageController.addRoomToHistory(id, roomName);
 
       dispatch({
         type: RoomActions.roomNameUpdated,
