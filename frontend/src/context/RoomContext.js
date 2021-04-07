@@ -250,6 +250,8 @@ export const RoomProvider = ({ children }) => {
         });
 
         connection.on("roomNameUpdated", (data) => {
+          StorageController.addRoomToHistory(id, data.name);
+
           dispatch({
             type: RoomActions.roomNameUpdated,
             payload: { roomName: data.name },
