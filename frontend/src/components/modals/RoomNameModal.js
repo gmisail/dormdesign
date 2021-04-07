@@ -1,6 +1,6 @@
 import React from "react";
 import Modal from "react-bootstrap/Modal";
-import ChooseNameForm from "../ChooseNameForm/ChooseNameForm";
+import SingleInputForm from "../SingleInputForm/SingleInputForm";
 
 const RoomNameModal = (props) => {
   return (
@@ -11,10 +11,10 @@ const RoomNameModal = (props) => {
         </Modal.Title>
       </Modal.Header>
       <Modal.Body>
-        <ChooseNameForm
-          name={props.name}
+        <SingleInputForm
+          initialValue={props.name}
           onSubmit={props.onSubmit}
-          saveButtonText={props.saveButtonText}
+          submitButtonText={props.submitButtonText}
         />
       </Modal.Body>
     </Modal>

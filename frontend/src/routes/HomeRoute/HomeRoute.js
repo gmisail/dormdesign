@@ -1,13 +1,14 @@
 import React, { Component } from "react";
 
-import { FormControl } from "react-bootstrap";
+import Modal from "react-bootstrap/Modal";
 
 import DataRequests from "../../controllers/DataRequests";
 import RoomGridObject from "../../room-editor/RoomGridObject";
 import SceneController from "../../room-editor/SceneController";
 import Vector2 from "../../room-editor/Vector2";
 import { ReactComponent as Logo } from "../../assets/logo.svg";
-import RoomNameModal from "../../components/modals/RoomNameModal";
+import RoomPreviewCard from "../../components/RoomPreviewCard/RoomPreviewCard";
+import SingleInputForm from "../../components/SingleInputForm/SingleInputForm";
 
 import "./HomeRoute.scss";
 import StorageController from "../../controllers/StorageController";
@@ -15,8 +16,9 @@ import StorageController from "../../controllers/StorageController";
 class HomeRoute extends Component {
   state = {
     joinRoomInput: "",
-    showModal: false,
-    roomHistory: []
+    showCreateRoomModal: false,
+    showJoinRoomModal: false,
+    roomHistory: [],
   };
 
   componentDidMount() {
@@ -24,13 +26,14 @@ class HomeRoute extends Component {
 
     this.setState({ roomHistory: StorageController.getRoomsFromHistory() });
 
+    const backgroundColor = "#f4f4f4";
     const scene = new SceneController(this.backgroundCanvasRef);
-    scene.backgroundColor = "#f9f9f9";
+    scene.backgroundColor = backgroundColor;
     const grid = new RoomGridObject({
       scene: scene,
-      lineColor: "#c8c8c8",
+      lineColor: "#e0e0e0",
       lineWidth: 2,
-      backgroundColor: "#f9f9f9",
+      backgroundColor: backgroundColor,
     });
     scene.addChild(grid);
 
@@ -55,44 +58,31 @@ class HomeRoute extends Component {
     this.scene.onResize = () => {};
   }
 
-  joinRoomClicked = () => {
-    this.props.history.push(`/room/${this.state.joinRoomInput}`);
-  };
-
-  joinExistingRoom = (event) => {
-    const roomId = event.target.value;
-
-    this.props.history.push(`/room/${roomId}`);
-  };
-
   onSubmitCreateRoomModal = async (name) => {
     const roomID = await DataRequests.CREATE_TEST_ROOM(name);
     this.props.history.push(`/room/${roomID}`);
   };
 
-  renderExistingRooms = () => {
-    if(this.state.roomHistory.length <= 0)
-      return <i>You have not visited any rooms!</i>;
+  onSubmitJoinRoomModal = async (roomID) => {
+    this.props.history.push(`/room/${roomID}`);
+  };
 
-    return (
-      <div className="scrollable-button-list">
-        {
-          this.state.roomHistory.map((room, id) => (
-            <>
-              <button
-                className="custom-btn flex-shrink-0 ml-2"
-                name="createRoomButton"
-                key={id}
-                value={room.id}
-                onClick={this.joinExistingRoom}>
-                { room.name }
-              </button>
-            </>
-          ))
-        }
+  renderExistingRooms = () => {
+    return this.state.roomHistory.length > 0 ? (
+      <div className="recent-rooms-card">
+        <h5>Recent Rooms</h5>
+        <div className="recent-rooms">
+          {this.state.roomHistory.map((room, id) => (
+            <RoomPreviewCard
+              key={room.id}
+              id={room.id}
+              roomName={room.name}
+            ></RoomPreviewCard>
+          ))}
+        </div>
       </div>
-    );
-  }
+    ) : null;
+  };
 
   render() {
     return (
@@ -106,58 +96,67 @@ class HomeRoute extends Component {
             <div className="header-container">
               <Logo className="logo" />
             </div>
-            <div className="create-room-container custom-card">
-              <h4>Create a Room</h4>
-              <p>Get started with a fresh room.</p>
+            <div className="buttons-container">
               <button
-                className="custom-btn"
+                className="custom-btn custom-btn-large mr-sm-4 mr-3"
                 name="createRoomButton"
-                onClick={() => this.setState({ showModal: true })}
+                onClick={() => this.setState({ showCreateRoomModal: true })}
               >
-                Create New Room
+                Create Room
+              </button>
+              <button
+                className="custom-btn custom-btn-large flex-shrink-0 ml-sm-4 ml-3"
+                name="createRoomButton"
+                onClick={() => this.setState({ showJoinRoomModal: true })}
+              >
+                Join Room
               </button>
             </div>
-            <div className="join-room-container custom-card">
-              <h4>Join a Room</h4>
-              <p>Enter the ID for an existing room.</p>
-              <div className="d-flex w-100">
-                <FormControl
-                  className="flex-shrink-1"
-                  placeholder="Room ID"
-                  aria-label="Room Code"
-                  onChange={(evt) => {
-                    this.setState({ joinRoomInput: evt.target.value });
-                  }}
-                  style={{ minWidth: 0 }}
-                />
-                <button
-                  className="custom-btn flex-shrink-0 ml-2"
-                  name="createRoomButton"
-                  onClick={this.joinRoomClicked}
-                  disabled={this.state.joinRoomInput === ""}
-                >
-                  Join Room
-                </button>
-              </div>
-            </div>
-            <div className="my-rooms-container custom-card">
-              <h4>My Rooms</h4>
-              <p>Return to a room that you have recently modified.</p>
-              <div className="d-flex w-100">
-                { this.renderExistingRooms() }
-              </div>
+            <div className="recent-rooms-container">
+              {this.renderExistingRooms()}
             </div>
           </div>
         </div>
-        <RoomNameModal
-          title={"Create a Room"}
-          show={this.state.showModal}
-          onSubmit={this.onSubmitCreateRoomModal}
+
+        <Modal
+          show={this.state.showCreateRoomModal}
           onHide={() => {
-            this.setState({ showModal: false });
+            this.setState({ showCreateRoomModal: false });
           }}
-          saveButtonText={"Create"}
-        />
+        >
+          <Modal.Header closeButton>
+            <Modal.Title className="custom-modal-title">
+              Create a Room
+            </Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <SingleInputForm
+              placeholder={"Room name"}
+              onSubmit={this.onSubmitCreateRoomModal}
+              submitButtonText={"Create"}
+            />
+          </Modal.Body>
+        </Modal>
+
+        <Modal
+          show={this.state.showJoinRoomModal}
+          onHide={() => {
+            this.setState({ showJoinRoomModal: false });
+          }}
+        >
+          <Modal.Header closeButton>
+            <Modal.Title className="custom-modal-title">
+              Join a Room
+            </Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <SingleInputForm
+              placeholder={"Room ID"}
+              onSubmit={this.onSubmitJoinRoomModal}
+              submitButtonText={"Join"}
+            />
+          </Modal.Body>
+        </Modal>
       </>
     );
   }

@@ -16,39 +16,46 @@
   .content-container {
     padding: 50px;
     max-width: 1200px;
-    margin: 15vh auto 0 auto;
+    margin: 20vh auto 0 auto;
 
     display: grid;
     grid-template-rows: max-content;
-    grid-template-columns: 1fr 1fr 1fr;
+    // Need minmax(0, 1fr) to prevent items from overflowing grid column (if it was just 1fr) - https://css-tricks.com/preventing-a-grid-blowout/
+    grid-template-columns: minmax(0, 1fr);
     grid-template-areas:
-      "header header header"
-      "create-room join-room my-rooms";
-
+      "header"
+      "buttons"
+      "recent-rooms";
     gap: 50px;
 
+    justify-items: center;
+
     @media screen and (max-width: 875px) {
-      max-width: 500px;
       padding: 15px;
-      gap: 20px;
+      // gap: 20px;
       grid-template-areas:
         "header"
-        "create-room"
-        "join-room"
-        "my-rooms";
-      grid-template-columns: 1fr;
+        "buttons"
+        "recent-rooms";
+      grid-template-columns: 100%;
     }
 
     %homepage-custom-card {
       padding: 25px;
 
       opacity: 0;
+    }
+
+    %fadein-animation {
       animation: fadein 2s ease forwards;
     }
 
     .header-container {
+      @extend %fadein-animation;
+
       grid-area: header;
       display: flex;
+      justify-self: stretch;
       justify-content: center;
       align-items: center;
 
@@ -56,7 +63,6 @@
         flex-grow: 1;
         grid-area: logo;
         max-width: 800px;
-        animation: fadein 2s ease forwards;
 
         path {
           fill: $text-color-dark;
@@ -64,35 +70,47 @@
       }
     }
 
-    .create-room-container {
-      @extend %homepage-custom-card;
-      grid-area: create-room;
+    .buttons-container {
+      @extend %fadein-animation;
+
+      grid-area: buttons;
+
+      display: flex;
+      flex-flow: row nowrap;
+      justify-content: center;
+      align-items: center;
     }
 
-    .join-room-container {
-      @extend %homepage-custom-card;
-      grid-area: join-room;
+    .recent-rooms-container {
+      @extend %fadein-animation;
+
+      grid-area: recent-rooms;
+      max-width: 100%;
+
+      .recent-rooms-card {
+        display: flex;
+        flex-flow: column nowrap;
+        align-items: center;
+        margin-top: 85px;
+        min-width: 50%;
+
+        .recent-rooms {
+          display: flex;
+          flex-flow: row nowrap;
+          max-width: 100%;
+          overflow-x: auto;
+          padding: 15px;
+
+          & > * {
+            flex-shrink: 0;
+          }
+
+          * + * {
+            margin-left: 25px;
+          }
+        }
+      }
     }
-
-    .my-rooms-container {
-      @extend %homepage-custom-card;
-      grid-area: my-rooms;
-    }
-  }
-}
-
-.scrollable-button-list {
-  height: 64px;
-  
-  list-style-type: none;
-
-  overflow: hidden; 
-  overflow-y: scroll;
-
-  width: 100%;
-
-  button {
-    margin: 2px;
   }
 }
 

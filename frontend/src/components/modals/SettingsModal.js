@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Form, FormControl } from "react-bootstrap";
 import Modal from "react-bootstrap/Modal";
-import ChooseNameForm from "../ChooseNameForm/ChooseNameForm";
+import SingleInputForm from "../SingleInputForm/SingleInputForm";
 
 const SettingsModal = (props) => {
   const [cloneIdValue, setCloneIdValue] = useState("");
@@ -29,8 +29,8 @@ const SettingsModal = (props) => {
 
       <Modal.Body className="custom-modal-card">
         <h5>Room Name</h5>
-        <ChooseNameForm
-          name={props.roomName}
+        <SingleInputForm
+          initialValue={props.roomName}
           onSubmit={props.onChangeRoomName}
         />
         <hr />
@@ -66,8 +66,8 @@ const SettingsModal = (props) => {
           Choose a name so that other people in the room know who you are. This
           data will only be stored locally in your browser.
         </p>
-        <ChooseNameForm
-          name={props.userName}
+        <SingleInputForm
+          initialValue={props.userName}
           onSubmit={props.onChangeUserName}
         />
       </Modal.Body>

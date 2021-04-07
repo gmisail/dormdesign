@@ -191,6 +191,10 @@ export const RoomProvider = ({ children }) => {
         const connection = new SocketConnection(id, () => {
           // Called when socket connection has been opened
           console.log("Successfully connected to Room");
+
+          // Add this room to local history of viewed rooms
+          StorageController.addRoomToHistory(id, roomData.name);
+
           dispatch({
             type: RoomActions.connectedToRoom,
             payload: {

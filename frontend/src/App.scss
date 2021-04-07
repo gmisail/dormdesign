@@ -11,7 +11,8 @@ h1,
 h2,
 h3,
 h4,
-h5 {
+h5,
+h6 {
   font-family: "Arvo";
   font-weight: 700;
   color: $text-color-dark;
@@ -72,5 +73,10 @@ textarea {
     background-color: $color-secondary;
 
     @include button-background-color($color-secondary);
+  }
+
+  &.custom-btn-large {
+    padding: 10px 18px;
+    font-size: $btn-font-size-large;
   }
 }
