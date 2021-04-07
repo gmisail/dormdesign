@@ -1,6 +1,7 @@
 import React, { useReducer, useCallback, createContext } from "react";
 import DataRequests from "../controllers/DataRequests";
 import SocketConnection from "../controllers/SocketConnection";
+import StorageController from "../controllers/StorageController";
 import DormItem from "../models/DormItem";
 
 export const RoomActions = {
@@ -181,7 +182,7 @@ export const RoomProvider = ({ children }) => {
       dispatch({ type: RoomActions.loading });
 
       try {
-        const userName = window.localStorage.getItem("userName");
+        const userName = StorageController.getUsername();
         if (userName !== null) {
           dispatch({ type: RoomActions.setUserName, payload: { userName } });
         }
@@ -190,6 +191,10 @@ export const RoomProvider = ({ children }) => {
         const connection = new SocketConnection(id, () => {
           // Called when socket connection has been opened
           console.log("Successfully connected to Room");
+
+          // Add this room to local history of viewed rooms
+          StorageController.addRoomToHistory(id, roomData.name);
+
           dispatch({
             type: RoomActions.connectedToRoom,
             payload: {
@@ -245,6 +250,8 @@ export const RoomProvider = ({ children }) => {
         });
 
         connection.on("roomNameUpdated", (data) => {
+          StorageController.addRoomToHistory(id, data.name);
+
           dispatch({
             type: RoomActions.roomNameUpdated,
             payload: { roomName: data.name },
@@ -265,7 +272,7 @@ export const RoomProvider = ({ children }) => {
   const setUserName = useCallback(
     (userName) => {
       if (userName.length === 0) userName = null;
-      window.localStorage.setItem("userName", userName);
+      StorageController.setUsername(userName);
       dispatch({ type: RoomActions.setUserName, payload: { userName } });
     },
     [dispatch]
@@ -361,7 +368,7 @@ export const RoomProvider = ({ children }) => {
   );
 
   const updateRoomName = useCallback(
-    (roomName) => {
+    (id, roomName) => {
       if (roomName == null || roomName.length === 0) return;
       state.socketConnection.send({
         event: "updateRoomName",
@@ -370,6 +377,8 @@ export const RoomProvider = ({ children }) => {
           name: roomName,
         },
       });
+
+      StorageController.addRoomToHistory(id, roomName);
 
       dispatch({
         type: RoomActions.roomNameUpdated,

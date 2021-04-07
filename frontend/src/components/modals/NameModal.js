@@ -1,6 +1,6 @@
 import React from "react";
 import Modal from "react-bootstrap/Modal";
-import ChooseNameForm from "../ChooseNameForm/ChooseNameForm";
+import SingleInputForm from "../SingleInputForm/SingleInputForm";
 
 const NameModal = (props) => {
   return (
@@ -16,9 +16,9 @@ const NameModal = (props) => {
           Choose a name so that other people in the room know who you are. This
           data will only be stored locally in your browser.
         </p>
-        <ChooseNameForm
+        <SingleInputForm
           onSubmit={props.onSubmit}
-          saveButtonText={props.saveButtonText}
+          submitButtonText={props.submitButtonText}
         />
       </Modal.Body>
     </Modal>

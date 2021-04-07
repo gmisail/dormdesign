@@ -1,8 +1,6 @@
 import { useState, useCallback } from "react";
 
 /*
-  Intended to be used to Modal component
-
   Keeps track of modal props. Returns current modalProps and toggleModal function
   which takes (type, data) parameters. Type is the modal type that should be 
   displayed and data is additional props that should be passed to the modal.

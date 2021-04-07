@@ -1,0 +1,36 @@
+@import "../../styles/variables.scss";
+
+.room-preview-card {
+  width: 125px;
+  height: 125px;
+  text-align: center;
+  line-height: 125px;
+  background-color: $foreground-color;
+  border-radius: $card-border-radius;
+  box-shadow: $box-shadow;
+
+  transition: all 0.2s ease;
+
+  /* Remove default link text effects */
+  &,
+  &:hover,
+  &:visited,
+  &:active {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .room-preview-name {
+    display: inline-block;
+    vertical-align: middle;
+    line-height: normal;
+
+    font-weight: 600;
+  }
+
+  &:hover {
+    background-color: darken($foreground-color, 15);
+    box-shadow: none;
+    cursor: pointer;
+  }
+}
