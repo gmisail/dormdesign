@@ -1,1 +1,4 @@
 node_modules
+Dockerfile
+Dockerfile.dev
+npm-debug.log

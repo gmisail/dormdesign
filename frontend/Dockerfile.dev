@@ -2,15 +2,26 @@ FROM node:alpine
 
 WORKDIR /app
 
+# add `/app/node_modules/.bin` to $PATH
+# ENV PATH /app/node_modules/.bin:$PATH
+
 # copyies package-lock.json and package.json
+# COPY --chown=node:node package*.json ./
 COPY package*.json ./
 
 # install dependencies
 RUN npm install
 
 # copy everything over to environment
+# COPY --chown=node:node . .
 COPY . .
 
-EXPOSE 3000
+# RUN chown -R node.node /app
 
-CMD ["npm", "start"]
+# RUN chmod 777 node_modules
+
+# USER node
+
+
+
+CMD ["npm", "run", "start"]

@@ -46,7 +46,7 @@ const ListItem = (props) => {
       placement: "left-start",
       modifiers: [
         {
-          name: "flip",
+          name: "flips",
           enabled: true,
         },
       ],
