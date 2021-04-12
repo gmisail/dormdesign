@@ -60,6 +60,17 @@ Hub.removeClient = function (clientID) {
   }
 };
 
+Hub.sendToClient = function(id, data) {
+    if(id == undefined || !Hub.connections.has(id)) {
+        console.error("Error while sending data to client: invalid ID.");
+        return;
+    }
+
+    let socket = Hub.connections.get(id);
+    
+    socket.send(JSON.stringify(data));
+}
+
 Hub.send = function (id, roomID, data) {
   if (!Hub.rooms.has(roomID)) {
     return;
@@ -74,10 +85,36 @@ Hub.send = function (id, roomID, data) {
   });
 };
 
+Hub.sendError = function (id, errorAction, errorMessage) {
+    if(id == undefined) {
+        console.error("Cannot send error to client: invalid ID.");
+    }
+
+    if(errorMessage == undefined || errorAction == undefined) {
+        console.error("Cannot send error to client: invalid error message / action.");
+    }
+
+    const response = {
+        event: "actionFailed",
+        sendResponse: true,
+        data: {
+            "action": errorAction,
+            "message": errorMessage
+        }
+    };
+    
+    Hub.sendToClient(id, response);
+}
+
 Hub.addItem = async function ({ socket, roomID, data, sendResponse }) {
   console.log(chalk.greenBright(`Adding item to roomID ${roomID}`));
 
   const item = await Room.addItem(roomID, data);
+  
+  if(item == null) {
+    Hub.sendError(socket.id, "addItem", "Unable to add item to database.");
+    return;
+  }
 
   Hub.send(socket.id, roomID, {
     event: "itemAdded",
@@ -86,7 +123,7 @@ Hub.addItem = async function ({ socket, roomID, data, sendResponse }) {
   });
 };
 
-Hub.updateItems = function ({ socket, roomID, data, sendResponse }) {
+Hub.updateItems = async function ({ socket, roomID, data, sendResponse }) {
   console.log(chalk.greenBright(`Updating items in roomID ${roomID}`));
 
   if (data.items !== undefined && data.items.length > 0) {
@@ -95,7 +132,13 @@ Hub.updateItems = function ({ socket, roomID, data, sendResponse }) {
       (obj, item) => ((obj[item.id] = item.updated), obj),
       {}
     );
-    Room.updateItems(roomID, items);
+    
+    let error = await Room.updateItems(roomID, items);
+
+    if(error) {
+      Hub.sendError(socket.id, "updateItems", "Could not update items in database.");
+      return;
+    }
 
     Hub.send(socket.id, roomID, {
       event: "itemsUpdated",
@@ -105,12 +148,20 @@ Hub.updateItems = function ({ socket, roomID, data, sendResponse }) {
   }
 };
 
-Hub.deleteItem = function ({ socket, roomID, data, sendResponse }) {
+Hub.deleteItem = async function ({ socket, roomID, data, sendResponse }) {
   console.log(chalk.greenBright(`Deleting item in roomID ${roomID}`));
 
-  if (data === undefined || data.id === undefined) return;
+  if (data === undefined || data.id === undefined) {
+    Hub.sendError(socket.id, "deleteItem", "Could not delete item with undefined ID.");
+    return;
+  }
 
-  Room.removeItem(roomID, data.id);
+  let error = await Room.removeItem(roomID, data.id);
+  
+  if(error) {
+    Hub.sendError(socket.id, "deleteItem", "Could not delete item.");
+    return;
+  }
 
   Hub.send(socket.id, roomID, {
     event: "itemDeleted",
@@ -119,12 +170,20 @@ Hub.deleteItem = function ({ socket, roomID, data, sendResponse }) {
   });
 };
 
-Hub.updateLayout = function ({ socket, roomID, data, sendResponse }) {
+Hub.updateLayout = async function ({ socket, roomID, data, sendResponse }) {
   console.log(chalk.greenBright(`Updating layout of roomID ${roomID}`));
 
-  if (data.vertices === undefined || data.vertices.length <= 0) return;
+  if (data.vertices === undefined || data.vertices.length <= 0) {
+    Hub.sendError(socket.id, "updateLayout", "Cannot update layout with undefined / empty vertices.");
+    return;
+  }
 
-  Room.updateVertices(roomID, data.vertices);
+  let error = await Room.updateVertices(roomID, data.vertices);
+
+  if(error) {
+    Hub.sendError(socket.id, "updateLayout", "Could not update layout of room ID " + roomID);
+    return;
+  }
 
   Hub.send(socket.id, roomID, {
     event: "layoutUpdated",
@@ -138,7 +197,12 @@ Hub.cloneRoom = async function ({ socket, roomID, data, sendResponse }) {
 
   console.log(chalk.greenBright(`Cloning template ${target} into ${roomID}`));
 
-  await Room.copyFrom(roomID, target);
+  let res = await Room.copyFrom(roomID, target);
+
+  if(res == null) {
+    Hub.sendError(socket.id, "cloneRoom", "Could not clone room.");
+    return;
+  }
 
   Hub.send(socket.id, roomID, {
     event: "roomCloned",
@@ -152,7 +216,12 @@ Hub.updateRoomName = async function ({ socket, roomID, data, sendResponse }) {
 
   if (data.name === undefined || data.name.length <= 0) return;
 
-  await Room.updateRoomName(roomID, data.name);
+  let error = await Room.updateRoomName(roomID, data.name);
+
+  if(error) {
+    Hub.sendError(socket.id, "updateRoomName", "Could not update room name.");
+    return;
+  }
 
   Hub.send(socket.id, roomID, {
     event: "roomNameUpdated",

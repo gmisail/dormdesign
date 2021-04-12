@@ -266,7 +266,7 @@ Room.updateItems = async function (id, updates) {
       })
       .run(database.connection);
 
-    return true;
+    return false;
   } catch (error) {
     console.error(
       "Failed to complete item updates " +
@@ -276,7 +276,7 @@ Room.updateItems = async function (id, updates) {
         ". " +
         error
     );
-    return false;
+    return true;
   }
 };
 
