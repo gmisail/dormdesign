@@ -1,32 +1,38 @@
 const rethinkdb = require("rethinkdb");
-const { v4: uuidv4 } = require('uuid');
-const database = require('../db');
+const { v4: uuidv4 } = require("uuid");
+const database = require("../db");
 
 var Template = {};
 
 /**
  * Create a template within the database
- * @param { string } id 
+ * @param { string } id
  */
-Template.create = async function(id)
-{
-    const templateId = uuidv4();
-    const template = {
-        id: templateId,
-        targetId: id
-    };
+Template.create = async function (id) {
+  const templateId = uuidv4();
+  const template = {
+    id: templateId,
+    targetId: id,
+  };
 
-    await rethinkdb.db("dd_data").table("templates").insert(template).run(database.connection);
-    
-    return templateId;
-}
+  await rethinkdb
+    .db("dd_data")
+    .table("templates")
+    .insert(template)
+    .run(database.connection);
 
-Template.get = async function(id)
-{
-    console.log(id)
-    const template = await rethinkdb.db("dd_data").table("templates").get(id).run(database.connection);
+  return templateId;
+};
 
-    return template;
-}
+Template.get = async function (id) {
+  console.log(id);
+  const template = await rethinkdb
+    .db("dd_data")
+    .table("templates")
+    .get(id)
+    .run(database.connection);
+
+  return template;
+};
 
 module.exports = Template;
