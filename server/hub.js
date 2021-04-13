@@ -114,7 +114,7 @@ Hub.addItem = async function ({ socket, roomID, data, sendResponse }) {
   const item = await Room.addItem(roomID, data);
 
   if (item == null) {
-    Hub.sendError(socket.id, "addItem", "Unable to add item to database.");
+    Hub.sendError(socket.id, "addItem", "Unable to add item to the database nor room.");
     return;
   }
 
@@ -135,14 +135,15 @@ Hub.updateItems = async function ({ socket, roomID, data, sendResponse }) {
       {}
     );
 
-    let error = await Room.updateItems(roomID, items);
-
-    if (error) {
+    try {
+      await Room.updateItems(roomID, items);
+    } catch(error) {
       Hub.sendError(
         socket.id,
         "updateItems",
-        "Could not update items in database."
+        error.message
       );
+
       return;
     }
 
@@ -166,10 +167,15 @@ Hub.deleteItem = async function ({ socket, roomID, data, sendResponse }) {
     return;
   }
 
-  let error = await Room.removeItem(roomID, data.id);
+  try {
+    await Room.removeItem(roomID, data.id);
+  } catch (error) {
+    Hub.sendError(
+      socket.id, 
+      "deleteItem",
+      error.message
+    );
 
-  if (error) {
-    Hub.sendError(socket.id, "deleteItem", "Could not delete item.");
     return;
   }
 
@@ -189,17 +195,19 @@ Hub.updateLayout = async function ({ socket, roomID, data, sendResponse }) {
       "updateLayout",
       "Cannot update layout with undefined / empty vertices."
     );
+
     return;
   }
 
-  let error = await Room.updateVertices(roomID, data.vertices);
-
-  if (error) {
+  try {
+    await Room.updateVertices(roomID, data.vertices);
+  } catch (error) {
     Hub.sendError(
       socket.id,
       "updateLayout",
-      "Could not update layout of room ID " + roomID
+      error.message
     );
+
     return;
   }
 
@@ -215,10 +223,13 @@ Hub.cloneRoom = async function ({ socket, roomID, data, sendResponse }) {
 
   console.log(chalk.greenBright(`Cloning template ${target} into ${roomID}`));
 
-  let res = await Room.copyFrom(roomID, target);
+  let res = {};
 
-  if (res == null) {
-    Hub.sendError(socket.id, "cloneRoom", "Could not clone room.");
+  try {
+    res = await Room.copyFrom(roomID, target);
+  } catch (error) {
+    Hub.sendError(socket.id, "cloneRoom", "Could not clone room successfully.");
+
     return;
   }
 
@@ -234,10 +245,11 @@ Hub.updateRoomName = async function ({ socket, roomID, data, sendResponse }) {
 
   if (data.name === undefined || data.name.length <= 0) return;
 
-  let error = await Room.updateRoomName(roomID, data.name);
-
-  if (error) {
+  try {
+    await Room.updateRoomName(roomID, data.name);
+  } catch(error) {
     Hub.sendError(socket.id, "updateRoomName", "Could not update room name.");
+
     return;
   }
 
@@ -295,7 +307,6 @@ Hub.onConnection = function (socket, req) {
   */
   socket.id = id;
   socket.roomID = params["/ws?id"];
-  console.log("PARAMS " + params["/ws?id"]);
   socket.active = true;
 
   Hub.addClient(socket);

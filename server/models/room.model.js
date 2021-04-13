@@ -78,11 +78,11 @@ Room.copyFrom = async function (id, templateId) {
   templateData.templateId = room.templateId;
   templateData.name = room.name;
 
-  const err = await Room.updateProperty(id, templateData);
-
-  if (err) {
+  try {
+    await Room.updateProperty(id, templateData);
+  } catch (error) {
     console.error("Could not copy room " + templateId + " to " + id);
-    return null;
+    throw error;
   }
 
   return templateData;
@@ -104,11 +104,10 @@ Room.updateProperty = async function (id, data) {
 
   /* res.skipped refers to how many operations it skips; if it skips a non-zero amount then we know something is up. */
   if (res.skipped !== 0) {
-    console.error(
-      "Could not update property: " + JSON.stringify(data) + ", at ID " + id
-    );
+    const err = "Could not update property: " + JSON.stringify(data) + ", at ID " + id;
 
-    return true;
+    console.error(err);
+    throw new Error(err);
   }
 
   return false;
@@ -121,8 +120,13 @@ Room.updateProperty = async function (id, data) {
  * @returns { Promise.<boolean> } true if there is an error, false otherwise
  */
 Room.updateVertices = async function (id, vertices) {
-  let res = await Room.updateProperty(id, { vertices: vertices });
-  return res;
+  try {
+    let res = await Room.updateProperty(id, { vertices: vertices });
+
+    return res;
+  } catch (error) {
+    throw error;
+  }
 };
 
 /**
@@ -132,8 +136,13 @@ Room.updateVertices = async function (id, vertices) {
  * @returns { Promise.<boolean> } true if there is an error, false otherwise
  */
 Room.updateRoomName = async function (id, name) {
-  let res = await Room.updateProperty(id, { name: name });
-  return res;
+  try {
+    let res = await Room.updateProperty(id, { name: name });
+
+    return res;
+  } catch (error) {
+    throw error;
+  }
 };
 
 /**
@@ -155,12 +164,10 @@ Room.addItem = async function (id, item) {
   item.id = itemId;
   items.push(item);
 
-  const err = await Room.updateProperty(id, { items: items });
-
-  if (err) {
-    console.error("Could not add item to room " + id);
-
-    return null;
+  try{ 
+    await Room.updateProperty(id, { items: items });
+  } catch (error) {
+    throw error;
   }
 
   return item;
@@ -172,11 +179,10 @@ Room.addItem = async function (id, item) {
  * @returns { Promise.<boolean> } true if there is an error, false otherwise
  */
 Room.clearItems = async function (id) {
-  const err = await Room.updateProperty(id, { items: [] });
-
-  if (err) {
-    console.error("Could not clear room with ID " + id);
-    return err;
+  try {
+    await Room.updateProperty(id, { items: [] });
+  } catch (error) {
+    throw error;
   }
 
   return false;
@@ -202,10 +208,10 @@ Room.removeItem = async function (id, itemID) {
 
     return true;
   } catch (error) {
-    console.error(
-      "Failed to remove item " + itemId + " from room " + id + ". " + error
-    );
-    return false;
+    const err = "Failed to remove item " + itemId + " from room " + id + ". " + error;
+    
+    console.error(err);
+    throw new Error(err);
   }
 };
 
@@ -233,10 +239,12 @@ Room.updateItem = async function (id, itemId, properties) {
       })
       .run(database.connection);
 
-    return true;
-  } catch (error) {
-    console.error("Failed to update item " + itemId + " in room " + id);
     return false;
+  } catch (error) {
+    const err = "Failed to update item " + itemId + " in room " + id;
+
+    console.error(err);
+    throw new Error(err);
   }
 };
 
@@ -268,15 +276,10 @@ Room.updateItems = async function (id, updates) {
 
     return false;
   } catch (error) {
-    console.error(
-      "Failed to complete item updates " +
-        JSON.stringify(updates) +
-        " in room " +
-        id +
-        ". " +
-        error
-    );
-    return true;
+    const err =  "Failed to complete item updates " + JSON.stringify(updates) + " in room " + id + ". " + error;
+
+    console.error(err);
+    throw new Error(err);
   }
 };
 
