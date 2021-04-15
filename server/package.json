@@ -14,7 +14,7 @@
   },
   "scripts": {
     "start": "node index.js",
-    "format": "prettier --write \"*.js\""
+    "format": "prettier --write \"**/*.js\""
   },
   "author": "",
   "license": "MIT",

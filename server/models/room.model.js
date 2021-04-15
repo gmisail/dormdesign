@@ -104,7 +104,8 @@ Room.updateProperty = async function (id, data) {
 
   /* res.skipped refers to how many operations it skips; if it skips a non-zero amount then we know something is up. */
   if (res.skipped !== 0) {
-    const err = "Could not update property: " + JSON.stringify(data) + ", at ID " + id;
+    const err =
+      "Could not update property: " + JSON.stringify(data) + ", at ID " + id;
 
     console.error(err);
     throw new Error(err);
@@ -164,7 +165,7 @@ Room.addItem = async function (id, item) {
   item.id = itemId;
   items.push(item);
 
-  try{ 
+  try {
     await Room.updateProperty(id, { items: items });
   } catch (error) {
     throw error;
@@ -208,8 +209,9 @@ Room.removeItem = async function (id, itemID) {
 
     return true;
   } catch (error) {
-    const err = "Failed to remove item " + itemId + " from room " + id + ". " + error;
-    
+    const err =
+      "Failed to remove item " + itemId + " from room " + id + ". " + error;
+
     console.error(err);
     throw new Error(err);
   }
@@ -276,7 +278,13 @@ Room.updateItems = async function (id, updates) {
 
     return false;
   } catch (error) {
-    const err =  "Failed to complete item updates " + JSON.stringify(updates) + " in room " + id + ". " + error;
+    const err =
+      "Failed to complete item updates " +
+      JSON.stringify(updates) +
+      " in room " +
+      id +
+      ". " +
+      error;
 
     console.error(err);
     throw new Error(err);
