@@ -114,7 +114,11 @@ Hub.addItem = async function ({ socket, roomID, data, sendResponse }) {
   const item = await Room.addItem(roomID, data);
 
   if (item == null) {
-    Hub.sendError(socket.id, "addItem", "Unable to add item to the database nor room.");
+    Hub.sendError(
+      socket.id,
+      "addItem",
+      "Unable to add item to the database nor room."
+    );
     return;
   }
 
@@ -137,12 +141,8 @@ Hub.updateItems = async function ({ socket, roomID, data, sendResponse }) {
 
     try {
       await Room.updateItems(roomID, items);
-    } catch(error) {
-      Hub.sendError(
-        socket.id,
-        "updateItems",
-        error.message
-      );
+    } catch (error) {
+      Hub.sendError(socket.id, "updateItems", error.message);
 
       return;
     }
@@ -170,11 +170,7 @@ Hub.deleteItem = async function ({ socket, roomID, data, sendResponse }) {
   try {
     await Room.removeItem(roomID, data.id);
   } catch (error) {
-    Hub.sendError(
-      socket.id, 
-      "deleteItem",
-      error.message
-    );
+    Hub.sendError(socket.id, "deleteItem", error.message);
 
     return;
   }
@@ -202,11 +198,7 @@ Hub.updateLayout = async function ({ socket, roomID, data, sendResponse }) {
   try {
     await Room.updateVertices(roomID, data.vertices);
   } catch (error) {
-    Hub.sendError(
-      socket.id,
-      "updateLayout",
-      error.message
-    );
+    Hub.sendError(socket.id, "updateLayout", error.message);
 
     return;
   }
@@ -247,7 +239,7 @@ Hub.updateRoomName = async function ({ socket, roomID, data, sendResponse }) {
 
   try {
     await Room.updateRoomName(roomID, data.name);
-  } catch(error) {
+  } catch (error) {
     Hub.sendError(socket.id, "updateRoomName", "Could not update room name.");
 
     return;
