@@ -1,8 +1,22 @@
 {
-  "devDependencies": {
-    "husky": "^6.0.0"
+  "name": "dormdesign",
+  "lint-staged": {
+    "frontend/src/**/*.{js,jsx,ts,tsx,json,css,scss,md}": [
+      "prettier --write",
+      "git add"
+    ],
+    "server/**/*.{js}": [
+      "prettier --write",
+      "git add"
+    ]
   },
-  "scripts": {
-    "prepare": "husky install"
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "devDependencies": {
+    "husky": "^6.0.0",
+    "lint-staged": "^10.5.4"
   }
 }
