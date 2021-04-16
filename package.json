@@ -1,9 +1,9 @@
 {
   "name": "dormdesign",
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged"
-    }
+  "devDependencies": {
+    "husky": "^6.0.0",
+    "lint-staged": "^10.5.4",
+    "prettier": "2.2.1"
   },
   "scripts": {
     "prettier:frontend": "prettier ./frontend/src --write",
@@ -17,9 +17,9 @@
       "npm run prettier:frontend"
     ]
   },
-  "devDependencies": {
-    "husky": "^6.0.0",
-    "lint-staged": "^10.5.4",
-    "prettier": "2.2.1"
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
   }
 }
