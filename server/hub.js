@@ -60,6 +60,12 @@ Hub.removeClient = function (clientID) {
   }
 };
 
+/**
+ * Send a socket message to a client by ID
+ * @param { string } id
+ * @param { object } data
+ * @returns none
+ */
 Hub.sendToClient = function (id, data) {
   if (id == undefined || !Hub.connections.has(id)) {
     console.error("Error while sending data to client: invalid ID.");
@@ -71,6 +77,13 @@ Hub.sendToClient = function (id, data) {
   socket.send(JSON.stringify(data));
 };
 
+/**
+ * Send a socket message to an entire room, similar to broadcast.
+ * @param { string } id
+ * @param { string } roomID
+ * @param { object } data
+ * @returns none
+ */
 Hub.send = function (id, roomID, data) {
   if (!Hub.rooms.has(roomID)) {
     return;
@@ -85,6 +98,12 @@ Hub.send = function (id, roomID, data) {
   });
 };
 
+/**
+ * Sends an error message to a client by ID
+ * @param { string } id
+ * @param { string } errorAction
+ * @param { string } errorMessage
+ */
 Hub.sendError = function (id, errorAction, errorMessage) {
   if (id == undefined) {
     console.error("Cannot send error to client: invalid ID.");
@@ -326,6 +345,10 @@ Hub.onConnection = function (socket, req) {
   });
 };
 
+/**
+ * Setup the socket hub, which directs incoming socket messages to the correct callback
+ * @param {*} sockets
+ */
 Hub.setup = function (sockets) {
   console.log("Starting socket server");
 
