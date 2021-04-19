@@ -40,7 +40,7 @@ Hub.removeClient = function (clientID) {
   if (!Hub.connections.has(clientID)) return;
 
   const roomID = Hub.connections.get(clientID).roomID;
-  if (roomID == undefined || !Hub.rooms.has(roomID)) {
+  if (roomID === undefined || !Hub.rooms.has(roomID)) {
     console.error(
       "Error while removing client: RoomID stored under client is invalid"
     );
@@ -67,7 +67,7 @@ Hub.removeClient = function (clientID) {
  * @returns none
  */
 Hub.sendToClient = function (id, data) {
-  if (id == undefined || !Hub.connections.has(id)) {
+  if (id === undefined || !Hub.connections.has(id)) {
     console.error("Error while sending data to client: invalid ID.");
     return;
   }
@@ -79,12 +79,12 @@ Hub.sendToClient = function (id, data) {
 
 /**
  * Send a socket message to an entire room, similar to broadcast.
- * @param { string } id
+ * @param { string } senderID
  * @param { string } roomID
  * @param { object } data
  * @returns none
  */
-Hub.send = function (id, roomID, data) {
+Hub.send = function (senderID, roomID, sendResponse, data) {
   if (!Hub.rooms.has(roomID)) {
     return;
   }
@@ -92,7 +92,7 @@ Hub.send = function (id, roomID, data) {
   Hub.rooms.get(roomID).forEach((state, client) => {
     let socket = Hub.connections.get(client);
 
-    if ((data.sendResponse && client === id) || client != id) {
+    if ((sendResponse && client === senderID) || client !== senderID) {
       socket.send(JSON.stringify(data));
     }
   });
@@ -105,19 +105,20 @@ Hub.send = function (id, roomID, data) {
  * @param { string } errorMessage
  */
 Hub.sendError = function (id, errorAction, errorMessage) {
-  if (id == undefined) {
+  if (id === undefined) {
     console.error("Cannot send error to client: invalid ID.");
+    return;
   }
 
-  if (errorMessage == undefined || errorAction == undefined) {
+  if (errorMessage === undefined || errorAction === undefined) {
     console.error(
       "Cannot send error to client: invalid error message / action."
     );
+    return;
   }
 
   const response = {
     event: "actionFailed",
-    sendResponse: true,
     data: {
       action: errorAction,
       message: errorMessage,
@@ -132,7 +133,7 @@ Hub.addItem = async function ({ socket, roomID, data, sendResponse }) {
 
   const item = await Room.addItem(roomID, data);
 
-  if (item == null) {
+  if (item === null) {
     Hub.sendError(
       socket.id,
       "addItem",
@@ -141,9 +142,8 @@ Hub.addItem = async function ({ socket, roomID, data, sendResponse }) {
     return;
   }
 
-  Hub.send(socket.id, roomID, {
+  Hub.send(socket.id, roomID, sendResponse, {
     event: "itemAdded",
-    sendResponse,
     data: item,
   });
 };
@@ -166,9 +166,8 @@ Hub.updateItems = async function ({ socket, roomID, data, sendResponse }) {
       return;
     }
 
-    Hub.send(socket.id, roomID, {
+    Hub.send(socket.id, roomID, sendResponse, {
       event: "itemsUpdated",
-      sendResponse,
       data,
     });
   }
@@ -194,9 +193,8 @@ Hub.deleteItem = async function ({ socket, roomID, data, sendResponse }) {
     return;
   }
 
-  Hub.send(socket.id, roomID, {
+  Hub.send(socket.id, roomID, sendResponse, {
     event: "itemDeleted",
-    sendResponse,
     data,
   });
 };
@@ -222,9 +220,8 @@ Hub.updateLayout = async function ({ socket, roomID, data, sendResponse }) {
     return;
   }
 
-  Hub.send(socket.id, roomID, {
+  Hub.send(socket.id, roomID, sendResponse, {
     event: "layoutUpdated",
-    sendResponse,
     data,
   });
 };
@@ -244,9 +241,8 @@ Hub.cloneRoom = async function ({ socket, roomID, data, sendResponse }) {
     return;
   }
 
-  Hub.send(socket.id, roomID, {
+  Hub.send(socket.id, roomID, sendResponse, {
     event: "roomCloned",
-    sendResponse,
     data,
   });
 };
@@ -264,9 +260,8 @@ Hub.updateRoomName = async function ({ socket, roomID, data, sendResponse }) {
     return;
   }
 
-  Hub.send(socket.id, roomID, {
+  Hub.send(socket.id, roomID, sendResponse, {
     event: "roomNameUpdated",
-    sendResponse,
     data,
   });
 };
@@ -331,8 +326,8 @@ Hub.onConnection = function (socket, req) {
   });
 
   socket.on("message", (msg) => {
-    const res = JSON.parse(msg);
-    const { event, sendResponse, data } = res;
+    const message = JSON.parse(msg);
+    const { event, sendResponse, data } = message;
 
     // emit the event with the data that was sent to the server & the socket's id
     Hub.events.emit(event, {
