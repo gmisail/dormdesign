@@ -1,0 +1,25 @@
+{
+  "name": "dormdesign",
+  "devDependencies": {
+    "husky": "^6.0.0",
+    "lint-staged": "^10.5.4",
+    "prettier": "2.2.1"
+  },
+  "scripts": {
+    "prettier:frontend": "prettier ./frontend/src --write",
+    "prettier:server": "prettier ./server --write"
+  },
+  "lint-staged": {
+    "server/*.{js,jsx,ts,tsx,json,css,scss,md}": [
+      "npm run prettier:server"
+    ],
+    "frontend/src/*.{js,jsx,ts,tsx,json,css,scss,md}": [
+      "npm run prettier:frontend"
+    ]
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  }
+}

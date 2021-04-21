@@ -59,7 +59,9 @@ class HomeRoute extends Component {
   }
 
   onSubmitCreateRoomModal = async (name) => {
-    const roomID = await DataRequests.CREATE_TEST_ROOM(name);
+    const roomData = await DataRequests.createRoom(name);
+    const roomID = roomData.id;
+
     this.props.history.push(`/room/${roomID}`);
   };
 

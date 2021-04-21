@@ -1,12 +1,12 @@
 import EventController from "./EventController";
 
 class SocketConnection {
-  constructor(id, onOpen) {
-    this.id = id;
+  constructor(roomID, onOpen) {
+    this.roomID = roomID;
     this.eventController = new EventController();
     const protocol = window.location.protocol === "https:" ? "wss" : "ws";
     this.connection = new WebSocket(
-      `${protocol}://${window.location.host}/ws?id=${this.id}`
+      `${protocol}://${window.location.host}/ws?id=${this.roomID}`
     );
     this.connection.onopen = () => {
       if (onOpen !== undefined) {
@@ -50,12 +50,7 @@ class SocketConnection {
 
   send(data) {
     if (!data) return;
-    this.connection.send(
-      JSON.stringify({
-        room: this.id,
-        ...data,
-      })
-    );
+    this.connection.send(JSON.stringify(data));
   }
 }
 
