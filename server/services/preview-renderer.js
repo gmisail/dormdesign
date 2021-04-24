@@ -1,6 +1,12 @@
 const { createCanvas } = require("canvas");
 
 let PreviewRenderer = {};
+
+/*
+    SCALE indicates how much we want to enlarge the final render, since by default they're pretty small. Keep
+    in mind that since these are raster renders, the higher the scale the higher the resolution. I think a 
+    SVG renderer for this would be a little overkill in my opinion.
+*/
 PreviewRenderer.SCALE = 25;
 
 /**
@@ -33,7 +39,12 @@ PreviewRenderer.getBoundingBox = function (points) {
   };
 };
 
-PreviewRenderer.drawBoundaries = function (points, boundingBox, ctx) {
+/**
+ * Draw boundaries to canvas
+ * @param {*} points 
+ * @param {*} boundingBox 
+ */
+PreviewRenderer.drawBoundaries = function (points, boundingBox) {
   PreviewRenderer.context.beginPath();
 
   let xOffset = 0;
@@ -61,8 +72,7 @@ PreviewRenderer.drawBoundaries = function (points, boundingBox, ctx) {
   }
 
   PreviewRenderer.context.closePath();
-  PreviewRenderer.context.style = "black";
-  PreviewRenderer.context.strokeStyle = "blue";
+  PreviewRenderer.context.strokeStyle = "black";
   PreviewRenderer.context.lineWidth = 3;
   PreviewRenderer.context.lineJoin = "butt";
   PreviewRenderer.context.lineCap = "butt";
@@ -80,7 +90,8 @@ PreviewRenderer.generatePreview = function (points) {
   PreviewRenderer.canvas.width = boundaryBox.w * PreviewRenderer.SCALE;
   PreviewRenderer.canvas.height = boundaryBox.h * PreviewRenderer.SCALE;
 
-  PreviewRenderer.drawBoundaries(points, boundaryBox, PreviewRenderer.context);
+  PreviewRenderer.context.clearRect(0, 0, boundaryBox.w * PreviewRenderer.SCALE, boundaryBox.h * PreviewRenderer.SCALE);
+  PreviewRenderer.drawBoundaries(points, boundaryBox);
 
   return PreviewRenderer.canvas.toDataURL();
 };
