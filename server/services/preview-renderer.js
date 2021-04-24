@@ -57,8 +57,6 @@ PreviewRenderer.drawBoundaries = function (points, boundingBox) {
     const p1 = points[i];
     const p2 = points[i + 1];
 
-    console.log(i);
-
     if (i === 0) {
       PreviewRenderer.context.moveTo(
         (xOffset + p1.x) * PreviewRenderer.SCALE,
@@ -80,18 +78,48 @@ PreviewRenderer.drawBoundaries = function (points, boundingBox) {
   PreviewRenderer.context.stroke();
 };
 
+PreviewRenderer.drawItems = function(items, boundingBox) {
+  let xOffset = 0;
+  if (boundingBox.x != 0) xOffset = boundingBox.x * -1;
+
+  let yOffset = 0;
+  if (boundingBox.y != 0) yOffset = boundingBox.y * -1;
+
+  for(let i in items) {
+    const item = items[i];
+
+    console.log(item)
+
+    if(item.visibleInEditor) {
+      const width = (item.dimensions === undefined || item.dimensions.width == null) ? 1 : item.dimensions.width;
+      const length = (item.dimensions === undefined || item.dimensions.length == null) ? 1 : item.dimensions.length;
+      
+      PreviewRenderer.context.fillStyle = "red";
+      PreviewRenderer.context.fillRect(
+        (item.editorPosition.x + xOffset - (width / 2)) * PreviewRenderer.SCALE, 
+        (item.editorPosition.y + yOffset - (length / 2)) * PreviewRenderer.SCALE, 
+        width * PreviewRenderer.SCALE, 
+        length * PreviewRenderer.SCALE
+      );
+    }
+  }
+}
+
 /**
  * Generate a preview of the room
- * @param { array<{ x: Number, y: Number }>} points
+ * @param { { vertices: [{x: Number, y: Number}], items: [] } } room
  */
-PreviewRenderer.generatePreview = function (points) {
-  let boundaryBox = PreviewRenderer.getBoundingBox(points);
+PreviewRenderer.generatePreview = function (room) {
+  let { vertices, items } = room;
+  
+  let boundaryBox = PreviewRenderer.getBoundingBox(vertices);
 
   PreviewRenderer.canvas.width = boundaryBox.w * PreviewRenderer.SCALE;
   PreviewRenderer.canvas.height = boundaryBox.h * PreviewRenderer.SCALE;
 
   PreviewRenderer.context.clearRect(0, 0, boundaryBox.w * PreviewRenderer.SCALE, boundaryBox.h * PreviewRenderer.SCALE);
-  PreviewRenderer.drawBoundaries(points, boundaryBox);
+  PreviewRenderer.drawBoundaries(vertices, boundaryBox);
+  PreviewRenderer.drawItems(items, boundaryBox);
 
   return PreviewRenderer.canvas.toDataURL();
 };
