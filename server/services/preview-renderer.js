@@ -41,8 +41,8 @@ PreviewRenderer.getBoundingBox = function (points) {
 
 /**
  * Draw boundaries to canvas
- * @param {*} points 
- * @param {*} boundingBox 
+ * @param {*} points
+ * @param {*} boundingBox
  */
 PreviewRenderer.drawBoundaries = function (points, boundingBox) {
   PreviewRenderer.context.beginPath();
@@ -78,32 +78,38 @@ PreviewRenderer.drawBoundaries = function (points, boundingBox) {
   PreviewRenderer.context.stroke();
 };
 
-PreviewRenderer.drawItems = function(items, boundingBox) {
+PreviewRenderer.drawItems = function (items, boundingBox) {
   let xOffset = 0;
   if (boundingBox.x != 0) xOffset = boundingBox.x * -1;
 
   let yOffset = 0;
   if (boundingBox.y != 0) yOffset = boundingBox.y * -1;
 
-  for(let i in items) {
+  for (let i in items) {
     const item = items[i];
 
-    console.log(item)
+    console.log(item);
 
-    if(item.visibleInEditor) {
-      const width = (item.dimensions === undefined || item.dimensions.width == null) ? 1 : item.dimensions.width;
-      const length = (item.dimensions === undefined || item.dimensions.length == null) ? 1 : item.dimensions.length;
-      
+    if (item.visibleInEditor) {
+      const width =
+        item.dimensions === undefined || item.dimensions.width == null
+          ? 1
+          : item.dimensions.width;
+      const length =
+        item.dimensions === undefined || item.dimensions.length == null
+          ? 1
+          : item.dimensions.length;
+
       PreviewRenderer.context.fillStyle = "red";
       PreviewRenderer.context.fillRect(
-        (item.editorPosition.x + xOffset - (width / 2)) * PreviewRenderer.SCALE, 
-        (item.editorPosition.y + yOffset - (length / 2)) * PreviewRenderer.SCALE, 
-        width * PreviewRenderer.SCALE, 
+        (item.editorPosition.x + xOffset - width / 2) * PreviewRenderer.SCALE,
+        (item.editorPosition.y + yOffset - length / 2) * PreviewRenderer.SCALE,
+        width * PreviewRenderer.SCALE,
         length * PreviewRenderer.SCALE
       );
     }
   }
-}
+};
 
 /**
  * Generate a preview of the room
@@ -111,13 +117,18 @@ PreviewRenderer.drawItems = function(items, boundingBox) {
  */
 PreviewRenderer.generatePreview = function (room) {
   let { vertices, items } = room;
-  
+
   let boundaryBox = PreviewRenderer.getBoundingBox(vertices);
 
   PreviewRenderer.canvas.width = boundaryBox.w * PreviewRenderer.SCALE;
   PreviewRenderer.canvas.height = boundaryBox.h * PreviewRenderer.SCALE;
 
-  PreviewRenderer.context.clearRect(0, 0, boundaryBox.w * PreviewRenderer.SCALE, boundaryBox.h * PreviewRenderer.SCALE);
+  PreviewRenderer.context.clearRect(
+    0,
+    0,
+    boundaryBox.w * PreviewRenderer.SCALE,
+    boundaryBox.h * PreviewRenderer.SCALE
+  );
   PreviewRenderer.drawBoundaries(vertices, boundaryBox);
   PreviewRenderer.drawItems(items, boundaryBox);
 
