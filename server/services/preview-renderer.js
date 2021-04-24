@@ -79,9 +79,9 @@ PreviewRenderer.drawBoundaries = function (points, boundingBox) {
 };
 
 /**
- * 
- * @param { array } items 
- * @param { w, h, x, y } boundingBox 
+ *
+ * @param { array } items
+ * @param { w, h, x, y } boundingBox
  */
 PreviewRenderer.drawItems = function (items, boundingBox) {
   // borrowed from frontend
