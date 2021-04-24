@@ -78,7 +78,15 @@ PreviewRenderer.drawBoundaries = function (points, boundingBox) {
   PreviewRenderer.context.stroke();
 };
 
+/**
+ * 
+ * @param { array } items 
+ * @param { w, h, x, y } boundingBox 
+ */
 PreviewRenderer.drawItems = function (items, boundingBox) {
+  // borrowed from frontend
+  const objectColors = ["#0043E0", "#f28a00", "#C400E0", "#7EE016", "#0BE07B"];
+
   let xOffset = 0;
   if (boundingBox.x != 0) xOffset = boundingBox.x * -1;
 
@@ -87,8 +95,6 @@ PreviewRenderer.drawItems = function (items, boundingBox) {
 
   for (let i in items) {
     const item = items[i];
-
-    console.log(item);
 
     if (item.visibleInEditor) {
       const width =
@@ -100,7 +106,7 @@ PreviewRenderer.drawItems = function (items, boundingBox) {
           ? 1
           : item.dimensions.length;
 
-      PreviewRenderer.context.fillStyle = "red";
+      PreviewRenderer.context.fillStyle = objectColors[i % objectColors.length];
       PreviewRenderer.context.fillRect(
         (item.editorPosition.x + xOffset - width / 2) * PreviewRenderer.SCALE,
         (item.editorPosition.y + yOffset - length / 2) * PreviewRenderer.SCALE,
