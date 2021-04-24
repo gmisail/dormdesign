@@ -29,6 +29,7 @@ Server.setup = async function (app, port) {
 
   app.use(express.static("public"));
   app.use("/api/room", require("./routes/room"));
+  app.use("/api/preview", require("./routes/preview"));
 
   server.listen(port, () => console.log("Listening on localhost:" + port));
 };

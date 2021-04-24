@@ -1,18 +1,14 @@
-FROM node:alpine
+FROM node:12
 
 WORKDIR /usr/src/app
 
 COPY package*.json ./
 
-RUN apk add --no-cache \
-  build-base \
-  g++ \
-  cairo-dev \
-  jpeg-dev \
-  pango-dev \
-  giflib-dev
+RUN apt-get update \
+    && apt-get install -qq build-essential libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
 
-RUN npm install
+RUN npm install canvas
+RUN npm install 
 
 COPY . .
 
