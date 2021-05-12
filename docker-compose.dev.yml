@@ -26,6 +26,7 @@ services:
       dockerfile: Dockerfile
     environment:
       - DATABASE_ADDRESS=db
+      - CHOKIDAR_USEPOLLING=true
     ports:
       - "8000:8000"
     depends_on:

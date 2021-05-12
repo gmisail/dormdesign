@@ -1,13 +1,16 @@
-import React from "react";
-
 import "./RoomPreviewCard.scss";
 
+import React from "react";
+import RoomPreview from "./RoomPreview";
+
 const ListItem = (props) => {
-  const { roomName } = props;
+  const { roomName, id } = props;
 
   return (
-    <a href={`/room/${props.id}`} className="room-preview-card">
+    <a href={`/room/${id}`} className="room-preview-card">
       <span className="room-preview-name">{roomName}</span>
+
+      <RoomPreview id={id} />
     </a>
   );
 };

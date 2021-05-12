@@ -12,11 +12,16 @@ router.get("/", async (req, res) => {
   }
 
   const room = await Room.get(id);
-  const previewUrl = PreviewRenderer.generatePreview(room);
 
-  res.json({
-    url: previewUrl,
-  });
+  if(!room) {
+    res.json({ message: "Invalid room ID." });
+  } else {
+    const previewUrl = PreviewRenderer.generatePreview(room);
+
+    res.json({
+      url: previewUrl,
+    });
+  }
 });
 
 module.exports = router;

@@ -1,17 +1,16 @@
+import "./HomeRoute.scss";
+
 import React, { Component } from "react";
 
-import Modal from "react-bootstrap/Modal";
-
 import DataRequests from "../../controllers/DataRequests";
-import RoomGridObject from "../../room-editor/RoomGridObject";
-import SceneController from "../../room-editor/SceneController";
-import Vector2 from "../../room-editor/Vector2";
 import { ReactComponent as Logo } from "../../assets/logo.svg";
+import Modal from "react-bootstrap/Modal";
+import RoomGridObject from "../../room-editor/RoomGridObject";
 import RoomPreviewCard from "../../components/RoomPreviewCard/RoomPreviewCard";
+import SceneController from "../../room-editor/SceneController";
 import SingleInputForm from "../../components/SingleInputForm/SingleInputForm";
-
-import "./HomeRoute.scss";
 import StorageController from "../../controllers/StorageController";
+import Vector2 from "../../room-editor/Vector2";
 
 class HomeRoute extends Component {
   state = {

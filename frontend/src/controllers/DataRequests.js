@@ -102,6 +102,22 @@ class DataRequests {
     }
   }
 
+  static async generatePreview(id) {
+    if(!id) {
+      throw new Error("Can't generate template from undefined template.");
+    }
+
+    const response = await fetch("/api/preview?id=" + id);
+    const data = response.json();
+
+    if (!response.ok) {
+      const message = `${response.status} Error generating room preview: ${data.message}`;
+      throw new Error(message);
+    }
+    
+    return data;
+  }
+
   // Sends request to create a room, adds some items to it, and returns the id of the room.
   static async CREATE_TEST_ROOM(name) {
     const roomData = await DataRequests.createRoom(name);
