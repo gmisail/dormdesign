@@ -3,10 +3,13 @@
 .room-preview-card {
   width: 125px;
   text-align: center;
-  line-height: 64px;
+  line-height: 48px;
   background-color: $foreground-color;
   border-radius: $card-border-radius;
   box-shadow: $box-shadow;
+
+  margin-left: 8px;
+  margin-right: 8px;
 
   transition: all 0.2s ease;
 
@@ -29,18 +32,22 @@
 
   .room-preview-image {
     display: block;
-    max-width: 80px;
-    max-height: 80px;
+  
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: auto;
+    margin-bottom: 10%;
+  
+    max-width: 75%;
+    max-height: 75%;
     width: auto;
     height: auto;
   
-    padding: 5%;
-    margin-bottom: 25px;
-
+    background-color: rgba($card-inset-color, 0.25);
     border-radius: $card-border-radius;
-    box-shadow: $box-shadow;
+    box-shadow: inset 0px 2px 4px 2px rgba(0, 0, 0, 0.15);
   
-    background-color: darken(white, 5);
+    padding: 12px;
   }
 
   &:hover {

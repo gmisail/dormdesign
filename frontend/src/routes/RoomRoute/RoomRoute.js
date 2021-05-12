@@ -4,7 +4,6 @@ import { BsBoxArrowUpRight, BsGear, BsPencil, BsPlus } from "react-icons/bs";
 import { Modal, modalTypes } from "../../components/modals/Modal";
 import React, { useCallback, useContext, useEffect } from "react";
 
-import DataRequests from "../../controllers/DataRequests";
 import DormItemList from "../../components/DormItemList/DormItemList";
 import IconButton from "../../components/IconButton/IconButton";
 import { RoomContext } from "../../context/RoomContext";
