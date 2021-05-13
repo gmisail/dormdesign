@@ -78,6 +78,7 @@ PreviewRenderer.drawBoundaries = function (points, boundingBox) {
   PreviewRenderer.context.stroke();
 };
 
+
 /**
  *
  * @param { array } items
@@ -107,12 +108,24 @@ PreviewRenderer.drawItems = function (items, boundingBox) {
           : item.dimensions.length;
 
       PreviewRenderer.context.fillStyle = objectColors[i % objectColors.length];
-      PreviewRenderer.context.fillRect(
-        (item.editorPosition.x + xOffset - width / 2) * PreviewRenderer.SCALE,
-        (item.editorPosition.y + yOffset - length / 2) * PreviewRenderer.SCALE,
-        width * PreviewRenderer.SCALE,
-        length * PreviewRenderer.SCALE
-      );
+
+      const x = item.editorPosition.x;
+      const y = item.editorPosition.y;
+
+      if(item.editorRotation !== undefined && item.editorRotation !== 0) {
+        PreviewRenderer.context.save();
+        PreviewRenderer.context.translate((x + xOffset) * PreviewRenderer.SCALE, (y + yOffset) * PreviewRenderer.SCALE);
+        PreviewRenderer.context.rotate(item.editorRotation * Math.PI / 180);
+        PreviewRenderer.context.fillRect((-width / 2) * PreviewRenderer.SCALE, (-length / 2) * PreviewRenderer.SCALE, width * PreviewRenderer.SCALE, length * PreviewRenderer.SCALE);
+        PreviewRenderer.context.restore();
+      } else {
+        PreviewRenderer.context.fillRect(
+          (x + xOffset - width / 2) * PreviewRenderer.SCALE,
+          (y + yOffset - length / 2) * PreviewRenderer.SCALE,
+          width * PreviewRenderer.SCALE,
+          length * PreviewRenderer.SCALE
+        );
+      }
     }
   }
 };
