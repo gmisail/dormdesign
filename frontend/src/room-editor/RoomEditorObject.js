@@ -1,8 +1,8 @@
 import Collisions from "./Collisions";
 import MouseController from "./MouseController";
+import RoomBoundsObject from "./RoomBoundsObject";
 import RoomGridObject from "./RoomGridObject";
 import RoomRectObject from "./RoomRectObject";
-import RoomBoundsObject from "./RoomBoundsObject";
 import SceneObject from "./SceneObject";
 import Vector2 from "./Vector2";
 

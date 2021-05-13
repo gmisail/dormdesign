@@ -45,6 +45,7 @@ class MouseController {
     this.position = position;
     this.onMouseDown(position);
   };
+
   _mouseMove = (e) => {
     const rect = this.watchedElement.getBoundingClientRect();
     const posX = (e.clientX - rect.left) * window.devicePixelRatio;
@@ -54,12 +55,15 @@ class MouseController {
       delta = new Vector2(posX - this.position.x, posY - this.position.y);
     }
     this.position = new Vector2(posX, posY);
+
     this.onMouseMove(delta, this.position);
   };
+
   _mouseUp = (e) => {
     this._pressed = false;
     this.onMouseUp();
   };
+
   _mouseLeave = (e) => {
     if (this._pressed) {
       this._pressed = false;
@@ -67,6 +71,7 @@ class MouseController {
       this.onMouseUp();
     }
   };
+
   _wheel = (e) => {
     e.preventDefault();
     const rect = this.watchedElement.getBoundingClientRect();
@@ -76,6 +81,7 @@ class MouseController {
     );
     this.onScroll(e.deltaX, e.deltaY, position);
   };
+
   _touchStart = (e) => {
     const touch = e.touches[0];
     const mouseEvent = new MouseEvent("mousedown", {
@@ -84,6 +90,7 @@ class MouseController {
     });
     this.watchedElement.dispatchEvent(mouseEvent);
   };
+
   _touchMove = (e) => {
     const touch = e.touches[0];
     const mouseEvent = new MouseEvent("mousemove", {
@@ -92,6 +99,7 @@ class MouseController {
     });
     this.watchedElement.dispatchEvent(mouseEvent);
   };
+
   _touchEnd = (e) => {
     const mouseEvent = new MouseEvent("mouseup", {});
     this.watchedElement.dispatchEvent(mouseEvent);

@@ -103,7 +103,7 @@ class DataRequests {
   }
 
   static async generatePreview(id) {
-    if(!id) {
+    if (!id) {
       throw new Error("Can't generate template from undefined template.");
     }
 
@@ -114,7 +114,7 @@ class DataRequests {
       const message = `${response.status} Error generating room preview: ${data.message}`;
       throw new Error(message);
     }
-    
+
     return data;
   }
 

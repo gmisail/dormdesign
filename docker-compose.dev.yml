@@ -24,7 +24,7 @@ services:
   server:
     build:
       context: ./server
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
     environment:
       - DATABASE_ADDRESS=db
       - CHOKIDAR_USEPOLLING=true
