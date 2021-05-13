@@ -11,6 +11,7 @@ import SceneController from "../../room-editor/SceneController";
 import SingleInputForm from "../../components/SingleInputForm/SingleInputForm";
 import StorageController from "../../controllers/StorageController";
 import Vector2 from "../../room-editor/Vector2";
+import Room from "../../models/Room";
 
 class HomeRoute extends Component {
   state = {
@@ -135,6 +136,8 @@ class HomeRoute extends Component {
               placeholder={"Room name"}
               onSubmit={this.onSubmitCreateRoomModal}
               submitButtonText={"Create"}
+              trim={true}
+              maxLength={Room.MAX_NAME_LENGTH}
             />
           </Modal.Body>
         </Modal>
