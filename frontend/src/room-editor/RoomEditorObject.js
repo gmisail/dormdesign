@@ -291,16 +291,25 @@ class RoomEditorObject extends SceneObject {
     if (this.mouseController.pressed && !this.bounds.movingPoint) {
       if (this.selectedObject && !this.selectedObject.staticObject) {
         const selectedObject = this.selectedObject;
+        
         if (selectedObject.movementLocked) {
           return;
         }
+
+        const initialPosition = new Vector2(selectedObject.position.x, selectedObject.position.y);
         const unsnappedPos = selectedObject.getUnsnappedPosition();
         const globalPos = this.localToGlobalPoint(unsnappedPos);
+
         selectedObject.setPosition(
           this.globalToLocalPoint(
             new Vector2(globalPos.x + delta.x, globalPos.y + delta.y)
           )
         );
+
+        const finalPosition = selectedObject.position;
+        if(initialPosition.x == finalPosition.x && initialPosition.y == finalPosition.y)
+            return;
+
         this._selectedObjectPositionUpdated = true;
       }
       if (this.panning) {
@@ -311,9 +320,11 @@ class RoomEditorObject extends SceneObject {
       }
     }
   }
+
   onMouseUp() {
     this.panning = false;
   }
+  
   onScroll(dx, dy, mousePosition) {
     if (isNaN(dx)) dx = 0;
     if (isNaN(dy)) dy = 0;
@@ -385,7 +396,7 @@ class RoomEditorObject extends SceneObject {
       nameText: name ?? "New Item",
       staticObject: false,
       snapPosition: false,
-      snapOffset: 0.2,
+      snapOffset: 0.1,
       movementLocked: movementLocked ?? false,
       fontFamily: this.fontFamily,
       zIndex: zIndex ?? 0,

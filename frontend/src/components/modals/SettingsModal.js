@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Form, FormControl } from "react-bootstrap";
 import Modal from "react-bootstrap/Modal";
 import SingleInputForm from "../SingleInputForm/SingleInputForm";
+import EditorSettings from "./EditorSettings/EditorSettings";
 
 const SettingsModal = (props) => {
   const [cloneIdValue, setCloneIdValue] = useState("");
@@ -28,12 +29,24 @@ const SettingsModal = (props) => {
       </Modal.Header>
 
       <Modal.Body className="custom-modal-card">
+        <h5>My Name</h5>
+        <p className="mb-3">
+          Choose a name so that other people in the room know who you are. This
+          data will only be stored locally in your browser.
+        </p>
+        <SingleInputForm
+          initialValue={props.userName}
+          onSubmit={props.onChangeUserName}
+        />
+        <hr />
+
         <h5>Room Name</h5>
         <SingleInputForm
           initialValue={props.roomName}
           onSubmit={props.onChangeRoomName}
         />
         <hr />
+
         <h5>Clone from Template</h5>
         <p>
           Template cloning allows you to copy the layout, furniture, and
@@ -60,16 +73,6 @@ const SettingsModal = (props) => {
             </button>
           </div>
         </Form>
-        <hr />
-        <h5>My Name</h5>
-        <p className="mb-3">
-          Choose a name so that other people in the room know who you are. This
-          data will only be stored locally in your browser.
-        </p>
-        <SingleInputForm
-          initialValue={props.userName}
-          onSubmit={props.onChangeUserName}
-        />
       </Modal.Body>
     </Modal>
   );
