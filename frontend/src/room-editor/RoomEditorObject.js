@@ -395,7 +395,7 @@ class RoomEditorObject extends SceneObject {
       opacity: 0.6,
       nameText: name ?? "New Item",
       staticObject: false,
-      snapPosition: false,
+      snapPosition: true,
       snapOffset: 0.1,
       movementLocked: movementLocked ?? false,
       fontFamily: this.fontFamily,
