@@ -38,6 +38,8 @@ class RoomEditorObject extends SceneObject {
     // Map of item ids that have been added to room
     this.roomItems = new Map();
 
+    
+
     this.backgroundColor = backgroundColor ?? "#fff";
     this.outsideBoundaryColor = outsideBoundaryColor ?? "#000";
 
@@ -396,7 +398,7 @@ class RoomEditorObject extends SceneObject {
       nameText: name ?? "New Item",
       staticObject: false,
       snapPosition: true,
-      snapOffset: 0.1,
+      snapOffset: 0.05,
       movementLocked: movementLocked ?? false,
       fontFamily: this.fontFamily,
       zIndex: zIndex ?? 0,

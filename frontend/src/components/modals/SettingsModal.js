@@ -46,10 +46,11 @@ const SettingsModal = (props) => {
 
         <br />
 
-        <h5>Editor Settings</h5>
+     { 
+      /*<h5>Editor Settings</h5>
         <b>Pixel Snap</b>
         <p style={{marginBottom: 4 + 'px'}}>
-          Limits movements to whole multiples of the pixel snap ratio to make it easier to line up objects and improve performance.
+          Limits movements to whole multiples of the pixel snap ratio. This makes it easier to line up objects and improves performance.
         </p>
         <Form.Group controlId="pixelSnapEnabled">
           <Form.Check type="checkbox" checked={ snapEnabled } onChange={onPixelSnappedChanged} label={ snapEnabled ? "Enabled" : "Disabled" } />
@@ -65,7 +66,9 @@ const SettingsModal = (props) => {
           onSubmit={props.onChangeUserName}
         />
 
-        <br />
+     <br /> */ 
+     
+     }
         
         <h5>Room Settings</h5>
         <b>Room Name</b>
