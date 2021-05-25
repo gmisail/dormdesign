@@ -38,8 +38,6 @@ class RoomEditorObject extends SceneObject {
     // Map of item ids that have been added to room
     this.roomItems = new Map();
 
-    
-
     this.backgroundColor = backgroundColor ?? "#fff";
     this.outsideBoundaryColor = outsideBoundaryColor ?? "#000";
 
@@ -293,12 +291,15 @@ class RoomEditorObject extends SceneObject {
     if (this.mouseController.pressed && !this.bounds.movingPoint) {
       if (this.selectedObject && !this.selectedObject.staticObject) {
         const selectedObject = this.selectedObject;
-        
+
         if (selectedObject.movementLocked) {
           return;
         }
 
-        const initialPosition = new Vector2(selectedObject.position.x, selectedObject.position.y);
+        const initialPosition = new Vector2(
+          selectedObject.position.x,
+          selectedObject.position.y
+        );
         const unsnappedPos = selectedObject.getUnsnappedPosition();
         const globalPos = this.localToGlobalPoint(unsnappedPos);
 
@@ -309,8 +310,11 @@ class RoomEditorObject extends SceneObject {
         );
 
         const finalPosition = selectedObject.position;
-        if(initialPosition.x == finalPosition.x && initialPosition.y == finalPosition.y)
-            return;
+        if (
+          initialPosition.x == finalPosition.x &&
+          initialPosition.y == finalPosition.y
+        )
+          return;
 
         this._selectedObjectPositionUpdated = true;
       }
@@ -326,7 +330,7 @@ class RoomEditorObject extends SceneObject {
   onMouseUp() {
     this.panning = false;
   }
-  
+
   onScroll(dx, dy, mousePosition) {
     if (isNaN(dx)) dx = 0;
     if (isNaN(dy)) dy = 0;

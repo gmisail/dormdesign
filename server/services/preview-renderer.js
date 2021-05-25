@@ -83,7 +83,6 @@ PreviewRenderer.drawBoundaries = function (points, boundingBox) {
   PreviewRenderer.context.stroke();
 };
 
-
 /**
  *
  * @param { array } items
@@ -114,11 +113,19 @@ PreviewRenderer.drawItems = function (items, boundingBox) {
       const x = item.editorPosition.x;
       const y = item.editorPosition.y;
 
-      if(item.editorRotation !== undefined && item.editorRotation !== 0) {
+      if (item.editorRotation !== undefined && item.editorRotation !== 0) {
         PreviewRenderer.context.save();
-        PreviewRenderer.context.translate((x + xOffset) * PreviewRenderer.SCALE, (y + yOffset) * PreviewRenderer.SCALE);
-        PreviewRenderer.context.rotate(item.editorRotation * Math.PI / 180);
-        PreviewRenderer.context.fillRect((-width / 2) * PreviewRenderer.SCALE, (-length / 2) * PreviewRenderer.SCALE, width * PreviewRenderer.SCALE, length * PreviewRenderer.SCALE);
+        PreviewRenderer.context.translate(
+          (x + xOffset) * PreviewRenderer.SCALE,
+          (y + yOffset) * PreviewRenderer.SCALE
+        );
+        PreviewRenderer.context.rotate((item.editorRotation * Math.PI) / 180);
+        PreviewRenderer.context.fillRect(
+          (-width / 2) * PreviewRenderer.SCALE,
+          (-length / 2) * PreviewRenderer.SCALE,
+          width * PreviewRenderer.SCALE,
+          length * PreviewRenderer.SCALE
+        );
         PreviewRenderer.context.restore();
       } else {
         PreviewRenderer.context.fillRect(
@@ -144,8 +151,10 @@ PreviewRenderer.generatePreview = function (room) {
   boundaryBox.x -= PreviewRenderer.PADDING;
   boundaryBox.y -= PreviewRenderer.PADDING;
 
-  PreviewRenderer.canvas.width = (boundaryBox.w + PreviewRenderer.PADDING * 2) * PreviewRenderer.SCALE;
-  PreviewRenderer.canvas.height = (boundaryBox.h + PreviewRenderer.PADDING * 2) * PreviewRenderer.SCALE;
+  PreviewRenderer.canvas.width =
+    (boundaryBox.w + PreviewRenderer.PADDING * 2) * PreviewRenderer.SCALE;
+  PreviewRenderer.canvas.height =
+    (boundaryBox.h + PreviewRenderer.PADDING * 2) * PreviewRenderer.SCALE;
 
   PreviewRenderer.context.clearRect(
     0,

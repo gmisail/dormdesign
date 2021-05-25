@@ -13,7 +13,7 @@ router.get("/", async (req, res) => {
 
   const room = await Room.get(id);
 
-  if(!room) {
+  if (!room) {
     res.json({ message: "Invalid room ID." });
   } else {
     const previewUrl = PreviewRenderer.generatePreview(room);

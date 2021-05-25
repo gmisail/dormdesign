@@ -46,8 +46,7 @@ const SettingsModal = (props) => {
 
         <br />
 
-     { 
-      /*<h5>Editor Settings</h5>
+        {/*<h5>Editor Settings</h5>
         <b>Pixel Snap</b>
         <p style={{marginBottom: 4 + 'px'}}>
           Limits movements to whole multiples of the pixel snap ratio. This makes it easier to line up objects and improves performance.
@@ -66,13 +65,13 @@ const SettingsModal = (props) => {
           onSubmit={props.onChangeUserName}
         />
 
-     <br /> */ 
-     
-     }
-        
+     <br /> */}
+
         <h5>Room Settings</h5>
         <b>Room Name</b>
-        <p>The room name can also be changed by clicking on it in the editor.</p>
+        <p>
+          The room name can also be changed by clicking on it in the editor.
+        </p>
         <SingleInputForm
           initialValue={props.roomName}
           onSubmit={props.onChangeRoomName}
