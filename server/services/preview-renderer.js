@@ -10,6 +10,11 @@ let PreviewRenderer = {};
 PreviewRenderer.SCALE = 25;
 
 /**
+ * PADDING is the spacing around the render. The number of pixels on each size of the render is = SCALE * PADDING. By default, there are 6.25 pixels of padding on every side.
+ */
+PreviewRenderer.PADDING = 0.25;
+
+/**
  * Find the bounding box that contains all of the points
  * @param { array<{ x: Number, y: Number }>} points
  * @returns { w, h, x, y }
@@ -136,17 +141,17 @@ PreviewRenderer.generatePreview = function (room) {
 
   let boundaryBox = PreviewRenderer.getBoundingBox(vertices);
 
-  boundaryBox.x -= 0.25;
-  boundaryBox.y -= 0.25;
+  boundaryBox.x -= PreviewRenderer.PADDING;
+  boundaryBox.y -= PreviewRenderer.PADDING;
 
-  PreviewRenderer.canvas.width = (boundaryBox.w + 0.5) * PreviewRenderer.SCALE;
-  PreviewRenderer.canvas.height = (boundaryBox.h + 0.5) * PreviewRenderer.SCALE;
+  PreviewRenderer.canvas.width = (boundaryBox.w + PreviewRenderer.PADDING * 2) * PreviewRenderer.SCALE;
+  PreviewRenderer.canvas.height = (boundaryBox.h + PreviewRenderer.PADDING * 2) * PreviewRenderer.SCALE;
 
   PreviewRenderer.context.clearRect(
     0,
     0,
-    (boundaryBox.w + 0.5) * PreviewRenderer.SCALE,
-    (boundaryBox.h + 0.5) * PreviewRenderer.SCALE
+    (boundaryBox.w + PreviewRenderer.PADDING * 2) * PreviewRenderer.SCALE,
+    (boundaryBox.h + PreviewRenderer.PADDING * 2) * PreviewRenderer.SCALE
   );
 
   PreviewRenderer.drawBoundaries(vertices, boundaryBox);
