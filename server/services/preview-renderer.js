@@ -88,11 +88,8 @@ PreviewRenderer.drawItems = function (items, boundingBox) {
   // borrowed from frontend
   const objectColors = ["#0043E0", "#f28a00", "#C400E0", "#7EE016", "#0BE07B"];
 
-  let xOffset = 0;
-  if (boundingBox.x != 0) xOffset = boundingBox.x * -1;
-
-  let yOffset = 0;
-  if (boundingBox.y != 0) yOffset = boundingBox.y * -1;
+  let xOffset = Math.abs(boundingBox.x);
+  let yOffset = Math.abs(boundingBox.y);
 
   for (let i in items) {
     const item = items[i];
@@ -139,15 +136,19 @@ PreviewRenderer.generatePreview = function (room) {
 
   let boundaryBox = PreviewRenderer.getBoundingBox(vertices);
 
-  PreviewRenderer.canvas.width = boundaryBox.w * PreviewRenderer.SCALE;
-  PreviewRenderer.canvas.height = boundaryBox.h * PreviewRenderer.SCALE;
+  boundaryBox.x -= 0.25;
+  boundaryBox.y -= 0.25;
+
+  PreviewRenderer.canvas.width = (boundaryBox.w + 0.5) * PreviewRenderer.SCALE;
+  PreviewRenderer.canvas.height = (boundaryBox.h + 0.5) * PreviewRenderer.SCALE;
 
   PreviewRenderer.context.clearRect(
     0,
     0,
-    boundaryBox.w * PreviewRenderer.SCALE,
-    boundaryBox.h * PreviewRenderer.SCALE
+    (boundaryBox.w + 0.5) * PreviewRenderer.SCALE,
+    (boundaryBox.h + 0.5) * PreviewRenderer.SCALE
   );
+
   PreviewRenderer.drawBoundaries(vertices, boundaryBox);
   PreviewRenderer.drawItems(items, boundaryBox);
 
