@@ -1,5 +1,6 @@
 import React from "react";
 import Modal from "react-bootstrap/Modal";
+import Room from "../../models/Room";
 import SingleInputForm from "../SingleInputForm/SingleInputForm";
 
 const RoomNameModal = (props) => {
@@ -15,6 +16,8 @@ const RoomNameModal = (props) => {
           initialValue={props.name}
           onSubmit={props.onSubmit}
           submitButtonText={props.submitButtonText}
+          trim={true}
+          maxLength={Room.MAX_NAME_LENGTH}
         />
       </Modal.Body>
     </Modal>

@@ -32,6 +32,11 @@ router.post("/create", async (req, res) => {
   if (name === undefined || name.length <= 0) {
     throw new Error("Missing room name parameter.");
   }
+  if (name.length > Room.MAX_NAME_LENGTH) {
+    throw new Error(
+      `Room name exceeds maximum allowed length of ${Room.MAX_NAME_LENGTH} characters`
+    );
+  }
 
   const room = await Room.create(name);
 

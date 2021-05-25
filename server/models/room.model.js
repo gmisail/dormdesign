@@ -4,6 +4,7 @@ const { v4: uuidv4 } = require("uuid");
 const Template = require("./template.model");
 
 let Room = {};
+Room.MAX_NAME_LENGTH = 20;
 
 /**
  * Create a new room with a given name

@@ -5,7 +5,7 @@ import { Form } from "react-bootstrap";
   Creates a single-line form with an input and submit buttom
 */
 const SingleInputForm = (props) => {
-  const { initialValue, submitButtonText, placeholder } = props;
+  const { initialValue, submitButtonText, placeholder, maxLength } = props;
   const trim = props.trim ?? false; // Whether or not to trim input text
   const allowEmptySubmit = props.allowEmptySubmit ?? false; // Whether or not to enable submitting an empty input
 
@@ -14,6 +14,8 @@ const SingleInputForm = (props) => {
   const handleInputChange = (event) => {
     const target = event.target;
     const value = target.value;
+
+    if (maxLength !== undefined && value.length > maxLength) return;
 
     setInputValue(value);
   };

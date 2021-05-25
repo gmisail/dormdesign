@@ -18,4 +18,6 @@ data/
 
 node_modules/
 server/node_modules
+
+frontend/.next/
 frontend/node_modules

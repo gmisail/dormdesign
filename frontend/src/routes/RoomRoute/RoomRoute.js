@@ -1,17 +1,16 @@
-import React, { useEffect, useContext, useCallback } from "react";
-import { useParams } from "react-router-dom";
+import "./RoomRoute.scss";
 
-import { Spinner } from "react-bootstrap";
-import { BsGear, BsPlus, BsBoxArrowUpRight, BsPencil } from "react-icons/bs";
+import { BsBoxArrowUpRight, BsGear, BsPencil, BsPlus } from "react-icons/bs";
+import { Modal, modalTypes } from "../../components/modals/Modal";
+import React, { useCallback, useContext, useEffect } from "react";
 
-import { RoomContext } from "../../context/RoomContext";
-import RoomEditor from "../../components/RoomEditor/RoomEditor";
 import DormItemList from "../../components/DormItemList/DormItemList";
 import IconButton from "../../components/IconButton/IconButton";
-import { modalTypes, Modal } from "../../components/modals/Modal";
+import { RoomContext } from "../../context/RoomContext";
+import RoomEditor from "../../components/RoomEditor/RoomEditor";
+import { Spinner } from "react-bootstrap";
 import useModal from "../../hooks/useModal";
-
-import "./RoomRoute.scss";
+import { useParams } from "react-router-dom";
 
 export const RoomRoute = () => {
   const {

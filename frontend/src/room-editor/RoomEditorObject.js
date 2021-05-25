@@ -1,8 +1,8 @@
 import Collisions from "./Collisions";
 import MouseController from "./MouseController";
+import RoomBoundsObject from "./RoomBoundsObject";
 import RoomGridObject from "./RoomGridObject";
 import RoomRectObject from "./RoomRectObject";
-import RoomBoundsObject from "./RoomBoundsObject";
 import SceneObject from "./SceneObject";
 import Vector2 from "./Vector2";
 
@@ -291,16 +291,31 @@ class RoomEditorObject extends SceneObject {
     if (this.mouseController.pressed && !this.bounds.movingPoint) {
       if (this.selectedObject && !this.selectedObject.staticObject) {
         const selectedObject = this.selectedObject;
+
         if (selectedObject.movementLocked) {
           return;
         }
+
+        const initialPosition = new Vector2(
+          selectedObject.position.x,
+          selectedObject.position.y
+        );
         const unsnappedPos = selectedObject.getUnsnappedPosition();
         const globalPos = this.localToGlobalPoint(unsnappedPos);
+
         selectedObject.setPosition(
           this.globalToLocalPoint(
             new Vector2(globalPos.x + delta.x, globalPos.y + delta.y)
           )
         );
+
+        const finalPosition = selectedObject.position;
+        if (
+          initialPosition.x == finalPosition.x &&
+          initialPosition.y == finalPosition.y
+        )
+          return;
+
         this._selectedObjectPositionUpdated = true;
       }
       if (this.panning) {
@@ -311,9 +326,11 @@ class RoomEditorObject extends SceneObject {
       }
     }
   }
+
   onMouseUp() {
     this.panning = false;
   }
+
   onScroll(dx, dy, mousePosition) {
     if (isNaN(dx)) dx = 0;
     if (isNaN(dy)) dy = 0;
@@ -384,8 +401,8 @@ class RoomEditorObject extends SceneObject {
       opacity: 0.6,
       nameText: name ?? "New Item",
       staticObject: false,
-      snapPosition: false,
-      snapOffset: 0.2,
+      snapPosition: true,
+      snapOffset: 0.05,
       movementLocked: movementLocked ?? false,
       fontFamily: this.fontFamily,
       zIndex: zIndex ?? 0,
