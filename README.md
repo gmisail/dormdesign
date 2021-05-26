@@ -12,7 +12,7 @@ DormDesign allows roommates to collaboratively design and plan our their dorm ro
 
 ## Screenshots
 
-<img src="/screenshots/room-route.png" alt="room editor screenshot" width="800" />
+<img src="/screenshots/updated-room-route.png" alt="room editor screenshot" width="100%" />
 
 ## Development Environment
 
