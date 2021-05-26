@@ -14,6 +14,7 @@ export const RoomActions = {
   itemSelected: "ITEM_SELECTED",
   boundsUpdated: "BOUNDS_UPDATED",
   roomNameUpdated: "ROOM_NAME_UPDATED",
+  roomDeleted: "ROOM_DELETED",
   loading: "LOADING",
   error: "ERROR",
   clearEditorActionQueue: "CLEAR_EDITOR_ACTION_QUEUE",
@@ -36,6 +37,7 @@ const roomReducer = (state, action) => {
   if (action.payload?.sendToEditor !== false) {
     state.editorActionQueue = [...state.editorActionQueue, action];
   }
+
   switch (action.type) {
     case RoomActions.connectedToRoom:
       return {
@@ -47,6 +49,7 @@ const roomReducer = (state, action) => {
         roomName: action.payload.roomName,
         socketConnection: action.payload.socketConnection,
       };
+
     case RoomActions.connectionClosed:
       return {
         items: null,
@@ -56,21 +59,25 @@ const roomReducer = (state, action) => {
         socketConnection: null,
         error: new Error("Connection to room lost"),
       };
+
     case RoomActions.clearEditorActionQueue:
       return {
         ...state,
         editorActionQueue: [],
       };
+
     case RoomActions.setUserName:
       return {
         ...state,
         userName: action.payload.userName,
       };
+
     case RoomActions.itemAdded:
       return {
         ...state,
         items: [...state.items, action.payload.item],
       };
+
     case RoomActions.itemDeleted:
       return {
         ...state,
@@ -81,6 +88,7 @@ const roomReducer = (state, action) => {
             : null,
         items: state.items.filter((item) => item.id !== action.payload.id),
       };
+
     case RoomActions.itemsUpdated:
       const updatedItems = {};
       let selectedItemID = state.selectedItemID;
@@ -114,23 +122,29 @@ const roomReducer = (state, action) => {
         selectedItemID: selectedItemID,
         items: itemArray,
       };
+
     case RoomActions.itemSelected:
       return { ...state, selectedItemID: action.payload.id };
+
     case RoomActions.boundsUpdated:
       const updatedBounds = action.payload.bounds ?? [];
       return {
         ...state,
         bounds: updatedBounds,
       };
+
     case RoomActions.loading:
       return initialState;
+
     case RoomActions.roomNameUpdated:
       return {
         ...state,
         roomName: action.payload.roomName,
       };
+
     case RoomActions.error:
       return { ...state, loading: false, error: action.payload.error };
+
     default:
       return state;
   }
@@ -261,6 +275,10 @@ export const RoomProvider = ({ children }) => {
         connection.on("roomCloned", (data) => {
           window.location.reload();
         });
+
+        connection.on("roomDeleted", (data) => {
+          window.location.reload();
+        });
       } catch (error) {
         console.error("Failed to connect to room: " + error);
         dispatch({ type: RoomActions.error, payload: { error } });
@@ -354,6 +372,26 @@ export const RoomProvider = ({ children }) => {
     [state.socketConnection]
   );
 
+  const deleteRoom = useCallback(
+    (id) => {
+      state.socketConnection.send({
+        event: "deleteRoom",
+        sendResponse: true,
+        data: {
+          id
+        },
+      });
+
+      StorageController.removeRoomFromHistory(id);
+
+      dispatch({
+        type: RoomActions.roomDeleted,
+        payload: { },
+      });
+    },
+    [state.socketConnection]
+  );
+
   const updateBounds = useCallback(
     (bounds) => {
       state.socketConnection.send({
@@ -413,6 +451,7 @@ export const RoomProvider = ({ children }) => {
     updatedItems,
     setUserName,
     deleteItem,
+    deleteRoom,
     clearEditorActionQueue,
     itemSelected,
   };

@@ -5,7 +5,6 @@ import SingleInputForm from "../SingleInputForm/SingleInputForm";
 
 const SettingsModal = (props) => {
   const [cloneIdValue, setCloneIdValue] = useState("");
-  const [snapEnabled, setSnapEnabled] = useState(true);
 
   const handleInputChange = (evt) => {
     const target = evt.target;
@@ -22,9 +21,9 @@ const SettingsModal = (props) => {
     props.onClone(cloneIdValue);
   };
 
-  const onPixelSnappedChanged = (evt) => {
-    setSnapEnabled(evt.target.checked);
-  };
+  const onDeleteRoom = (evt) => {
+    props.onDeleteRoom();
+  }
 
   return (
     <Modal show={props.show} onHide={props.onHide} centered={props.centered}>
@@ -45,27 +44,6 @@ const SettingsModal = (props) => {
         />
 
         <br />
-
-        {/*<h5>Editor Settings</h5>
-        <b>Pixel Snap</b>
-        <p style={{marginBottom: 4 + 'px'}}>
-          Limits movements to whole multiples of the pixel snap ratio. This makes it easier to line up objects and improves performance.
-        </p>
-        <Form.Group controlId="pixelSnapEnabled">
-          <Form.Check type="checkbox" checked={ snapEnabled } onChange={onPixelSnappedChanged} label={ snapEnabled ? "Enabled" : "Disabled" } />
-        </Form.Group>
-
-        <b>Pixel Snap Ratio</b>
-        <p className="mb-3">
-          Specifies how precise you want movement to be. A lower ratio will be more precise at the cost of performance,
-          while a higher ratio will have better performance at the cost of precision.
-        </p>
-        <SingleInputForm
-          initialValue={props.userName}
-          onSubmit={props.onChangeUserName}
-        />
-
-     <br /> */}
 
         <h5>Room Settings</h5>
         <b>Room Name</b>
@@ -105,6 +83,18 @@ const SettingsModal = (props) => {
             </button>
           </div>
         </Form>
+
+        <br />
+
+        <b>Delete Room</b>
+        <p>Once a room is deleted, it cannot be recovered.</p>
+        <button
+          className="custom-btn custom-btn-warning w-100"
+          onClick={ onDeleteRoom }
+        >
+          Delete Room
+        </button>
+
       </Modal.Body>
     </Modal>
   );

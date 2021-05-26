@@ -8,7 +8,8 @@
   "scripts": {
     "prettier:frontend": "prettier ./frontend/src --write",
     "prettier:server": "prettier ./server --write",
-    "dev": "docker-compose -f docker-compose.dev.yml up --build"
+    "dev": "docker-compose -f docker-compose.dev.yml up --build",
+    "prepare": "husky install"
   },
   "lint-staged": {
     "server/*.{js,jsx,ts,tsx,json,css,scss,md}": [

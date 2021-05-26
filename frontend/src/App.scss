@@ -75,6 +75,12 @@ textarea {
     @include button-background-color($color-secondary);
   }
 
+  &.custom-btn-warning {
+    background-color: $color-danger;
+
+    @include button-background-color($color-danger);
+  }
+
   &.custom-btn-large {
     padding: 10px 18px;
     font-size: $btn-font-size-large;
