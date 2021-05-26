@@ -74,7 +74,7 @@ class HomeRoute extends Component {
       <div className="recent-rooms-card">
         <h5>Recent Rooms</h5>
         <div className="recent-rooms">
-          { this.state.roomHistory.map((room, id) => (
+          {this.state.roomHistory.map((room, id) => (
             <RoomPreviewCard
               key={room.id}
               id={room.id}
@@ -115,7 +115,7 @@ class HomeRoute extends Component {
               </button>
             </div>
             <div className="recent-rooms-container">
-              { this.renderExistingRooms() }
+              {this.renderExistingRooms()}
             </div>
           </div>
         </div>

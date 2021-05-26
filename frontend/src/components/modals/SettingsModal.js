@@ -23,7 +23,7 @@ const SettingsModal = (props) => {
 
   const onDeleteRoom = (evt) => {
     props.onDeleteRoom();
-  }
+  };
 
   return (
     <Modal show={props.show} onHide={props.onHide} centered={props.centered}>
@@ -90,11 +90,10 @@ const SettingsModal = (props) => {
         <p>Once a room is deleted, it cannot be recovered.</p>
         <button
           className="custom-btn custom-btn-warning w-100"
-          onClick={ onDeleteRoom }
+          onClick={onDeleteRoom}
         >
           Delete Room
         </button>
-
       </Modal.Body>
     </Modal>
   );

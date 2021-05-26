@@ -124,7 +124,7 @@ export const RoomRoute = () => {
         },
         onDeleteRoom: () => {
           deleteRoom(id);
-        }
+        },
       }),
     [
       toggleModal,

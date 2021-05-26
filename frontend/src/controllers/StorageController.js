@@ -54,22 +54,27 @@ export default class StorageController {
     let historyData = StorageController.get("history");
     let history = [];
 
-    if (historyData != null)
-      history = JSON.parse(historyData);
+    if (historyData != null) history = JSON.parse(historyData);
 
     return history;
   }
 
   /**
    * Remove a room from the history by its ID. Return the original array if nothing changed.
-   * @param { string } id 
+   * @param { string } id
    */
   static removeRoomFromHistory(id) {
     let historyData = StorageController.getRoomsFromHistory();
 
-    console.log(historyData, historyData.filter((room) => room.id !== id))
+    console.log(
+      historyData,
+      historyData.filter((room) => room.id !== id)
+    );
 
-    StorageController.set("history", JSON.stringify(historyData.filter((room) => room.id !== id)));
+    StorageController.set(
+      "history",
+      JSON.stringify(historyData.filter((room) => room.id !== id))
+    );
   }
 
   /**

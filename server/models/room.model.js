@@ -58,7 +58,7 @@ Room.delete = async function (id) {
     console.error("Could not delete room.");
     return null;
   }
-}
+};
 
 /**
  * Get the JSON data from a room at an ID

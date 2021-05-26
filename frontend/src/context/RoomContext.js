@@ -378,7 +378,7 @@ export const RoomProvider = ({ children }) => {
         event: "deleteRoom",
         sendResponse: true,
         data: {
-          id
+          id,
         },
       });
 
@@ -386,7 +386,7 @@ export const RoomProvider = ({ children }) => {
 
       dispatch({
         type: RoomActions.roomDeleted,
-        payload: { },
+        payload: {},
       });
     },
     [state.socketConnection]
