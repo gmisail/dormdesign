@@ -4,6 +4,7 @@ const chalk = require("chalk");
 const querystring = require("querystring");
 
 const Room = require("./models/room.model");
+const Cache = require("./cache");
 
 const USE_DEBUGGER = true; // print contents of every room for every ping
 const PONG_TIME = 15 * 1000; // check every 15 seconds
@@ -58,6 +59,13 @@ Hub.removeClient = function (clientID) {
 
   if (Hub.rooms.get(roomID).size <= 0) {
     Hub.rooms.delete(roomID);
+
+    Cache.client
+      .del(roomID)
+      .then((_) =>
+        console.log(`Room ${roomID} has been removed from the cache.`)
+      );
+
     console.log(chalk.red(`Removed roomID ${roomID} from hub.`));
   }
 };

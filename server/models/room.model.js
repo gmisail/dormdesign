@@ -293,25 +293,6 @@ Room.updateItem = async function (id, itemId, properties) {
  */
 Room.updateItems = async function (id, updates) {
   try {
-    /*
-    const res = await rethinkdb
-      .db("dd_data")
-      .table("rooms")
-      .get(id)
-      .update({
-        items: rethinkdb.row("items").do((row) => {
-          const updatesObj = rethinkdb.expr(updates);
-          return row.map((item) => {
-            return rethinkdb.branch(
-              updatesObj.hasFields(item("id")),
-              item.merge(updatesObj.getField(item("id"))),
-              item
-            );
-          });
-        }),
-      })
-      .run(database.connection);*/
-
     let room = await Room.get(id);
 
     for (let item in room.items) {
