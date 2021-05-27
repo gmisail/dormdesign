@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Form, FormControl } from "react-bootstrap";
 import Modal from "react-bootstrap/Modal";
+import ConfirmationButton from "../ConfirmationButton/ConfirmationButton";
 import SingleInputForm from "../SingleInputForm/SingleInputForm";
 
 const SettingsModal = (props) => {
@@ -88,12 +89,7 @@ const SettingsModal = (props) => {
 
         <b>Delete Room</b>
         <p>Once a room is deleted, it cannot be recovered.</p>
-        <button
-          className="custom-btn custom-btn-warning w-100"
-          onClick={onDeleteRoom}
-        >
-          Delete Room
-        </button>
+        <ConfirmationButton onConfirm={ onDeleteRoom } name="Delete Room" />
       </Modal.Body>
     </Modal>
   );

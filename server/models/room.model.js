@@ -52,8 +52,6 @@ Room.delete = async function (id) {
     .delete()
     .run(database.connection);
 
-  console.log(id);
-
   if (res === null) {
     console.error("Could not delete room.");
     return null;
