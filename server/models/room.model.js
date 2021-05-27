@@ -54,7 +54,7 @@ Room.create = async function (name) {
 Room.get = async function (id) {
   let room = await client.get(id);
 
-  if(room !== null) {
+  if (room !== null) {
     console.log("Returning cached room at " + id);
 
     return JSON.parse(room);
@@ -66,7 +66,9 @@ Room.get = async function (id) {
     .get(id)
     .run(database.connection);
 
-  client.set(id, JSON.stringify(room)).then(() => console.log(id + " has been cached."));
+  client
+    .set(id, JSON.stringify(room))
+    .then(() => console.log(id + " has been cached."));
 
   if (room === null) {
     console.error("Could not get room with id " + id);
@@ -127,7 +129,7 @@ Room.updateProperty = async function (id, data) {
 
   let room = Room.get(id);
   room = Object.assign(data, room);
-  
+
   await Cache.client.set(id, JSON.stringify(room));
 
   return false;
@@ -173,7 +175,7 @@ Room.updateRoomName = async function (id, name) {
  */
 Room.addItem = async function (id, item) {
   const itemId = uuidv4();
-/*
+  /*
   let room = await rethinkdb
     .db("dd_data")
     .table("rooms")
@@ -266,8 +268,8 @@ Room.updateItem = async function (id, itemId, properties) {
 
     let room = await Room.get(id);
 
-    for(let item in room) {
-      if(room[item].id === itemId) {
+    for (let item in room) {
+      if (room[item].id === itemId) {
         console.log("IN: " + JSON.stringify(room[item]));
         room[item] = Object.assign(properties, room[item]);
         console.log("OUT: " + JSON.stringify(room[item]));
@@ -290,7 +292,8 @@ Room.updateItem = async function (id, itemId, properties) {
  * @returns { Promise.<boolean> } true if there is an error, false otherwise
  */
 Room.updateItems = async function (id, updates) {
-  try {/*
+  try {
+    /*
     const res = await rethinkdb
       .db("dd_data")
       .table("rooms")
@@ -311,11 +314,14 @@ Room.updateItems = async function (id, updates) {
 
     let room = await Room.get(id);
 
-    for(let item in room.items) {    
-      if(room.items[item].id in updates) {
+    for (let item in room.items) {
+      if (room.items[item].id in updates) {
         console.log("IN: " + JSON.stringify(room.items[item]));
-        console.log(updates[room.items[item].id])
-        room.items[item] = Object.assign(room.items[item], updates[room.items[item].id]);
+        console.log(updates[room.items[item].id]);
+        room.items[item] = Object.assign(
+          room.items[item],
+          updates[room.items[item].id]
+        );
         console.log("OUT: " + JSON.stringify(room.items[item]));
       }
     }
@@ -337,16 +343,17 @@ Room.updateItems = async function (id, updates) {
   }
 };
 
-Room.save = async function(id) {
+Room.save = async function (id) {
   let room = await Room.get(id);
-  
+
   await rethinkdb
-      .db("dd_data")
-      .table("rooms")
-      .get(id)
-      .update(room).run(database.connection);
+    .db("dd_data")
+    .table("rooms")
+    .get(id)
+    .update(room)
+    .run(database.connection);
 
   console.log("Room " + id + " pushed from cache to database.");
-}
+};
 
 module.exports = Room;
