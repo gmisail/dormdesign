@@ -47,6 +47,8 @@ Hub.removeClient = function (clientID) {
     return;
   }
 
+  Room.save(roomID);
+
   Hub.connections.delete(clientID);
   Hub.rooms.get(roomID).delete(clientID);
 

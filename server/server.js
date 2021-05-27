@@ -5,6 +5,7 @@ const bodyParser = require("body-parser");
 
 const hub = require("./hub");
 const database = require("./db");
+const cache = require("./cache");
 
 let Server = {};
 
@@ -23,6 +24,8 @@ Server.setup = async function (app, port) {
 
   await database.setup();
   hub.setup(this.sockets);
+
+  //cache.create();
 
   app.use(bodyParser.json());
   app.use(bodyParser.urlencoded({ extended: true }));
