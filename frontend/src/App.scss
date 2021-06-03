@@ -68,17 +68,24 @@ textarea {
   box-shadow: $box-shadow;
 
   @include button-background-color($color-primary);
+  &.custom-btn-outline {
+    @include button-outline-color($color-primary, $text-color-light);
+  }
 
   &.custom-btn-secondary {
-    background-color: $color-secondary;
-
     @include button-background-color($color-secondary);
   }
 
-  &.custom-btn-warning {
-    background-color: $color-danger;
-
+  &.custom-btn-danger {
     @include button-background-color($color-danger);
+  }
+
+  &.custom-btn-outline.custom-btn-secondary {
+    @include button-outline-color($color-secondary, $text-color-light);
+  }
+
+  &.custom-btn-outline.custom-btn-danger {
+    @include button-outline-color($color-danger, $text-color-light);
   }
 
   &.custom-btn-large {

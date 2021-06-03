@@ -6,6 +6,7 @@ import SingleInputForm from "../SingleInputForm/SingleInputForm";
 
 const SettingsModal = (props) => {
   const [cloneIdValue, setCloneIdValue] = useState("");
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
 
   const handleInputChange = (evt) => {
     const target = evt.target;
@@ -87,9 +88,30 @@ const SettingsModal = (props) => {
 
         <br />
 
-        <b>Delete Room</b>
-        <p>Once a room is deleted, it cannot be recovered.</p>
-        <ConfirmationButton onConfirm={ onDeleteRoom } name="Delete Room" />
+        <div className="d-flex flex-row justify-content-between align-items-center">
+          <div className="mr-2">
+            <b>Delete Room</b>
+            <p>Once a room is deleted, it cannot be recovered.</p>
+          </div>
+          <div className="d-flex flex-row flex-nowrap align-items-center">
+            {showConfirmDelete ? (
+              <button
+                className="custom-btn custom-btn-danger mr-2"
+                onClick={onDeleteRoom}
+              >
+                Confirm
+              </button>
+            ) : null}
+            <button
+              className={`custom-btn custom-btn-outline ${
+                showConfirmDelete ? "custom-btn-secondary" : "custom-btn-danger"
+              }`}
+              onClick={() => setShowConfirmDelete(!showConfirmDelete)}
+            >
+              {showConfirmDelete ? "Cancel" : "Delete"}
+            </button>
+          </div>
+        </div>
       </Modal.Body>
     </Modal>
   );

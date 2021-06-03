@@ -277,6 +277,8 @@ export const RoomProvider = ({ children }) => {
         });
 
         connection.on("roomDeleted", (data) => {
+          StorageController.removeRoomFromHistory(id);
+
           window.location.reload();
         });
       } catch (error) {
@@ -381,8 +383,6 @@ export const RoomProvider = ({ children }) => {
           id,
         },
       });
-
-      StorageController.removeRoomFromHistory(id);
 
       dispatch({
         type: RoomActions.roomDeleted,
