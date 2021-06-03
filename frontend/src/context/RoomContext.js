@@ -388,6 +388,9 @@ export const RoomProvider = ({ children }) => {
         type: RoomActions.roomDeleted,
         payload: {},
       });
+
+      // Redirect to home page
+      window.location.href = "/";
     },
     [state.socketConnection]
   );
