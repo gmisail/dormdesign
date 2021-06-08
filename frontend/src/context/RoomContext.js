@@ -1,8 +1,9 @@
-import React, { useReducer, useCallback, createContext } from "react";
+import React, { createContext, useCallback, useReducer } from "react";
+
 import DataRequests from "../controllers/DataRequests";
+import DormItem from "../models/DormItem";
 import SocketConnection from "../controllers/SocketConnection";
 import StorageController from "../controllers/StorageController";
-import DormItem from "../models/DormItem";
 
 export const RoomActions = {
   connectedToRoom: "CONNECTED_TO_ROOM",
@@ -279,7 +280,7 @@ export const RoomProvider = ({ children }) => {
         connection.on("roomDeleted", (data) => {
           StorageController.removeRoomFromHistory(id);
 
-          window.location.reload();
+          window.location.href = "/"; 
         });
       } catch (error) {
         console.error("Failed to connect to room: " + error);
@@ -388,9 +389,6 @@ export const RoomProvider = ({ children }) => {
         type: RoomActions.roomDeleted,
         payload: {},
       });
-
-      // Redirect to home page
-      window.location.href = "/";
     },
     [state.socketConnection]
   );
