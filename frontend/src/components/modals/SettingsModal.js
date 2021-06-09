@@ -1,27 +1,9 @@
 import React, { useState } from "react";
-import { Form, FormControl } from "react-bootstrap";
 import Modal from "react-bootstrap/Modal";
 import ConfirmationButton from "../ConfirmationButton/ConfirmationButton";
 import SingleInputForm from "../SingleInputForm/SingleInputForm";
 
 const SettingsModal = (props) => {
-  const [cloneIdValue, setCloneIdValue] = useState("");
-  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
-
-  const handleInputChange = (evt) => {
-    const target = evt.target;
-    let value = target.value;
-    const name = target.name;
-
-    if (name === "cloneIdValue") {
-      setCloneIdValue(value);
-    }
-  };
-
-  const onCloneFormSubmit = (evt) => {
-    evt.preventDefault();
-    props.onClone(cloneIdValue);
-  };
 
   const onDeleteRoom = (evt) => {
     props.onDeleteRoom();
@@ -66,25 +48,12 @@ const SettingsModal = (props) => {
           a room, changes only apply to your copy, not the original.
           <strong> This is not reversible.</strong>
         </p>
-        <Form onSubmit={onCloneFormSubmit}>
-          <div className="d-flex w-100">
-            <FormControl
-              name="cloneIdValue"
-              onChange={handleInputChange}
-              placeholder="Room Template ID"
-              aria-label="Room Template ID"
-              aria-describedby="Room Identifier"
-            />
-
-            <button
-              className="custom-btn ml-2 flex-shrink-0"
-              disabled={cloneIdValue === "" ? true : false}
-              type="submit"
-            >
-              Clone
-            </button>
-          </div>
-        </Form>
+        <SingleInputForm 
+          initialValue="" 
+          onSubmit={props.onClone} 
+          submitButtonText="Clone" 
+          placeholder="Room Template ID" 
+        />
 
         <br />
 
@@ -93,24 +62,7 @@ const SettingsModal = (props) => {
             <b>Delete Room</b>
             <p>Once a room is deleted, it cannot be recovered.</p>
           </div>
-          <div className="d-flex flex-row flex-nowrap align-items-center">
-            {showConfirmDelete ? (
-              <button
-                className="custom-btn custom-btn-danger mr-2"
-                onClick={onDeleteRoom}
-              >
-                Confirm
-              </button>
-            ) : null}
-            <button
-              className={`custom-btn custom-btn-outline ${
-                showConfirmDelete ? "custom-btn-secondary" : "custom-btn-danger"
-              }`}
-              onClick={() => setShowConfirmDelete(!showConfirmDelete)}
-            >
-              {showConfirmDelete ? "Cancel" : "Delete"}
-            </button>
-          </div>
+          <ConfirmationButton label="Delete" onConfirm={onDeleteRoom} />
         </div>
       </Modal.Body>
     </Modal>
