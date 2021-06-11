@@ -28,6 +28,7 @@ export const RoomRoute = () => {
     addItem,
     updateItems,
     deleteItem,
+    deleteRoom,
     selectedItemID,
   } = useContext(RoomContext);
 
@@ -120,6 +121,9 @@ export const RoomRoute = () => {
         roomName: roomName,
         onChangeRoomName: (name) => {
           updateRoomName(id, name);
+        },
+        onDeleteRoom: () => {
+          deleteRoom(id);
         },
       }),
     [
