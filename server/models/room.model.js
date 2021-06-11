@@ -46,6 +46,20 @@ Room.create = async function (name) {
   return room;
 };
 
+Room.delete = async function (id) {
+  const res = await rethinkdb
+    .db("dd_data")
+    .table("rooms")
+    .get(id)
+    .delete()
+    .run(database.connection);
+
+  if (res === null) {
+    console.error("Could not delete room.");
+    return null;
+  }
+};
+
 /**
  * Get the JSON data from a room at an ID
  * @param { string } id

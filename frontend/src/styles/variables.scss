@@ -28,16 +28,34 @@ $navbar-height: 56px;
 $footer-height: 50px;
 $footer-text-color: $text-color-dark;
 
-@mixin button-background-color($background-color) {
-  background-color: $background-color;
+@mixin button-background-color($color) {
+  background-color: $color;
   transition: background-color 0.2s ease;
   &:hover {
-    background-color: darken($background-color, 10%);
+    background-color: darken($color, 10%);
   }
 
   &:disabled {
-    background-color: lighten($background-color, 20%);
+    background-color: lighten($color, 20%);
     box-shadow: none;
+    cursor: default;
+  }
+}
+
+@mixin button-outline-color($color, $text-color) {
+  background-color: transparent;
+  border: 1px solid $color;
+  color: $color;
+  transition: all 0.2s ease;
+  box-shadow: none;
+
+  &:hover {
+    background-color: $color;
+    color: $text-color;
+  }
+
+  &:disabled {
+    color: lighten($color, 20%);
     cursor: default;
   }
 }

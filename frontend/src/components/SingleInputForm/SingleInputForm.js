@@ -5,7 +5,14 @@ import { Form } from "react-bootstrap";
   Creates a single-line form with an input and submit buttom
 */
 const SingleInputForm = (props) => {
-  const { initialValue, submitButtonText, placeholder, maxLength } = props;
+  const {
+    initialValue,
+    submitButtonText,
+    placeholder,
+    maxLength,
+    buttonClassName,
+    mustMatch, // Text that input must match in order for submit button to be enabled
+  } = props;
   const trim = props.trim ?? false; // Whether or not to trim input text
   const allowEmptySubmit = props.allowEmptySubmit ?? false; // Whether or not to enable submitting an empty input
 
@@ -41,8 +48,11 @@ const SingleInputForm = (props) => {
           onChange={handleInputChange}
         />
         <button
-          className="custom-btn ml-2 flex-shrink-0"
-          disabled={!allowEmptySubmit && inputValue === "" ? true : false}
+          className={`${buttonClassName} custom-btn ml-2 flex-shrink-0`}
+          disabled={
+            (!allowEmptySubmit && inputValue === "" ? true : false) ||
+            (mustMatch !== undefined && inputValue !== mustMatch)
+          }
           type="submit"
         >
           {submitButtonText ?? "Save"}

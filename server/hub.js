@@ -276,6 +276,17 @@ Hub.updateRoomName = async function ({ socket, roomID, data, sendResponse }) {
   });
 };
 
+Hub.deleteRoom = async function ({ socket, roomID, sendResponse }) {
+  console.log(chalk.greenBright(`Deleting room with roomID ${roomID}`));
+
+  Room.delete(roomID);
+
+  Hub.send(socket.id, roomID, sendResponse, {
+    event: "roomDeleted",
+    data: {},
+  });
+};
+
 /*
   Called every PONG_TIME milliseconds. This is to check if
   every socket is still alive. If not, then remove the client.
@@ -366,6 +377,7 @@ Hub.setup = function (sockets) {
   Hub.events.addListener("deleteItem", Hub.deleteItem);
   Hub.events.addListener("updateLayout", Hub.updateLayout);
   Hub.events.addListener("cloneRoom", Hub.cloneRoom);
+  Hub.events.addListener("deleteRoom", Hub.deleteRoom);
   Hub.events.addListener("updateRoomName", Hub.updateRoomName);
 
   sockets.on("connection", Hub.onConnection);
