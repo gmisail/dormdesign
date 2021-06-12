@@ -6,7 +6,7 @@ const querystring = require("querystring");
 const Room = require("./models/room.model");
 const Cache = require("./cache");
 
-const USE_DEBUGGER = true; // print contents of every room for every ping
+const USE_DEBUGGER = false; // print contents of every room for every ping
 const PONG_TIME = 15 * 1000; // check every 15 seconds
 
 let Hub = {};

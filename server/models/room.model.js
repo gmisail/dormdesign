@@ -54,6 +54,8 @@ Room.delete = async function (id) {
     .delete()
     .run(database.connection);
 
+  Cache.client.del(roomID).then((_) => console.log(`Room ${roomID} has been removed from the cache.`));
+
   if (res === null) {
     console.error("Could not delete room.");
     return null;
