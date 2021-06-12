@@ -84,8 +84,6 @@ Room.get = async function (id) {
   	return null;
   }
 
-  console.log(JSON.stringify(room));
-
   client
     .set(id, JSON.stringify(room))
     .then(() => console.log(id + " has been cached."));
@@ -126,7 +124,12 @@ Room.copyFrom = async function (id, templateId) {
  */
 Room.updateProperty = async function (id, data) {
   let room = await Room.get(id);
-  room = Object.assign(data, room);
+
+  for (const [key, value] of Object.entries(data)) {
+  	if(room.hasOwnProperty(key)) {
+	    room[key] = data[key];
+	  }
+  }
 
   await Cache.client.set(id, JSON.stringify(room));
 
@@ -141,7 +144,7 @@ Room.updateProperty = async function (id, data) {
  */
 Room.updateVertices = async function (id, vertices) {
   try {
-    let res = await Room.updateProperty(id, { vertices: vertices });
+    let res = await Room.updateProperty(id, { vertices });
 
     return res;
   } catch (error) {
@@ -157,7 +160,7 @@ Room.updateVertices = async function (id, vertices) {
  */
 Room.updateRoomName = async function (id, name) {
   try {
-    let res = await Room.updateProperty(id, { name: name });
+    let res = await Room.updateProperty(id, { name });
 
     return res;
   } catch (error) {
@@ -173,22 +176,16 @@ Room.updateRoomName = async function (id, name) {
  */
 Room.addItem = async function (id, item) {
   const itemId = uuidv4();
-  /*
-  let room = await rethinkdb
-    .db("dd_data")
-    .table("rooms")
-    .get(id)
-    .run(database.connection);
-    */
 
-  let room = Room.get(id);
+  let room = await Room.get(id);
 
+  // construct the new array of items (if one exists)
   let items = room.items || [];
   item.id = itemId;
   items.push(item);
 
   try {
-    await Room.updateProperty(id, { items: items });
+    await Room.updateProperty(id, { items });
   } catch (error) {
     throw error;
   }
@@ -218,12 +215,11 @@ Room.clearItems = async function (id) {
  */
 Room.removeItem = async function (id, itemID) {
   try {
-	let room = await Room.get(id);
-	let items = room.items || [];
+    let room = await Room.get(id);
+    let items = room.items || [];
+    items = items.filter(item => item.id !== itemID);
 
-	room.items = items.filter(item => item.id !== itemID);
-
-	Cache.client.set(id, JSON.stringify(room));
+    await Room.updateProperty(id, { items });
 
     return true;
   } catch (error) {
