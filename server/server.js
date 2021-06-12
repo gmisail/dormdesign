@@ -9,7 +9,7 @@ const database = require("./db");
 let Server = {};
 
 Server.setup = async function (app, port) {
-  console.log("setup server");
+  console.log("Starting DormDesign Server");
 
   const server = http.createServer(app);
 

@@ -139,8 +139,6 @@ Hub.sendError = function (id, errorAction, errorMessage) {
 };
 
 Hub.addItem = async function ({ socket, roomID, data, sendResponse }) {
-  console.log(chalk.greenBright(`Adding item to roomID ${roomID}`));
-
   const item = await Room.addItem(roomID, data);
 
   if (item === null) {
@@ -159,8 +157,6 @@ Hub.addItem = async function ({ socket, roomID, data, sendResponse }) {
 };
 
 Hub.updateItems = async function ({ socket, roomID, data, sendResponse }) {
-  console.log(chalk.greenBright(`Updating items in roomID ${roomID}`));
-
   if (data.items !== undefined && data.items.length > 0) {
     // Convert array of updates to single object of form { itemID_1 : updates, itemID_2 : updates ... }
     const items = data.items.reduce(
@@ -184,8 +180,6 @@ Hub.updateItems = async function ({ socket, roomID, data, sendResponse }) {
 };
 
 Hub.deleteItem = async function ({ socket, roomID, data, sendResponse }) {
-  console.log(chalk.greenBright(`Deleting item in roomID ${roomID}`));
-
   if (data === undefined || data.id === undefined) {
     Hub.sendError(
       socket.id,
@@ -210,8 +204,6 @@ Hub.deleteItem = async function ({ socket, roomID, data, sendResponse }) {
 };
 
 Hub.updateLayout = async function ({ socket, roomID, data, sendResponse }) {
-  console.log(chalk.greenBright(`Updating layout of roomID ${roomID}`));
-
   if (data.vertices === undefined || data.vertices.length <= 0) {
     Hub.sendError(
       socket.id,
@@ -239,8 +231,6 @@ Hub.updateLayout = async function ({ socket, roomID, data, sendResponse }) {
 Hub.cloneRoom = async function ({ socket, roomID, data, sendResponse }) {
   const target = data.target_id;
 
-  console.log(chalk.greenBright(`Cloning template ${target} into ${roomID}`));
-
   let res = {};
 
   try {
@@ -258,8 +248,6 @@ Hub.cloneRoom = async function ({ socket, roomID, data, sendResponse }) {
 };
 
 Hub.updateRoomName = async function ({ socket, roomID, data, sendResponse }) {
-  console.log(chalk.greenBright(`Updating name of roomID ${roomID}`));
-
   if (data.name === undefined || data.name.length <= 0) return;
 
   try {
@@ -277,8 +265,6 @@ Hub.updateRoomName = async function ({ socket, roomID, data, sendResponse }) {
 };
 
 Hub.deleteRoom = async function ({ socket, roomID, sendResponse }) {
-  console.log(chalk.greenBright(`Deleting room with roomID ${roomID}`));
-
   Room.delete(roomID);
 
   Hub.send(socket.id, roomID, sendResponse, {
