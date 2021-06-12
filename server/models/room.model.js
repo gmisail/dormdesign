@@ -54,7 +54,11 @@ Room.delete = async function (id) {
     .delete()
     .run(database.connection);
 
-  Cache.client.del(roomID).then((_) => console.log(`Room ${roomID} has been removed from the cache.`));
+  Cache.client
+    .del(roomID)
+    .then((_) =>
+      console.log(`Room ${roomID} has been removed from the cache.`)
+    );
 
   if (res === null) {
     console.error("Could not delete room.");
@@ -82,8 +86,8 @@ Room.get = async function (id) {
     .run(database.connection);
 
   if (room === null) {
-  	console.error("Could not get room with id " + id); 
-  	return null;
+    console.error("Could not get room with id " + id);
+    return null;
   }
 
   client
@@ -128,9 +132,9 @@ Room.updateProperty = async function (id, data) {
   let room = await Room.get(id);
 
   for (const [key, value] of Object.entries(data)) {
-  	if(room.hasOwnProperty(key)) {
-	    room[key] = data[key];
-	  }
+    if (room.hasOwnProperty(key)) {
+      room[key] = data[key];
+    }
   }
 
   await Cache.client.set(id, JSON.stringify(room));
@@ -219,7 +223,7 @@ Room.removeItem = async function (id, itemID) {
   try {
     let room = await Room.get(id);
     let items = room.items || [];
-    items = items.filter(item => item.id !== itemID);
+    items = items.filter((item) => item.id !== itemID);
 
     await Room.updateProperty(id, { items });
 
@@ -250,7 +254,7 @@ Room.updateItem = async function (id, itemId, properties) {
       }
     }
 
-	Cache.client.set(id, JSON.stringify(room));
+    Cache.client.set(id, JSON.stringify(room));
 
     return false;
   } catch (error) {
