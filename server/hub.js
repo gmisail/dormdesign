@@ -6,6 +6,15 @@ const querystring = require("querystring");
 const Room = require("./models/room.model");
 const Cache = require("./cache");
 
+/*
+  Clear the cache upon server startup
+
+  TODO: remove this once multi-core support is implemented since this
+  will clear the cache whenever a new server node is added --> could be
+  very bad.
+*/
+await Cache.client.flushall();
+
 const USE_DEBUGGER = false; // print contents of every room for every ping
 const PONG_TIME = 15 * 1000; // check every 15 seconds
 
