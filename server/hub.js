@@ -13,7 +13,7 @@ const Cache = require("./cache");
   will clear the cache whenever a new server node is added --> could be
   very bad.
 */
-await Cache.client.flushall();
+Cache.client.flushall();
 
 const USE_DEBUGGER = false; // print contents of every room for every ping
 const PONG_TIME = 15 * 1000; // check every 15 seconds
