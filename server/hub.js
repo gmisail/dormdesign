@@ -4,8 +4,18 @@ const chalk = require("chalk");
 const querystring = require("querystring");
 
 const Room = require("./models/room.model");
+const Cache = require("./cache");
 
-const USE_DEBUGGER = true; // print contents of every room for every ping
+/*
+  Clear the cache upon server startup
+
+  TODO: remove this once multi-core support is implemented since this
+  will clear the cache whenever a new server node is added --> could be
+  very bad.
+*/
+Cache.client.flushall();
+
+const USE_DEBUGGER = false; // print contents of every room for every ping
 const PONG_TIME = 15 * 1000; // check every 15 seconds
 
 let Hub = {};
@@ -47,6 +57,8 @@ Hub.removeClient = function (clientID) {
     return;
   }
 
+  Room.save(roomID);
+
   Hub.connections.delete(clientID);
   Hub.rooms.get(roomID).delete(clientID);
 
@@ -56,6 +68,13 @@ Hub.removeClient = function (clientID) {
 
   if (Hub.rooms.get(roomID).size <= 0) {
     Hub.rooms.delete(roomID);
+
+    Cache.client
+      .del(roomID)
+      .then((_) =>
+        console.log(`Room ${roomID} has been removed from the cache.`)
+      );
+
     console.log(chalk.red(`Removed roomID ${roomID} from hub.`));
   }
 };
@@ -129,8 +148,6 @@ Hub.sendError = function (id, errorAction, errorMessage) {
 };
 
 Hub.addItem = async function ({ socket, roomID, data, sendResponse }) {
-  console.log(chalk.greenBright(`Adding item to roomID ${roomID}`));
-
   const item = await Room.addItem(roomID, data);
 
   if (item === null) {
@@ -149,8 +166,6 @@ Hub.addItem = async function ({ socket, roomID, data, sendResponse }) {
 };
 
 Hub.updateItems = async function ({ socket, roomID, data, sendResponse }) {
-  console.log(chalk.greenBright(`Updating items in roomID ${roomID}`));
-
   if (data.items !== undefined && data.items.length > 0) {
     // Convert array of updates to single object of form { itemID_1 : updates, itemID_2 : updates ... }
     const items = data.items.reduce(
@@ -174,8 +189,6 @@ Hub.updateItems = async function ({ socket, roomID, data, sendResponse }) {
 };
 
 Hub.deleteItem = async function ({ socket, roomID, data, sendResponse }) {
-  console.log(chalk.greenBright(`Deleting item in roomID ${roomID}`));
-
   if (data === undefined || data.id === undefined) {
     Hub.sendError(
       socket.id,
@@ -200,8 +213,6 @@ Hub.deleteItem = async function ({ socket, roomID, data, sendResponse }) {
 };
 
 Hub.updateLayout = async function ({ socket, roomID, data, sendResponse }) {
-  console.log(chalk.greenBright(`Updating layout of roomID ${roomID}`));
-
   if (data.vertices === undefined || data.vertices.length <= 0) {
     Hub.sendError(
       socket.id,
@@ -229,8 +240,6 @@ Hub.updateLayout = async function ({ socket, roomID, data, sendResponse }) {
 Hub.cloneRoom = async function ({ socket, roomID, data, sendResponse }) {
   const target = data.target_id;
 
-  console.log(chalk.greenBright(`Cloning template ${target} into ${roomID}`));
-
   let res = {};
 
   try {
@@ -248,8 +257,6 @@ Hub.cloneRoom = async function ({ socket, roomID, data, sendResponse }) {
 };
 
 Hub.updateRoomName = async function ({ socket, roomID, data, sendResponse }) {
-  console.log(chalk.greenBright(`Updating name of roomID ${roomID}`));
-
   if (data.name === undefined || data.name.length <= 0) return;
 
   try {
@@ -267,8 +274,6 @@ Hub.updateRoomName = async function ({ socket, roomID, data, sendResponse }) {
 };
 
 Hub.deleteRoom = async function ({ socket, roomID, sendResponse }) {
-  console.log(chalk.greenBright(`Deleting room with roomID ${roomID}`));
-
   Room.delete(roomID);
 
   Hub.send(socket.id, roomID, sendResponse, {
