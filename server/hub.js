@@ -5,6 +5,7 @@ const querystring = require("querystring");
 
 const Room = require("./models/room.model");
 const Cache = require("./cache");
+const Users = require("./models/users.model");
 
 /*
   Clear the cache upon server startup
@@ -35,6 +36,8 @@ Hub.addClient = function (socket) {
 
   Hub.rooms.get(socket.roomID).set(socket.id, true);
 
+  Users.add(socket.roomID, socket.id, "?");
+
   console.log(
     chalk.greenBright(
       `Client ${socket.id} has connected to roomID ${socket.roomID}.`
@@ -46,7 +49,7 @@ Hub.addClient = function (socket) {
   Remove client, and if it is the last client in a room,
   delete the room too.
 */
-Hub.removeClient = function (clientID) {
+Hub.removeClient = async function (clientID) {
   if (!Hub.connections.has(clientID)) return;
 
   const roomID = Hub.connections.get(clientID).roomID;
@@ -62,6 +65,8 @@ Hub.removeClient = function (clientID) {
   Hub.connections.delete(clientID);
   Hub.rooms.get(roomID).delete(clientID);
 
+  Users.remove(roomID, clientID);
+
   console.log(
     chalk.red(`Client ${clientID} has disconnected from roomID ${roomID}.`)
   );
@@ -74,6 +79,8 @@ Hub.removeClient = function (clientID) {
       .then((_) =>
         console.log(`Room ${roomID} has been removed from the cache.`)
       );
+
+    await Users.deleteRoom(roomID);
 
     console.log(chalk.red(`Removed roomID ${roomID} from hub.`));
   }
@@ -275,6 +282,7 @@ Hub.updateRoomName = async function ({ socket, roomID, data, sendResponse }) {
 
 Hub.deleteRoom = async function ({ socket, roomID, sendResponse }) {
   Room.delete(roomID);
+  await Users.deleteRoom(roomID);
 
   Hub.send(socket.id, roomID, sendResponse, {
     event: "roomDeleted",
