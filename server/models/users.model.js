@@ -4,14 +4,14 @@ let Users = {};
 
 /**
  * Returns a map of socket ID's to nicknames
- * @param { string } id 
+ * @param { string } id
  * @returns Map of socket id's => nicknames
  */
-Users.inRoom = async function(id) {
-    let users = await client.hgetall(`${id}:users`);
+Users.inRoom = async function (id) {
+  let users = await client.hgetall(`${id}:users`);
 
-    return users;
-}
+  return users;
+};
 
 /**
  * Deletes the hashmap in the cache that stores the currently users
@@ -29,9 +29,9 @@ Users.deleteRoom = async function (id) {
  * @param { string } nickname
  */
 Users.add = async function (id, userId, nickname) {
-    //
-    // TODO: sanitize nickname
-    //
+  //
+  // TODO: sanitize nickname
+  //
 
   await client.hmset(`${id}:users`, { [userId]: nickname });
 };
