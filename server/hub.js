@@ -290,6 +290,17 @@ Hub.deleteRoom = async function ({ socket, roomID, sendResponse }) {
   });
 };
 
+Hub.updateNickname = async function ({ socket, roomID, data, sendResponse }) {
+  await Users.add(socket.roomID, socket.id, socket.userName);
+
+  let users = await Users.inRoom(socket.roomID);
+
+  Hub.send(socket.id, socket.roomID, {
+    event: "nicknamesUpdated",
+    data: { users },
+  });
+};
+
 /*
   Called every PONG_TIME milliseconds. This is to check if
   every socket is still alive. If not, then remove the client.
@@ -382,6 +393,7 @@ Hub.setup = function (sockets) {
   Hub.events.addListener("cloneRoom", Hub.cloneRoom);
   Hub.events.addListener("deleteRoom", Hub.deleteRoom);
   Hub.events.addListener("updateRoomName", Hub.updateRoomName);
+  Hub.events.addListener("updateNickname", Hub.updateNickname);
 
   sockets.on("connection", Hub.onConnection);
 

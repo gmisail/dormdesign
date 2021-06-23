@@ -292,11 +292,20 @@ export const RoomProvider = ({ children }) => {
 
   const setUserName = useCallback(
     (userName) => {
-      if (userName.length === 0) userName = null;
+      if (userName.length === 0) 
+        userName = null;
+
       StorageController.setUsername(userName);
+
+      state.socketConnection.send({
+        event: "updateNickname",
+        sendResponse: false,
+        data: { userName },
+      });
+      
       dispatch({ type: RoomActions.setUserName, payload: { userName } });
     },
-    [dispatch]
+    [state.socketConnection, dispatch]
   );
 
   const cloneRoom = useCallback(
