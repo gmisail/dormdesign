@@ -51,6 +51,10 @@ export const RoomRoute = () => {
           toggleModal();
         },
       });
+    } 
+    else if(userName !== null && socketConnection !== null) {
+      // if a username exists, update it on the server
+      setUserName(userName);
     }
   }, [loading, userName, setUserName, toggleModal, socketConnection]);
 
