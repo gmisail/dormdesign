@@ -9,6 +9,7 @@ export const RoomActions = {
   connectedToRoom: "CONNECTED_TO_ROOM",
   connectionClosed: "CONNECTION_CLOSED",
   setUserName: "SET_USER_NAME",
+  userNamesUpdated: "USER_NAMES_UPDATED",
   itemAdded: "ITEM_ADDED",
   itemDeleted: "ITEM_DELETED",
   itemsUpdated: "ITEM_UPDATED",
@@ -30,6 +31,7 @@ const initialState = {
   error: null,
   socketConnection: null,
   userName: null,
+  userNames: [],
   editorActionQueue: [],
   selectedItemID: null,
 };
@@ -71,6 +73,12 @@ const roomReducer = (state, action) => {
       return {
         ...state,
         userName: action.payload.userName,
+      };
+
+    case RoomActions.userNamesUpdated:
+      return {
+        ...state,
+        userNames: action.payload.userNames,
       };
 
     case RoomActions.itemAdded:
@@ -280,7 +288,18 @@ export const RoomProvider = ({ children }) => {
         connection.on("roomDeleted", (data) => {
           StorageController.removeRoomFromHistory(id);
 
-          window.location.href = "/"; 
+          window.location.href = "/";
+        });
+
+        connection.on("nicknamesUpdated", (data) => {
+          let { users } = data;
+
+          dispatch({
+            type: RoomActions.userNamesUpdated,
+            payload: { userNames: users },
+          });
+
+          console.log(users);
         });
       } catch (error) {
         console.error("Failed to connect to room: " + error);
@@ -292,17 +311,16 @@ export const RoomProvider = ({ children }) => {
 
   const setUserName = useCallback(
     (userName) => {
-      if (userName.length === 0) 
-        userName = null;
+      if (userName.length === 0) userName = null;
 
       StorageController.setUsername(userName);
 
       state.socketConnection.send({
         event: "updateNickname",
-        sendResponse: false,
+        sendResponse: true,
         data: { userName },
       });
-      
+
       dispatch({ type: RoomActions.setUserName, payload: { userName } });
     },
     [state.socketConnection, dispatch]

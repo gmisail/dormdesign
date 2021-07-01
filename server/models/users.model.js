@@ -29,6 +29,12 @@ Users.deleteRoom = async function (id) {
  * @param { string } nickname
  */
 Users.add = async function (id, userId, nickname) {
+  if (nickname === undefined) {
+    console.error("Cannot add undefined username to usernames");
+
+    return;
+  }
+
   //
   // TODO: sanitize nickname
   //

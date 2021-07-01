@@ -65,7 +65,13 @@ Hub.removeClient = async function (clientID) {
   Hub.connections.delete(clientID);
   Hub.rooms.get(roomID).delete(clientID);
 
-  Users.remove(roomID, clientID);
+  await Users.remove(roomID, clientID);
+  let users = await Users.inRoom(roomID);
+
+  Hub.send(clientID, roomID, false, {
+    event: "nicknamesUpdated",
+    data: { users },
+  });
 
   console.log(
     chalk.red(`Client ${clientID} has disconnected from roomID ${roomID}.`)
@@ -291,11 +297,11 @@ Hub.deleteRoom = async function ({ socket, roomID, sendResponse }) {
 };
 
 Hub.updateNickname = async function ({ socket, roomID, data, sendResponse }) {
-  await Users.add(socket.roomID, socket.id, socket.userName);
+  await Users.add(socket.roomID, socket.id, data.userName);
 
   let users = await Users.inRoom(socket.roomID);
 
-  Hub.send(socket.id, socket.roomID, {
+  Hub.send(socket.id, roomID, sendResponse, {
     event: "nicknamesUpdated",
     data: { users },
   });

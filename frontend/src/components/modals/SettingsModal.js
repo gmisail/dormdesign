@@ -4,7 +4,6 @@ import ConfirmationButton from "../ConfirmationButton/ConfirmationButton";
 import SingleInputForm from "../SingleInputForm/SingleInputForm";
 
 const SettingsModal = (props) => {
-
   const onDeleteRoom = (evt) => {
     props.onDeleteRoom();
   };
@@ -48,11 +47,11 @@ const SettingsModal = (props) => {
           a room, changes only apply to your copy, not the original.
           <strong> This is not reversible.</strong>
         </p>
-        <SingleInputForm 
-          initialValue="" 
-          onSubmit={props.onClone} 
-          submitButtonText="Clone" 
-          placeholder="Room Template ID" 
+        <SingleInputForm
+          initialValue=""
+          onSubmit={props.onClone}
+          submitButtonText="Clone"
+          placeholder="Room Template ID"
         />
 
         <br />

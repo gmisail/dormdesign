@@ -21,6 +21,7 @@ export const RoomRoute = () => {
     error,
     socketConnection,
     userName,
+    userNames,
     connectToRoom,
     updateRoomName,
     cloneRoom,
@@ -51,8 +52,7 @@ export const RoomRoute = () => {
           toggleModal();
         },
       });
-    } 
-    else if(userName !== null && socketConnection !== null) {
+    } else if (userName !== null && socketConnection !== null) {
       // if a username exists, update it on the server
       setUserName(userName);
     }
@@ -206,6 +206,7 @@ export const RoomRoute = () => {
               </h2>
               <BsPencil className="room-name-edit-icon" />
             </div>
+
             <div className="room-header-buttons">
               <IconButton
                 onClick={() => {
@@ -230,6 +231,7 @@ export const RoomRoute = () => {
           <div className="room-editor-container custom-card">
             <RoomEditor />
           </div>
+
           <div className="room-item-list-container">
             <button
               className="custom-btn add-item-button"
@@ -248,6 +250,12 @@ export const RoomRoute = () => {
               onDeleteItem={deleteItem}
               onToggleEditorVisibility={onToggleItemEditorVisibility}
             ></DormItemList>
+
+            <ul>
+              {Object.keys(userNames).map((id) => (
+                <li>{userNames[id]}</li>
+              ))}
+            </ul>
           </div>
         </div>
       )}
