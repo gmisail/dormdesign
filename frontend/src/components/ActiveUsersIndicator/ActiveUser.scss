@@ -1,0 +1,16 @@
+@import "../../styles/variables.scss";
+
+.active-user-bubble {
+    padding-left: 8px;
+    padding-right: 8px;
+
+    height: 100%;
+    
+    border-radius: 16px;
+
+    font-size: $btn-font-size;
+    text-align: center;
+
+    color: #fff;
+    background: $color-secondary;
+}

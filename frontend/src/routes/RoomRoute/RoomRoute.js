@@ -11,6 +11,7 @@ import RoomEditor from "../../components/RoomEditor/RoomEditor";
 import { Spinner } from "react-bootstrap";
 import useModal from "../../hooks/useModal";
 import { useParams } from "react-router-dom";
+import ActiveUsersIndicator from "../../components/ActiveUsersIndicator/ActiveUsersIndicator";
 
 export const RoomRoute = () => {
   const {
@@ -208,6 +209,7 @@ export const RoomRoute = () => {
             </div>
 
             <div className="room-header-buttons">
+              <ActiveUsersIndicator usernames={userNames} maxUsernames={3} />
               <IconButton
                 onClick={() => {
                   toggleModal(modalTypes.share, {
@@ -250,12 +252,6 @@ export const RoomRoute = () => {
               onDeleteItem={deleteItem}
               onToggleEditorVisibility={onToggleItemEditorVisibility}
             ></DormItemList>
-
-            <ul>
-              {Object.keys(userNames).map((id) => (
-                <li>{userNames[id]}</li>
-              ))}
-            </ul>
           </div>
         </div>
       )}
