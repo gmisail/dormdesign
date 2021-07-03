@@ -4,6 +4,7 @@ import { BsBoxArrowUpRight, BsGear, BsPencil, BsPlus } from "react-icons/bs";
 import { Modal, modalTypes } from "../../components/modals/Modal";
 import React, { useCallback, useContext, useEffect } from "react";
 
+import ActiveUsersIndicator from "../../components/ActiveUsersIndicator/ActiveUsersIndicator";
 import DormItemList from "../../components/DormItemList/DormItemList";
 import IconButton from "../../components/IconButton/IconButton";
 import { RoomContext } from "../../context/RoomContext";
@@ -11,7 +12,6 @@ import RoomEditor from "../../components/RoomEditor/RoomEditor";
 import { Spinner } from "react-bootstrap";
 import useModal from "../../hooks/useModal";
 import { useParams } from "react-router-dom";
-import ActiveUsersIndicator from "../../components/ActiveUsersIndicator/ActiveUsersIndicator";
 
 export const RoomRoute = () => {
   const {
@@ -39,7 +39,6 @@ export const RoomRoute = () => {
 
   // Called when component is first mounted
   useEffect(() => {
-    console.log("CONNECTING TO ROOM");
     connectToRoom(id);
   }, [connectToRoom, id]);
 

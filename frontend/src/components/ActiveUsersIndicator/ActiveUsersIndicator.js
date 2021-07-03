@@ -9,9 +9,9 @@ function ActiveUsersIndicator({ usernames, maxUsernames }) {
 
     const showActiveUserBubble = (index, username) => {
         if(index == maxUsernames)
-            return <ActiveUser username={"+ " + (numberOfUsers - maxUsernames)}/>
+            return <ActiveUser key={index} username={"+ " + (numberOfUsers - maxUsernames)}/>
         else if(index < maxUsernames)
-            return <ActiveUser username={username} />;
+            return <ActiveUser key={index} username={username} />;
         else
             return <></>
     };
