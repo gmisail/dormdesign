@@ -296,11 +296,15 @@ Hub.deleteRoom = async function ({ socket, roomID, sendResponse }) {
   });
 };
 
+/*
+  Add a nickname (also referred to as usernames) to the room, or updates a name if it already exists at a given socket ID. Sends to 
+  every client the array of users
+*/
 Hub.updateNickname = async function ({ socket, roomID, data, sendResponse }) {
   await Users.add(socket.roomID, socket.id, data.userName);
 
   let users = await Users.inRoom(socket.roomID);
-
+  
   Hub.send(socket.id, roomID, sendResponse, {
     event: "nicknamesUpdated",
     data: { users },
