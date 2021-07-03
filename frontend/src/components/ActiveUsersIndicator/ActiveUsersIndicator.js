@@ -1,6 +1,9 @@
-import React from 'react'
 import ActiveUser from './ActiveUser';
+import React from 'react'
 
+/**
+ * Displays a list of bubbles with usernames (if more than 1 usernames exist)
+ */
 function ActiveUsersIndicator({ usernames, maxUsernames }) {
     const numberOfUsers = Object.keys(usernames).length;
 
@@ -13,7 +16,7 @@ function ActiveUsersIndicator({ usernames, maxUsernames }) {
             return <></>
     };
 
-    return Object.keys(usernames).map((id, index) => showActiveUserBubble(index, usernames[id]));
+    return numberOfUsers == 1 ? <></> : Object.keys(usernames).map((id, index) => showActiveUserBubble(index, usernames[id]));
 }
 
 export default ActiveUsersIndicator
