@@ -16,7 +16,7 @@ function ActiveUsersIndicator({ usernames, maxUsernames }) {
             return <></>
     };
 
-    return numberOfUsers == 1 ? <></> : Object.keys(usernames).map((id, index) => showActiveUserBubble(index, usernames[id]));
+    return numberOfUsers <= 1 ? <></> : Object.keys(usernames).map((id, index) => showActiveUserBubble(index, usernames[id]));
 }
 
 export default ActiveUsersIndicator

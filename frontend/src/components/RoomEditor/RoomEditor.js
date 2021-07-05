@@ -1,13 +1,16 @@
-import React, { Component } from "react";
-import { RoomContext, RoomActions } from "../../context/RoomContext";
-import SceneController from "../../room-editor/SceneController";
-import RoomEditorObject from "../../room-editor/RoomEditorObject";
-import IconButton from "../IconButton/IconButton";
-import { BsBoundingBox, BsX, BsCheck } from "react-icons/bs";
-import { MdFilterCenterFocus } from "react-icons/md";
-import { BiPlus, BiMinus, BiLockOpenAlt, BiLockAlt } from "react-icons/bi";
-import { RiClockwiseLine } from "react-icons/ri";
 import "./RoomEditor.scss";
+
+import { BiLockAlt, BiLockOpenAlt, BiMinus, BiPlus } from "react-icons/bi";
+import { BsBoundingBox, BsCheck, BsX } from "react-icons/bs";
+import React, { Component } from "react";
+
+import IconButton from "../IconButton/IconButton";
+import { MdFilterCenterFocus } from "react-icons/md";
+import { RiClockwiseLine } from "react-icons/ri";
+import RoomActions from "../../context/RoomActions";
+import { RoomContext } from "../../context/RoomContext";
+import RoomEditorObject from "../../room-editor/RoomEditorObject";
+import SceneController from "../../room-editor/SceneController";
 import Vector2 from "../../room-editor/Vector2";
 
 // Converts DormItem properties to properties expected by RoomEditorObject
