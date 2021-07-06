@@ -305,7 +305,13 @@ Hub.deleteRoom = async function ({ socket, roomID, sendResponse }) {
   every client the array of users
 */
 Hub.updateNickname = async function ({ socket, roomID, data, sendResponse }) {
-  await Users.add(socket.roomID, socket.id, data.userName);
+  let userName = data.userName?.trim() ?? "";
+
+  // any sanitization goes here...
+  if (userName.length <= 0) 
+    return;
+
+  await Users.add(socket.roomID, socket.id, userName);
 
   let users = await Users.inRoom(socket.roomID);
 
