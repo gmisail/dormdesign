@@ -270,10 +270,14 @@ Hub.cloneRoom = async function ({ socket, roomID, data, sendResponse }) {
 };
 
 Hub.updateRoomName = async function ({ socket, roomID, data, sendResponse }) {
-  if (data.name === undefined || data.name.length <= 0) return;
+  let name = data.name?.trim() ?? "";
+
+  // any sanitization goes here...
+  if (name.length <= 0) 
+    return;
 
   try {
-    await Room.updateRoomName(roomID, data.name);
+    await Room.updateRoomName(roomID, name);
   } catch (error) {
     Hub.sendError(socket.id, "updateRoomName", "Could not update room name.");
 
