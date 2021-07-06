@@ -304,7 +304,7 @@ Hub.updateNickname = async function ({ socket, roomID, data, sendResponse }) {
   await Users.add(socket.roomID, socket.id, data.userName);
 
   let users = await Users.inRoom(socket.roomID);
-  
+
   Hub.send(socket.id, roomID, sendResponse, {
     event: "nicknamesUpdated",
     data: { users },
