@@ -1,6 +1,7 @@
-import React from "react";
 import Modal from "react-bootstrap/Modal";
+import React from "react";
 import Room from "../../models/Room";
+import RoomNameForm from "../RoomNameForm/RoomNameForm";
 import SingleInputForm from "../SingleInputForm/SingleInputForm";
 
 const RoomNameModal = (props) => {
@@ -12,13 +13,7 @@ const RoomNameModal = (props) => {
         </Modal.Title>
       </Modal.Header>
       <Modal.Body>
-        <SingleInputForm
-          initialValue={props.name}
-          onSubmit={props.onSubmit}
-          submitButtonText={props.submitButtonText}
-          trim={true}
-          maxLength={Room.MAX_NAME_LENGTH}
-        />
+        <RoomNameForm roomName={props.name} onChangeRoomName={props.onSubmit} />
       </Modal.Body>
     </Modal>
   );

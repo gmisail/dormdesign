@@ -2,6 +2,7 @@ import React, { useState } from "react";
 
 import ConfirmationButton from "../ConfirmationButton/ConfirmationButton";
 import Modal from "react-bootstrap/Modal";
+import RoomNameForm from "../RoomNameForm/RoomNameForm";
 import SingleInputForm from "../SingleInputForm/SingleInputForm";
 
 const SettingsModal = (props) => {
@@ -36,12 +37,7 @@ const SettingsModal = (props) => {
         <p>
           The room name can also be changed by clicking on it in the editor.
         </p>
-        <SingleInputForm
-          initialValue={props.roomName}
-          onSubmit={props.onChangeRoomName}
-          trim={true}
-          allowEmptySubmit={false}
-        />
+        <RoomNameForm roomName={props.roomName} onChangeRoomName={props.onChangeRoomName} />
 
         <br />
 
