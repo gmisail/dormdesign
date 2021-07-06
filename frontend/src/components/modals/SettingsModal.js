@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import Modal from "react-bootstrap/Modal";
+
 import ConfirmationButton from "../ConfirmationButton/ConfirmationButton";
+import Modal from "react-bootstrap/Modal";
 import SingleInputForm from "../SingleInputForm/SingleInputForm";
 
 const SettingsModal = (props) => {
@@ -24,6 +25,8 @@ const SettingsModal = (props) => {
         <SingleInputForm
           initialValue={props.userName}
           onSubmit={props.onChangeUserName}
+          trim={true}
+          allowEmptySubmit={false}
         />
 
         <br />
@@ -36,6 +39,8 @@ const SettingsModal = (props) => {
         <SingleInputForm
           initialValue={props.roomName}
           onSubmit={props.onChangeRoomName}
+          trim={true}
+          allowEmptySubmit={false}
         />
 
         <br />
