@@ -1,6 +1,7 @@
 const { Router } = require("express");
 let Item = require("../models/item.model");
 let Room = require("../models/room.model");
+const Users = require("../models/users.model");
 
 const router = Router();
 

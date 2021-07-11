@@ -4,6 +4,7 @@ import { BsBoxArrowUpRight, BsGear, BsPencil, BsPlus } from "react-icons/bs";
 import { Modal, modalTypes } from "../../components/modals/Modal";
 import React, { useCallback, useContext, useEffect } from "react";
 
+import ActiveUsersIndicator from "../../components/ActiveUsersIndicator/ActiveUsersIndicator";
 import DormItemList from "../../components/DormItemList/DormItemList";
 import IconButton from "../../components/IconButton/IconButton";
 import { RoomContext } from "../../context/RoomContext";
@@ -21,6 +22,7 @@ export const RoomRoute = () => {
     error,
     socketConnection,
     userName,
+    userNames,
     connectToRoom,
     updateRoomName,
     cloneRoom,
@@ -37,7 +39,6 @@ export const RoomRoute = () => {
 
   // Called when component is first mounted
   useEffect(() => {
-    console.log("CONNECTING TO ROOM");
     connectToRoom(id);
   }, [connectToRoom, id]);
 
@@ -51,6 +52,9 @@ export const RoomRoute = () => {
           toggleModal();
         },
       });
+    } else if (userName !== null && socketConnection !== null) {
+      // if a username exists, update it on the server
+      setUserName(userName);
     }
   }, [loading, userName, setUserName, toggleModal, socketConnection]);
 
@@ -202,7 +206,9 @@ export const RoomRoute = () => {
               </h2>
               <BsPencil className="room-name-edit-icon" />
             </div>
+
             <div className="room-header-buttons">
+              <ActiveUsersIndicator usernames={userNames} maxUsernames={3} />
               <IconButton
                 onClick={() => {
                   toggleModal(modalTypes.share, {
@@ -226,6 +232,7 @@ export const RoomRoute = () => {
           <div className="room-editor-container custom-card">
             <RoomEditor />
           </div>
+
           <div className="room-item-list-container">
             <button
               className="custom-btn add-item-button"

@@ -5,6 +5,7 @@ const querystring = require("querystring");
 
 const Room = require("./models/room.model");
 const Cache = require("./cache");
+const Users = require("./models/users.model");
 
 /*
   Clear the cache upon server startup
@@ -35,6 +36,8 @@ Hub.addClient = function (socket) {
 
   Hub.rooms.get(socket.roomID).set(socket.id, true);
 
+  Users.add(socket.roomID, socket.id, "?");
+
   console.log(
     chalk.greenBright(
       `Client ${socket.id} has connected to roomID ${socket.roomID}.`
@@ -46,7 +49,7 @@ Hub.addClient = function (socket) {
   Remove client, and if it is the last client in a room,
   delete the room too.
 */
-Hub.removeClient = function (clientID) {
+Hub.removeClient = async function (clientID) {
   if (!Hub.connections.has(clientID)) return;
 
   const roomID = Hub.connections.get(clientID).roomID;
@@ -62,6 +65,14 @@ Hub.removeClient = function (clientID) {
   Hub.connections.delete(clientID);
   Hub.rooms.get(roomID).delete(clientID);
 
+  await Users.remove(roomID, clientID);
+  let users = await Users.inRoom(roomID);
+
+  Hub.send(clientID, roomID, false, {
+    event: "nicknamesUpdated",
+    data: { users },
+  });
+
   console.log(
     chalk.red(`Client ${clientID} has disconnected from roomID ${roomID}.`)
   );
@@ -74,6 +85,8 @@ Hub.removeClient = function (clientID) {
       .then((_) =>
         console.log(`Room ${roomID} has been removed from the cache.`)
       );
+
+    await Users.deleteRoom(roomID);
 
     console.log(chalk.red(`Removed roomID ${roomID} from hub.`));
   }
@@ -257,10 +270,13 @@ Hub.cloneRoom = async function ({ socket, roomID, data, sendResponse }) {
 };
 
 Hub.updateRoomName = async function ({ socket, roomID, data, sendResponse }) {
-  if (data.name === undefined || data.name.length <= 0) return;
+  if(data === undefined || data.name === undefined || data.name.length <= 0)
+    return;
+
+  let name = data.name.trim().substring(0, Math.min(40, data.name.length));
 
   try {
-    await Room.updateRoomName(roomID, data.name);
+    await Room.updateRoomName(roomID, name);
   } catch (error) {
     Hub.sendError(socket.id, "updateRoomName", "Could not update room name.");
 
@@ -275,10 +291,31 @@ Hub.updateRoomName = async function ({ socket, roomID, data, sendResponse }) {
 
 Hub.deleteRoom = async function ({ socket, roomID, sendResponse }) {
   Room.delete(roomID);
+  await Users.deleteRoom(roomID);
 
   Hub.send(socket.id, roomID, sendResponse, {
     event: "roomDeleted",
     data: {},
+  });
+};
+
+/*
+  Add a nickname (also referred to as usernames) to the room, or updates a name if it already exists at a given socket ID. Sends to 
+  every client the array of users
+*/
+Hub.updateNickname = async function ({ socket, roomID, data, sendResponse }) {
+  if(data === undefined || data.userName === undefined || data.userName.length <= 0)
+    return;
+
+  let userName = data.userName.trim();
+
+  await Users.add(socket.roomID, socket.id, userName);
+
+  let users = await Users.inRoom(socket.roomID);
+
+  Hub.send(socket.id, roomID, sendResponse, {
+    event: "nicknamesUpdated",
+    data: { users },
   });
 };
 
@@ -374,6 +411,7 @@ Hub.setup = function (sockets) {
   Hub.events.addListener("cloneRoom", Hub.cloneRoom);
   Hub.events.addListener("deleteRoom", Hub.deleteRoom);
   Hub.events.addListener("updateRoomName", Hub.updateRoomName);
+  Hub.events.addListener("updateNickname", Hub.updateNickname);
 
   sockets.on("connection", Hub.onConnection);
 

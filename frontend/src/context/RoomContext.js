@@ -2,154 +2,11 @@ import React, { createContext, useCallback, useReducer } from "react";
 
 import DataRequests from "../controllers/DataRequests";
 import DormItem from "../models/DormItem";
+import RoomActions from "./RoomActions";
+import RoomReducer from "./RoomReducer";
 import SocketConnection from "../controllers/SocketConnection";
 import StorageController from "../controllers/StorageController";
-
-export const RoomActions = {
-  connectedToRoom: "CONNECTED_TO_ROOM",
-  connectionClosed: "CONNECTION_CLOSED",
-  setUserName: "SET_USER_NAME",
-  itemAdded: "ITEM_ADDED",
-  itemDeleted: "ITEM_DELETED",
-  itemsUpdated: "ITEM_UPDATED",
-  itemSelected: "ITEM_SELECTED",
-  boundsUpdated: "BOUNDS_UPDATED",
-  roomNameUpdated: "ROOM_NAME_UPDATED",
-  roomDeleted: "ROOM_DELETED",
-  loading: "LOADING",
-  error: "ERROR",
-  clearEditorActionQueue: "CLEAR_EDITOR_ACTION_QUEUE",
-};
-
-const initialState = {
-  items: null,
-  templateId: null,
-  roomName: null,
-  bounds: null,
-  loading: true,
-  error: null,
-  socketConnection: null,
-  userName: null,
-  editorActionQueue: [],
-  selectedItemID: null,
-};
-
-const roomReducer = (state, action) => {
-  if (action.payload?.sendToEditor !== false) {
-    state.editorActionQueue = [...state.editorActionQueue, action];
-  }
-
-  switch (action.type) {
-    case RoomActions.connectedToRoom:
-      return {
-        ...state,
-        loading: false,
-        templateId: action.payload.templateId,
-        bounds: action.payload.bounds,
-        items: action.payload.items,
-        roomName: action.payload.roomName,
-        socketConnection: action.payload.socketConnection,
-      };
-
-    case RoomActions.connectionClosed:
-      return {
-        items: null,
-        editorActionQueue: [],
-        selectedItemID: null,
-        loading: false,
-        socketConnection: null,
-        error: new Error("Connection to room lost"),
-      };
-
-    case RoomActions.clearEditorActionQueue:
-      return {
-        ...state,
-        editorActionQueue: [],
-      };
-
-    case RoomActions.setUserName:
-      return {
-        ...state,
-        userName: action.payload.userName,
-      };
-
-    case RoomActions.itemAdded:
-      return {
-        ...state,
-        items: [...state.items, action.payload.item],
-      };
-
-    case RoomActions.itemDeleted:
-      return {
-        ...state,
-        selectedItemID:
-          state.selectedItemID !== null &&
-          state.selectedItemID !== action.payload.id
-            ? state.selectedItemID
-            : null,
-        items: state.items.filter((item) => item.id !== action.payload.id),
-      };
-
-    case RoomActions.itemsUpdated:
-      const updatedItems = {};
-      let selectedItemID = state.selectedItemID;
-      for (let i = 0; i < action.payload.items.length; i++) {
-        const id = action.payload.items[i].id;
-        const updated = action.payload.items[i].updated;
-        // If item was removed from editor and it was selected, deselect it
-        if (
-          selectedItemID !== null &&
-          selectedItemID === id &&
-          updated.visibleInEditor === false
-        ) {
-          selectedItemID = null;
-        }
-        updatedItems[id] = updated;
-      }
-
-      const oldItemArray = state.items;
-      let itemArray = [];
-      for (let i = 0; i < oldItemArray.length; i++) {
-        let item = oldItemArray[i];
-        itemArray.push(item);
-        const updated = updatedItems[item.id];
-        if (updated !== undefined) {
-          item.update(updated);
-        }
-      }
-
-      return {
-        ...state,
-        selectedItemID: selectedItemID,
-        items: itemArray,
-      };
-
-    case RoomActions.itemSelected:
-      return { ...state, selectedItemID: action.payload.id };
-
-    case RoomActions.boundsUpdated:
-      const updatedBounds = action.payload.bounds ?? [];
-      return {
-        ...state,
-        bounds: updatedBounds,
-      };
-
-    case RoomActions.loading:
-      return initialState;
-
-    case RoomActions.roomNameUpdated:
-      return {
-        ...state,
-        roomName: action.payload.roomName,
-      };
-
-    case RoomActions.error:
-      return { ...state, loading: false, error: action.payload.error };
-
-    default:
-      return state;
-  }
-};
+import initialState from "./initialState";
 
 /* Handles socket error message cases. Outputs a specific error message to console and 
   returns a string with a more presentable message (if the error was recognized) 
@@ -190,7 +47,7 @@ const handleSocketErrorEvent = (data) => {
 export const RoomContext = createContext();
 
 export const RoomProvider = ({ children }) => {
-  const [state, dispatch] = useReducer(roomReducer, initialState);
+  const [state, dispatch] = useReducer(RoomReducer, initialState);
 
   const connectToRoom = useCallback(
     async (id) => {
@@ -280,7 +137,18 @@ export const RoomProvider = ({ children }) => {
         connection.on("roomDeleted", (data) => {
           StorageController.removeRoomFromHistory(id);
 
-          window.location.href = "/"; 
+          window.location.href = "/";
+        });
+
+        connection.on("nicknamesUpdated", (data) => {
+          let { users } = data;
+
+          dispatch({
+            type: RoomActions.userNamesUpdated,
+            payload: { userNames: users },
+          });
+
+          console.log(users);
         });
       } catch (error) {
         console.error("Failed to connect to room: " + error);
@@ -293,10 +161,18 @@ export const RoomProvider = ({ children }) => {
   const setUserName = useCallback(
     (userName) => {
       if (userName.length === 0) userName = null;
+
       StorageController.setUsername(userName);
+
+      state.socketConnection.send({
+        event: "updateNickname",
+        sendResponse: true,
+        data: { userName },
+      });
+
       dispatch({ type: RoomActions.setUserName, payload: { userName } });
     },
-    [dispatch]
+    [state.socketConnection, dispatch]
   );
 
   const cloneRoom = useCallback(

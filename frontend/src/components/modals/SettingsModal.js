@@ -1,10 +1,11 @@
 import React, { useState } from "react";
-import Modal from "react-bootstrap/Modal";
+
 import ConfirmationButton from "../ConfirmationButton/ConfirmationButton";
+import Modal from "react-bootstrap/Modal";
+import RoomNameForm from "../RoomNameForm/RoomNameForm";
 import SingleInputForm from "../SingleInputForm/SingleInputForm";
 
 const SettingsModal = (props) => {
-
   const onDeleteRoom = (evt) => {
     props.onDeleteRoom();
   };
@@ -25,6 +26,8 @@ const SettingsModal = (props) => {
         <SingleInputForm
           initialValue={props.userName}
           onSubmit={props.onChangeUserName}
+          trim={true}
+          allowEmptySubmit={false}
         />
 
         <br />
@@ -34,10 +37,7 @@ const SettingsModal = (props) => {
         <p>
           The room name can also be changed by clicking on it in the editor.
         </p>
-        <SingleInputForm
-          initialValue={props.roomName}
-          onSubmit={props.onChangeRoomName}
-        />
+        <RoomNameForm roomName={props.roomName} onChangeRoomName={props.onChangeRoomName} />
 
         <br />
 
@@ -48,11 +48,11 @@ const SettingsModal = (props) => {
           a room, changes only apply to your copy, not the original.
           <strong> This is not reversible.</strong>
         </p>
-        <SingleInputForm 
-          initialValue="" 
-          onSubmit={props.onClone} 
-          submitButtonText="Clone" 
-          placeholder="Room Template ID" 
+        <SingleInputForm
+          initialValue=""
+          onSubmit={props.onClone}
+          submitButtonText="Clone"
+          placeholder="Room Template ID"
         />
 
         <br />
