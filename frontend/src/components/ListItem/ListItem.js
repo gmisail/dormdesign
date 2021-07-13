@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useContext } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   BsThreeDots,
   BsX,
@@ -10,7 +10,8 @@ import {
   BsFiles,
 } from "react-icons/bs";
 import { usePopper } from "react-popper";
-import { RoomContext } from "../../context/RoomContext";
+import { useSelector, useDispatch } from "react-redux";
+import { useActions } from "../../context/RoomStore";
 import IconButton from "../IconButton/IconButton";
 import { modalTypes, Modal } from "../../components/modals/Modal";
 import useModal from "../../hooks/useModal";
@@ -34,7 +35,11 @@ const ListItem = (props) => {
 
     Note that this could be an issue if two users input the same userName
   */
-  const { userName, setUserName } = useContext(RoomContext);
+  const userName = useSelector(state => state.userName);
+  const socketConnection = useSelector(state => state.socketConnection);
+
+  const { setUserName } = useActions(useDispatch(), socketConnection);
+
   const [modalProps, toggleModal] = useModal();
   const [showMenu, setShowMenu] = useState(false);
   const menuButtonRef = useRef(null);

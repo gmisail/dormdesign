@@ -8,7 +8,6 @@ import IconButton from "../IconButton/IconButton";
 import { MdFilterCenterFocus } from "react-icons/md";
 import { RiClockwiseLine } from "react-icons/ri";
 import RoomActions from "../../context/RoomActions";
-import { RoomContext } from "../../context/RoomContext";
 import RoomEditorObject from "../../room-editor/RoomEditorObject";
 import SceneController from "../../room-editor/SceneController";
 import Vector2 from "../../room-editor/Vector2";
@@ -43,7 +42,6 @@ const editorToItemProperties = (props) => {
 };
 
 class RoomEditor extends Component {
-  static contextType = RoomContext;
   state = {
     lastSelectedItemID: null,
     editingBounds: false,

@@ -2,21 +2,22 @@ import "./RoomRoute.scss";
 
 import { BsBoxArrowUpRight, BsGear, BsPencil, BsPlus } from "react-icons/bs";
 import { Modal, modalTypes } from "../../components/modals/Modal";
-import React, { useCallback, useContext, useEffect } from "react";
+import React, { useCallback, useEffect } from "react";
 
 import ActiveUsersIndicator from "../../components/ActiveUsersIndicator/ActiveUsersIndicator";
 import DormItemList from "../../components/DormItemList/DormItemList";
 import IconButton from "../../components/IconButton/IconButton";
-import { RoomContext } from "../../context/RoomContext";
 import RoomEditor from "../../components/RoomEditor/RoomEditor";
 import { Spinner } from "react-bootstrap";
 import useModal from "../../hooks/useModal";
 import { useParams } from "react-router-dom";
 
 import { useActions } from "../../context/RoomStore";
+import { useDispatch, useSelector } from "react-redux";
 
 export const RoomRoute = () => {
   const dispatch = useDispatch();
+  
   const socketConnection = useSelector(state => state.socketConnection);
   const roomName = useSelector(state => state.roomName);
   const templateId = useSelector(state => state.templateId);
@@ -233,7 +234,7 @@ export const RoomRoute = () => {
           </div>
 
           <div className="room-editor-container custom-card">
-            <RoomEditor />
+           { /* <RoomEditor /> */ }
           </div>
 
           <div className="room-item-list-container">

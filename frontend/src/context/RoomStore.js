@@ -1,4 +1,4 @@
-import React, { createContext, , useReducer } from "react";
+import React, { createContext, useReducer } from "react";
 import { Provider, useDispatch } from 'react-redux'
 
 import DataRequests from "../controllers/DataRequests";
@@ -8,6 +8,7 @@ import RoomReducer from "./RoomReducer";
 import SocketConnection from "../controllers/SocketConnection";
 import StorageController from "../controllers/StorageController";
 import initialState from "./initialState";
+import { createStore } from "redux";
 
 /* Handles socket error message cases. Outputs a specific error message to console and 
   returns a string with a more presentable message (if the error was recognized) 
