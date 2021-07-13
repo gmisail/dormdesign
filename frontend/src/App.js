@@ -14,7 +14,7 @@ import {
 
 import { IconContext } from "react-icons";
 
-import { RoomProvider } from "./context/RoomContext";
+import { RoomProvider } from "./context/RoomStore";
 import { RoomRoute } from "./routes/RoomRoute/RoomRoute";
 import HomeRoute from "./routes/HomeRoute/HomeRoute";
 import SceneTestingRoute from "./routes/SceneTestingRoute/SceneTestingRoute";

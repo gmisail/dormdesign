@@ -13,16 +13,20 @@ import { Spinner } from "react-bootstrap";
 import useModal from "../../hooks/useModal";
 import { useParams } from "react-router-dom";
 
+import { useActions } from "../../context/RoomStore";
+
 export const RoomRoute = () => {
-  const {
-    roomName,
-    templateId,
-    items,
-    loading,
-    error,
-    socketConnection,
-    userName,
-    userNames,
+  const dispatch = useDispatch();
+  const socketConnection = useSelector(state => state.socketConnection);
+  const roomName = useSelector(state => state.roomName);
+  const templateId = useSelector(state => state.templateId);
+  const items = useSelector(state => state.items);
+  const loading = useSelector(state => state.loading);
+  const error = useSelector(state => state.error);
+  const userName = useSelector(state => state.userName);
+  const userNames = useSelector(state => state.userNames);
+
+  const { 
     connectToRoom,
     updateRoomName,
     cloneRoom,
@@ -30,9 +34,8 @@ export const RoomRoute = () => {
     addItem,
     updateItems,
     deleteItem,
-    deleteRoom,
-    selectedItemID,
-  } = useContext(RoomContext);
+    deleteRoom
+  } = useActions(dispatch, socketConnection);
 
   const { id } = useParams();
   const [modalProps, toggleModal] = useModal();

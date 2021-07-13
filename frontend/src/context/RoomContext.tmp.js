@@ -147,8 +147,6 @@ export const RoomProvider = ({ children }) => {
             type: RoomActions.userNamesUpdated,
             payload: { userNames: users },
           });
-
-          console.log(users);
         });
       } catch (error) {
         console.error("Failed to connect to room: " + error);
