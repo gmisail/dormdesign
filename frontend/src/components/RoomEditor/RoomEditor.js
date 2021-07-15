@@ -4,7 +4,10 @@ import { BiLockAlt, BiLockOpenAlt, BiMinus, BiPlus } from "react-icons/bi";
 import { BsBoundingBox, BsCheck, BsX } from "react-icons/bs";
 import React, { useEffect, useRef, useState } from "react";
 import { connect, useSelector } from "react-redux";
-import { onClearEditorActionQueue, onUpdateBounds } from "../../context/RoomStore";
+import {
+  onClearEditorActionQueue,
+  onUpdateBounds,
+} from "../../context/RoomStore";
 
 import IconButton from "../IconButton/IconButton";
 import { MdFilterCenterFocus } from "react-icons/md";
@@ -405,10 +408,7 @@ function RoomEditor({ clearEditorActionQueue }) {
         </div>
       </div>
 
-      <canvas
-        ref={mainCanvasRef}
-        className="room-canvas"
-      ></canvas>
+      <canvas ref={mainCanvasRef} className="room-canvas"></canvas>
     </div>
   );
 }

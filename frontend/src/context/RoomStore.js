@@ -54,128 +54,128 @@ export const RoomProvider = ({ children }) => {
 };
 
 export const onConnectToRoom = async (dispatch, id) => {
-    dispatch({ type: RoomActions.loading });
+  dispatch({ type: RoomActions.loading });
 
-    try {
-      const userName = StorageController.getUsername();
+  try {
+    const userName = StorageController.getUsername();
 
-      if (userName !== null) {
-        dispatch({ type: RoomActions.setUserName, payload: { userName } });
-      }
-
-      const roomData = await DataRequests.getRoomData(id);
-      const connection = new SocketConnection(id, () => {
-        // Called when socket connection has been opened
-        console.log("Successfully connected to Room");
-
-        // Add this room to local history of viewed rooms
-        StorageController.addRoomToHistory(id, roomData.name);
-
-        dispatch({
-          type: RoomActions.connectedToRoom,
-          payload: {
-            items: roomData.items,
-            templateId: roomData.templateId,
-            roomName: roomData.name,
-            socketConnection: connection,
-            bounds: roomData.vertices,
-          },
-        });
-      });
-
-      connection.onClose = () => {
-        console.warn("Lost connection to Room");
-        dispatch({ type: RoomActions.connectionClosed });
-      };
-
-      connection.on("actionFailed", (data) => {
-        const errorMessage = handleSocketErrorEvent(data);
-        if (errorMessage) {
-          const error = new Error(errorMessage);
-          dispatch({
-            type: RoomActions.error,
-            payload: { error },
-          });
-        }
-      });
-
-      connection.on("itemAdded", (data) => {
-        const item = new DormItem(data);
-        dispatch({ type: RoomActions.itemAdded, payload: { item } });
-      });
-
-      connection.on("itemsUpdated", (data) => {
-        dispatch({
-          type: RoomActions.itemsUpdated,
-          payload: { items: data.items },
-        });
-      });
-
-      connection.on("itemDeleted", (data) => {
-        dispatch({
-          type: RoomActions.itemDeleted,
-          payload: { id: data.id },
-        });
-      });
-
-      connection.on("layoutUpdated", (data) => {
-        dispatch({
-          type: RoomActions.boundsUpdated,
-          payload: { bounds: data.vertices },
-        });
-      });
-
-      connection.on("roomNameUpdated", (data) => {
-        StorageController.addRoomToHistory(id, data.name);
-
-        dispatch({
-          type: RoomActions.roomNameUpdated,
-          payload: { roomName: data.name },
-        });
-      });
-
-      connection.on("roomCloned", (data) => {
-        window.location.reload();
-      });
-
-      connection.on("roomDeleted", (data) => {
-        StorageController.removeRoomFromHistory(id);
-
-        window.location.href = "/";
-      });
-
-      connection.on("nicknamesUpdated", (data) => {
-        let { users } = data;
-
-        dispatch({
-          type: RoomActions.userNamesUpdated,
-          payload: { userNames: users },
-        });
-      });
-    } catch (error) {
-      console.error("Failed to connect to room: " + error);
-      dispatch({ type: RoomActions.error, payload: { error } });
+    if (userName !== null) {
+      dispatch({ type: RoomActions.setUserName, payload: { userName } });
     }
-  };
 
-export const onSetUserName = (dispatch, userName) => {
-    const socketConnection = useSelector(state => state.socketConnection);
-    
-    if (userName.length === 0) userName = null;
+    const roomData = await DataRequests.getRoomData(id);
+    const connection = new SocketConnection(id, () => {
+      // Called when socket connection has been opened
+      console.log("Successfully connected to Room");
 
-    StorageController.setUsername(userName);
+      // Add this room to local history of viewed rooms
+      StorageController.addRoomToHistory(id, roomData.name);
 
-    socketConnection.send({
-      event: "updateNickname",
-      sendResponse: true,
-      data: { userName },
+      dispatch({
+        type: RoomActions.connectedToRoom,
+        payload: {
+          items: roomData.items,
+          templateId: roomData.templateId,
+          roomName: roomData.name,
+          socketConnection: connection,
+          bounds: roomData.vertices,
+        },
+      });
     });
 
-    dispatch({ type: RoomActions.setUserName, payload: { userName } });
+    connection.onClose = () => {
+      console.warn("Lost connection to Room");
+      dispatch({ type: RoomActions.connectionClosed });
+    };
+
+    connection.on("actionFailed", (data) => {
+      const errorMessage = handleSocketErrorEvent(data);
+      if (errorMessage) {
+        const error = new Error(errorMessage);
+        dispatch({
+          type: RoomActions.error,
+          payload: { error },
+        });
+      }
+    });
+
+    connection.on("itemAdded", (data) => {
+      const item = new DormItem(data);
+      dispatch({ type: RoomActions.itemAdded, payload: { item } });
+    });
+
+    connection.on("itemsUpdated", (data) => {
+      dispatch({
+        type: RoomActions.itemsUpdated,
+        payload: { items: data.items },
+      });
+    });
+
+    connection.on("itemDeleted", (data) => {
+      dispatch({
+        type: RoomActions.itemDeleted,
+        payload: { id: data.id },
+      });
+    });
+
+    connection.on("layoutUpdated", (data) => {
+      dispatch({
+        type: RoomActions.boundsUpdated,
+        payload: { bounds: data.vertices },
+      });
+    });
+
+    connection.on("roomNameUpdated", (data) => {
+      StorageController.addRoomToHistory(id, data.name);
+
+      dispatch({
+        type: RoomActions.roomNameUpdated,
+        payload: { roomName: data.name },
+      });
+    });
+
+    connection.on("roomCloned", (data) => {
+      window.location.reload();
+    });
+
+    connection.on("roomDeleted", (data) => {
+      StorageController.removeRoomFromHistory(id);
+
+      window.location.href = "/";
+    });
+
+    connection.on("nicknamesUpdated", (data) => {
+      let { users } = data;
+
+      dispatch({
+        type: RoomActions.userNamesUpdated,
+        payload: { userNames: users },
+      });
+    });
+  } catch (error) {
+    console.error("Failed to connect to room: " + error);
+    dispatch({ type: RoomActions.error, payload: { error } });
+  }
+};
+
+export const onSetUserName = (dispatch, userName) => {
+  const socketConnection = useSelector((state) => state.socketConnection);
+
+  if (userName.length === 0) userName = null;
+
+  StorageController.setUsername(userName);
+
+  socketConnection.send({
+    event: "updateNickname",
+    sendResponse: true,
+    data: { userName },
+  });
+
+  dispatch({ type: RoomActions.setUserName, payload: { userName } });
 };
 
 export const onCloneRoom = (dispatch, id, target) => {
-  const socketConnection = useSelector(state => state.socketConnection);
+  const socketConnection = useSelector((state) => state.socketConnection);
 
   socketConnection.send({
     event: "cloneRoom",
@@ -188,7 +188,7 @@ export const onCloneRoom = (dispatch, id, target) => {
 };
 
 export const onAddItem = (dispatch, item) => {
-  const socketConnection = useSelector(state => state.socketConnection);
+  const socketConnection = useSelector((state) => state.socketConnection);
 
   socketConnection.send({
     event: "addItem",
@@ -203,7 +203,7 @@ name of an item) */
 export const onUpdateItems = (items) => {
   if (items.length === 0) return;
 
-  const socketConnection = useSelector(state => state.socketConnection);
+  const socketConnection = useSelector((state) => state.socketConnection);
 
   socketConnection.send({
     event: "updateItems",
@@ -212,13 +212,13 @@ export const onUpdateItems = (items) => {
       items: items,
     },
   });
-}
+};
 
 /* Sends socket message saying that item has been updated. Doesn't expect a response if
 successful. Used for updates that need to be immediately shown locally (e.g. moving an
 item in the editor) */
 export const onUpdatedItems = (dispatch, items) => {
-  const socketConnection = useSelector(state => state.socketConnection);
+  const socketConnection = useSelector((state) => state.socketConnection);
 
   socketConnection.send({
     event: "updateItems",
@@ -235,7 +235,7 @@ export const onUpdatedItems = (dispatch, items) => {
 };
 
 export const onDeleteItem = (dispatch, item) => {
-  const socketConnection = useSelector(state => state.socketConnection);
+  const socketConnection = useSelector((state) => state.socketConnection);
 
   socketConnection.send({
     event: "deleteItem",
@@ -247,7 +247,7 @@ export const onDeleteItem = (dispatch, item) => {
 };
 
 export const onDeleteRoom = (dispatch, id) => {
-  const socketConnection = useSelector(state => state.socketConnection);
+  const socketConnection = useSelector((state) => state.socketConnection);
 
   socketConnection.send({
     event: "deleteRoom",
@@ -264,7 +264,7 @@ export const onDeleteRoom = (dispatch, id) => {
 };
 
 export const onUpdateBounds = (dispatch, bounds) => {
-  const socketConnection = useSelector(state => state.socketConnection);
+  const socketConnection = useSelector((state) => state.socketConnection);
 
   socketConnection.send({
     event: "updateLayout",
@@ -278,7 +278,7 @@ export const onUpdateBounds = (dispatch, bounds) => {
 export const onUpdateRoomName = (dispatch, id, roomName) => {
   if (roomName == null || roomName.length === 0) return;
 
-  const socketConnection = useSelector(state => state.socketConnection);
+  const socketConnection = useSelector((state) => state.socketConnection);
 
   socketConnection.send({
     event: "updateRoomName",

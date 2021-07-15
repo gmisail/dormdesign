@@ -12,7 +12,7 @@ import {
   onDeleteRoom,
   onSetUserName,
   onUpdateItems,
-  onUpdateRoomName
+  onUpdateRoomName,
 } from "../../context/RoomStore";
 
 import ActiveUsersIndicator from "../../components/ActiveUsersIndicator/ActiveUsersIndicator";
@@ -31,7 +31,7 @@ const RoomRoute = ({
   deleteRoom,
   setUserName,
   updateItems,
-  updateRoomName
+  updateRoomName,
 }) => {
   const socketConnection = useSelector((state) => state.socketConnection);
   const roomName = useSelector((state) => state.roomName);
@@ -277,7 +277,7 @@ const mapDispatchToProps = (dispatch) => {
     deleteRoom: (id) => onDeleteRoom(dispatch, id),
     setUserName: (username) => onSetUserName(dispatch, username),
     updateItems: (items) => onUpdateItems(dispatch, items),
-    updateRoomName: (roomName) => onUpdateRoomName(dispatch, roomName) 
+    updateRoomName: (roomName) => onUpdateRoomName(dispatch, roomName),
   };
 };
 

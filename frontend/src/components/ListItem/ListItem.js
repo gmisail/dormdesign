@@ -15,7 +15,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { connect, useDispatch, useSelector } from "react-redux";
 
 import IconButton from "../IconButton/IconButton";
-import  { onSetUserName } from "../../context/RoomStore";
+import { onSetUserName } from "../../context/RoomStore";
 import useModal from "../../hooks/useModal";
 import { usePopper } from "react-popper";
 
@@ -29,7 +29,6 @@ const ListItem = ({
   setUserName,
   className,
 }) => {
-
   /*
     userName is used to determine if the claim option in the menu should be say 
     "Claim" or "Unclaim" based on whether or not userName matches item.claimedBy
@@ -175,7 +174,7 @@ const ListItem = ({
 
 const mapDispatchToProps = (dispatch) => {
   return {
-    setUserName: (name) => onSetUserName(dispatch, name)
+    setUserName: (name) => onSetUserName(dispatch, name),
   };
 };
 
