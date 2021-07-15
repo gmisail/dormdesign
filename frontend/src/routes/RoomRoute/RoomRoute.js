@@ -3,6 +3,17 @@ import "./RoomRoute.scss";
 import { BsBoxArrowUpRight, BsGear, BsPencil, BsPlus } from "react-icons/bs";
 import { Modal, modalTypes } from "../../components/modals/Modal";
 import React, { useCallback, useEffect } from "react";
+import { connect, useSelector } from "react-redux";
+import {
+  onAddItem,
+  onCloneRoom,
+  onConnectToRoom,
+  onDeleteItem,
+  onDeleteRoom,
+  onSetUserName,
+  onUpdateItems,
+  onUpdateRoomName
+} from "../../context/RoomStore";
 
 import ActiveUsersIndicator from "../../components/ActiveUsersIndicator/ActiveUsersIndicator";
 import DormItemList from "../../components/DormItemList/DormItemList";
@@ -12,31 +23,25 @@ import { Spinner } from "react-bootstrap";
 import useModal from "../../hooks/useModal";
 import { useParams } from "react-router-dom";
 
-import { useActions } from "../../context/RoomStore";
-import { useDispatch, useSelector } from "react-redux";
-
-export const RoomRoute = () => {
-  const dispatch = useDispatch();
-  
-  const socketConnection = useSelector(state => state.socketConnection);
-  const roomName = useSelector(state => state.roomName);
-  const templateId = useSelector(state => state.templateId);
-  const items = useSelector(state => state.items);
-  const loading = useSelector(state => state.loading);
-  const error = useSelector(state => state.error);
-  const userName = useSelector(state => state.userName);
-  const userNames = useSelector(state => state.userNames);
-
-  const { 
-    connectToRoom,
-    updateRoomName,
-    cloneRoom,
-    setUserName,
-    addItem,
-    updateItems,
-    deleteItem,
-    deleteRoom
-  } = useActions(dispatch, socketConnection);
+const RoomRoute = ({
+  addItem,
+  cloneRoom,
+  connectToRoom,
+  deleteItem,
+  deleteRoom,
+  setUserName,
+  updateItems,
+  updateRoomName
+}) => {
+  const socketConnection = useSelector((state) => state.socketConnection);
+  const roomName = useSelector((state) => state.roomName);
+  const templateId = useSelector((state) => state.templateId);
+  const items = useSelector((state) => state.items);
+  const loading = useSelector((state) => state.loading);
+  const error = useSelector((state) => state.error);
+  const userName = useSelector((state) => state.userName);
+  const userNames = useSelector((state) => state.userNames);
+  const selectedItemID = useSelector((state) => state.selectedItemID);
 
   const { id } = useParams();
   const [modalProps, toggleModal] = useModal();
@@ -234,7 +239,7 @@ export const RoomRoute = () => {
           </div>
 
           <div className="room-editor-container custom-card">
-           { /* <RoomEditor /> */ }
+            <RoomEditor />
           </div>
 
           <div className="room-item-list-container">
@@ -262,3 +267,18 @@ export const RoomRoute = () => {
     </>
   );
 };
+
+const mapDispatchToProps = (dispatch) => {
+  return {
+    addItem: (properties) => onAddItem(dispatch, properties),
+    cloneRoom: (id, target) => onCloneRoom(dispatch, id, target),
+    connectToRoom: (id) => onConnectToRoom(dispatch, id),
+    deleteItem: (item) => onDeleteItem(dispatch, item),
+    deleteRoom: (id) => onDeleteRoom(dispatch, id),
+    setUserName: (username) => onSetUserName(dispatch, username),
+    updateItems: (items) => onUpdateItems(dispatch, items),
+    updateRoomName: (roomName) => onUpdateRoomName(dispatch, roomName) 
+  };
+};
+
+export default connect(null, mapDispatchToProps)(RoomRoute);

@@ -37,7 +37,10 @@ const SettingsModal = (props) => {
         <p>
           The room name can also be changed by clicking on it in the editor.
         </p>
-        <RoomNameForm roomName={props.roomName} onChangeRoomName={props.onChangeRoomName} />
+        <RoomNameForm
+          roomName={props.roomName}
+          onChangeRoomName={props.onChangeRoomName}
+        />
 
         <br />
 

@@ -1,33 +1,34 @@
-import React, { useState, useEffect, useRef } from "react";
+import "./ListItem.scss";
+
 import {
-  BsThreeDots,
-  BsX,
-  BsPencil,
-  BsPersonPlus,
-  BsPersonDash,
   BsEye,
   BsEyeSlash,
   BsFiles,
+  BsPencil,
+  BsPersonDash,
+  BsPersonPlus,
+  BsThreeDots,
+  BsX,
 } from "react-icons/bs";
-import { usePopper } from "react-popper";
-import { useSelector, useDispatch } from "react-redux";
-import { useActions } from "../../context/RoomStore";
+import { Modal, modalTypes } from "../../components/modals/Modal";
+import React, { useEffect, useRef, useState } from "react";
+import { connect, useDispatch, useSelector } from "react-redux";
+
 import IconButton from "../IconButton/IconButton";
-import { modalTypes, Modal } from "../../components/modals/Modal";
+import  { onSetUserName } from "../../context/RoomStore";
 import useModal from "../../hooks/useModal";
+import { usePopper } from "react-popper";
 
-import "./ListItem.scss";
-
-const ListItem = (props) => {
-  const {
-    item,
-    onEdit,
-    onClaim,
-    onDelete,
-    onDuplicate,
-    onToggleEditorVisibility,
-    className,
-  } = props;
+const ListItem = ({
+  item,
+  onEdit,
+  onClaim,
+  onDelete,
+  onDuplicate,
+  onToggleEditorVisibility,
+  setUserName,
+  className,
+}) => {
 
   /*
     userName is used to determine if the claim option in the menu should be say 
@@ -35,10 +36,8 @@ const ListItem = (props) => {
 
     Note that this could be an issue if two users input the same userName
   */
-  const userName = useSelector(state => state.userName);
-  const socketConnection = useSelector(state => state.socketConnection);
-
-  const { setUserName } = useActions(useDispatch(), socketConnection);
+  const userName = useSelector((state) => state.userName);
+  const socketConnection = useSelector((state) => state.socketConnection);
 
   const [modalProps, toggleModal] = useModal();
   const [showMenu, setShowMenu] = useState(false);
@@ -174,4 +173,10 @@ const ListItem = (props) => {
   );
 };
 
-export default ListItem;
+const mapDispatchToProps = (dispatch) => {
+  return {
+    setUserName: (name) => onSetUserName(dispatch, name)
+  };
+};
+
+export default connect(null, mapDispatchToProps)(ListItem);

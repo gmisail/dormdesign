@@ -15,7 +15,7 @@ const SingleInputForm = (props) => {
     buttonClassName,
     mustMatch, // Text that input must match in order for submit button to be enabled
   } = props;
-  
+
   const trim = props.trim ?? false; // Whether or not to trim input text
   const allowEmptySubmit = props.allowEmptySubmit ?? false; // Whether or not to enable submitting an empty input
 
@@ -44,10 +44,10 @@ const SingleInputForm = (props) => {
       setButtonText("Error!");
 
       return;
-    } 
+    }
 
     setButtonText(submitButtonTextSuccessful ?? "Saved!");
-    
+
     props.onSubmit(value);
   };
 
@@ -61,14 +61,14 @@ const SingleInputForm = (props) => {
           onChange={handleInputChange}
         />
         <button
-          className={`${ buttonTheme } custom-btn ml-2 flex-shrink-0`}
+          className={`${buttonTheme} custom-btn ml-2 flex-shrink-0`}
           disabled={
             (!allowEmptySubmit && inputValue === "" ? true : false) ||
             (mustMatch !== undefined && inputValue !== mustMatch)
           }
           type="submit"
         >
-          { buttonText }
+          {buttonText}
         </button>
       </div>
     </Form>

@@ -1,5 +1,5 @@
-import React, { createContext, useReducer } from "react";
-import { Provider, useDispatch } from 'react-redux'
+import { Provider, useSelector } from "react-redux";
+import React, { useCallback } from "react";
 
 import DataRequests from "../controllers/DataRequests";
 import DormItem from "../models/DormItem";
@@ -7,8 +7,9 @@ import RoomActions from "./RoomActions";
 import RoomReducer from "./RoomReducer";
 import SocketConnection from "../controllers/SocketConnection";
 import StorageController from "../controllers/StorageController";
-import initialState from "./initialState";
+import { composeWithDevTools } from "redux-devtools-extension";
 import { createStore } from "redux";
+import initialState from "./initialState";
 
 /* Handles socket error message cases. Outputs a specific error message to console and 
   returns a string with a more presentable message (if the error was recognized) 
@@ -47,17 +48,17 @@ const handleSocketErrorEvent = (data) => {
 };
 
 export const RoomProvider = ({ children }) => {
-  const store = createStore(RoomReducer, initialState);
+  const store = createStore(RoomReducer, initialState, composeWithDevTools());
 
   return <Provider store={store}>{children}</Provider>;
 };
 
-export const useActions = (dispatch, socketConnection) => {
-  const connectToRoom = async (id) => {      
+export const onConnectToRoom = async (dispatch, id) => {
     dispatch({ type: RoomActions.loading });
 
     try {
       const userName = StorageController.getUsername();
+
       if (userName !== null) {
         dispatch({ type: RoomActions.setUserName, payload: { userName } });
       }
@@ -155,9 +156,11 @@ export const useActions = (dispatch, socketConnection) => {
       console.error("Failed to connect to room: " + error);
       dispatch({ type: RoomActions.error, payload: { error } });
     }
-  }
+  };
 
-  const setUserName = (userName) => {
+export const onSetUserName = (dispatch, userName) => {
+    const socketConnection = useSelector(state => state.socketConnection);
+    
     if (userName.length === 0) userName = null;
 
     StorageController.setUsername(userName);
@@ -169,136 +172,137 @@ export const useActions = (dispatch, socketConnection) => {
     });
 
     dispatch({ type: RoomActions.setUserName, payload: { userName } });
-  };
+};
 
-  const cloneRoom = (id, target) => {
-    socketConnection.send({
-      event: "cloneRoom",
-      sendResponse: true,
-      data: {
-        id,
-        target_id: target,
-      },
-    });
-  };
+export const onCloneRoom = (dispatch, id, target) => {
+  const socketConnection = useSelector(state => state.socketConnection);
 
-  const addItem = (item) => {
-    socketConnection.send({
-      event: "addItem",
-      sendResponse: true,
-      data: item,
-    });
-  };
+  socketConnection.send({
+    event: "cloneRoom",
+    sendResponse: true,
+    data: {
+      id,
+      target_id: target,
+    },
+  });
+};
 
-  /* Sends socket message expecting a response (containing the same data as sent) if 
-  successful. Used for updates that don't need to be immediate locally (e.g. Changing the 
-  name of an item) */
-  const updateItems = (items) => {
-    if (items.length === 0) return;
+export const onAddItem = (dispatch, item) => {
+  const socketConnection = useSelector(state => state.socketConnection);
 
-    socketConnection.send({
-      event: "updateItems",
-      sendResponse: true,
-      data: {
-        items: items,
-      },
-    });
-  }
+  socketConnection.send({
+    event: "addItem",
+    sendResponse: true,
+    data: item,
+  });
+};
 
-  /* Sends socket message saying that item has been updated. Doesn't expect a response if
-  successful. Used for updates that need to be immediately shown locally (e.g. moving an
-  item in the editor) */
-  const updatedItems = (items) => {
-    socketConnection.send({
-      event: "updateItems",
-      sendResponse: false,
-      data: {
-        items: items,
-      },
-    });
-    // Since no response message is expected, immediately dispatch update
-    dispatch({
-      type: RoomActions.itemsUpdated,
-      payload: { items, sendToEditor: false },
-    });
-  };
-  
+/* Sends socket message expecting a response (containing the same data as sent) if 
+successful. Used for updates that don't need to be immediate locally (e.g. Changing the 
+name of an item) */
+export const onUpdateItems = (items) => {
+  if (items.length === 0) return;
 
-  const deleteItem = (item) => {
-    socketConnection.send({
-      event: "deleteItem",
-      sendResponse: true,
-      data: {
-        id: item.id,
-      },
-    });
-  };
+  const socketConnection = useSelector(state => state.socketConnection);
 
-  const deleteRoom = (id) => {
-    socketConnection.send({
-      event: "deleteRoom",
-      sendResponse: true,
-      data: {
-        id,
-      },
-    });
+  socketConnection.send({
+    event: "updateItems",
+    sendResponse: true,
+    data: {
+      items: items,
+    },
+  });
+}
 
-    dispatch({
-      type: RoomActions.roomDeleted,
-      payload: {},
-    });
-  };
+/* Sends socket message saying that item has been updated. Doesn't expect a response if
+successful. Used for updates that need to be immediately shown locally (e.g. moving an
+item in the editor) */
+export const onUpdatedItems = (dispatch, items) => {
+  const socketConnection = useSelector(state => state.socketConnection);
 
-  const updateBounds = (bounds) => {
-    socketConnection.send({
-      event: "updateLayout",
-      sendResponse: true,
-      data: {
-        vertices: bounds,
-      },
-    });
-  };
+  socketConnection.send({
+    event: "updateItems",
+    sendResponse: false,
+    data: {
+      items: items,
+    },
+  });
+  // Since no response message is expected, immediately dispatch update
+  dispatch({
+    type: RoomActions.itemsUpdated,
+    payload: { items, sendToEditor: false },
+  });
+};
 
-  const updateRoomName = (id, roomName) => {
-    if (roomName == null || roomName.length === 0) return;
-    socketConnection.send({
-      event: "updateRoomName",
-      sendResponse: true,
-      data: {
-        name: roomName,
-      },
-    });
+export const onDeleteItem = (dispatch, item) => {
+  const socketConnection = useSelector(state => state.socketConnection);
 
-    StorageController.addRoomToHistory(id, roomName);
+  socketConnection.send({
+    event: "deleteItem",
+    sendResponse: true,
+    data: {
+      id: item.id,
+    },
+  });
+};
 
-    dispatch({
-      type: RoomActions.roomNameUpdated,
-      payload: { roomName },
-    });
-  }
+export const onDeleteRoom = (dispatch, id) => {
+  const socketConnection = useSelector(state => state.socketConnection);
 
-  const itemSelected = (id) => {
-    dispatch({
-      type: RoomActions.itemSelected,
-      payload: { id, sendToEditor: false },
-    });
-  }
+  socketConnection.send({
+    event: "deleteRoom",
+    sendResponse: true,
+    data: {
+      id,
+    },
+  });
 
-  const clearEditorActionQueue = () => {
-    dispatch({ type: RoomActions.clearEditorActionQueue });
-  };
+  dispatch({
+    type: RoomActions.roomDeleted,
+    payload: {},
+  });
+};
 
-  return {
-    connectToRoom,
-    setUserName, 
-    cloneRoom,
-    addItem,
-    updateItems,
-    updatedItems,
-    deleteItem,
-    deleteRoom,
-    updateBounds,
-    updateRoomName,
-    itemSelected
-  };
+export const onUpdateBounds = (dispatch, bounds) => {
+  const socketConnection = useSelector(state => state.socketConnection);
+
+  socketConnection.send({
+    event: "updateLayout",
+    sendResponse: true,
+    data: {
+      vertices: bounds,
+    },
+  });
+};
+
+export const onUpdateRoomName = (dispatch, id, roomName) => {
+  if (roomName == null || roomName.length === 0) return;
+
+  const socketConnection = useSelector(state => state.socketConnection);
+
+  socketConnection.send({
+    event: "updateRoomName",
+    sendResponse: true,
+    data: {
+      name: roomName,
+    },
+  });
+
+  StorageController.addRoomToHistory(dispatch, id, roomName);
+
+  dispatch({
+    type: RoomActions.roomNameUpdated,
+    payload: { roomName },
+  });
+};
+
+export const onItemSelected = (dispatch, id) => {
+  dispatch({
+    type: RoomActions.itemSelected,
+    payload: { id, sendToEditor: false },
+  });
+};
+
+export const onClearEditorActionQueue = (dispatch) => {
+  dispatch({ type: RoomActions.clearEditorActionQueue });
 };
