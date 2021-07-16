@@ -1,5 +1,8 @@
 import { Provider, useSelector } from "react-redux";
 import React, { useCallback } from "react";
+import { createStore, applyMiddleware } from "redux";
+import thunk from "redux-thunk";
+import { composeWithDevTools } from "redux-devtools-extension";
 
 import DataRequests from "../controllers/DataRequests";
 import DormItem from "../models/DormItem";
@@ -7,8 +10,6 @@ import RoomActions from "./RoomActions";
 import RoomReducer from "./RoomReducer";
 import SocketConnection from "../controllers/SocketConnection";
 import StorageController from "../controllers/StorageController";
-import { composeWithDevTools } from "redux-devtools-extension";
-import { createStore } from "redux";
 import initialState from "./initialState";
 
 /* Handles socket error message cases. Outputs a specific error message to console and 
@@ -48,12 +49,12 @@ const handleSocketErrorEvent = (data) => {
 };
 
 export const RoomProvider = ({ children }) => {
-  const store = createStore(RoomReducer, initialState, composeWithDevTools());
+  const store = createStore(RoomReducer, initialState, applyMiddleware(thunk));
 
   return <Provider store={store}>{children}</Provider>;
 };
 
-export const onConnectToRoom = async (dispatch, id) => {
+export const connectToRoom = (id) => async (dispatch, getState) => {
   dispatch({ type: RoomActions.loading });
 
   try {
@@ -158,8 +159,8 @@ export const onConnectToRoom = async (dispatch, id) => {
   }
 };
 
-export const onSetUserName = (dispatch, userName) => {
-  const socketConnection = useSelector((state) => state.socketConnection);
+export const setUserName = userName => async (dispatch, getState) => {
+  const { socketConnection } = getState();
 
   if (userName.length === 0) userName = null;
 
@@ -174,8 +175,8 @@ export const onSetUserName = (dispatch, userName) => {
   dispatch({ type: RoomActions.setUserName, payload: { userName } });
 };
 
-export const onCloneRoom = (dispatch, id, target) => {
-  const socketConnection = useSelector((state) => state.socketConnection);
+export const cloneRoom = (id, target) => async (dispatch, getState) => {
+  const { socketConnection } = getState();
 
   socketConnection.send({
     event: "cloneRoom",
@@ -187,8 +188,8 @@ export const onCloneRoom = (dispatch, id, target) => {
   });
 };
 
-export const onAddItem = (dispatch, item) => {
-  const socketConnection = useSelector((state) => state.socketConnection);
+export const onAddItem = item => async (dispatch, getState) => {
+  const { socketConnection } = getState();
 
   socketConnection.send({
     event: "addItem",
@@ -197,13 +198,14 @@ export const onAddItem = (dispatch, item) => {
   });
 };
 
+
 /* Sends socket message expecting a response (containing the same data as sent) if 
 successful. Used for updates that don't need to be immediate locally (e.g. Changing the 
 name of an item) */
-export const onUpdateItems = (items) => {
+export const onUpdateItems = items => async (dispatch, getState) => {
   if (items.length === 0) return;
 
-  const socketConnection = useSelector((state) => state.socketConnection);
+  const { socketConnection } = getState();
 
   socketConnection.send({
     event: "updateItems",
@@ -217,8 +219,8 @@ export const onUpdateItems = (items) => {
 /* Sends socket message saying that item has been updated. Doesn't expect a response if
 successful. Used for updates that need to be immediately shown locally (e.g. moving an
 item in the editor) */
-export const onUpdatedItems = (dispatch, items) => {
-  const socketConnection = useSelector((state) => state.socketConnection);
+export const onUpdatedItems = items => async (dispatch, getState) => {
+  const { socketConnection } = getState();
 
   socketConnection.send({
     event: "updateItems",
@@ -227,6 +229,7 @@ export const onUpdatedItems = (dispatch, items) => {
       items: items,
     },
   });
+
   // Since no response message is expected, immediately dispatch update
   dispatch({
     type: RoomActions.itemsUpdated,
@@ -234,8 +237,8 @@ export const onUpdatedItems = (dispatch, items) => {
   });
 };
 
-export const onDeleteItem = (dispatch, item) => {
-  const socketConnection = useSelector((state) => state.socketConnection);
+export const onDeleteItem = item => async (dispatch, getState) => {
+  const { socketConnection } = getState();
 
   socketConnection.send({
     event: "deleteItem",
@@ -246,8 +249,8 @@ export const onDeleteItem = (dispatch, item) => {
   });
 };
 
-export const onDeleteRoom = (dispatch, id) => {
-  const socketConnection = useSelector((state) => state.socketConnection);
+export const onDeleteRoom = id => async (dispatch, getState) => {
+  const { socketConnection } = getState();
 
   socketConnection.send({
     event: "deleteRoom",
@@ -263,8 +266,8 @@ export const onDeleteRoom = (dispatch, id) => {
   });
 };
 
-export const onUpdateBounds = (dispatch, bounds) => {
-  const socketConnection = useSelector((state) => state.socketConnection);
+export const onUpdateBounds = bounds => async (dispatch, getState) => {
+  const { socketConnection } = getState();
 
   socketConnection.send({
     event: "updateLayout",
@@ -275,10 +278,10 @@ export const onUpdateBounds = (dispatch, bounds) => {
   });
 };
 
-export const onUpdateRoomName = (dispatch, id, roomName) => {
+export const onUpdateRoomName = (id, roomName) => async (dispatch, getState) => {
   if (roomName == null || roomName.length === 0) return;
 
-  const socketConnection = useSelector((state) => state.socketConnection);
+  const { socketConnection } = getState();
 
   socketConnection.send({
     event: "updateRoomName",
@@ -296,13 +299,13 @@ export const onUpdateRoomName = (dispatch, id, roomName) => {
   });
 };
 
-export const onItemSelected = (dispatch, id) => {
+export const onItemSelected = id => async (dispatch, getState) => {
   dispatch({
     type: RoomActions.itemSelected,
     payload: { id, sendToEditor: false },
   });
 };
 
-export const onClearEditorActionQueue = (dispatch) => {
+export const onClearEditorActionQueue = (dispatch, getState) => {
   dispatch({ type: RoomActions.clearEditorActionQueue });
 };
