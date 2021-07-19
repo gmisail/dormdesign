@@ -3,17 +3,8 @@ import "./RoomRoute.scss";
 import { BsBoxArrowUpRight, BsGear, BsPencil, BsPlus } from "react-icons/bs";
 import { Modal, modalTypes } from "../../components/modals/Modal";
 import React, { useCallback, useEffect } from "react";
-import { connect, useSelector } from "react-redux";
-import {
-  onAddItem,
-  onCloneRoom,
-  onConnectToRoom,
-  onDeleteItem,
-  onDeleteRoom,
-  onSetUserName,
-  onUpdateItems,
-  onUpdateRoomName,
-} from "../../context/RoomStore";
+import { addItem, cloneRoom, connectToRoom, deleteItem, setUserName, updateItems, updateRoomName } from "../../context/RoomStore";
+import { useDispatch, useSelector } from "react-redux";
 
 import ActiveUsersIndicator from "../../components/ActiveUsersIndicator/ActiveUsersIndicator";
 import DormItemList from "../../components/DormItemList/DormItemList";
@@ -23,16 +14,7 @@ import { Spinner } from "react-bootstrap";
 import useModal from "../../hooks/useModal";
 import { useParams } from "react-router-dom";
 
-const RoomRoute = ({
-  addItem,
-  cloneRoom,
-  connectToRoom,
-  deleteItem,
-  deleteRoom,
-  setUserName,
-  updateItems,
-  updateRoomName,
-}) => {
+export const RoomRoute = () => {
   const socketConnection = useSelector((state) => state.socketConnection);
   const roomName = useSelector((state) => state.roomName);
   const templateId = useSelector((state) => state.templateId);
@@ -45,11 +27,12 @@ const RoomRoute = ({
 
   const { id } = useParams();
   const [modalProps, toggleModal] = useModal();
-
+  const dispatch = useDispatch();
+  
   // Called when component is first mounted
   useEffect(() => {
-    connectToRoom(id);
-  }, [connectToRoom, id]);
+    dispatch(connectToRoom(id));
+  }, [connectToRoom, id, dispatch]);
 
   /* Presents choose name modal if userName is null */
   useEffect(() => {
@@ -57,7 +40,7 @@ const RoomRoute = ({
     if (userName === null && socketConnection !== null) {
       toggleModal(modalTypes.chooseName, {
         onSubmit: (newName) => {
-          setUserName(newName);
+          dispatch(setUserName(newName));
           toggleModal();
         },
       });
@@ -65,7 +48,7 @@ const RoomRoute = ({
       // if a username exists, update it on the server
       setUserName(userName);
     }
-  }, [loading, userName, setUserName, toggleModal, socketConnection]);
+  }, [loading, userName, setUserName, toggleModal, socketConnection, dispatch]);
 
   useEffect(() => {
     /* There's an error. Only display modal if still connected to room (since there's a different case for that handled below) */
@@ -85,11 +68,11 @@ const RoomRoute = ({
       toggleModal(modalTypes.add, {
         // Form passes item id and the updated properties/values. We can ignore the id since this a new item
         onSubmit: (_, properties) => {
-          addItem(properties);
+          dispatch(addItem(properties));
           toggleModal();
         },
       }),
-    [addItem, toggleModal]
+    [addItem, toggleModal, dispatch]
   );
 
   const onClickEditItemButton = useCallback(
@@ -98,45 +81,45 @@ const RoomRoute = ({
         editingItem: item,
         onSubmit: (id, updated) => {
           if (Object.keys(updated).length > 0) {
-            updateItems([{ id, updated }]);
+            dispatch(updateItems([{ id, updated }]));
           }
           toggleModal();
         },
       }),
-    [updateItems, toggleModal]
+    [updateItems, toggleModal, dispatch]
   );
 
-  const onClickDuplicateItemButton = useCallback((item) => addItem(item), [
-    addItem,
+  const onClickDuplicateItemButton = useCallback((item) => dispatch(addItem(item)), [
+    addItem, dispatch
   ]);
 
   const onClickClaimItemButton = useCallback(
     (item) =>
-      updateItems([
+      dispatch(updateItems([
         {
           id: item.id,
           updated: { claimedBy: item.claimedBy === userName ? null : userName },
         },
-      ]),
-    [updateItems, userName]
+      ])),
+    [updateItems, userName, dispatch]
   );
 
   const onClickSettingsButton = useCallback(
     () =>
       toggleModal(modalTypes.settings, {
         onClone: (target) => {
-          cloneRoom(id, target);
+          dispatch(cloneRoom(id, target));
         },
         userName: userName,
         onChangeUserName: (name) => {
-          setUserName(name);
+          dispatch(setUserName(name));
         },
         roomName: roomName,
         onChangeRoomName: (name) => {
-          updateRoomName(id, name);
+          dispatch(updateRoomName(id, name));
         },
         onDeleteRoom: () => {
-          deleteRoom(id);
+          dispatch(deleteRoom(id));
         },
       }),
     [
@@ -147,6 +130,7 @@ const RoomRoute = ({
       setUserName,
       roomName,
       updateRoomName,
+      dispatch
     ]
   );
 
@@ -155,26 +139,26 @@ const RoomRoute = ({
       toggleModal(modalTypes.updateRoomName, {
         name: roomName,
         onSubmit: (updatedRoomName) => {
-          // Only update if name actually changed
           if (updatedRoomName !== roomName) {
-            updateRoomName(id, updatedRoomName);
+            // Only update if name actually changed
+            dispatch(updateRoomName(id, updatedRoomName));
           }
           toggleModal();
         },
         onHide: () => toggleModal(),
       }),
-    [toggleModal, updateRoomName, roomName, id]
+    [toggleModal, updateRoomName, roomName, id, dispatch]
   );
 
   const onToggleItemEditorVisibility = useCallback(
     (item) =>
-      updateItems([
+      dispatch(updateItems([
         {
           id: item.id,
           updated: { visibleInEditor: !item.visibleInEditor },
         },
-      ]),
-    [updateItems]
+      ])),
+    [updateItems, dispatch]
   );
 
   /* 
@@ -267,18 +251,3 @@ const RoomRoute = ({
     </>
   );
 };
-
-const mapDispatchToProps = (dispatch) => {
-  return {
-    addItem: (properties) => onAddItem(dispatch, properties),
-    cloneRoom: (id, target) => onCloneRoom(dispatch, id, target),
-    connectToRoom: (id) => onConnectToRoom(dispatch, id),
-    deleteItem: (item) => onDeleteItem(dispatch, item),
-    deleteRoom: (id) => onDeleteRoom(dispatch, id),
-    setUserName: (username) => onSetUserName(dispatch, username),
-    updateItems: (items) => onUpdateItems(dispatch, items),
-    updateRoomName: (roomName) => onUpdateRoomName(dispatch, roomName),
-  };
-};
-
-export default connect(null, mapDispatchToProps)(RoomRoute);

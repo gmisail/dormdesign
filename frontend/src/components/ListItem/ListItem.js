@@ -12,10 +12,10 @@ import {
 } from "react-icons/bs";
 import { Modal, modalTypes } from "../../components/modals/Modal";
 import React, { useEffect, useRef, useState } from "react";
-import { connect, useDispatch, useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 import IconButton from "../IconButton/IconButton";
-import { onSetUserName } from "../../context/RoomStore";
+import { setUserName } from "../../context/RoomStore";
 import useModal from "../../hooks/useModal";
 import { usePopper } from "react-popper";
 
@@ -26,7 +26,6 @@ const ListItem = ({
   onDelete,
   onDuplicate,
   onToggleEditorVisibility,
-  setUserName,
   className,
 }) => {
   /*
@@ -37,6 +36,8 @@ const ListItem = ({
   */
   const userName = useSelector((state) => state.userName);
   const socketConnection = useSelector((state) => state.socketConnection);
+
+  const dispatch = useDispatch();
 
   const [modalProps, toggleModal] = useModal();
   const [showMenu, setShowMenu] = useState(false);
@@ -61,7 +62,7 @@ const ListItem = ({
     if (callback === onClaim && userName === null) {
       toggleModal(modalTypes.chooseName, {
         onSubmit: (newName) => {
-          setUserName(newName);
+          dispatch(setUserName(newName));
           toggleModal();
         },
       });
@@ -172,10 +173,4 @@ const ListItem = ({
   );
 };
 
-const mapDispatchToProps = (dispatch) => {
-  return {
-    setUserName: (name) => onSetUserName(dispatch, name),
-  };
-};
-
-export default connect(null, mapDispatchToProps)(ListItem);
+export default ListItem;

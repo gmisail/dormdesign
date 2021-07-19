@@ -3,11 +3,13 @@ import "./RoomEditor.scss";
 import { BiLockAlt, BiLockOpenAlt, BiMinus, BiPlus } from "react-icons/bi";
 import { BsBoundingBox, BsCheck, BsX } from "react-icons/bs";
 import React, { useEffect, useRef, useState } from "react";
-import { connect, useSelector } from "react-redux";
 import {
-  onClearEditorActionQueue,
-  onUpdateBounds,
+  clearEditorActionQueue,
+  itemSelected,
+  updateBounds,
+  updatedItems
 } from "../../context/RoomStore";
+import { useDispatch, useSelector } from "react-redux";
 
 import IconButton from "../IconButton/IconButton";
 import { MdFilterCenterFocus } from "react-icons/md";
@@ -17,30 +19,34 @@ import RoomEditorObject from "../../room-editor/RoomEditorObject";
 import SceneController from "../../room-editor/SceneController";
 import Vector2 from "../../room-editor/Vector2";
 
-const mapDispatchToProps = (dispatch) => {
-  return {
-    clearEditorActionQueue: () => onClearEditorActionQueue(dispatch),
-    updateBounds: (points) => onUpdateBounds(dispatch, points),
-  };
-};
-
-function RoomEditor({ clearEditorActionQueue }) {
+function RoomEditor() {
+  const dispatch = useDispatch();
+  
   const [lastSelectedItemID, setLastSelectedItemID] = useState(null);
   const [editingBounds, setEditingBounds] = useState(false);
   const [selectedPointX, setSelectedPointX] = useState("");
   const [selectedPointY, setSelectedPointY] = useState("");
 
-  const scene = useRef();
-  const room = useRef();
+  const scene = useRef(null);
+  const room = useRef(null);
   const zoomScale = useRef(1.3);
 
-  const mainCanvasRef = useRef();
+  const mainCanvasRef = useRef(null);
 
   const editorActionQueue = useSelector((state) => state.editorActionQueue);
   const selectedItemID = useSelector((state) => state.selectedItemID);
-  const updatedItems = useSelector((state) => state.updatedItems);
-  const itemSelected = useSelector((state) => state.itemSelected);
   const bounds = useSelector((state) => state.bounds);
+
+  /* Determine locked from lastSelectedItemID rather than current selectedItemID so that it doesn't 
+  switch during button fade animation */
+  const [ locked, setLocked ] = useState(lastSelectedItemID ? room.current?.roomItems.get(lastSelectedItemID)?.movementLocked : false);
+
+  // Determine whether or not a boundary point is currently selected
+  const [ boundaryPointSelected, setBoundaryPointSelected ] = useState(editingBounds && room.current?.bounds.selectedPointIndex !== null);
+  
+  const [ canDeleteSelectedPoint, setCanDeleteSelectedPoint ] = useState(room.current === undefined ? false : room.current?.bounds.pointsLength > 3);
+
+  const [ isLoading, setLoading ] = useState(true);
 
   const itemToEditorProperties = (props) => {
     return {
@@ -121,16 +127,19 @@ function RoomEditor({ clearEditorActionQueue }) {
       }
     }
     if (editorActionQueue.length > 0) {
-      clearEditorActionQueue();
+      dispatch(clearEditorActionQueue());
     }
   };
 
-  useEffect(() => {
-    scene.current = new SceneController(mainCanvasRef);
+  useEffect(() => {    
+    if(!mainCanvasRef.current) 
+      return;
+  
+    scene.current = new SceneController(mainCanvasRef.current);
     scene.current.backgroundColor = "#fff";
 
     room.current = new RoomEditorObject({
-      scene: scene,
+      scene: scene.current,
       backgroundColor: "#fff",
       onObjectsUpdated: itemsUpdatedInEditor,
       onObjectSelected: itemSelectedInEditor,
@@ -140,27 +149,27 @@ function RoomEditor({ clearEditorActionQueue }) {
       fontFamily: "Source Sans Pro",
     });
 
-    scene.current.addChild(room);
+    scene.current.addChild(room.current);
 
     // Handle any actions that have accumlated in editorActionQueue
     handleEditorQueue();
 
     zoomScale.current = 1.3;
-  });
+  }, [mainCanvasRef]);
 
   const itemsUpdatedInEditor = (items) => {
-    updatedItems(
+    dispatch(updatedItems(
       items.map(({ id, updated }) => {
         return {
           id,
           updated: editorToItemProperties(updated),
         };
       })
-    );
+    ));
   };
 
   const itemSelectedInEditor = (obj) => {
-    itemSelected(obj === null ? null : obj.id);
+    dispatch(itemSelected(obj === null ? null : obj.id));
     if (obj !== null) {
       setLastSelectedItemID(obj.id);
     }
@@ -170,12 +179,12 @@ function RoomEditor({ clearEditorActionQueue }) {
     if (!selectedItemID) return;
     const sceneObj = room.current.roomItems.get(selectedItemID);
     sceneObj.rotation += 90;
-    updatedItems([
+    dispatch(updatedItems([
       {
         id: selectedItemID,
         updated: { editorRotation: sceneObj.rotation },
       },
-    ]);
+    ]));
   };
 
   const lockSelectedItem = () => {
@@ -183,14 +192,14 @@ function RoomEditor({ clearEditorActionQueue }) {
 
     const sceneObj = room.current.roomItems.get(selectedItemID);
     sceneObj.movementLocked = !sceneObj.movementLocked;
-    updatedItems([
+    dispatch(updatedItems([
       {
         id: selectedItemID,
         updated: {
           editorLocked: sceneObj.movementLocked,
         },
       },
-    ]);
+    ]));
   };
 
   const onBoundaryPointSelected = (point) => {
@@ -246,7 +255,7 @@ function RoomEditor({ clearEditorActionQueue }) {
     } else {
       if (saveEdits) {
         // Save the edits made by updating the bounds
-        updateBounds(room.current.bounds.points);
+        dispatch(updateBounds(room.current.bounds.points));
       } else {
         // Don't save the edits, revert them to pre-edited state
         room.current.bounds.points = bounds;
@@ -259,18 +268,14 @@ function RoomEditor({ clearEditorActionQueue }) {
     setEditingBounds(editing);
   };
 
-  /* Determine locked from lastSelectedItemID rather than current selectedItemID so that it doesn't 
-    switch during button fade animation */
-  const locked = lastSelectedItemID
-    ? room.current.roomItems.get(lastSelectedItemID)?.movementLocked
-    : false;
+  useEffect(() => {
+    setLocked(lastSelectedItemID ? room.current?.roomItems.get(lastSelectedItemID)?.movementLocked : false);
+    setBoundaryPointSelected(editingBounds && room.current?.bounds.selectedPointIndex !== null);
+    setCanDeleteSelectedPoint(room.current === undefined ? false : room.current?.bounds.pointsLength > 3);
+    
+    setLoading(false);
 
-  // Determine whether or not a boundary point is currently selected
-  const boundaryPointSelected =
-    editingBounds && room.current.bounds.selectedPointIndex !== null;
-
-  const canDeleteSelectedPoint =
-    room.current === undefined ? false : room.current.bounds.pointsLength > 3;
+  }, [mainCanvasRef]);
 
   return (
     <div className="room-editor">
@@ -408,9 +413,9 @@ function RoomEditor({ clearEditorActionQueue }) {
         </div>
       </div>
 
-      <canvas ref={mainCanvasRef} className="room-canvas"></canvas>
+      <canvas ref={canvas => { mainCanvasRef.current = canvas; }} className="room-canvas"></canvas>
     </div>
   );
 }
 
-export default connect(null, mapDispatchToProps)(RoomEditor);
+export default RoomEditor;

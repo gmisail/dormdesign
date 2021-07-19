@@ -1,8 +1,6 @@
 import { Provider, useSelector } from "react-redux";
 import React, { useCallback } from "react";
-import { createStore, applyMiddleware } from "redux";
-import thunk from "redux-thunk";
-import { composeWithDevTools } from "redux-devtools-extension";
+import { applyMiddleware, createStore } from "redux";
 
 import DataRequests from "../controllers/DataRequests";
 import DormItem from "../models/DormItem";
@@ -10,7 +8,9 @@ import RoomActions from "./RoomActions";
 import RoomReducer from "./RoomReducer";
 import SocketConnection from "../controllers/SocketConnection";
 import StorageController from "../controllers/StorageController";
+import { composeWithDevTools } from "redux-devtools-extension";
 import initialState from "./initialState";
+import thunk from "redux-thunk";
 
 /* Handles socket error message cases. Outputs a specific error message to console and 
   returns a string with a more presentable message (if the error was recognized) 
@@ -188,7 +188,7 @@ export const cloneRoom = (id, target) => async (dispatch, getState) => {
   });
 };
 
-export const onAddItem = item => async (dispatch, getState) => {
+export const addItem = item => async (dispatch, getState) => {
   const { socketConnection } = getState();
 
   socketConnection.send({
@@ -202,7 +202,7 @@ export const onAddItem = item => async (dispatch, getState) => {
 /* Sends socket message expecting a response (containing the same data as sent) if 
 successful. Used for updates that don't need to be immediate locally (e.g. Changing the 
 name of an item) */
-export const onUpdateItems = items => async (dispatch, getState) => {
+export const updateItems = items => async (dispatch, getState) => {
   if (items.length === 0) return;
 
   const { socketConnection } = getState();
@@ -219,7 +219,7 @@ export const onUpdateItems = items => async (dispatch, getState) => {
 /* Sends socket message saying that item has been updated. Doesn't expect a response if
 successful. Used for updates that need to be immediately shown locally (e.g. moving an
 item in the editor) */
-export const onUpdatedItems = items => async (dispatch, getState) => {
+export const updatedItems = items => async (dispatch, getState) => {
   const { socketConnection } = getState();
 
   socketConnection.send({
@@ -237,7 +237,7 @@ export const onUpdatedItems = items => async (dispatch, getState) => {
   });
 };
 
-export const onDeleteItem = item => async (dispatch, getState) => {
+export const deleteItem = item => async (dispatch, getState) => {
   const { socketConnection } = getState();
 
   socketConnection.send({
@@ -249,7 +249,7 @@ export const onDeleteItem = item => async (dispatch, getState) => {
   });
 };
 
-export const onDeleteRoom = id => async (dispatch, getState) => {
+export const deleteRoom = id => async (dispatch, getState) => {
   const { socketConnection } = getState();
 
   socketConnection.send({
@@ -266,7 +266,7 @@ export const onDeleteRoom = id => async (dispatch, getState) => {
   });
 };
 
-export const onUpdateBounds = bounds => async (dispatch, getState) => {
+export const updateBounds = bounds => async (dispatch, getState) => {
   const { socketConnection } = getState();
 
   socketConnection.send({
@@ -278,7 +278,7 @@ export const onUpdateBounds = bounds => async (dispatch, getState) => {
   });
 };
 
-export const onUpdateRoomName = (id, roomName) => async (dispatch, getState) => {
+export const updateRoomName = (id, roomName) => async (dispatch, getState) => {
   if (roomName == null || roomName.length === 0) return;
 
   const { socketConnection } = getState();
@@ -299,13 +299,13 @@ export const onUpdateRoomName = (id, roomName) => async (dispatch, getState) => 
   });
 };
 
-export const onItemSelected = id => async (dispatch, getState) => {
+export const itemSelected = id => async (dispatch, getState) => {
   dispatch({
     type: RoomActions.itemSelected,
     payload: { id, sendToEditor: false },
   });
 };
 
-export const onClearEditorActionQueue = (dispatch, getState) => {
+export const clearEditorActionQueue = () => async (dispatch, getState) => {
   dispatch({ type: RoomActions.clearEditorActionQueue });
 };

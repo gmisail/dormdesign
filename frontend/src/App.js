@@ -14,7 +14,7 @@ import { IconContext } from "react-icons";
 import NavigationBar from "./components/navbar/NavigationBar";
 import React from "react";
 import { RoomProvider } from "./context/RoomStore";
-import RoomRoute from "./routes/RoomRoute/RoomRoute";
+import { RoomRoute } from "./routes/RoomRoute/RoomRoute";
 import SceneTestingRoute from "./routes/SceneTestingRoute/SceneTestingRoute";
 
 const App = () => {
