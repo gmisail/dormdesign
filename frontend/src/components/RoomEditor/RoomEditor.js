@@ -7,7 +7,7 @@ import {
   clearEditorActionQueue,
   itemSelected,
   updateBounds,
-  updatedItems
+  updatedItems,
 } from "../../context/RoomStore";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -21,7 +21,7 @@ import Vector2 from "../../room-editor/Vector2";
 
 function RoomEditor() {
   const dispatch = useDispatch();
-  
+
   const [lastSelectedItemID, setLastSelectedItemID] = useState(null);
   const [editingBounds, setEditingBounds] = useState(false);
   const [selectedPointX, setSelectedPointX] = useState("");
@@ -39,14 +39,22 @@ function RoomEditor() {
 
   /* Determine locked from lastSelectedItemID rather than current selectedItemID so that it doesn't 
   switch during button fade animation */
-  const [ locked, setLocked ] = useState(lastSelectedItemID ? room.current?.roomItems.get(lastSelectedItemID)?.movementLocked : false);
+  const [locked, setLocked] = useState(
+    lastSelectedItemID
+      ? room.current?.roomItems.get(lastSelectedItemID)?.movementLocked
+      : false
+  );
 
   // Determine whether or not a boundary point is currently selected
-  const [ boundaryPointSelected, setBoundaryPointSelected ] = useState(editingBounds && room.current?.bounds.selectedPointIndex !== null);
-  
-  const [ canDeleteSelectedPoint, setCanDeleteSelectedPoint ] = useState(room.current === undefined ? false : room.current?.bounds.pointsLength > 3);
+  const [boundaryPointSelected, setBoundaryPointSelected] = useState(
+    editingBounds && room.current?.bounds.selectedPointIndex !== null
+  );
 
-  const [ isLoading, setLoading ] = useState(true);
+  const [canDeleteSelectedPoint, setCanDeleteSelectedPoint] = useState(
+    room.current === undefined ? false : room.current?.bounds.pointsLength > 3
+  );
+
+  const [isLoading, setLoading] = useState(true);
 
   const itemToEditorProperties = (props) => {
     return {
@@ -126,15 +134,15 @@ function RoomEditor() {
           continue;
       }
     }
+
     if (editorActionQueue.length > 0) {
       dispatch(clearEditorActionQueue());
     }
   };
 
-  useEffect(() => {    
-    if(!mainCanvasRef.current) 
-      return;
-  
+  useEffect(() => {
+    if (!mainCanvasRef.current) return;
+
     scene.current = new SceneController(mainCanvasRef.current);
     scene.current.backgroundColor = "#fff";
 
@@ -154,24 +162,43 @@ function RoomEditor() {
     // Handle any actions that have accumlated in editorActionQueue
     handleEditorQueue();
 
+    setLocked(
+      lastSelectedItemID
+        ? room.current?.roomItems.get(lastSelectedItemID)?.movementLocked
+        : false
+    );
+
+    setBoundaryPointSelected(
+      editingBounds && room.current?.bounds.selectedPointIndex !== null
+    );
+
+    setCanDeleteSelectedPoint(
+      room.current === undefined ? false : room.current?.bounds.pointsLength > 3
+    );
+
+    setLoading(false);
+
     zoomScale.current = 1.3;
   }, [mainCanvasRef]);
 
   const itemsUpdatedInEditor = (items) => {
-    dispatch(updatedItems(
-      items.map(({ id, updated }) => {
-        return {
-          id,
-          updated: editorToItemProperties(updated),
-        };
-      })
-    ));
+    dispatch(
+      updatedItems(
+        items.map(({ id, updated }) => {
+          return {
+            id,
+            updated: editorToItemProperties(updated),
+          };
+        })
+      )
+    );
   };
 
   const itemSelectedInEditor = (obj) => {
     dispatch(itemSelected(obj === null ? null : obj.id));
     if (obj !== null) {
       setLastSelectedItemID(obj.id);
+      setLocked(obj.movementLocked);
     }
   };
 
@@ -179,27 +206,35 @@ function RoomEditor() {
     if (!selectedItemID) return;
     const sceneObj = room.current.roomItems.get(selectedItemID);
     sceneObj.rotation += 90;
-    dispatch(updatedItems([
-      {
-        id: selectedItemID,
-        updated: { editorRotation: sceneObj.rotation },
-      },
-    ]));
+    dispatch(
+      updatedItems([
+        {
+          id: selectedItemID,
+          updated: { editorRotation: sceneObj.rotation },
+        },
+      ])
+    );
   };
 
   const lockSelectedItem = () => {
-    if (!selectedItemID) return;
+    if (!selectedItemID) 
+      return;
 
-    const sceneObj = room.current.roomItems.get(selectedItemID);
+    const sceneObj = room.current?.roomItems.get(selectedItemID);
     sceneObj.movementLocked = !sceneObj.movementLocked;
-    dispatch(updatedItems([
-      {
-        id: selectedItemID,
-        updated: {
-          editorLocked: sceneObj.movementLocked,
+
+    setLocked(sceneObj.movementLocked);
+
+    dispatch(
+      updatedItems([
+        {
+          id: selectedItemID,
+          updated: {
+            editorLocked: sceneObj.movementLocked,
+          },
         },
-      },
-    ]));
+      ])
+    );
   };
 
   const onBoundaryPointSelected = (point) => {
@@ -268,14 +303,7 @@ function RoomEditor() {
     setEditingBounds(editing);
   };
 
-  useEffect(() => {
-    setLocked(lastSelectedItemID ? room.current?.roomItems.get(lastSelectedItemID)?.movementLocked : false);
-    setBoundaryPointSelected(editingBounds && room.current?.bounds.selectedPointIndex !== null);
-    setCanDeleteSelectedPoint(room.current === undefined ? false : room.current?.bounds.pointsLength > 3);
-    
-    setLoading(false);
-
-  }, [mainCanvasRef]);
+  useEffect(handleEditorQueue, [editorActionQueue]);
 
   return (
     <div className="room-editor">
@@ -374,7 +402,7 @@ function RoomEditor() {
               if (room.current !== undefined) {
                 // Scale about the center of the canvas
                 room.current.scaleAbout(
-                  new Vector2(zoomScale, zoomScale),
+                  new Vector2(zoomScale.current, zoomScale.current),
                   new Vector2(
                     scene.current.canvas.width / 2,
                     scene.current.canvas.height / 2
@@ -399,7 +427,7 @@ function RoomEditor() {
               if (room.current !== undefined) {
                 // Scale about the center of the canvas
                 room.current.scaleAbout(
-                  new Vector2(1 / zoomScale, 1 / zoomScale),
+                  new Vector2(1 / zoomScale.current, 1 / zoomScale.current),
                   new Vector2(
                     scene.current.canvas.width / 2,
                     scene.current.canvas.height / 2
@@ -413,7 +441,12 @@ function RoomEditor() {
         </div>
       </div>
 
-      <canvas ref={canvas => { mainCanvasRef.current = canvas; }} className="room-canvas"></canvas>
+      <canvas
+        ref={(canvas) => {
+          mainCanvasRef.current = canvas;
+        }}
+        className="room-canvas"
+      ></canvas>
     </div>
   );
 }

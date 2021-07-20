@@ -3,7 +3,15 @@ import "./RoomRoute.scss";
 import { BsBoxArrowUpRight, BsGear, BsPencil, BsPlus } from "react-icons/bs";
 import { Modal, modalTypes } from "../../components/modals/Modal";
 import React, { useCallback, useEffect } from "react";
-import { addItem, cloneRoom, connectToRoom, deleteItem, setUserName, updateItems, updateRoomName } from "../../context/RoomStore";
+import {
+  addItem,
+  cloneRoom,
+  connectToRoom,
+  deleteItem,
+  setUserName,
+  updateItems,
+  updateRoomName,
+} from "../../context/RoomStore";
 import { useDispatch, useSelector } from "react-redux";
 
 import ActiveUsersIndicator from "../../components/ActiveUsersIndicator/ActiveUsersIndicator";
@@ -18,17 +26,15 @@ export const RoomRoute = () => {
   const socketConnection = useSelector((state) => state.socketConnection);
   const roomName = useSelector((state) => state.roomName);
   const templateId = useSelector((state) => state.templateId);
-  const items = useSelector((state) => state.items);
   const loading = useSelector((state) => state.loading);
   const error = useSelector((state) => state.error);
   const userName = useSelector((state) => state.userName);
   const userNames = useSelector((state) => state.userNames);
-  const selectedItemID = useSelector((state) => state.selectedItemID);
 
   const { id } = useParams();
   const [modalProps, toggleModal] = useModal();
   const dispatch = useDispatch();
-  
+
   // Called when component is first mounted
   useEffect(() => {
     dispatch(connectToRoom(id));
@@ -89,18 +95,23 @@ export const RoomRoute = () => {
     [updateItems, toggleModal, dispatch]
   );
 
-  const onClickDuplicateItemButton = useCallback((item) => dispatch(addItem(item)), [
-    addItem, dispatch
-  ]);
+  const onClickDuplicateItemButton = useCallback(
+    (item) => dispatch(addItem(item)),
+    [addItem, dispatch]
+  );
 
   const onClickClaimItemButton = useCallback(
     (item) =>
-      dispatch(updateItems([
-        {
-          id: item.id,
-          updated: { claimedBy: item.claimedBy === userName ? null : userName },
-        },
-      ])),
+      dispatch(
+        updateItems([
+          {
+            id: item.id,
+            updated: {
+              claimedBy: item.claimedBy === userName ? null : userName,
+            },
+          },
+        ])
+      ),
     [updateItems, userName, dispatch]
   );
 
@@ -130,7 +141,7 @@ export const RoomRoute = () => {
       setUserName,
       roomName,
       updateRoomName,
-      dispatch
+      dispatch,
     ]
   );
 
@@ -152,12 +163,14 @@ export const RoomRoute = () => {
 
   const onToggleItemEditorVisibility = useCallback(
     (item) =>
-      dispatch(updateItems([
-        {
-          id: item.id,
-          updated: { visibleInEditor: !item.visibleInEditor },
-        },
-      ])),
+      dispatch(
+        updateItems([
+          {
+            id: item.id,
+            updated: { visibleInEditor: !item.visibleInEditor },
+          },
+        ])
+      ),
     [updateItems, dispatch]
   );
 
@@ -171,8 +184,8 @@ export const RoomRoute = () => {
     happened
   */
   const lostConnection = error !== null && socketConnection === null;
-  const dataFetchError =
-    error !== null && socketConnection === null && items === null;
+  const dataFetchError = lostConnection; //lostConnection && items === null;
+
   return (
     <>
       {loading ? (
@@ -236,8 +249,6 @@ export const RoomRoute = () => {
               <span className="add-item-button-text">Add Item</span>
             </button>
             <DormItemList
-              items={items}
-              selectedItemID={selectedItemID}
               onEditItem={onClickEditItemButton}
               onDuplicateItem={onClickDuplicateItemButton}
               onClaimItem={onClickClaimItemButton}

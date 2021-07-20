@@ -159,7 +159,7 @@ export const connectToRoom = (id) => async (dispatch, getState) => {
   }
 };
 
-export const setUserName = userName => async (dispatch, getState) => {
+export const setUserName = (userName) => async (dispatch, getState) => {
   const { socketConnection } = getState();
 
   if (userName.length === 0) userName = null;
@@ -188,7 +188,7 @@ export const cloneRoom = (id, target) => async (dispatch, getState) => {
   });
 };
 
-export const addItem = item => async (dispatch, getState) => {
+export const addItem = (item) => async (dispatch, getState) => {
   const { socketConnection } = getState();
 
   socketConnection.send({
@@ -198,11 +198,10 @@ export const addItem = item => async (dispatch, getState) => {
   });
 };
 
-
 /* Sends socket message expecting a response (containing the same data as sent) if 
 successful. Used for updates that don't need to be immediate locally (e.g. Changing the 
 name of an item) */
-export const updateItems = items => async (dispatch, getState) => {
+export const updateItems = (items) => async (dispatch, getState) => {
   if (items.length === 0) return;
 
   const { socketConnection } = getState();
@@ -219,7 +218,7 @@ export const updateItems = items => async (dispatch, getState) => {
 /* Sends socket message saying that item has been updated. Doesn't expect a response if
 successful. Used for updates that need to be immediately shown locally (e.g. moving an
 item in the editor) */
-export const updatedItems = items => async (dispatch, getState) => {
+export const updatedItems = (items) => async (dispatch, getState) => {
   const { socketConnection } = getState();
 
   socketConnection.send({
@@ -237,7 +236,7 @@ export const updatedItems = items => async (dispatch, getState) => {
   });
 };
 
-export const deleteItem = item => async (dispatch, getState) => {
+export const deleteItem = (item) => async (dispatch, getState) => {
   const { socketConnection } = getState();
 
   socketConnection.send({
@@ -249,7 +248,7 @@ export const deleteItem = item => async (dispatch, getState) => {
   });
 };
 
-export const deleteRoom = id => async (dispatch, getState) => {
+export const deleteRoom = (id) => async (dispatch, getState) => {
   const { socketConnection } = getState();
 
   socketConnection.send({
@@ -266,7 +265,7 @@ export const deleteRoom = id => async (dispatch, getState) => {
   });
 };
 
-export const updateBounds = bounds => async (dispatch, getState) => {
+export const updateBounds = (bounds) => async (dispatch, getState) => {
   const { socketConnection } = getState();
 
   socketConnection.send({
@@ -299,7 +298,7 @@ export const updateRoomName = (id, roomName) => async (dispatch, getState) => {
   });
 };
 
-export const itemSelected = id => async (dispatch, getState) => {
+export const itemSelected = (id) => async (dispatch, getState) => {
   dispatch({
     type: RoomActions.itemSelected,
     payload: { id, sendToEditor: false },
