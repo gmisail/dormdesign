@@ -29,7 +29,6 @@ export const RoomRoute = () => {
   const loading = useSelector((state) => state.loading);
   const error = useSelector((state) => state.error);
   const userName = useSelector((state) => state.userName);
-  const userNames = useSelector((state) => state.userNames);
 
   const { id } = useParams();
   const [modalProps, toggleModal] = useModal();
@@ -52,7 +51,7 @@ export const RoomRoute = () => {
       });
     } else if (userName !== null && socketConnection !== null) {
       // if a username exists, update it on the server
-      setUserName(userName);
+      dispatch(setUserName(userName));
     }
   }, [loading, userName, setUserName, toggleModal, socketConnection, dispatch]);
 
@@ -95,10 +94,10 @@ export const RoomRoute = () => {
     [updateItems, toggleModal, dispatch]
   );
 
-  const onClickDuplicateItemButton = useCallback(
-    (item) => dispatch(addItem(item)),
-    [addItem, dispatch]
-  );
+  const onClickDuplicateItemButton = useCallback((item) => dispatch(addItem(item)), [
+    addItem,
+    dispatch,
+  ]);
 
   const onClickClaimItemButton = useCallback(
     (item) =>
@@ -133,16 +132,7 @@ export const RoomRoute = () => {
           dispatch(deleteRoom(id));
         },
       }),
-    [
-      toggleModal,
-      cloneRoom,
-      id,
-      userName,
-      setUserName,
-      roomName,
-      updateRoomName,
-      dispatch,
-    ]
+    [toggleModal, cloneRoom, id, userName, setUserName, roomName, updateRoomName, dispatch]
   );
 
   const onClickRoomName = useCallback(
@@ -195,10 +185,7 @@ export const RoomRoute = () => {
           </Spinner>
         </div>
       ) : lostConnection || dataFetchError ? (
-        <p
-          className="text-center mt-5"
-          style={{ fontSize: 20, fontWeight: 500 }}
-        >
+        <p className="text-center mt-5" style={{ fontSize: 20, fontWeight: 500 }}>
           {dataFetchError
             ? "Error fetching room data. Make sure the room ID is valid."
             : "Lost connection to room. Please refresh your browser."}
@@ -214,7 +201,7 @@ export const RoomRoute = () => {
             </div>
 
             <div className="room-header-buttons">
-              <ActiveUsersIndicator usernames={userNames} maxUsernames={3} />
+              <ActiveUsersIndicator maxUsernames={3} />
               <IconButton
                 onClick={() => {
                   toggleModal(modalTypes.share, {
@@ -226,10 +213,7 @@ export const RoomRoute = () => {
               >
                 <BsBoxArrowUpRight />
               </IconButton>
-              <IconButton
-                onClick={onClickSettingsButton}
-                style={{ fontSize: "0.97em" }}
-              >
+              <IconButton onClick={onClickSettingsButton} style={{ fontSize: "0.97em" }}>
                 <BsGear />
               </IconButton>
             </div>

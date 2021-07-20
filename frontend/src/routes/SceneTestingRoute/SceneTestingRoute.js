@@ -28,14 +28,8 @@ class HomeRoute extends Component {
       opacity: 0.4,
       origin: new Vector2(0.5, 0.5),
       scale: new Vector2(2, 2),
-      size: new Vector2(
-        this.scene.canvas.width / 10,
-        this.scene.canvas.height / 5
-      ),
-      position: new Vector2(
-        this.scene.canvas.width / 2,
-        this.scene.canvas.height / 2
-      ),
+      size: new Vector2(this.scene.canvas.width / 10, this.scene.canvas.height / 5),
+      position: new Vector2(this.scene.canvas.width / 2, this.scene.canvas.height / 2),
       rotation: 30,
       debugDrawBoundingBox: true,
       debugDrawLocalCoordinates: true,
@@ -51,10 +45,7 @@ class HomeRoute extends Component {
       opacity: 0.4,
       origin: new Vector2(0.5, 0.5),
       scale: new Vector2(0.5, 0.5),
-      size: new Vector2(
-        this.scene.canvas.width / 20,
-        this.scene.canvas.height / 10
-      ),
+      size: new Vector2(this.scene.canvas.width / 20, this.scene.canvas.height / 10),
       position: new Vector2(200, 50),
       rotation: 30,
       debugDrawBoundingBox: true,

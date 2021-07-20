@@ -90,9 +90,7 @@ class DataRequests {
       throw new Error("Can't clone room; either ID or target ID is undefined.");
     }
 
-    const response = await fetch(
-      "/api/room/clone?id=" + id + "&target_id=" + target
-    );
+    const response = await fetch("/api/room/clone?id=" + id + "&target_id=" + target);
     const data = response.json();
 
     if (!data.message) {

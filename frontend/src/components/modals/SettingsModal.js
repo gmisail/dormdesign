@@ -20,8 +20,8 @@ const SettingsModal = (props) => {
         <h5>User Settings</h5>
         <b>My Name</b>
         <p className="mb-3">
-          Choose a name so that other people in the room know who you are. This
-          data will only be stored locally in your browser.
+          Choose a name so that other people in the room know who you are. This data will only be
+          stored locally in your browser.
         </p>
         <SingleInputForm
           initialValue={props.userName}
@@ -34,21 +34,16 @@ const SettingsModal = (props) => {
 
         <h5>Room Settings</h5>
         <b>Room Name</b>
-        <p>
-          The room name can also be changed by clicking on it in the editor.
-        </p>
-        <RoomNameForm
-          roomName={props.roomName}
-          onChangeRoomName={props.onChangeRoomName}
-        />
+        <p>The room name can also be changed by clicking on it in the editor.</p>
+        <RoomNameForm roomName={props.roomName} onChangeRoomName={props.onChangeRoomName} />
 
         <br />
 
         <b>Clone Room</b>
         <p>
-          Template cloning allows you to copy the layout, furniture, and
-          properties from another room into your room. Note that once you clone
-          a room, changes only apply to your copy, not the original.
+          Template cloning allows you to copy the layout, furniture, and properties from another
+          room into your room. Note that once you clone a room, changes only apply to your copy, not
+          the original.
           <strong> This is not reversible.</strong>
         </p>
         <SingleInputForm

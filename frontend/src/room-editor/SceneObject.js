@@ -41,8 +41,7 @@ class SceneObject {
     // Draws local coordinate system
     this.debugDrawLocalCoordinates = debugDrawLocalCoordinates ?? false;
     // Draws point conversion tests (all the points in the same location means success)
-    this.debugDrawCoordinateConversionTest =
-      debugDrawCoordinateConversionTest ?? false;
+    this.debugDrawCoordinateConversionTest = debugDrawCoordinateConversionTest ?? false;
 
     this._updateTransform();
   }
@@ -60,9 +59,7 @@ class SceneObject {
   _calculateTransform() {
     let matrix;
     if (this.parent) {
-      matrix = this.parent._transformMatrix.multiply(
-        this._localTransformMatrix
-      );
+      matrix = this.parent._transformMatrix.multiply(this._localTransformMatrix);
     } else {
       // If no parent, just return copy of local matrix
       matrix = new DOMMatrixReadOnly(this._localTransformMatrix);
@@ -166,10 +163,7 @@ class SceneObject {
     // Use local transform matrix
     let matrix = this._localTransformMatrix;
     // Offset the origin to line up with the drawn matrix;
-    matrix = matrix.translate(
-      -this._origin.x * this._size.x,
-      -this._origin.y * this._size.y
-    );
+    matrix = matrix.translate(-this._origin.x * this._size.x, -this._origin.y * this._size.y);
 
     // Multiply the 4 corners of the rect by the matrix
     const c1 = new DOMPoint(0, 0).matrixTransform(matrix);
@@ -177,14 +171,8 @@ class SceneObject {
     const c3 = new DOMPoint(this._size.x, this._size.y).matrixTransform(matrix);
     const c4 = new DOMPoint(0, this._size.y).matrixTransform(matrix);
     return {
-      p1: new Vector2(
-        Math.min(c1.x, c2.x, c3.x, c4.x),
-        Math.min(c1.y, c2.y, c3.y, c4.y)
-      ),
-      p2: new Vector2(
-        Math.max(c1.x, c2.x, c3.x, c4.x),
-        Math.max(c1.y, c2.y, c3.y, c4.y)
-      ),
+      p1: new Vector2(Math.min(c1.x, c2.x, c3.x, c4.x), Math.min(c1.y, c2.y, c3.y, c4.y)),
+      p2: new Vector2(Math.max(c1.x, c2.x, c3.x, c4.x), Math.max(c1.y, c2.y, c3.y, c4.y)),
     };
   }
 
@@ -205,10 +193,7 @@ class SceneObject {
     // Use global transform matrix
     let matrix = this._transformMatrix;
     // Offset the origin to line up with the drawn matrix;
-    matrix = matrix.translate(
-      -this._origin.x * this._size.x,
-      -this._origin.y * this._size.y
-    );
+    matrix = matrix.translate(-this._origin.x * this._size.x, -this._origin.y * this._size.y);
 
     // Multiply the 4 corners of the obj by the matrix
     const c1 = new DOMPoint(0, 0).matrixTransform(matrix);
@@ -216,14 +201,8 @@ class SceneObject {
     const c3 = new DOMPoint(this._size.x, this._size.y).matrixTransform(matrix);
     const c4 = new DOMPoint(0, this._size.y).matrixTransform(matrix);
     return {
-      p1: new Vector2(
-        Math.min(c1.x, c2.x, c3.x, c4.x),
-        Math.min(c1.y, c2.y, c3.y, c4.y)
-      ),
-      p2: new Vector2(
-        Math.max(c1.x, c2.x, c3.x, c4.x),
-        Math.max(c1.y, c2.y, c3.y, c4.y)
-      ),
+      p1: new Vector2(Math.min(c1.x, c2.x, c3.x, c4.x), Math.min(c1.y, c2.y, c3.y, c4.y)),
+      p2: new Vector2(Math.max(c1.x, c2.x, c3.x, c4.x), Math.max(c1.y, c2.y, c3.y, c4.y)),
     };
   }
 
@@ -337,10 +316,7 @@ class SceneObject {
     /* Offset the origin for drawing 
     (we don't apply this to the original transformMatrix so that the local coordinate system uses the correct origin)
     */
-    ctx.translate(
-      -this._origin.x * this._size.x,
-      -this._origin.y * this._size.y
-    );
+    ctx.translate(-this._origin.x * this._size.x, -this._origin.y * this._size.y);
 
     this.draw(ctx);
     // Restore context state to what it was pre-draw

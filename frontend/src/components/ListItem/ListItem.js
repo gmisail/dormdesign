@@ -43,19 +43,15 @@ const ListItem = ({
   const [showMenu, setShowMenu] = useState(false);
   const menuButtonRef = useRef(null);
   const menuRef = useRef(null);
-  const { styles, attributes } = usePopper(
-    menuButtonRef.current,
-    menuRef.current,
-    {
-      placement: "left-start",
-      modifiers: [
-        {
-          name: "flip",
-          enabled: true,
-        },
-      ],
-    }
-  );
+  const { styles, attributes } = usePopper(menuButtonRef.current, menuRef.current, {
+    placement: "left-start",
+    modifiers: [
+      {
+        name: "flip",
+        enabled: true,
+      },
+    ],
+  });
 
   // Called when a button in menu is clicked. Closes the menu and calls passed callback
   const menuOptionClicked = (callback) => {
@@ -98,16 +94,12 @@ const ListItem = ({
       <div className="list-item-content">
         <span>
           <span className="item-name">{item.name}</span>
-          <span className="item-quantity">
-            {item.quantity > 1 ? ` (${item.quantity})` : null}
-          </span>
+          <span className="item-quantity">{item.quantity > 1 ? ` (${item.quantity})` : null}</span>
         </span>
       </div>
 
       <div className="list-item-content">
-        {item.claimedBy ? (
-          <i className="mr-3">Claimed by {item.claimedBy}</i>
-        ) : null}
+        {item.claimedBy ? <i className="mr-3">Claimed by {item.claimedBy}</i> : null}
         <IconButton
           ref={menuButtonRef}
           className="item-menu-button"
@@ -158,10 +150,7 @@ const ListItem = ({
               in Editor
             </li>
 
-            <li
-              className="color-danger"
-              onClick={() => menuOptionClicked(onDelete)}
-            >
+            <li className="color-danger" onClick={() => menuOptionClicked(onDelete)}>
               <BsX />
               Delete
             </li>

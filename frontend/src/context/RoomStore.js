@@ -18,9 +18,7 @@ import thunk from "redux-thunk";
 const handleSocketErrorEvent = (data) => {
   const action = data.action;
   if (action === undefined) {
-    console.error(
-      "Received 'actionFailed' event with missing 'action' field in data"
-    );
+    console.error("Received 'actionFailed' event with missing 'action' field in data");
     return null;
   }
   switch (action) {
@@ -49,7 +47,7 @@ const handleSocketErrorEvent = (data) => {
 };
 
 export const RoomProvider = ({ children }) => {
-  const store = createStore(RoomReducer, initialState, applyMiddleware(thunk));
+  const store = createStore(RoomReducer, initialState, composeWithDevTools(applyMiddleware(thunk)));
 
   return <Provider store={store}>{children}</Provider>;
 };

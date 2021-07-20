@@ -8,10 +8,7 @@ export default function ConfirmationButton(props) {
   return (
     <div className="d-flex flex-row flex-nowrap align-items-center">
       {showConfirm ? (
-        <button
-          className="custom-btn custom-btn-danger mr-2"
-          onClick={onConfirm}
-        >
+        <button className="custom-btn custom-btn-danger mr-2" onClick={onConfirm}>
           Confirm
         </button>
       ) : null}

@@ -37,13 +37,8 @@ function RoomEditor() {
   const selectedItemID = useSelector((state) => state.selectedItemID);
   const bounds = useSelector((state) => state.bounds);
 
-  /* Determine locked from lastSelectedItemID rather than current selectedItemID so that it doesn't 
-  switch during button fade animation */
-  const [locked, setLocked] = useState(
-    lastSelectedItemID
-      ? room.current?.roomItems.get(lastSelectedItemID)?.movementLocked
-      : false
-  );
+  // On page load, no items can be selected by default. Thus, no item can be locked.
+  const [locked, setLocked] = useState(false);
 
   // Determine whether or not a boundary point is currently selected
   const [boundaryPointSelected, setBoundaryPointSelected] = useState(
@@ -55,90 +50,6 @@ function RoomEditor() {
   );
 
   const [isLoading, setLoading] = useState(true);
-
-  const itemToEditorProperties = (props) => {
-    return {
-      id: props.id,
-      position: props.editorPosition
-        ? { x: props.editorPosition.x, y: props.editorPosition.y }
-        : undefined,
-      name: props.name,
-      width: props.dimensions?.width,
-      height: props.dimensions?.length,
-      rotation: props.editorRotation,
-      movementLocked: props.editorLocked,
-      zIndex: props.editorZIndex,
-      visible: props.visibleInEditor,
-    };
-  };
-
-  // Converts (relevant) editor properties to properties expected by DormItem
-  const editorToItemProperties = (props) => {
-    return {
-      editorPosition: props.position
-        ? { x: props.position.x, y: props.position.y }
-        : undefined,
-      editorRotation: props.rotation,
-      editorLocked: props.movementLocked,
-      editorZIndex: props.zIndex,
-    };
-  };
-
-  const handleEditorQueue = () => {
-    for (let i = 0; i < editorActionQueue.length; i++) {
-      const action = editorActionQueue[i];
-      /* 
-        NOTE:
-
-        Errors here in development mode (specifically ones that show up as 
-        warnings in console) are often caused by React repeating state updates 
-        (causing duplicate messages to be added to editorActionQueue).
-
-        There might be a way to avoid duplicate events in the queue (maybe some sort of ID system?) but for now its fine.
-
-        https://reactjs.org/docs/strict-mode.html#detecting-unexpected-side-effects
-      */
-      switch (action.type) {
-        case RoomActions.connectedToRoom:
-          for (let i = 0; i < action.payload.items.length; i++) {
-            const translatedItem = itemToEditorProperties(
-              action.payload.items[i]
-            );
-            room.current.addItemToRoom(translatedItem);
-          }
-          room.current.bounds.points = action.payload.bounds;
-          room.current.centerView();
-          break;
-        case RoomActions.itemsUpdated:
-          for (let i = 0; i < action.payload.items.length; i++) {
-            const id = action.payload.items[i].id;
-            const updated = action.payload.items[i].updated;
-            room.current.updateRoomItem(id, itemToEditorProperties(updated));
-          }
-          break;
-        case RoomActions.itemAdded:
-          room.current.addItemToRoom(
-            itemToEditorProperties(action.payload.item)
-          );
-          break;
-        case RoomActions.itemDeleted:
-          room.current.removeItemFromRoom(action.payload.id);
-          break;
-        case RoomActions.boundsUpdated:
-          // If bounds are currently being edited, don't update them locally with external changes
-          if (!editingBounds) {
-            room.current.bounds.points = action.payload.bounds;
-          }
-          break;
-        default:
-          continue;
-      }
-    }
-
-    if (editorActionQueue.length > 0) {
-      dispatch(clearEditorActionQueue());
-    }
-  };
 
   useEffect(() => {
     if (!mainCanvasRef.current) return;
@@ -163,23 +74,94 @@ function RoomEditor() {
     handleEditorQueue();
 
     setLocked(
-      lastSelectedItemID
-        ? room.current?.roomItems.get(lastSelectedItemID)?.movementLocked
-        : false
+      lastSelectedItemID ? room.current?.roomItems.get(lastSelectedItemID)?.movementLocked : false
     );
-
-    setBoundaryPointSelected(
-      editingBounds && room.current?.bounds.selectedPointIndex !== null
-    );
-
+    setBoundaryPointSelected(editingBounds && room.current?.bounds.selectedPointIndex !== null);
     setCanDeleteSelectedPoint(
       room.current === undefined ? false : room.current?.bounds.pointsLength > 3
     );
-
     setLoading(false);
 
     zoomScale.current = 1.3;
   }, [mainCanvasRef]);
+
+  const itemToEditorProperties = (props) => {
+    return {
+      id: props.id,
+      position: props.editorPosition
+        ? { x: props.editorPosition.x, y: props.editorPosition.y }
+        : undefined,
+      name: props.name,
+      width: props.dimensions?.width,
+      height: props.dimensions?.length,
+      rotation: props.editorRotation,
+      movementLocked: props.editorLocked,
+      zIndex: props.editorZIndex,
+      visible: props.visibleInEditor,
+    };
+  };
+
+  // Converts (relevant) editor properties to properties expected by DormItem
+  const editorToItemProperties = (props) => {
+    return {
+      editorPosition: props.position ? { x: props.position.x, y: props.position.y } : undefined,
+      editorRotation: props.rotation,
+      editorLocked: props.movementLocked,
+      editorZIndex: props.zIndex,
+    };
+  };
+
+  const handleEditorQueue = () => {
+    for (let i = 0; i < editorActionQueue.length; i++) {
+      const action = editorActionQueue[i];
+      /* 
+        NOTE:
+
+        Errors here in development mode (specifically ones that show up as 
+        warnings in console) are often caused by React repeating state updates 
+        (causing duplicate messages to be added to editorActionQueue).
+
+        There might be a way to avoid duplicate events in the queue (maybe some sort of ID system?) but for now its fine.
+
+        https://reactjs.org/docs/strict-mode.html#detecting-unexpected-side-effects
+      */
+      switch (action.type) {
+        case RoomActions.connectedToRoom:
+          for (let i = 0; i < action.payload.items.length; i++) {
+            const translatedItem = itemToEditorProperties(action.payload.items[i]);
+            room.current.addItemToRoom(translatedItem);
+          }
+          room.current.bounds.points = action.payload.bounds;
+          room.current.centerView();
+          break;
+        case RoomActions.itemsUpdated:
+          for (let i = 0; i < action.payload.items.length; i++) {
+            const id = action.payload.items[i].id;
+            const updated = action.payload.items[i].updated;
+            room.current.updateRoomItem(id, itemToEditorProperties(updated));
+          }
+          break;
+        case RoomActions.itemAdded:
+          room.current.addItemToRoom(itemToEditorProperties(action.payload.item));
+          break;
+        case RoomActions.itemDeleted:
+          room.current.removeItemFromRoom(action.payload.id);
+          break;
+        case RoomActions.boundsUpdated:
+          // If bounds are currently being edited, don't update them locally with external changes
+          if (!editingBounds) {
+            room.current.bounds.points = action.payload.bounds;
+          }
+          break;
+        default:
+          continue;
+      }
+    }
+
+    if (editorActionQueue.length > 0) {
+      dispatch(clearEditorActionQueue());
+    }
+  };
 
   const itemsUpdatedInEditor = (items) => {
     dispatch(
@@ -204,8 +186,10 @@ function RoomEditor() {
 
   const rotateSelectedItem = () => {
     if (!selectedItemID) return;
+
     const sceneObj = room.current.roomItems.get(selectedItemID);
     sceneObj.rotation += 90;
+
     dispatch(
       updatedItems([
         {
@@ -217,8 +201,7 @@ function RoomEditor() {
   };
 
   const lockSelectedItem = () => {
-    if (!selectedItemID) 
-      return;
+    if (!selectedItemID) return;
 
     const sceneObj = room.current?.roomItems.get(selectedItemID);
     sceneObj.movementLocked = !sceneObj.movementLocked;
@@ -243,9 +226,7 @@ function RoomEditor() {
   };
 
   const onClickDeleteSelectedPoint = () => {
-    room.current.bounds.deletePointAtIndex(
-      room.current.bounds.selectedPointIndex
-    );
+    room.current.bounds.deletePointAtIndex(room.current.bounds.selectedPointIndex);
   };
 
   const onBoundsUpdated = (points) => {
@@ -272,10 +253,7 @@ function RoomEditor() {
         editedPoint.y = value;
       }
       // Update edited point value in the scene
-      room.current.bounds.setPointAtIndex(
-        room.current.bounds.selectedPointIndex,
-        editedPoint
-      );
+      room.current.bounds.setPointAtIndex(room.current.bounds.selectedPointIndex, editedPoint);
     }
 
     if (name === "selectedPointX") setSelectedPointX(value);
@@ -403,10 +381,7 @@ function RoomEditor() {
                 // Scale about the center of the canvas
                 room.current.scaleAbout(
                   new Vector2(zoomScale.current, zoomScale.current),
-                  new Vector2(
-                    scene.current.canvas.width / 2,
-                    scene.current.canvas.height / 2
-                  )
+                  new Vector2(scene.current.canvas.width / 2, scene.current.canvas.height / 2)
                 );
               }
             }}
@@ -428,10 +403,7 @@ function RoomEditor() {
                 // Scale about the center of the canvas
                 room.current.scaleAbout(
                   new Vector2(1 / zoomScale.current, 1 / zoomScale.current),
-                  new Vector2(
-                    scene.current.canvas.width / 2,
-                    scene.current.canvas.height / 2
-                  )
+                  new Vector2(scene.current.canvas.width / 2, scene.current.canvas.height / 2)
                 );
               }
             }}

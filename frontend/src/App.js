@@ -1,12 +1,7 @@
 import "../node_modules/bootstrap/dist/css/bootstrap.min.css";
 import "./App.scss";
 
-import {
-  Redirect,
-  Route,
-  BrowserRouter as Router,
-  Switch,
-} from "react-router-dom";
+import { Redirect, Route, BrowserRouter as Router, Switch } from "react-router-dom";
 
 import Footer from "./components/Footer/Footer";
 import HomeRoute from "./routes/HomeRoute/HomeRoute";

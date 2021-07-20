@@ -7,14 +7,7 @@ class RoomBoundsObject extends SceneObject {
   constructor(props) {
     super(props);
 
-    const {
-      points,
-      color,
-      edgeWidth,
-      editingColor,
-      onPointSelected,
-      onPointsUpdated,
-    } = props;
+    const { points, color, edgeWidth, editingColor, onPointSelected, onPointsUpdated } = props;
 
     this.color = color ?? "#555";
     this.edgeWidth = edgeWidth ?? 0.07;
@@ -102,9 +95,7 @@ class RoomBoundsObject extends SceneObject {
     if (index === null) return;
 
     this._points = this._points.filter((_point, id) => id !== index);
-    this._offsetPoints = this._offsetPoints.filter(
-      (_offsetPoint, id) => id !== index
-    );
+    this._offsetPoints = this._offsetPoints.filter((_offsetPoint, id) => id !== index);
 
     if (index === this.selectedPointIndex) {
       this.selectPointAtIndex(null);
@@ -124,9 +115,7 @@ class RoomBoundsObject extends SceneObject {
   _calculateOffsetPoints() {
     this._offsetPoints = [];
 
-    this._points.forEach((point) =>
-      this._offsetPoints.push(new Vector2(point.x, point.y))
-    );
+    this._points.forEach((point) => this._offsetPoints.push(new Vector2(point.x, point.y)));
 
     if (this._offsetPoints.length < 3) return;
     // Add references to the first two items to the end of the array to make things easier
@@ -153,10 +142,7 @@ class RoomBoundsObject extends SceneObject {
         const maxLength = 1;
         if (cornerOffset.magnitude() > maxLength) {
           const normalized = Vector2.normalized(cornerOffset);
-          cornerOffset = new Vector2(
-            normalized.x * maxLength,
-            normalized.y * maxLength
-          );
+          cornerOffset = new Vector2(normalized.x * maxLength, normalized.y * maxLength);
         }
         p2.x += cornerOffset.x;
         p2.y += cornerOffset.y;
@@ -246,8 +232,7 @@ class RoomBoundsObject extends SceneObject {
     let minIndex = null;
     for (let i = 0; i < this._points.length; i++) {
       const p1 = this._points[i];
-      const p2 =
-        i === this._points.length - 1 ? this._points[0] : this._points[i + 1];
+      const p2 = i === this._points.length - 1 ? this._points[0] : this._points[i + 1];
       // Vector from p1 to p2
       const a = new Vector2(p2.x - p1.x, p2.y - p1.y);
       // Vector from p1 to mouse position
@@ -281,33 +266,22 @@ class RoomBoundsObject extends SceneObject {
     const dx = (p2.x - p1.x) / 2;
     const dy = (p2.y - p1.y) / 2;
     const a = new Vector2(p1.x + dx, p1.y + dy);
-    const b = new Vector2(
-      a.x + -dy * TEST_SEGMENT_LENGTH,
-      a.y + dx * TEST_SEGMENT_LENGTH
-    );
+    const b = new Vector2(a.x + -dy * TEST_SEGMENT_LENGTH, a.y + dx * TEST_SEGMENT_LENGTH);
 
     let valid = false;
-    const prevEdgeIndex =
-      p1Index === 0 ? this._offsetPoints.length - 1 : p1Index - 1;
-    const nextEdgeIndex =
-      p1Index === this._offsetPoints.length - 1 ? 0 : p1Index + 1;
+    const prevEdgeIndex = p1Index === 0 ? this._offsetPoints.length - 1 : p1Index - 1;
+    const nextEdgeIndex = p1Index === this._offsetPoints.length - 1 ? 0 : p1Index + 1;
     for (let i = 0; i < this._offsetPoints.length; i++) {
       if (i === p1Index) continue;
 
       const q1 = this._offsetPoints[i];
-      const q2 = this._offsetPoints[
-        i === this._offsetPoints.length - 1 ? 0 : i + 1
-      ];
+      const q2 = this._offsetPoints[i === this._offsetPoints.length - 1 ? 0 : i + 1];
       /*  
         If the edge intersects any of the other edges in the 
         boundary (except for adjacent edges which it will obviously 
         intersect since they share a point), it' invalid
       */
-      if (
-        i !== prevEdgeIndex &&
-        i !== nextEdgeIndex &&
-        Collisions.linesIntersect(p1, p2, q1, q2)
-      ) {
+      if (i !== prevEdgeIndex && i !== nextEdgeIndex && Collisions.linesIntersect(p1, p2, q1, q2)) {
         return false;
       }
       /*  
@@ -394,9 +368,7 @@ class RoomBoundsObject extends SceneObject {
       ctx.globalAlpha = 1.0;
       for (let i = 0; i < this._offsetPoints.length; i++) {
         const p1 = this._offsetPoints[i];
-        const p2 = this._offsetPoints[
-          i === this._offsetPoints.length - 1 ? 0 : i + 1
-        ];
+        const p2 = this._offsetPoints[i === this._offsetPoints.length - 1 ? 0 : i + 1];
         const valid = this._edgeValid(p1, p2, i);
 
         if (!valid) {
@@ -439,12 +411,7 @@ class RoomBoundsObject extends SceneObject {
         const rect = this._getPointRect(this._points[i], size);
         ctx.globalAlpha = 1.0;
         ctx.fillStyle = this.editingColor;
-        ctx.fillRect(
-          rect.p1.x,
-          rect.p1.y,
-          rect.p2.x - rect.p1.x,
-          rect.p2.y - rect.p1.y
-        );
+        ctx.fillRect(rect.p1.x, rect.p1.y, rect.p2.x - rect.p1.x, rect.p2.y - rect.p1.y);
       }
     }
 
@@ -452,12 +419,7 @@ class RoomBoundsObject extends SceneObject {
     if (this.editing && this._newPointPreview !== null) {
       const rect = this._getPointRect(this._newPointPreview, this._pointSize);
       ctx.globalAlpha = 1.0;
-      ctx.fillRect(
-        rect.p1.x,
-        rect.p1.y,
-        rect.p2.x - rect.p1.x,
-        rect.p2.y - rect.p1.y
-      );
+      ctx.fillRect(rect.p1.x, rect.p1.y, rect.p2.x - rect.p1.x, rect.p2.y - rect.p1.y);
     }
   }
 }

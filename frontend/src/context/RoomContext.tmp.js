@@ -14,9 +14,7 @@ import initialState from "./initialState";
 const handleSocketErrorEvent = (data) => {
   const action = data.action;
   if (action === undefined) {
-    console.error(
-      "Received 'actionFailed' event with missing 'action' field in data"
-    );
+    console.error("Received 'actionFailed' event with missing 'action' field in data");
     return null;
   }
   switch (action) {

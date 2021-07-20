@@ -108,9 +108,7 @@ class ListItemForm extends Component {
       (!claimedByInputValue && item.claimedBy) ||
       (claimedByInputValue && claimedByInputValue !== item.claimedBy)
     ) {
-      modifiedProperties.claimedBy = claimedByInputValue
-        ? claimedByInputValue
-        : null;
+      modifiedProperties.claimedBy = claimedByInputValue ? claimedByInputValue : null;
     }
     if (visibleInEditorValue !== item.visibleInEditor) {
       modifiedProperties.visibleInEditor = visibleInEditorValue;
@@ -121,11 +119,7 @@ class ListItemForm extends Component {
 
   render() {
     return (
-      <Form
-        noValidate
-        validated={this.state.validated}
-        onSubmit={this.onFormSubmit}
-      >
+      <Form noValidate validated={this.state.validated} onSubmit={this.onFormSubmit}>
         <Form.Group controlId="formItemName">
           <Form.Label>Name*</Form.Label>
           <Form.Control
@@ -135,9 +129,7 @@ class ListItemForm extends Component {
             onChange={this.handleInputChange}
             required
           />
-          <Form.Control.Feedback type="invalid">
-            Please choose an item name.
-          </Form.Control.Feedback>
+          <Form.Control.Feedback type="invalid">Please choose an item name.</Form.Control.Feedback>
         </Form.Group>
         <Form.Group controlId="formItemQuantity">
           <Form.Label>Quantity*</Form.Label>
@@ -148,8 +140,7 @@ class ListItemForm extends Component {
             placeholder="How many of this item"
             onChange={this.handleInputChange}
             onKeyDown={(evt) =>
-              (evt.key === "e" || evt.key === "." || evt.key === "-") &&
-              evt.preventDefault()
+              (evt.key === "e" || evt.key === "." || evt.key === "-") && evt.preventDefault()
             }
             required
           />
@@ -176,9 +167,7 @@ class ListItemForm extends Component {
                 value={this.state.widthInputValue}
                 placeholder="Width"
                 onChange={this.handleInputChange}
-                onKeyDown={(evt) =>
-                  (evt.key === "e" || evt.key === "-") && evt.preventDefault()
-                }
+                onKeyDown={(evt) => (evt.key === "e" || evt.key === "-") && evt.preventDefault()}
               />
             </Col>
             <Col>
@@ -188,9 +177,7 @@ class ListItemForm extends Component {
                 value={this.state.lengthInputValue}
                 placeholder="Length"
                 onChange={this.handleInputChange}
-                onKeyDown={(evt) =>
-                  (evt.key === "e" || evt.key === "-") && evt.preventDefault()
-                }
+                onKeyDown={(evt) => (evt.key === "e" || evt.key === "-") && evt.preventDefault()}
               />
             </Col>
           </Form.Row>

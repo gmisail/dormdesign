@@ -56,8 +56,7 @@ let RoomReducer = (state, action) => {
       return {
         ...state,
         selectedItemID:
-          state.selectedItemID !== null &&
-          state.selectedItemID !== action.payload.id
+          state.selectedItemID !== null && state.selectedItemID !== action.payload.id
             ? state.selectedItemID
             : null,
         items: state.items.filter((item) => item.id !== action.payload.id),
@@ -70,11 +69,7 @@ let RoomReducer = (state, action) => {
         const id = action.payload.items[i].id;
         const updated = action.payload.items[i].updated;
         // If item was removed from editor and it was selected, deselect it
-        if (
-          selectedItemID !== null &&
-          selectedItemID === id &&
-          updated.visibleInEditor === false
-        ) {
+        if (selectedItemID !== null && selectedItemID === id && updated.visibleInEditor === false) {
           selectedItemID = null;
         }
         updatedItems[id] = updated;
