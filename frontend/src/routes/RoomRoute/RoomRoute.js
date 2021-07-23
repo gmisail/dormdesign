@@ -236,7 +236,7 @@ export const RoomRoute = () => {
               onEditItem={onClickEditItemButton}
               onDuplicateItem={onClickDuplicateItemButton}
               onClaimItem={onClickClaimItemButton}
-              onDeleteItem={deleteItem}
+              onDeleteItem={ (item) => dispatch(deleteItem(item)) }
               onToggleEditorVisibility={onToggleItemEditorVisibility}
             ></DormItemList>
           </div>
