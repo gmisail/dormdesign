@@ -240,27 +240,6 @@ function RoomEditor() {
     }
   };
 
-  const onPointInputChanged = (evt) => {
-    let value = evt.target.value;
-    const name = evt.target.name;
-    if (value.length !== 0) {
-      value = parseFloat(value);
-      // Prevent really big/small values
-      value = Math.min(Math.max(value, -500), 500);
-      const editedPoint = new Vector2(selectedPointX, selectedPointY);
-      if (name === "selectedPointX") {
-        editedPoint.x = value;
-      } else {
-        editedPoint.y = value;
-      }
-      // Update edited point value in the scene
-      room.current.bounds.setPointAtIndex(room.current.bounds.selectedPointIndex, editedPoint);
-    }
-
-    if (name === "selectedPointX") setSelectedPointX(value);
-    else if (name === "selectedPointY") setSelectedPointY(value);
-  };
-
   const toggleEditingBounds = (saveEdits) => {
     const editing = !editingBounds;
     room.current.bounds.editing = editing;
@@ -283,8 +262,6 @@ function RoomEditor() {
   };
 
   useEffect(handleEditorQueue, [editorActionQueue]);
-
-  console.log(boundaryPointSelected)
 
   /*
     TODO: why won't editing bounds number field show up when in editing mode?
@@ -309,10 +286,12 @@ function RoomEditor() {
               editingBounds ? (
                 boundaryPointSelected ? (
                   <BoundsToolbar
+                    room={room}
                     canDeleteSelectedPoint={canDeleteSelectedPoint}
                     selectedPointX={selectedPointX}
                     selectedPointY={selectedPointY}
-                    onPointInputChanged={onPointInputChanged}
+                    setSelectedPointX={setSelectedPointX}
+                    setSelectedPointY={setSelectedPointY}
                     onClickDeleteSelectedPoint={onClickDeleteSelectedPoint}
                   />
                 ) : null
