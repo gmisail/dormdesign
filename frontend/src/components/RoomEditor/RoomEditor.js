@@ -1,6 +1,6 @@
 import "./RoomEditor.scss";
 
-import { BiLockAlt, BiLockOpenAlt, BiMinus, BiPlus } from "react-icons/bi";
+import { BiMinus, BiPlus } from "react-icons/bi";
 import { BsBoundingBox, BsCheck, BsX } from "react-icons/bs";
 import React, { useEffect, useRef, useState } from "react";
 import {
@@ -11,9 +11,10 @@ import {
 } from "../../context/RoomStore";
 import { useDispatch, useSelector } from "react-redux";
 
+import BoundsToolbar from "./BoundsToolbar";
 import IconButton from "../IconButton/IconButton";
+import ItemToolbar from "./ItemToolbar";
 import { MdFilterCenterFocus } from "react-icons/md";
-import { RiClockwiseLine } from "react-icons/ri";
 import RoomActions from "../../context/RoomActions";
 import RoomEditorObject from "../../room-editor/RoomEditorObject";
 import SceneController from "../../room-editor/SceneController";
@@ -283,60 +284,37 @@ function RoomEditor() {
 
   useEffect(handleEditorQueue, [editorActionQueue]);
 
+  console.log(boundaryPointSelected)
+
   return (
     <div className="room-editor">
       <div className="room-editor-overlay">
         <div className="room-editor-toolbar">
           <div className="room-editor-toolbar-left">
-            {editingBounds ? (
-              boundaryPointSelected ? (
-                <>
-                  <div className="room-editor-point-viewer">
-                    <div>
-                      <input
-                        value={selectedPointX}
-                        type="number"
-                        name="selectedPointX"
-                        placeholder="X"
-                        onChange={onPointInputChanged}
-                      />
-                      <input
-                        value={selectedPointY}
-                        type="number"
-                        name="selectedPointY"
-                        placeholder="Y"
-                        onChange={onPointInputChanged}
-                      />
-                    </div>
-                    <button
-                      className="room-editor-point-delete-btn"
-                      onClick={onClickDeleteSelectedPoint}
-                      disabled={!canDeleteSelectedPoint}
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </>
-              ) : null
-            ) : (
-              <>
-                <IconButton
-                  className="room-editor-toolbar-btn"
-                  onClick={lockSelectedItem}
-                  data-hidden={selectedItemID === null ? "true" : "false"}
-                >
-                  {locked ? <BiLockAlt /> : <BiLockOpenAlt />}
-                </IconButton>
-                <IconButton
-                  className="room-editor-toolbar-btn"
-                  onClick={rotateSelectedItem}
-                  disabled={locked}
-                  data-hidden={selectedItemID === null ? "true" : "false"}
-                >
-                  <RiClockwiseLine />
-                </IconButton>
-              </>
-            )}
+            {
+              /* 
+                if we are editing the boundaries and a point is selected, show the bounds toolbar. If not, show the 
+                default item toolbar (lock, rotate, etc.)
+              */
+              editingBounds ? (
+                boundaryPointSelected ? (
+                  <BoundsToolbar
+                    canDeleteSelectedPoint={canDeleteSelectedPoint}
+                    selectedPointX={selectedPointX}
+                    selectedPointY={selectedPointY}
+                    onPointInputChanged={onPointInputChanged}
+                    onClickDeleteSelectedPoint={onClickDeleteSelectedPoint}
+                  />
+                ) : null
+              ) : (
+                <ItemToolbar
+                  lockSelectedItem={lockSelectedItem}
+                  rotateSelectedItem={rotateSelectedItem}
+                  selectedItemID={selectedItemID}
+                  locked={locked}
+                />
+              )
+            }
           </div>
           <div className="room-editor-toolbar-right">
             {editingBounds ? (
