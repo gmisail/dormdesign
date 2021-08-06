@@ -273,6 +273,10 @@ function RoomEditor() {
     TODO: 
   */
 
+  useEffect(() => {
+    setBoundaryPointSelected(editingBounds && room.current.bounds.selectedPointIndex !== null);
+  }, [editingBounds, room.current?.bounds.selectedPointIndex]);
+
   return (
     <div className="room-editor">
       <div className="room-editor-overlay">
