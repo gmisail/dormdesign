@@ -261,17 +261,13 @@ function RoomEditor() {
     setEditingBounds(editing);
   };
 
-  useEffect(handleEditorQueue, [editorActionQueue]);
-
   /*
-    TODO: why won't editing bounds number field show up when in editing mode?
-
     TODO: change the locked icon when items are selected on multiple clients, i.e. if I am
           selecting the same item as another client and I click lock, the lock icon should 
           be updated on all clients.
-
-    TODO: 
   */
+
+  useEffect(handleEditorQueue, [editorActionQueue]);
 
   useEffect(() => {
     setBoundaryPointSelected(editingBounds && room.current.bounds.selectedPointIndex !== null);
