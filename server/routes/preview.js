@@ -1,5 +1,6 @@
 const { Router } = require("express");
 const Room = require("../models/room.model");
+const Preview = require("../models/preview.model");
 const PreviewRenderer = require("../services/preview-renderer");
 
 let router = Router();
@@ -16,7 +17,7 @@ router.get("/", async (req, res) => {
   if (!room) {
     res.json({ message: "Invalid room ID." });
   } else {
-    const previewUrl = PreviewRenderer.generatePreview(room);
+    let previewUrl = await Preview.get(room);
 
     res.json({
       url: previewUrl,
