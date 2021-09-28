@@ -41,16 +41,10 @@ function RoomEditor() {
   // On page load, no items can be selected by default. Thus, no item can be locked.
   const [locked, setLocked] = useState(false);
 
-  // Determine whether or not a boundary point is currently selected
-  const [boundaryPointSelected, setBoundaryPointSelected] = useState(
-    editingBounds && room.current?.bounds.selectedPointIndex !== null
-  );
-
-  const [canDeleteSelectedPoint, setCanDeleteSelectedPoint] = useState(
-    room.current === undefined ? false : room.current?.bounds.pointsLength > 3
-  );
-
-  const [isLoading, setLoading] = useState(true);
+  // The variables below don't need to be stored as state
+  const boundaryPointSelected = editingBounds && room.current?.bounds.selectedPointIndex !== null;
+  const canDeleteSelectedPoint =
+    room.current === undefined ? false : room.current?.bounds.pointsLength > 3;
 
   useEffect(() => {
     if (!mainCanvasRef.current) return;
@@ -75,13 +69,8 @@ function RoomEditor() {
     handleEditorQueue();
 
     setLocked(
-      lastSelectedItemID ? room.current?.roomItems.get(lastSelectedItemID)?.movementLocked : false
+      lastSelectedItemID ? room.current.roomItems.get(lastSelectedItemID)?.movementLocked : false
     );
-    setBoundaryPointSelected(editingBounds && room.current?.bounds.selectedPointIndex !== null);
-    setCanDeleteSelectedPoint(
-      room.current === undefined ? false : room.current?.bounds.pointsLength > 3
-    );
-    setLoading(false);
 
     zoomScale.current = 1.3;
   }, [mainCanvasRef]);
@@ -140,6 +129,10 @@ function RoomEditor() {
             const id = action.payload.items[i].id;
             const updated = action.payload.items[i].updated;
             room.current.updateRoomItem(id, itemToEditorProperties(updated));
+
+            if (id === lastSelectedItemID && updated.editorLocked !== undefined) {
+              setLocked(updated.editorLocked);
+            }
           }
           break;
         case RoomActions.itemAdded:
@@ -261,17 +254,7 @@ function RoomEditor() {
     setEditingBounds(editing);
   };
 
-  /*
-    TODO: change the locked icon when items are selected on multiple clients, i.e. if I am
-          selecting the same item as another client and I click lock, the lock icon should 
-          be updated on all clients.
-  */
-
   useEffect(handleEditorQueue, [editorActionQueue]);
-
-  useEffect(() => {
-    setBoundaryPointSelected(editingBounds && room.current.bounds.selectedPointIndex !== null);
-  }, [editingBounds, room.current?.bounds.selectedPointIndex]);
 
   return (
     <div className="room-editor">
