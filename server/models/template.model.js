@@ -15,11 +15,7 @@ Template.create = async function (id) {
     targetId: id,
   };
 
-  await rethinkdb
-    .db("dd_data")
-    .table("templates")
-    .insert(template)
-    .run(database.connection);
+  await rethinkdb.db("dd_data").table("templates").insert(template).run(database.connection);
 
   return templateId;
 };

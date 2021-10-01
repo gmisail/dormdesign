@@ -32,11 +32,7 @@ Room.create = async function (name) {
     vertices,
   };
 
-  const res = await rethinkdb
-    .db("dd_data")
-    .table("rooms")
-    .insert(room)
-    .run(database.connection);
+  const res = await rethinkdb.db("dd_data").table("rooms").insert(room).run(database.connection);
 
   if (res === null) {
     console.error("Could not insert room.");
@@ -56,9 +52,7 @@ Room.delete = async function (id) {
 
   Cache.client
     .del(roomID)
-    .then((_) =>
-      console.log(`Room ${roomID} has been removed from the cache.`)
-    );
+    .then((_) => console.log(`Room ${roomID} has been removed from the cache.`));
 
   if (res === null) {
     console.error("Could not delete room.");
@@ -79,11 +73,7 @@ Room.get = async function (id) {
   }
 
   /* Since it is not cached, retrieve it from the database and store it in the cache. */
-  room = await rethinkdb
-    .db("dd_data")
-    .table("rooms")
-    .get(id)
-    .run(database.connection);
+  room = await rethinkdb.db("dd_data").table("rooms").get(id).run(database.connection);
 
   if (room === null) {
     console.error("Could not get room with id " + id);
@@ -233,8 +223,7 @@ Room.removeItem = async function (id, itemID) {
 
     return true;
   } catch (error) {
-    const err =
-      "Failed to remove item " + itemId + " from room " + id + ". " + error;
+    const err = "Failed to remove item " + itemId + " from room " + id + ". " + error;
 
     console.error(err);
     throw new Error(err);
@@ -281,10 +270,7 @@ Room.updateItems = async function (id, updates) {
 
     for (let item in room.items) {
       if (room.items[item].id in updates) {
-        room.items[item] = Object.assign(
-          room.items[item],
-          updates[room.items[item].id]
-        );
+        room.items[item] = Object.assign(room.items[item], updates[room.items[item].id]);
       }
     }
 
@@ -311,12 +297,7 @@ Room.updateItems = async function (id, updates) {
 Room.save = async function (id) {
   let room = await Room.get(id);
 
-  await rethinkdb
-    .db("dd_data")
-    .table("rooms")
-    .get(id)
-    .update(room)
-    .run(database.connection);
+  await rethinkdb.db("dd_data").table("rooms").get(id).update(room).run(database.connection);
 
   console.log("Room " + id + " pushed from cache to database.");
 };

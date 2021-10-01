@@ -71,10 +71,7 @@ export default class StorageController {
       historyData.filter((room) => room.id !== id)
     );
 
-    StorageController.set(
-      "history",
-      JSON.stringify(historyData.filter((room) => room.id !== id))
-    );
+    StorageController.set("history", JSON.stringify(historyData.filter((room) => room.id !== id)));
   }
 
   /**

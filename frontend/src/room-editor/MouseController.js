@@ -1,13 +1,7 @@
 import Vector2 from "./Vector2";
 
 class MouseController {
-  constructor({
-    watchedElement,
-    onMouseDown,
-    onMouseMove,
-    onMouseUp,
-    onScroll,
-  }) {
+  constructor({ watchedElement, onMouseDown, onMouseMove, onMouseUp, onScroll }) {
     this.watchedElement = watchedElement;
     this._pressed = false;
     this.position = null;

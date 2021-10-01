@@ -3,10 +3,7 @@ import Vector2 from "./Vector2";
 class Collisions {
   static pointInRect(point, bbox) {
     return (
-      point.x >= bbox.p1.x &&
-      point.x <= bbox.p2.x &&
-      point.y >= bbox.p1.y &&
-      point.y <= bbox.p2.y
+      point.x >= bbox.p1.x && point.x <= bbox.p2.x && point.y >= bbox.p1.y && point.y <= bbox.p2.y
     );
   }
 
@@ -65,20 +62,15 @@ class Collisions {
       return null;
     }
 
-    const denominator =
-      (q2.y - q1.y) * (p2.x - p1.x) - (q2.x - q1.x) * (p2.y - p1.y);
+    const denominator = (q2.y - q1.y) * (p2.x - p1.x) - (q2.x - q1.x) * (p2.y - p1.y);
 
     // Lines are parallel
     if (denominator === 0) {
       return null;
     }
 
-    let ua =
-      ((q2.x - q1.x) * (p1.y - q1.y) - (q2.y - q1.y) * (p1.x - q1.x)) /
-      denominator;
-    let ub =
-      ((p2.x - p1.x) * (p1.y - q1.y) - (p2.y - p1.y) * (p1.x - q1.x)) /
-      denominator;
+    let ua = ((q2.x - q1.x) * (p1.y - q1.y) - (q2.y - q1.y) * (p1.x - q1.x)) / denominator;
+    let ub = ((p2.x - p1.x) * (p1.y - q1.y) - (p2.y - p1.y) * (p1.x - q1.x)) / denominator;
 
     // is the intersection along the segments
     if (segments !== false && (ua < 0 || ua > 1 || ub < 0 || ub > 1)) {

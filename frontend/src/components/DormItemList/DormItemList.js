@@ -1,17 +1,20 @@
-import React from "react";
-import ListItem from "../ListItem/ListItem";
 import "./DormItemList.scss";
+
+import ListItem from "../ListItem/ListItem";
+import React from "react";
+import { useSelector } from "react-redux";
 
 const DormItemList = (props) => {
   const {
-    items,
-    selectedItemID,
     onEditItem,
     onDuplicateItem,
     onClaimItem,
     onDeleteItem,
     onToggleEditorVisibility,
   } = props;
+
+  const selectedItemID = useSelector((state) => state.selectedItemID);
+  const items = useSelector((state) => state.items);
 
   return (
     <>

@@ -20,8 +20,7 @@ PreviewRenderer.PADDING = 0.25;
  * @returns { w, h, x, y }
  */
 PreviewRenderer.getBoundingBox = function (points) {
-  if (points === undefined || points.length == 0)
-    return { w: 0, h: 0, x: 0, y: 0 };
+  if (points === undefined || points.length == 0) return { w: 0, h: 0, x: 0, y: 0 };
 
   let min = { x: 0, y: 0 };
   let max = { x: 0, y: 0 };
@@ -100,9 +99,7 @@ PreviewRenderer.drawItems = function (items, boundingBox) {
 
     if (item.visibleInEditor) {
       const width =
-        item.dimensions === undefined || item.dimensions.width == null
-          ? 1
-          : item.dimensions.width;
+        item.dimensions === undefined || item.dimensions.width == null ? 1 : item.dimensions.width;
       const length =
         item.dimensions === undefined || item.dimensions.length == null
           ? 1

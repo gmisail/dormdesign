@@ -53,14 +53,8 @@ class RoomRectObject extends SceneObject {
     let y = pos.y;
     if (this.snapPosition) {
       this._unsnappedPosition = pos;
-      x = this._roundToNearestMultipleOf(
-        this._unsnappedPosition.x,
-        this.snapOffset
-      );
-      y = this._roundToNearestMultipleOf(
-        this._unsnappedPosition.y,
-        this.snapOffset
-      );
+      x = this._roundToNearestMultipleOf(this._unsnappedPosition.x, this.snapOffset);
+      y = this._roundToNearestMultipleOf(this._unsnappedPosition.y, this.snapOffset);
     }
     this.position = new Vector2(x, y);
   }
@@ -74,8 +68,7 @@ class RoomRectObject extends SceneObject {
   _roundToNearestMultipleOf(num, multipleOf) {
     const remainder = num % multipleOf;
     const divided = num / multipleOf;
-    const rounded =
-      remainder >= multipleOf / 2 ? Math.ceil(divided) : Math.floor(divided);
+    const rounded = remainder >= multipleOf / 2 ? Math.ceil(divided) : Math.floor(divided);
     return multipleOf * rounded;
   }
 
@@ -88,10 +81,7 @@ class RoomRectObject extends SceneObject {
   _animateSelection() {
     const speed = this._selectionLineSpeed * this.scene.deltaTime;
     this._selectionOutlineOffset += speed;
-    if (
-      this._selectionOutlineOffset >
-      this._selectionLineDash[0] + this._selectionLineDash[1]
-    ) {
+    if (this._selectionOutlineOffset > this._selectionLineDash[0] + this._selectionLineDash[1]) {
       this._selectionOutlineOffset = 0;
     }
   }
@@ -134,10 +124,7 @@ class RoomRectObject extends SceneObject {
     this._setContextTextStyle(ctx, fontSize);
     const lineOffset = 0.2 * this.parent.scale.x * this.scale.x;
     const fitNameText = this._getEditedText(ctx, this.nameText);
-    const fitDimensionsText = this._getEditedText(
-      ctx,
-      `${this.size.x}' x ${this.size.y}'`
-    );
+    const fitDimensionsText = this._getEditedText(ctx, `${this.size.x}' x ${this.size.y}'`);
     ctx.font = `700 ${fontSize * this.parent.scale.x * this.scale.x}px ${
       this.fontFamily
     }, sans-serif`;
