@@ -5,13 +5,12 @@ services:
     ports:
       - 6379:6379    
   db:
-    image: rethinkdb:latest
+    image: mongo
     ports:
-      - 8080:8080
-      - 29015:29015
-      - 28015:28015
+      - "27017:27017"
+    restart: unless-stopped
     volumes:
-      - "./rethinkdb_data:/data/rethinkdb_data"
+      - dd_database:/data/db
   frontend:
     build:
       context: ./frontend
@@ -30,7 +29,7 @@ services:
       context: ./server
       dockerfile: Dockerfile.dev
     environment:
-      - DATABASE_ADDRESS=db
+      - DATABASE_ADDRESS=db:28015
       - CACHE_ADDRESS=cache
       - CHOKIDAR_USEPOLLING=true
     ports:
