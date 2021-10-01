@@ -46,12 +46,6 @@
 
   @media screen and (max-width: $small-breakpoint) {
     padding: $padding-y 10px;
-
-    .room-header {
-      & > * {
-        font-size: 1.5em;
-      }
-    }
   }
 
   .room-header {
@@ -91,7 +85,10 @@
     }
 
     .room-header-buttons {
-      font-size: 1.3em;
+      // Set width of buttons
+      & > * {
+        width: 2.75rem;
+      }
 
       * + * {
         margin-left: 4px;

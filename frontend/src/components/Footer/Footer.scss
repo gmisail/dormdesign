@@ -17,7 +17,7 @@
   height: $footer-height;
 
   * + * {
-    margin-left: 15px;
+    margin-left: 10px;
   }
 
   font-weight: 600;
@@ -27,6 +27,8 @@
     button {
       height: 100%;
       color: $footer-text-color;
+
+      width: 2.25rem;
 
       transition: 0.2s;
 
