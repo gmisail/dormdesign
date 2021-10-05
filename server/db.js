@@ -33,7 +33,7 @@ Database.setup = async function () {
     create them.
   */
 
-  await client.hello();
+  /// create db....
 
   /*
   rethinkdb.dbCreate("dd_data").run(Database.connection, (err) => {
