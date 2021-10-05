@@ -270,7 +270,7 @@ Hub.cloneRoom = async function ({ socket, roomID, data, sendResponse }) {
 };
 
 Hub.updateRoomName = async function ({ socket, roomID, data, sendResponse }) {
-  if(data === undefined || data.name === undefined || data.name.length <= 0)
+  if (data === undefined || data.name === undefined || data.name.length <= 0)
     return;
 
   let name = data.name.trim().substring(0, Math.min(40, data.name.length));
@@ -304,7 +304,11 @@ Hub.deleteRoom = async function ({ socket, roomID, sendResponse }) {
   every client the array of users
 */
 Hub.updateNickname = async function ({ socket, roomID, data, sendResponse }) {
-  if(data === undefined || data.userName === undefined || data.userName.length <= 0)
+  if (
+    data === undefined ||
+    data.userName === undefined ||
+    data.userName.length <= 0
+  )
     return;
 
   let userName = data.userName.trim();

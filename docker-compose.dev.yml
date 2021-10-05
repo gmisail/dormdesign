@@ -29,7 +29,7 @@ services:
       context: ./server
       dockerfile: Dockerfile.dev
     environment:
-      - DATABASE_ADDRESS=db:28015
+      - DATABASE_ADDRESS=db
       - CACHE_ADDRESS=cache
       - CHOKIDAR_USEPOLLING=true
     ports:
@@ -47,3 +47,5 @@ services:
       - server
       - db
       - cache
+volumes:
+  dd_database:
