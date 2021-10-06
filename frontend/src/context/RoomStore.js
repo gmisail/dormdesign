@@ -8,7 +8,6 @@ import RoomActions from "./RoomActions";
 import RoomReducer from "./RoomReducer";
 import SocketConnection from "../controllers/SocketConnection";
 import StorageController from "../controllers/StorageController";
-import { composeWithDevTools } from "redux-devtools-extension";
 import initialState from "./initialState";
 import thunk from "redux-thunk";
 
@@ -47,7 +46,7 @@ const handleSocketErrorEvent = (data) => {
 };
 
 export const RoomProvider = ({ children }) => {
-  const store = createStore(RoomReducer, initialState, composeWithDevTools(applyMiddleware(thunk)));
+  const store = createStore(RoomReducer, initialState, applyMiddleware(thunk));
 
   return <Provider store={store}>{children}</Provider>;
 };
