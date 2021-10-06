@@ -8,6 +8,7 @@ import {
   cloneRoom,
   connectToRoom,
   deleteItem,
+  deleteRoom,
   setUserName,
   updateItems,
   updateRoomName,
