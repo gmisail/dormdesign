@@ -20,6 +20,7 @@ services:
     restart: unless-stopped
     environment:
       - DATABASE_ADDRESS=db
+      - CACHE_ADDRESS=cache
     depends_on:
       - db
   frontend:
