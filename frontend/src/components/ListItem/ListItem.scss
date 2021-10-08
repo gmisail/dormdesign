@@ -1,6 +1,7 @@
 @import "../../styles/variables.scss";
 
 .item-menu-button {
+  max-width: 2.2rem;
   color: $text-color-dark;
   transition: transform 0.2s;
 
@@ -87,9 +88,9 @@
       border-bottom-color: $border-color;
 
       svg {
-        font-size: 0.8em;
+        max-width: 1.5rem;
         margin: auto 0;
-        margin-right: 0.75em;
+        margin-right: 0.6em;
       }
 
       &.color-danger {
