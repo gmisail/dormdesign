@@ -5,6 +5,8 @@ services:
     command: "redis-server --requirepass ${REDIS_PASSWORD} --protected-mode yes"
     ports:
       - 6379:6379    
+    volumes:
+      - ./redis_data:/data/redis_data
   db:
     image: rethinkdb:latest
     ports:
