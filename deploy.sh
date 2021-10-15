@@ -1,4 +1,8 @@
-sudo docker-compose down
+if docker ps | `grep "dormdesign_server" > /dev/null `
+then
+    echo "[DormDesign] Instance already running. Closing."
+    sudo docker-compose down
+fi
 
 if [ -f .env ]
 then
