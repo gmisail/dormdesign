@@ -21,7 +21,7 @@ DormDesign allows roommates to collaboratively design and plan our their dorm ro
 3. Navigate to the `/frontend` folder and run `npm install`
 4. In the root directory, create a file called `.env` with the following content: `REDIS_PASSWORD=<some password here>`
     - This ensures that the cache is password-protected and not accesible to external connections
-5. Then from the root of the project directory run `docker-compose --env-file ./.env -f docker-compose.dev.yml up --build` to start the server. Depending on your permissions, you may need to run this command using `sudo`. The site can then be accessed at `localhost:5500`
+5. Then from the root of the project directory run `npm run dev` (if this fails, try running `sudo docker-compose --env-file ./.env -f docker-compose.dev.yml up --build`) to start the server. 
 
 ## Deployment
 
