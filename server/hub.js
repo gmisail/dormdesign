@@ -1,4 +1,4 @@
-const { v4: uuidv4 } = require("uuid");
+const { v4: uuidv4, validate } = require("uuid");
 const events = require("events");
 const chalk = require("chalk");
 const querystring = require("querystring");
@@ -6,6 +6,9 @@ const querystring = require("querystring");
 const Room = require("./models/room.model");
 const Cache = require("./cache");
 const Users = require("./models/users.model");
+
+const Joi = require("joi");
+const { validateWithSchema } = require("./utils.js");
 
 /*
   Clear the cache upon server startup
@@ -47,7 +50,7 @@ Hub.addClient = function (socket) {
 
 /*
   Remove client, and if it is the last client in a room,
-  delete the room too.
+  delete the room from the cache too.
 */
 Hub.removeClient = async function (clientID) {
   if (!Hub.connections.has(clientID)) return;
@@ -60,7 +63,7 @@ Hub.removeClient = async function (clientID) {
     return;
   }
 
-  Room.save(roomID);
+  // Room.save(roomID);
 
   Hub.connections.delete(clientID);
   Hub.rooms.get(roomID).delete(clientID);
@@ -78,13 +81,14 @@ Hub.removeClient = async function (clientID) {
   );
 
   if (Hub.rooms.get(roomID).size <= 0) {
+    Room.save(roomID);
+
     Hub.rooms.delete(roomID);
 
-    Cache.client
-      .del(roomID)
-      .then((_) =>
-        console.log(`Room ${roomID} has been removed from the cache.`)
-      );
+    // del is the number of keys that were removed
+    const del = await Cache.client.del(roomID);
+    // Sometimes the room might have already been removed from the cache (e.g. when a room is fully deleted)
+    if (del > 0) console.log(`Room ${roomID} has been removed from the cache.`);
 
     await Users.deleteRoom(roomID);
 
@@ -289,7 +293,7 @@ Hub.updateRoomName = async function ({ socket, roomID, data, sendResponse }) {
   });
 };
 
-Hub.deleteRoom = async function ({ socket, roomID, sendResponse }) {
+Hub.deleteRoom = async function ({ socket, roomID, data, sendResponse }) {
   Room.delete(roomID);
   await Users.deleteRoom(roomID);
 
@@ -397,6 +401,24 @@ Hub.onConnection = function (socket, req) {
   });
 };
 
+// Custom function for adding event listener to hub. Wraps the listener in a function that catches and handles errors.
+Hub.addEventListener = (event, listener) => {
+  Hub.events.addListener(event, async (args) => {
+    const { socket } = args;
+    try {
+      await listener(args);
+    } catch (err) {
+      if (err.status === undefined) err.status = 500;
+      // Internal errors shouldn't be shown to client
+      if (err.status === 500) {
+        console.log("Hub error: ", err.message);
+        err.message = "Internal server error";
+      }
+      Hub.sendError(socket.id, event, err.message);
+    }
+  });
+};
+
 /**
  * Setup the socket hub, which directs incoming socket messages to the correct callback
  * @param {*} sockets
@@ -408,14 +430,29 @@ Hub.setup = function (sockets) {
   Hub.events = new events.EventEmitter();
 
   /* register the socket events */
-  Hub.events.addListener("addItem", Hub.addItem);
-  Hub.events.addListener("updateItems", Hub.updateItems);
-  Hub.events.addListener("deleteItem", Hub.deleteItem);
-  Hub.events.addListener("updateLayout", Hub.updateLayout);
-  Hub.events.addListener("cloneRoom", Hub.cloneRoom);
-  Hub.events.addListener("deleteRoom", Hub.deleteRoom);
-  Hub.events.addListener("updateRoomName", Hub.updateRoomName);
-  Hub.events.addListener("updateNickname", Hub.updateNickname);
+  Hub.addEventListener("addItem", Hub.addItem);
+  Hub.addEventListener("updateItems", Hub.updateItems);
+  Hub.addEventListener("deleteItem", Hub.deleteItem);
+  Hub.addEventListener("updateLayout", Hub.updateLayout);
+  Hub.addEventListener("cloneRoom", Hub.cloneRoom);
+  Hub.addEventListener("deleteRoom", Hub.deleteRoom);
+  Hub.addEventListener("updateRoomName", Hub.updateRoomName);
+  Hub.addEventListener("updateNickname", Hub.updateNickname);
+
+  // Hub.events.addListener("addItem", asyncErrorWrapper(Hub.addItem));
+  // Hub.events.addListener("updateItems", asyncErrorWrapper(Hub.updateItems));
+  // Hub.events.addListener("deleteItem", asyncErrorWrapper(Hub.deleteItem));
+  // Hub.events.addListener("updateLayout", asyncErrorWrapper(Hub.updateLayout));
+  // Hub.events.addListener("cloneRoom", asyncErrorWrapper(Hub.cloneRoom));
+  // Hub.events.addListener("deleteRoom", asyncErrorWrapper(Hub.deleteRoom));
+  // Hub.events.addListener(
+  //   "updateRoomName",
+  //   asyncErrorWrapper(Hub.updateRoomName)
+  // );
+  // Hub.events.addListener(
+  //   "updateNickname",
+  //   asyncErrorWrapper(Hub.updateNickname)
+  // );
 
   sockets.on("connection", Hub.onConnection);
 

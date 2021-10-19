@@ -1,5 +1,5 @@
-const rethinkdb = require("rethinkdb");
-const database = require("../db");
+// const rethinkdb = require("rethinkdb");
+const Database = require("../db");
 const { v4: uuidv4 } = require("uuid");
 const Template = require("./template.model");
 const Cache = require("../cache");
@@ -24,46 +24,42 @@ Room.create = async function (name) {
   const id = uuidv4();
   const templateId = await Template.create(id);
 
+  // Don't include id yet since we'll need to use the '_id' field when inserting into mongo
   const room = {
-    id,
     name,
     items: [],
     templateId,
     vertices,
   };
 
-  const res = await rethinkdb
-    .db("dd_data")
-    .table("rooms")
-    .insert(room)
-    .run(database.connection);
-
-  if (res === null) {
-    console.error("Could not insert room.");
-    return null;
+  try {
+    await Database.client
+      .db("dd_data")
+      .collection("rooms")
+      .insertOne({ _id: id, ...room });
+  } catch (err) {
+    throw new Error("Failed to create room: " + err);
   }
 
-  return room;
+  console.log(`Room ${id} has been created.`);
+
+  return { id: id, ...room };
 };
 
 Room.delete = async function (id) {
-  const res = await rethinkdb
-    .db("dd_data")
-    .table("rooms")
-    .get(id)
-    .delete()
-    .run(database.connection);
+  try {
+    await Database.client
+      .db("dd_data")
+      .collection("rooms")
+      .deleteOne({ _id: id });
+    console.log(`Room ${id} has been deleted from the database`);
+  } catch (err) {
+    throw new Error("Failed to delete room: " + err);
+  }
 
   Cache.client
-    .del(roomID)
-    .then((_) =>
-      console.log(`Room ${roomID} has been removed from the cache.`)
-    );
-
-  if (res === null) {
-    console.error("Could not delete room.");
-    return null;
-  }
+    .del(id)
+    .then((_) => console.log(`Room ${id} has been removed from the cache.`));
 };
 
 /**
@@ -72,22 +68,25 @@ Room.delete = async function (id) {
  * @returns { Promise.<object> } room object if it exists, null otherwise
  */
 Room.get = async function (id) {
+  // First check if room is in the cache
   let room = await client.get(id);
-
   if (room !== null) {
     return JSON.parse(room);
   }
 
   /* Since it is not cached, retrieve it from the database and store it in the cache. */
-  room = await rethinkdb
-    .db("dd_data")
-    .table("rooms")
-    .get(id)
-    .run(database.connection);
+  try {
+    room = await Database.client
+      .db("dd_data")
+      .collection("rooms")
+      .findOne({ _id: id });
+  } catch (err) {
+    throw new Error("Failed to get room: " + err);
+  }
 
-  if (room === null) {
-    console.error("Could not get room with id " + id);
-    return null;
+  const res = await Cache.client.set(id, JSON.stringify(room));
+  if (res === "OK") {
+    console.log(`Added room ${id} to the cache.`);
   }
 
   return room;
@@ -258,7 +257,7 @@ Room.updateItem = async function (id, itemId, properties) {
       }
     }
 
-    Cache.client.set(id, JSON.stringify(room));
+    await Cache.client.set(id, JSON.stringify(room));
 
     return false;
   } catch (error) {
@@ -309,14 +308,27 @@ Room.updateItems = async function (id, updates) {
  * @param { string } id
  * */
 Room.save = async function (id) {
-  let room = await Room.get(id);
+  let room = await client.get(id);
+  if (room !== null) {
+    room = JSON.parse(room);
+  } else {
+    // This could occur if the room was just fully deleted
+    console.log(
+      "Cannot push room from cache to database " +
+        id +
+        ". The room doesn't exist in the cache"
+    );
+    return;
+  }
 
-  await rethinkdb
-    .db("dd_data")
-    .table("rooms")
-    .get(id)
-    .update(room)
-    .run(database.connection);
+  try {
+    await Database.client
+      .db("dd_data")
+      .collection("rooms")
+      .replaceOne({ _id: id }, room);
+  } catch (err) {
+    throw new Error("Failed to save room from cache to db: " + err);
+  }
 
   console.log("Room " + id + " pushed from cache to database.");
 };

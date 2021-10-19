@@ -1,6 +1,7 @@
-const rethinkdb = require("rethinkdb");
+// const rethinkdb = require("rethinkdb");
+const Database = require("../db");
 const { v4: uuidv4 } = require("uuid");
-const database = require("../db");
+// const database = require("../db");
 
 var Template = {};
 
@@ -11,15 +12,24 @@ var Template = {};
 Template.create = async function (id) {
   const templateId = uuidv4();
   const template = {
-    id: templateId,
+    _id: templateId,
     targetId: id,
   };
 
-  await rethinkdb
-    .db("dd_data")
-    .table("templates")
-    .insert(template)
-    .run(database.connection);
+  try {
+    await Database.client
+      .db("dd_data")
+      .collection("templates")
+      .insertOne(template);
+  } catch (err) {
+    throw new Error("Failed to create template: " + err.message);
+  }
+
+  // await rethinkdb
+  //   .db("dd_data")
+  //   .table("templates")
+  //   .insert(template)
+  //   .run(database.connection);
 
   return templateId;
 };

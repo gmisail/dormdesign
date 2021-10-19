@@ -10,23 +10,28 @@ Database.setup = async function () {
     host: process.env.DATABASE_ADDRESS,
     port: 28015,
   });*/
-
-  const password = "<password>";
-  const name = "<name>";
-
-  const { MongoClient } = require("mongodb");
-  const uri = `mongodb+srv://${name}:${password}@dd-cluster-0.m5lsl.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`;
+  const uri = process.env.DATABASE_ADDRESS;
+  // const uri = `mongodb+srv://${name}:${password}@dd-cluster-0.m5lsl.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`;
+  // console.log("URI", uri, process.env);
   const client = new MongoClient(uri);
 
-  await client.connect().catch((err) => {
-    const collection = client.db("test").collection("devices");
-    // perform actions on the collection object
-    client.close();
-  });
+  try {
+    // Connect the client to the server
+    await client.connect();
+    // Establish and verify connection
+    await client.db("admin").command({ ping: 1 });
+    await client.db("dd_data").command({ ping: 1 });
 
-  if (!client) return;
+    // const collection = client
+    //   .db("test")
+    //   .collection("test_collection")
+    //   .insertOne({ name: "testName" });
+    console.log("Connected successfully to MongoDB server");
+  } catch (err) {
+    console.error("ERROR: Failed to connect to MongoDB: " + err);
+  }
 
-  Database.connection = client;
+  Database.client = client;
 
   /*
     Ensure that the database and required tables exist. If not, then
