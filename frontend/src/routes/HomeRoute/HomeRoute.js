@@ -50,6 +50,25 @@ class HomeRoute extends Component {
     this.grid.lineWidth = 2 * window.devicePixelRatio;
   };
 
+  generatePreviews = () => {
+    // get previews from the list
+    let previews = this.state.roomHistory.map(room => room.id);
+
+    // batch these calls...
+    /*
+      async function generatePreview() {
+      const data = await DataRequests.generatePreview(id);
+      setUrl(data.url);
+    }
+
+      generatePreview();  
+    */
+  
+    return this.state.roomHistory.map((room, id) => {
+      return <RoomPreviewCard key={room.id} id={room.id} roomName={room.name} preview={previews[id]}></RoomPreviewCard>
+    });
+  };
+
   componentWillUnmount() {
     // Cleanup callback
     this.scene.onResize = () => {};
@@ -71,9 +90,7 @@ class HomeRoute extends Component {
       <div className="recent-rooms-card">
         <h5>Recent Rooms</h5>
         <div className="recent-rooms">
-          {this.state.roomHistory.map((room, id) => (
-            <RoomPreviewCard key={room.id} id={room.id} roomName={room.name}></RoomPreviewCard>
-          ))}
+          { this.generatePreviews() }
         </div>
       </div>
     ) : null;

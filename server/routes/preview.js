@@ -5,24 +5,30 @@ const PreviewRenderer = require("../services/preview-renderer");
 
 let router = Router();
 
+/*
+  {
+    ids: [ room_id ]
+  }
+*/
 router.get("/", async (req, res) => {
-  const id = req.query.id;
+  const ids = req.query.ids;
 
-  if (id === undefined || id.length <= 0) {
+  if (ids === undefined || ids.length <= 0) {
     throw new Error("Missing room ID parameter for /preview route.");
   }
 
-  const room = await Room.get(id);
+  const previews = ids.map(async (id) => {
+    const room = await Room.get(id);
+    if (!room) {
+      return null;
+    }
+    
+    return await Preview.get(room);
+  });
 
-  if (!room) {
-    res.json({ message: "Invalid room ID." });
-  } else {
-    let previewUrl = await Preview.get(room);
-
-    res.json({
-      url: previewUrl,
-    });
-  }
+  res.json({
+    urls: previews
+  });
 });
 
 module.exports = router;
