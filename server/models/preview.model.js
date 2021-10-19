@@ -13,12 +13,7 @@ Preview.get = async function (room) {
   // doesn't exist in the cache, load it in...
   if (previewUrl === null) {
     previewUrl = PreviewRenderer.generatePreview(room);
-    await client.set(
-      `${id}:preview`,
-      previewUrl,
-      "EX",
-      Preview.CACHE_EXPIRATION
-    );
+    await client.set(`${id}:preview`, previewUrl, "EX", Preview.CACHE_EXPIRATION);
   }
 
   return previewUrl;

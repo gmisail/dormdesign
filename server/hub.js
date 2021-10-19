@@ -412,21 +412,6 @@ Hub.setup = function (sockets) {
   Hub.addEventListener("updateRoomName", Hub.updateRoomName);
   Hub.addEventListener("updateNickname", Hub.updateNickname);
 
-  // Hub.events.addListener("addItem", asyncErrorWrapper(Hub.addItem));
-  // Hub.events.addListener("updateItems", asyncErrorWrapper(Hub.updateItems));
-  // Hub.events.addListener("deleteItem", asyncErrorWrapper(Hub.deleteItem));
-  // Hub.events.addListener("updateLayout", asyncErrorWrapper(Hub.updateLayout));
-  // Hub.events.addListener("cloneRoom", asyncErrorWrapper(Hub.cloneRoom));
-  // Hub.events.addListener("deleteRoom", asyncErrorWrapper(Hub.deleteRoom));
-  // Hub.events.addListener(
-  //   "updateRoomName",
-  //   asyncErrorWrapper(Hub.updateRoomName)
-  // );
-  // Hub.events.addListener(
-  //   "updateNickname",
-  //   asyncErrorWrapper(Hub.updateNickname)
-  // );
-
   sockets.on("connection", Hub.onConnection);
 
   setInterval(Hub.onPing, PONG_TIME);

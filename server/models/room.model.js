@@ -51,7 +51,7 @@ Room.delete = async function (id) {
     await Database.client.db("dd_data").collection("rooms").deleteOne({ _id: id });
     console.log(`Room ${id} has been deleted from the database`);
   } catch (err) {
-    throw new Error("Failed to delete room: " + err);
+    throw new Error(`Failed to delete room ${id} ` + err);
   }
 
   Cache.client.del(id).then((_) => console.log(`Room ${id} has been removed from the cache.`));
@@ -73,7 +73,7 @@ Room.get = async function (id) {
   try {
     room = await Database.client.db("dd_data").collection("rooms").findOne({ _id: id });
   } catch (err) {
-    throw new Error("Failed to get room: " + err);
+    throw new Error(`Failed to get room ${id}: ` + err);
   }
 
   const res = await Cache.client.set(id, JSON.stringify(room));

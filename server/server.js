@@ -48,9 +48,7 @@ Server.setup = async function (app, port) {
       error.message = "Internal server error";
     }
 
-    return res
-      .status(error.status)
-      .json({ error: error.message ?? "Unkown error" });
+    return res.status(error.status).json({ error: error.message ?? "Unkown error" });
   });
 
   server.listen(port, () => console.log("Listening on localhost:" + port));

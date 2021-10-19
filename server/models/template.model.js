@@ -1,7 +1,5 @@
-// const rethinkdb = require("rethinkdb");
 const Database = require("../db");
 const { v4: uuidv4 } = require("uuid");
-// const database = require("../db");
 
 var Template = {};
 
@@ -26,12 +24,12 @@ Template.create = async function (id) {
 };
 
 Template.get = async function (id) {
-  console.log(id);
-  const template = await rethinkdb
-    .db("dd_data")
-    .table("templates")
-    .get(id)
-    .run(database.connection);
+  let template;
+  try {
+    template = await Database.client.db("dd_data").collection("templates").findOne({ _id: id });
+  } catch (err) {
+    throw new Error(`Failed to get template ${id}: ` + err);
+  }
 
   return template;
 };
