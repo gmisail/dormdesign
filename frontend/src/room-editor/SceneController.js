@@ -65,9 +65,7 @@ class SceneController {
   // Adds object to map keyed by object ID
   _addObject(obj) {
     if (this._objects.has(obj.id)) {
-      throw new Error(
-        "Unable to add object to scene. Object with matching ID already added"
-      );
+      throw new Error("Unable to add object to scene. Object with matching ID already added");
     }
     this._objects.set(obj.id, obj);
   }
@@ -75,9 +73,7 @@ class SceneController {
   // Removes object and all its children from map keyed by object ID
   _removeObject(obj) {
     if (!this._objects.has(obj.id)) {
-      throw new Error(
-        `Unable to remove object form scene. No object matching ID ${obj.id} found.`
-      );
+      throw new Error(`Unable to remove object form scene. No object matching ID ${obj.id} found.`);
     }
     this._objects.delete(obj.id);
     this._recursivelyRemoveChildren(obj);

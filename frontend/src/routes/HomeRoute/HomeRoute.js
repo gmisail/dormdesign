@@ -45,10 +45,7 @@ class HomeRoute extends Component {
   }
 
   fitGridToWindow = () => {
-    this.grid.size = new Vector2(
-      this.backgroundCanvasRef.width,
-      this.backgroundCanvasRef.height
-    );
+    this.grid.size = new Vector2(this.backgroundCanvasRef.width, this.backgroundCanvasRef.height);
     this.grid.cellSize = 80 * window.devicePixelRatio;
     this.grid.lineWidth = 2 * window.devicePixelRatio;
   };
@@ -75,11 +72,7 @@ class HomeRoute extends Component {
         <h5>Recent Rooms</h5>
         <div className="recent-rooms">
           {this.state.roomHistory.map((room, id) => (
-            <RoomPreviewCard
-              key={room.id}
-              id={room.id}
-              roomName={room.name}
-            ></RoomPreviewCard>
+            <RoomPreviewCard key={room.id} id={room.id} roomName={room.name}></RoomPreviewCard>
           ))}
         </div>
       </div>
@@ -89,10 +82,7 @@ class HomeRoute extends Component {
   render() {
     return (
       <>
-        <canvas
-          ref={(ref) => (this.backgroundCanvasRef = ref)}
-          id="background-canvas"
-        />
+        <canvas ref={(ref) => (this.backgroundCanvasRef = ref)} id="background-canvas" />
         <div className="content-wrapper">
           <div className="content-container">
             <div className="header-container">
@@ -114,9 +104,7 @@ class HomeRoute extends Component {
                 Join Room
               </button>
             </div>
-            <div className="recent-rooms-container">
-              {this.renderExistingRooms()}
-            </div>
+            <div className="recent-rooms-container">{this.renderExistingRooms()}</div>
           </div>
         </div>
 
@@ -127,9 +115,7 @@ class HomeRoute extends Component {
           }}
         >
           <Modal.Header closeButton>
-            <Modal.Title className="custom-modal-title">
-              Create a Room
-            </Modal.Title>
+            <Modal.Title className="custom-modal-title">Create a Room</Modal.Title>
           </Modal.Header>
           <Modal.Body>
             <SingleInputForm
@@ -149,9 +135,7 @@ class HomeRoute extends Component {
           }}
         >
           <Modal.Header closeButton>
-            <Modal.Title className="custom-modal-title">
-              Join a Room
-            </Modal.Title>
+            <Modal.Title className="custom-modal-title">Join a Room</Modal.Title>
           </Modal.Header>
           <Modal.Body>
             <SingleInputForm

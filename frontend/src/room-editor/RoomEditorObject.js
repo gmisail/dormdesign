@@ -30,10 +30,7 @@ class RoomEditorObject extends SceneObject {
 
     this.size = new Vector2(100, 100);
     this.origin = new Vector2(0.5, 0.5);
-    this.position = new Vector2(
-      this.scene.canvas.width / 2,
-      this.scene.canvas.height / 2
-    );
+    this.position = new Vector2(this.scene.canvas.width / 2, this.scene.canvas.height / 2);
 
     // Map of item ids that have been added to room
     this.roomItems = new Map();
@@ -49,10 +46,7 @@ class RoomEditorObject extends SceneObject {
 
     this.floorGrid = new RoomGridObject({
       scene: this.scene,
-      position: new Vector2(
-        -this.size.x * this.origin.x,
-        -this.size.y * this.origin.y
-      ),
+      position: new Vector2(-this.size.x * this.origin.x, -this.size.y * this.origin.y),
       size: new Vector2(this.size.x, this.size.y),
       scale: new Vector2(1, 1),
       opacity: gridOpacity ?? 1.0,
@@ -116,16 +110,11 @@ class RoomEditorObject extends SceneObject {
   // Scales object by dScale about provided point (point should be in the parent's local coordinate system)
   scaleAbout(dScale, point) {
     const oldScale = this.scale;
-    this.setScale(
-      new Vector2(this.scale.x * dScale.x, this.scale.y * dScale.y)
-    );
+    this.setScale(new Vector2(this.scale.x * dScale.x, this.scale.y * dScale.y));
     // Amount that object has actually been scaled
     dScale = new Vector2(this.scale.x / oldScale.x, this.scale.y / oldScale.y);
     // Vector from the origin of this object to the point where the point is
-    const relativeToOrigin = new Vector2(
-      point.x - this.position.x,
-      point.y - this.position.y
-    );
+    const relativeToOrigin = new Vector2(point.x - this.position.x, point.y - this.position.y);
     // Scaled version of previous vector
     const relativeToOriginScaled = new Vector2(
       relativeToOrigin.x * dScale.x,
@@ -182,12 +171,7 @@ class RoomEditorObject extends SceneObject {
         // Prevent divide-by-zero
         this.setScale(new Vector2(0, 0));
       } else {
-        this.setScale(
-          new Vector2(
-            usableCanvasWidth / roomWidth,
-            usableCanvasWidth / roomWidth
-          )
-        );
+        this.setScale(new Vector2(usableCanvasWidth / roomWidth, usableCanvasWidth / roomWidth));
       }
     } else {
       // Prevent divide-by-zero
@@ -195,10 +179,7 @@ class RoomEditorObject extends SceneObject {
         this.setScale(new Vector2(0, 0));
       } else {
         this.setScale(
-          new Vector2(
-            usableCanvasHeight / roomHeight,
-            usableCanvasHeight / roomHeight
-          )
+          new Vector2(usableCanvasHeight / roomHeight, usableCanvasHeight / roomHeight)
         );
       }
     }
@@ -246,9 +227,7 @@ class RoomEditorObject extends SceneObject {
 
   // Ensures that item zIndexes aren't larger than necessary.
   _normalizeItemZIndexes() {
-    const sortedItems = [...this.roomItems.values()].sort(
-      (a, b) => a.zIndex - b.zIndex
-    );
+    const sortedItems = [...this.roomItems.values()].sort((a, b) => a.zIndex - b.zIndex);
     const updated = [];
     for (let i = 0; i < sortedItems.length; i++) {
       const item = sortedItems[i];
@@ -265,11 +244,9 @@ class RoomEditorObject extends SceneObject {
   // Mouse callbacks that are passed to mouse controller
   onMouseDown(position) {
     // Get the object indices that were under the click and sort in order of descending zIndex so that highest object takes priority
-    const clicked = this._getChildrenIndicesAtPosition(position).sort(
-      (a, b) => {
-        return this.children[b].zIndex - this.children[a].zIndex;
-      }
-    );
+    const clicked = this._getChildrenIndicesAtPosition(position).sort((a, b) => {
+      return this.children[b].zIndex - this.children[a].zIndex;
+    });
     if (clicked.length > 0) {
       for (let i = 0; i < clicked.length; i++) {
         const obj = this.children[clicked[i]];
@@ -296,25 +273,16 @@ class RoomEditorObject extends SceneObject {
           return;
         }
 
-        const initialPosition = new Vector2(
-          selectedObject.position.x,
-          selectedObject.position.y
-        );
+        const initialPosition = new Vector2(selectedObject.position.x, selectedObject.position.y);
         const unsnappedPos = selectedObject.getUnsnappedPosition();
         const globalPos = this.localToGlobalPoint(unsnappedPos);
 
         selectedObject.setPosition(
-          this.globalToLocalPoint(
-            new Vector2(globalPos.x + delta.x, globalPos.y + delta.y)
-          )
+          this.globalToLocalPoint(new Vector2(globalPos.x + delta.x, globalPos.y + delta.y))
         );
 
         const finalPosition = selectedObject.position;
-        if (
-          initialPosition.x == finalPosition.x &&
-          initialPosition.y == finalPosition.y
-        )
-          return;
+        if (initialPosition.x == finalPosition.x && initialPosition.y == finalPosition.y) return;
 
         this._selectedObjectPositionUpdated = true;
       }
@@ -338,10 +306,7 @@ class RoomEditorObject extends SceneObject {
     // Limit scroll dy since browsers seem to have vastly different scroll speeds
     dy = Math.max(-3, Math.min(dy, 3));
 
-    this.scaleAbout(
-      new Vector2(1 + dy * this.zoomSpeed, 1 + dy * this.zoomSpeed),
-      mousePosition
-    );
+    this.scaleAbout(new Vector2(1 + dy * this.zoomSpeed, 1 + dy * this.zoomSpeed), mousePosition);
   }
 
   selectItem(id) {
@@ -421,10 +386,7 @@ class RoomEditorObject extends SceneObject {
   }
 
   // Updates object in room. Returns true if successful false if not
-  updateRoomItem(
-    id,
-    { position, name, width, height, rotation, movementLocked, zIndex, visible }
-  ) {
+  updateRoomItem(id, { position, name, width, height, rotation, movementLocked, zIndex, visible }) {
     const obj = this.roomItems.get(id);
     if (!obj) {
       return false;
@@ -514,24 +476,15 @@ class RoomEditorObject extends SceneObject {
 
     // Prevent grid from panning out of view
     const bbox = this.getBoundingBox();
-    const actualSize = new Vector2(
-      bbox.p2.x - bbox.p1.x,
-      bbox.p2.y - bbox.p1.y
-    );
+    const actualSize = new Vector2(bbox.p2.x - bbox.p1.x, bbox.p2.y - bbox.p1.y);
     const restrictedPosition = new Vector2(
       Math.min(
         actualSize.x * (1 - this.origin.x),
-        Math.max(
-          this.scene.canvas.width - actualSize.x * this.origin.x,
-          this.position.x
-        )
+        Math.max(this.scene.canvas.width - actualSize.x * this.origin.x, this.position.x)
       ),
       Math.min(
         actualSize.y * (1 - this.origin.y),
-        Math.max(
-          this.scene.canvas.height - actualSize.y * this.origin.y,
-          this.position.y
-        )
+        Math.max(this.scene.canvas.height - actualSize.y * this.origin.y, this.position.y)
       )
     );
     if (
@@ -549,24 +502,15 @@ class RoomEditorObject extends SceneObject {
 
       // Restrict position to parent borders
       let bbox = obj.getBoundingBox();
-      const actualSize = new Vector2(
-        bbox.p2.x - bbox.p1.x,
-        bbox.p2.y - bbox.p1.y
-      );
+      const actualSize = new Vector2(bbox.p2.x - bbox.p1.x, bbox.p2.y - bbox.p1.y);
       const restrictedPosition = new Vector2(
         Math.min(
           this.size.x * (1 - this.origin.x) - actualSize.x * (1 - obj.origin.x),
-          Math.max(
-            -this.size.x * this.origin.x + actualSize.x * obj.origin.x,
-            obj.position.x
-          )
+          Math.max(-this.size.x * this.origin.x + actualSize.x * obj.origin.x, obj.position.x)
         ),
         Math.min(
           this.size.y * (1 - this.origin.y) - actualSize.y * (1 - obj.origin.y),
-          Math.max(
-            -this.size.y * this.origin.y + actualSize.y * obj.origin.y,
-            obj.position.y
-          )
+          Math.max(-this.size.y * this.origin.y + actualSize.y * obj.origin.y, obj.position.y)
         )
       );
 
@@ -588,9 +532,7 @@ class RoomEditorObject extends SceneObject {
       if (this.bounds.points) {
         for (let i = 0; i < this.bounds.points.length; i++) {
           const v1 = this.bounds.points[i];
-          const v2 = this.bounds.points[
-            i === this.bounds.points.length - 1 ? 0 : i + 1
-          ];
+          const v2 = this.bounds.points[i === this.bounds.points.length - 1 ? 0 : i + 1];
           if (Collisions.segmentIntersectsRect(v1, v2, bbox.p1, bbox.p2)) {
             obj.outOfBounds = true;
           }

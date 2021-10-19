@@ -17,19 +17,10 @@ Template.create = async function (id) {
   };
 
   try {
-    await Database.client
-      .db("dd_data")
-      .collection("templates")
-      .insertOne(template);
+    await Database.client.db("dd_data").collection("templates").insertOne(template);
   } catch (err) {
     throw new Error("Failed to create template: " + err.message);
   }
-
-  // await rethinkdb
-  //   .db("dd_data")
-  //   .table("templates")
-  //   .insert(template)
-  //   .run(database.connection);
 
   return templateId;
 };

@@ -14,7 +14,5 @@ export default function RoomPreview({ id }) {
     generatePreview();
   }, [id]);
 
-  return (
-    <img className="room-preview-image" src={url} alt="Room Preview"></img>
-  );
+  return <img className="room-preview-image" src={url} alt="Room Preview"></img>;
 }

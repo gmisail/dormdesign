@@ -9,4 +9,19 @@
     width: 100%;
     height: 100%;
   }
+
+  svg {
+    /* 
+      Forces transformations to use hardware acceleration.
+      https://blog.teamtreehouse.com/increase-your-sites-performance-with-hardware-accelerated-css
+
+      The reason this is here is because on some browsers (e.g. Safari) certain transformations (such as scale on hover) cause
+      the element to "wiggle" for some reason. This seems to have fixed that issue.
+    */
+    -webkit-transform: translateZ(0);
+    -moz-transform: translateZ(0);
+    -ms-transform: translateZ(0);
+    -o-transform: translateZ(0);
+    transform: translateZ(0);
+  }
 }

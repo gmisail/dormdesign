@@ -41,11 +41,7 @@ Hub.addClient = function (socket) {
 
   Users.add(socket.roomID, socket.id, "?");
 
-  console.log(
-    chalk.greenBright(
-      `Client ${socket.id} has connected to roomID ${socket.roomID}.`
-    )
-  );
+  console.log(chalk.greenBright(`Client ${socket.id} has connected to roomID ${socket.roomID}.`));
 };
 
 /*
@@ -57,9 +53,7 @@ Hub.removeClient = async function (clientID) {
 
   const roomID = Hub.connections.get(clientID).roomID;
   if (roomID === undefined || !Hub.rooms.has(roomID)) {
-    console.error(
-      "Error while removing client: RoomID stored under client is invalid"
-    );
+    console.error("Error while removing client: RoomID stored under client is invalid");
     return;
   }
 
@@ -76,9 +70,7 @@ Hub.removeClient = async function (clientID) {
     data: { users },
   });
 
-  console.log(
-    chalk.red(`Client ${clientID} has disconnected from roomID ${roomID}.`)
-  );
+  console.log(chalk.red(`Client ${clientID} has disconnected from roomID ${roomID}.`));
 
   if (Hub.rooms.get(roomID).size <= 0) {
     Room.save(roomID);
@@ -147,9 +139,7 @@ Hub.sendError = function (id, errorAction, errorMessage) {
   }
 
   if (errorMessage === undefined || errorAction === undefined) {
-    console.error(
-      "Cannot send error to client: invalid error message / action."
-    );
+    console.error("Cannot send error to client: invalid error message / action.");
     return;
   }
 
@@ -168,11 +158,7 @@ Hub.addItem = async function ({ socket, roomID, data, sendResponse }) {
   const item = await Room.addItem(roomID, data);
 
   if (item === null) {
-    Hub.sendError(
-      socket.id,
-      "addItem",
-      "Unable to add item to the database nor room."
-    );
+    Hub.sendError(socket.id, "addItem", "Unable to add item to the database nor room.");
     return;
   }
 
@@ -185,10 +171,7 @@ Hub.addItem = async function ({ socket, roomID, data, sendResponse }) {
 Hub.updateItems = async function ({ socket, roomID, data, sendResponse }) {
   if (data.items !== undefined && data.items.length > 0) {
     // Convert array of updates to single object of form { itemID_1 : updates, itemID_2 : updates ... }
-    const items = data.items.reduce(
-      (obj, item) => ((obj[item.id] = item.updated), obj),
-      {}
-    );
+    const items = data.items.reduce((obj, item) => ((obj[item.id] = item.updated), obj), {});
 
     try {
       await Room.updateItems(roomID, items);
@@ -207,11 +190,7 @@ Hub.updateItems = async function ({ socket, roomID, data, sendResponse }) {
 
 Hub.deleteItem = async function ({ socket, roomID, data, sendResponse }) {
   if (data === undefined || data.id === undefined) {
-    Hub.sendError(
-      socket.id,
-      "deleteItem",
-      "Could not delete item with undefined ID."
-    );
+    Hub.sendError(socket.id, "deleteItem", "Could not delete item with undefined ID.");
     return;
   }
 
@@ -274,8 +253,7 @@ Hub.cloneRoom = async function ({ socket, roomID, data, sendResponse }) {
 };
 
 Hub.updateRoomName = async function ({ socket, roomID, data, sendResponse }) {
-  if (data === undefined || data.name === undefined || data.name.length <= 0)
-    return;
+  if (data === undefined || data.name === undefined || data.name.length <= 0) return;
 
   let name = data.name.trim().substring(0, Math.min(40, data.name.length));
 
@@ -308,12 +286,7 @@ Hub.deleteRoom = async function ({ socket, roomID, data, sendResponse }) {
   every client the array of users
 */
 Hub.updateNickname = async function ({ socket, roomID, data, sendResponse }) {
-  if (
-    data === undefined ||
-    data.userName === undefined ||
-    data.userName.length <= 0
-  )
-    return;
+  if (data === undefined || data.userName === undefined || data.userName.length <= 0) return;
 
   let userName = data.userName.trim();
 

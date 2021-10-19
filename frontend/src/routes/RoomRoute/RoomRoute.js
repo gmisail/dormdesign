@@ -2,45 +2,43 @@ import "./RoomRoute.scss";
 
 import { BsBoxArrowUpRight, BsGear, BsPencil, BsPlus } from "react-icons/bs";
 import { Modal, modalTypes } from "../../components/modals/Modal";
-import React, { useCallback, useContext, useEffect } from "react";
+import React, { useCallback, useEffect } from "react";
+import {
+  addItem,
+  cloneRoom,
+  connectToRoom,
+  deleteItem,
+  deleteRoom,
+  setUserName,
+  updateItems,
+  updateRoomName,
+} from "../../context/RoomStore";
+import { useDispatch, useSelector } from "react-redux";
 
 import ActiveUsersIndicator from "../../components/ActiveUsersIndicator/ActiveUsersIndicator";
 import DormItemList from "../../components/DormItemList/DormItemList";
 import IconButton from "../../components/IconButton/IconButton";
-import { RoomContext } from "../../context/RoomContext";
 import RoomEditor from "../../components/RoomEditor/RoomEditor";
 import { Spinner } from "react-bootstrap";
 import useModal from "../../hooks/useModal";
 import { useParams } from "react-router-dom";
 
 export const RoomRoute = () => {
-  const {
-    roomName,
-    templateId,
-    items,
-    loading,
-    error,
-    socketConnection,
-    userName,
-    userNames,
-    connectToRoom,
-    updateRoomName,
-    cloneRoom,
-    setUserName,
-    addItem,
-    updateItems,
-    deleteItem,
-    deleteRoom,
-    selectedItemID,
-  } = useContext(RoomContext);
+  const socketConnection = useSelector((state) => state.socketConnection);
+  const roomName = useSelector((state) => state.roomName);
+  const templateId = useSelector((state) => state.templateId);
+  const loading = useSelector((state) => state.loading);
+  const error = useSelector((state) => state.error);
+  const userName = useSelector((state) => state.userName);
 
   const { id } = useParams();
   const [modalProps, toggleModal] = useModal();
+  const dispatch = useDispatch();
 
   // Called when component is first mounted
   useEffect(() => {
-    connectToRoom(id);
-  }, [connectToRoom, id]);
+    dispatch(connectToRoom(id));
+  }, [connectToRoom, id, dispatch]);
 
   /* Presents choose name modal if userName is null */
   useEffect(() => {
@@ -48,15 +46,15 @@ export const RoomRoute = () => {
     if (userName === null && socketConnection !== null) {
       toggleModal(modalTypes.chooseName, {
         onSubmit: (newName) => {
-          setUserName(newName);
+          dispatch(setUserName(newName));
           toggleModal();
         },
       });
     } else if (userName !== null && socketConnection !== null) {
       // if a username exists, update it on the server
-      setUserName(userName);
+      dispatch(setUserName(userName));
     }
-  }, [loading, userName, setUserName, toggleModal, socketConnection]);
+  }, [loading, userName, setUserName, toggleModal, socketConnection, dispatch]);
 
   useEffect(() => {
     /* There's an error. Only display modal if still connected to room (since there's a different case for that handled below) */
@@ -76,11 +74,11 @@ export const RoomRoute = () => {
       toggleModal(modalTypes.add, {
         // Form passes item id and the updated properties/values. We can ignore the id since this a new item
         onSubmit: (_, properties) => {
-          addItem(properties);
+          dispatch(addItem(properties));
           toggleModal();
         },
       }),
-    [addItem, toggleModal]
+    [addItem, toggleModal, dispatch]
   );
 
   const onClickEditItemButton = useCallback(
@@ -89,56 +87,53 @@ export const RoomRoute = () => {
         editingItem: item,
         onSubmit: (id, updated) => {
           if (Object.keys(updated).length > 0) {
-            updateItems([{ id, updated }]);
+            dispatch(updateItems([{ id, updated }]));
           }
           toggleModal();
         },
       }),
-    [updateItems, toggleModal]
+    [updateItems, toggleModal, dispatch]
   );
 
-  const onClickDuplicateItemButton = useCallback((item) => addItem(item), [
+  const onClickDuplicateItemButton = useCallback((item) => dispatch(addItem(item)), [
     addItem,
+    dispatch,
   ]);
 
   const onClickClaimItemButton = useCallback(
     (item) =>
-      updateItems([
-        {
-          id: item.id,
-          updated: { claimedBy: item.claimedBy === userName ? null : userName },
-        },
-      ]),
-    [updateItems, userName]
+      dispatch(
+        updateItems([
+          {
+            id: item.id,
+            updated: {
+              claimedBy: item.claimedBy === userName ? null : userName,
+            },
+          },
+        ])
+      ),
+    [updateItems, userName, dispatch]
   );
 
   const onClickSettingsButton = useCallback(
     () =>
       toggleModal(modalTypes.settings, {
         onClone: (target) => {
-          cloneRoom(id, target);
+          dispatch(cloneRoom(id, target));
         },
         userName: userName,
         onChangeUserName: (name) => {
-          setUserName(name);
+          dispatch(setUserName(name));
         },
         roomName: roomName,
         onChangeRoomName: (name) => {
-          updateRoomName(id, name);
+          dispatch(updateRoomName(id, name));
         },
         onDeleteRoom: () => {
-          deleteRoom(id);
+          dispatch(deleteRoom(id));
         },
       }),
-    [
-      toggleModal,
-      cloneRoom,
-      id,
-      userName,
-      setUserName,
-      roomName,
-      updateRoomName,
-    ]
+    [toggleModal, cloneRoom, id, userName, setUserName, roomName, updateRoomName, dispatch]
   );
 
   const onClickRoomName = useCallback(
@@ -146,26 +141,28 @@ export const RoomRoute = () => {
       toggleModal(modalTypes.updateRoomName, {
         name: roomName,
         onSubmit: (updatedRoomName) => {
-          // Only update if name actually changed
           if (updatedRoomName !== roomName) {
-            updateRoomName(id, updatedRoomName);
+            // Only update if name actually changed
+            dispatch(updateRoomName(id, updatedRoomName));
           }
           toggleModal();
         },
         onHide: () => toggleModal(),
       }),
-    [toggleModal, updateRoomName, roomName, id]
+    [toggleModal, updateRoomName, roomName, id, dispatch]
   );
 
   const onToggleItemEditorVisibility = useCallback(
     (item) =>
-      updateItems([
-        {
-          id: item.id,
-          updated: { visibleInEditor: !item.visibleInEditor },
-        },
-      ]),
-    [updateItems]
+      dispatch(
+        updateItems([
+          {
+            id: item.id,
+            updated: { visibleInEditor: !item.visibleInEditor },
+          },
+        ])
+      ),
+    [updateItems, dispatch]
   );
 
   /* 
@@ -178,8 +175,8 @@ export const RoomRoute = () => {
     happened
   */
   const lostConnection = error !== null && socketConnection === null;
-  const dataFetchError =
-    error !== null && socketConnection === null && items === null;
+  const dataFetchError = lostConnection; //lostConnection && items === null;
+
   return (
     <>
       {loading ? (
@@ -189,10 +186,7 @@ export const RoomRoute = () => {
           </Spinner>
         </div>
       ) : lostConnection || dataFetchError ? (
-        <p
-          className="text-center mt-5"
-          style={{ fontSize: 20, fontWeight: 500 }}
-        >
+        <p className="text-center mt-5" style={{ fontSize: 20, fontWeight: 500 }}>
           {dataFetchError
             ? "Error fetching room data. Make sure the room ID is valid."
             : "Lost connection to room. Please refresh your browser."}
@@ -208,7 +202,7 @@ export const RoomRoute = () => {
             </div>
 
             <div className="room-header-buttons">
-              <ActiveUsersIndicator usernames={userNames} maxUsernames={3} />
+              <ActiveUsersIndicator maxUsernames={3} />
               <IconButton
                 onClick={() => {
                   toggleModal(modalTypes.share, {
@@ -220,10 +214,7 @@ export const RoomRoute = () => {
               >
                 <BsBoxArrowUpRight />
               </IconButton>
-              <IconButton
-                onClick={onClickSettingsButton}
-                style={{ fontSize: "0.97em" }}
-              >
+              <IconButton onClick={onClickSettingsButton} style={{ fontSize: "0.97em" }}>
                 <BsGear />
               </IconButton>
             </div>
@@ -243,12 +234,10 @@ export const RoomRoute = () => {
               <span className="add-item-button-text">Add Item</span>
             </button>
             <DormItemList
-              items={items}
-              selectedItemID={selectedItemID}
               onEditItem={onClickEditItemButton}
               onDuplicateItem={onClickDuplicateItemButton}
               onClaimItem={onClickClaimItemButton}
-              onDeleteItem={deleteItem}
+              onDeleteItem={(item) => dispatch(deleteItem(item))}
               onToggleEditorVisibility={onToggleItemEditorVisibility}
             ></DormItemList>
           </div>

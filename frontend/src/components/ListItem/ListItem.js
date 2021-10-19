@@ -1,64 +1,64 @@
-import React, { useState, useEffect, useRef, useContext } from "react";
+import "./ListItem.scss";
+
 import {
-  BsThreeDots,
-  BsX,
-  BsPencil,
-  BsPersonPlus,
-  BsPersonDash,
   BsEye,
   BsEyeSlash,
   BsFiles,
+  BsPencil,
+  BsPersonDash,
+  BsPersonPlus,
+  BsThreeDots,
+  BsX,
 } from "react-icons/bs";
-import { usePopper } from "react-popper";
-import { RoomContext } from "../../context/RoomContext";
+import { Modal, modalTypes } from "../../components/modals/Modal";
+import React, { useEffect, useRef, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+
 import IconButton from "../IconButton/IconButton";
-import { modalTypes, Modal } from "../../components/modals/Modal";
+import { setUserName } from "../../context/RoomStore";
 import useModal from "../../hooks/useModal";
+import { usePopper } from "react-popper";
 
-import "./ListItem.scss";
-
-const ListItem = (props) => {
-  const {
-    item,
-    onEdit,
-    onClaim,
-    onDelete,
-    onDuplicate,
-    onToggleEditorVisibility,
-    className,
-  } = props;
-
+const ListItem = ({
+  item,
+  onEdit,
+  onClaim,
+  onDelete,
+  onDuplicate,
+  onToggleEditorVisibility,
+  className,
+}) => {
   /*
     userName is used to determine if the claim option in the menu should be say 
     "Claim" or "Unclaim" based on whether or not userName matches item.claimedBy
 
     Note that this could be an issue if two users input the same userName
   */
-  const { userName, setUserName } = useContext(RoomContext);
+  const userName = useSelector((state) => state.userName);
+  const socketConnection = useSelector((state) => state.socketConnection);
+
+  const dispatch = useDispatch();
+
   const [modalProps, toggleModal] = useModal();
   const [showMenu, setShowMenu] = useState(false);
   const menuButtonRef = useRef(null);
   const menuRef = useRef(null);
-  const { styles, attributes } = usePopper(
-    menuButtonRef.current,
-    menuRef.current,
-    {
-      placement: "left-start",
-      modifiers: [
-        {
-          name: "flip",
-          enabled: true,
-        },
-      ],
-    }
-  );
+  const { styles, attributes } = usePopper(menuButtonRef.current, menuRef.current, {
+    placement: "left-start",
+    modifiers: [
+      {
+        name: "flip",
+        enabled: true,
+      },
+    ],
+  });
 
   // Called when a button in menu is clicked. Closes the menu and calls passed callback
   const menuOptionClicked = (callback) => {
     if (callback === onClaim && userName === null) {
       toggleModal(modalTypes.chooseName, {
         onSubmit: (newName) => {
-          setUserName(newName);
+          dispatch(setUserName(newName));
           toggleModal();
         },
       });
@@ -94,16 +94,12 @@ const ListItem = (props) => {
       <div className="list-item-content">
         <span>
           <span className="item-name">{item.name}</span>
-          <span className="item-quantity">
-            {item.quantity > 1 ? ` (${item.quantity})` : null}
-          </span>
+          <span className="item-quantity">{item.quantity > 1 ? ` (${item.quantity})` : null}</span>
         </span>
       </div>
 
       <div className="list-item-content">
-        {item.claimedBy ? (
-          <i className="mr-3">Claimed by {item.claimedBy}</i>
-        ) : null}
+        {item.claimedBy ? <i className="mr-3">Claimed by {item.claimedBy}</i> : null}
         <IconButton
           ref={menuButtonRef}
           className="item-menu-button"
@@ -154,10 +150,7 @@ const ListItem = (props) => {
               in Editor
             </li>
 
-            <li
-              className="color-danger"
-              onClick={() => menuOptionClicked(onDelete)}
-            >
+            <li className="color-danger" onClick={() => menuOptionClicked(onDelete)}>
               <BsX />
               Delete
             </li>

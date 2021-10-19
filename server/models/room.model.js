@@ -48,18 +48,13 @@ Room.create = async function (name) {
 
 Room.delete = async function (id) {
   try {
-    await Database.client
-      .db("dd_data")
-      .collection("rooms")
-      .deleteOne({ _id: id });
+    await Database.client.db("dd_data").collection("rooms").deleteOne({ _id: id });
     console.log(`Room ${id} has been deleted from the database`);
   } catch (err) {
     throw new Error("Failed to delete room: " + err);
   }
 
-  Cache.client
-    .del(id)
-    .then((_) => console.log(`Room ${id} has been removed from the cache.`));
+  Cache.client.del(id).then((_) => console.log(`Room ${id} has been removed from the cache.`));
 };
 
 /**
@@ -76,10 +71,7 @@ Room.get = async function (id) {
 
   /* Since it is not cached, retrieve it from the database and store it in the cache. */
   try {
-    room = await Database.client
-      .db("dd_data")
-      .collection("rooms")
-      .findOne({ _id: id });
+    room = await Database.client.db("dd_data").collection("rooms").findOne({ _id: id });
   } catch (err) {
     throw new Error("Failed to get room: " + err);
   }
@@ -232,8 +224,7 @@ Room.removeItem = async function (id, itemID) {
 
     return true;
   } catch (error) {
-    const err =
-      "Failed to remove item " + itemId + " from room " + id + ". " + error;
+    const err = "Failed to remove item " + itemId + " from room " + id + ". " + error;
 
     console.error(err);
     throw new Error(err);
@@ -280,10 +271,7 @@ Room.updateItems = async function (id, updates) {
 
     for (let item in room.items) {
       if (room.items[item].id in updates) {
-        room.items[item] = Object.assign(
-          room.items[item],
-          updates[room.items[item].id]
-        );
+        room.items[item] = Object.assign(room.items[item], updates[room.items[item].id]);
       }
     }
 
@@ -314,18 +302,13 @@ Room.save = async function (id) {
   } else {
     // This could occur if the room was just fully deleted
     console.log(
-      "Cannot push room from cache to database " +
-        id +
-        ". The room doesn't exist in the cache"
+      "Cannot push room from cache to database " + id + ". The room doesn't exist in the cache"
     );
     return;
   }
 
   try {
-    await Database.client
-      .db("dd_data")
-      .collection("rooms")
-      .replaceOne({ _id: id }, room);
+    await Database.client.db("dd_data").collection("rooms").replaceOne({ _id: id }, room);
   } catch (err) {
     throw new Error("Failed to save room from cache to db: " + err);
   }

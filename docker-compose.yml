@@ -2,7 +2,7 @@ version: "3.8"
 services:
   cache:
     image: redis:alpine
-	restart: unless-stopped
+    restart: unless-stopped
     ports:
       - 6379:6379  
   db:
@@ -20,6 +20,7 @@ services:
     restart: unless-stopped
     environment:
       - DATABASE_ADDRESS=db
+      - CACHE_ADDRESS=cache
     depends_on:
       - db
   frontend:
@@ -43,7 +44,7 @@ services:
       - frontend
       - server
       - db
-	  - cache
+      - cache
     command: '/bin/sh -c ''while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g "daemon off;"''' # Reload auto-renewed ssl certificates
   certbot:
     image: certbot/certbot
