@@ -50,22 +50,12 @@ class HomeRoute extends Component {
     this.grid.lineWidth = 2 * window.devicePixelRatio;
   };
 
-  generatePreviews = () => {
-    // get previews from the list
-    let previews = this.state.roomHistory.map(room => room.id);
-
-    // batch these calls...
-    /*
-      async function generatePreview() {
-      const data = await DataRequests.generatePreview(id);
-      setUrl(data.url);
-    }
-
-      generatePreview();  
-    */
-  
+  generatePreviews = async () => {
+    const previews = this.state.roomHistory.map(room => room.id);
+    const previewsData = await DataRequests.generatePreview(previews);
+    
     return this.state.roomHistory.map((room, id) => {
-      return <RoomPreviewCard key={room.id} id={room.id} roomName={room.name} preview={previews[id]}></RoomPreviewCard>
+      return <RoomPreviewCard key={room.id} id={room.id} roomName={room.name} preview={previewsData[id]}></RoomPreviewCard>
     });
   };
 

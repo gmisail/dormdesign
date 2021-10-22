@@ -100,13 +100,22 @@ class DataRequests {
     }
   }
 
-  static async generatePreview(id) {
-    if (!id) {
-      throw new Error("Can't generate template from undefined template.");
+  static async generatePreview(ids) {
+    if (!ids) {
+      throw new Error("Can't generate preview from undefined ID.");
     }
 
-    const response = await fetch("/api/preview?id=" + id);
+    const response = await fetch("/api/preview", {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(ids)
+    });
+
     const data = response.json();
+
+    console.log(data);
 
     if (!response.ok) {
       const message = `${response.status} Error generating room preview: ${data.message}`;

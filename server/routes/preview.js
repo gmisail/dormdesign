@@ -10,21 +10,24 @@ let router = Router();
     ids: [ room_id ]
   }
 */
-router.get("/", async (req, res) => {
-  const ids = req.query.ids;
+router.post("/", async (req, res) => {
+  const ids = req.body;
 
   if (ids === undefined || ids.length <= 0) {
     throw new Error("Missing room ID parameter for /preview route.");
   }
 
-  const previews = ids.map(async (id) => {
+  const previews = await Promise.all(ids.map(async (id) => {
     const room = await Room.get(id);
     if (!room) {
       return null;
     }
     
-    return await Preview.get(room);
-  });
+    const roomPreview = await Preview.get(room);
+    return roomPreview;
+  }));
+
+  console.log(previews)
 
   res.json({
     urls: previews
