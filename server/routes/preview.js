@@ -5,11 +5,11 @@ const PreviewRenderer = require("../services/preview-renderer");
 
 let router = Router();
 
-/*
-  {
-    ids: [ room_id ]
-  }
-*/
+/**
+ *  Accepts an array of room ID's an returns an array of the same length where
+ *  each element is either the preview URI or null (if the operation failed for
+ *  that room)
+ */
 router.post("/", async (req, res) => {
   const ids = req.body;
 
@@ -21,17 +21,17 @@ router.post("/", async (req, res) => {
     Since each render is asynchronous, we need to wait for 
     all of them to finish before sending them over. 
   */
-  const previews = await Promise.all(ids.map(async (id) => {
-    const room = await Room.get(id);
-    if (!room) {
-      return null;
-    }
-    
-    const roomPreview = await Preview.get(room);
-    return roomPreview;
-  }));
+  const previews = await Promise.all(
+    ids.map(async (id) => {
+      const room = await Room.get(id);
+      if (!room) {
+        return null;
+      }
 
-  console.log(previews)
+      const roomPreview = await Preview.get(room);
+      return roomPreview;
+    })
+  );
 
   res.json({ previews });
 });
