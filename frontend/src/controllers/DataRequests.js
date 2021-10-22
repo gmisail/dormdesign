@@ -100,20 +100,28 @@ class DataRequests {
     }
   }
 
-  static async generatePreview(id) {
-    if (!id) {
-      throw new Error("Can't generate template from undefined template.");
+  static async generatePreview(ids) {
+    if (!ids) {
+      throw new Error("Can't generate preview from undefined ID.");
     }
 
-    const response = await fetch("/api/preview?id=" + id);
-    const data = response.json();
+    const response = await fetch("/api/preview", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(ids),
+    });
 
     if (!response.ok) {
       const message = `${response.status} Error generating room preview: ${data.message}`;
       throw new Error(message);
     }
 
-    return data;
+    const data = await response.json();
+    const { previews } = data;
+
+    return previews;
   }
 
   // Sends request to create a room, adds some items to it, and returns the id of the room.

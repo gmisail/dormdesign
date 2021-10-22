@@ -3,8 +3,13 @@ const PreviewRenderer = require("../services/preview-renderer");
 
 let Preview = {};
 
-Preview.CACHE_EXPIRATION = 60 * 60 * 48;
+Preview.CACHE_EXPIRATION = 60 * 5;
 
+/**
+ * From a given Room ID, return the respective room preview (either from the cache or renderer)
+ * @param {*} Room ID
+ * @returns URI
+ */
 Preview.get = async function (room) {
   const id = room.id;
 
