@@ -17,6 +17,10 @@ router.post("/", async (req, res) => {
     throw new Error("Missing room ID parameter for /preview route.");
   }
 
+  /*
+    Since each render is asynchronous, we need to wait for 
+    all of them to finish before sending them over. 
+  */
   const previews = await Promise.all(ids.map(async (id) => {
     const room = await Room.get(id);
     if (!room) {
@@ -29,9 +33,7 @@ router.post("/", async (req, res) => {
 
   console.log(previews)
 
-  res.json({
-    urls: previews
-  });
+  res.json({ previews });
 });
 
 module.exports = router;

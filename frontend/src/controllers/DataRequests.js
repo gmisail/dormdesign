@@ -106,23 +106,22 @@ class DataRequests {
     }
 
     const response = await fetch("/api/preview", {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json'
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify(ids)
+      body: JSON.stringify(ids),
     });
-
-    const data = response.json();
-
-    console.log(data);
 
     if (!response.ok) {
       const message = `${response.status} Error generating room preview: ${data.message}`;
       throw new Error(message);
     }
 
-    return data;
+    const data = await response.json();
+    const { previews } = data;
+
+    return previews;
   }
 
   // Sends request to create a room, adds some items to it, and returns the id of the room.
