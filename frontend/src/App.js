@@ -11,6 +11,7 @@ import React from "react";
 import { RoomProvider } from "./context/RoomStore";
 import { RoomRoute } from "./routes/RoomRoute/RoomRoute";
 import SceneTestingRoute from "./routes/SceneTestingRoute/SceneTestingRoute";
+import { GalleryRoute } from "./routes/GalleryRoute/GalleryRoute";
 
 const App = () => {
   return (
@@ -38,6 +39,7 @@ const MainRoutes = () => (
           <RoomRoute />
         </RoomProvider>
       </Route>
+      <Route exact path="/gallery" component={GalleryRoute} />
       <Route exact path="/scene-test" component={SceneTestingRoute} />
     </Switch>
   </div>
