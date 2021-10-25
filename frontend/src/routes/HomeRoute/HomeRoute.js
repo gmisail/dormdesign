@@ -83,7 +83,7 @@ class HomeRoute extends Component {
       // Preview might not be loaded yet, if not just pass an empty URI ("")
       const preview = this.state.roomPreviews[id];
 
-      if(preview == null) {
+      if (preview == null) {
         console.error(`Room (${room.id}) could not render a preview.`);
       }
 
