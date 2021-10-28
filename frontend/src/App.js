@@ -11,6 +11,7 @@ import React from "react";
 import { RoomProvider } from "./context/RoomStore";
 import { RoomRoute } from "./routes/RoomRoute/RoomRoute";
 import SceneTestingRoute from "./routes/SceneTestingRoute/SceneTestingRoute";
+import { UnknownRoute } from "./routes/UnknownRoute/UnknownRoute";
 
 const App = () => {
   return (
@@ -39,6 +40,7 @@ const MainRoutes = () => (
         </RoomProvider>
       </Route>
       <Route exact path="/scene-test" component={SceneTestingRoute} />
+      <Route path="*" exact={true} component={UnknownRoute} />
     </Switch>
   </div>
 );
