@@ -3,7 +3,7 @@ import "./UnknownRoute.scss";
 
 export const UnknownRoute = () => {
   return (
-    <div className="content-wrapper">
+    <div className="unknown-wrapper">
       <div className="unknown-container">
         <h1 className="unknown_title">404</h1>
 
