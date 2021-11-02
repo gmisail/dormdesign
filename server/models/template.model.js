@@ -10,17 +10,19 @@ var Template = {};
 Template.create = async function (id) {
   const templateId = uuidv4();
   const template = {
-    _id: templateId,
     targetId: id,
   };
 
   try {
-    await Database.client.db("dd_data").collection("templates").insertOne(template);
+    await Database.client
+      .db("dd_data")
+      .collection("templates")
+      .insertOne({ ...template, _id: templateId });
   } catch (err) {
     throw new Error("Failed to create template: " + err.message);
   }
 
-  return templateId;
+  return { ...template, id: templateId };
 };
 
 Template.get = async function (id) {
@@ -30,6 +32,9 @@ Template.get = async function (id) {
   } catch (err) {
     throw new Error(`Failed to get template ${id}: ` + err);
   }
+
+  template.id = template._id;
+  delete template["_id"];
 
   return template;
 };

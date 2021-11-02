@@ -20,6 +20,32 @@ import RoomEditorObject from "../../room-editor/RoomEditorObject";
 import SceneController from "../../room-editor/SceneController";
 import Vector2 from "../../room-editor/Vector2";
 
+const itemToEditorProperties = (props) => {
+  return {
+    id: props.id,
+    position: props.editorPosition
+      ? { x: props.editorPosition.x, y: props.editorPosition.y }
+      : undefined,
+    name: props.name,
+    width: props.dimensions?.width,
+    height: props.dimensions?.length,
+    rotation: props.editorRotation,
+    movementLocked: props.editorLocked,
+    zIndex: props.editorZIndex,
+    visible: props.visibleInEditor,
+  };
+};
+
+// Converts (relevant) editor properties to properties expected by DormItem
+const editorToItemProperties = (props) => {
+  return {
+    editorPosition: props.position ? { x: props.position.x, y: props.position.y } : undefined,
+    editorRotation: props.rotation,
+    editorLocked: props.movementLocked,
+    editorZIndex: props.zIndex,
+  };
+};
+
 function RoomEditor() {
   const dispatch = useDispatch();
 
@@ -74,32 +100,6 @@ function RoomEditor() {
 
     zoomScale.current = 1.3;
   }, [mainCanvasRef]);
-
-  const itemToEditorProperties = (props) => {
-    return {
-      id: props.id,
-      position: props.editorPosition
-        ? { x: props.editorPosition.x, y: props.editorPosition.y }
-        : undefined,
-      name: props.name,
-      width: props.dimensions?.width,
-      height: props.dimensions?.length,
-      rotation: props.editorRotation,
-      movementLocked: props.editorLocked,
-      zIndex: props.editorZIndex,
-      visible: props.visibleInEditor,
-    };
-  };
-
-  // Converts (relevant) editor properties to properties expected by DormItem
-  const editorToItemProperties = (props) => {
-    return {
-      editorPosition: props.position ? { x: props.position.x, y: props.position.y } : undefined,
-      editorRotation: props.rotation,
-      editorLocked: props.movementLocked,
-      editorZIndex: props.zIndex,
-    };
-  };
 
   const handleEditorQueue = () => {
     for (let i = 0; i < editorActionQueue.length; i++) {

@@ -4,6 +4,14 @@ const { v4: uuidv4 } = require("uuid");
 const Template = require("./template.model");
 const Cache = require("../cache");
 const { client } = require("../cache");
+const Item = require("./item.model");
+
+const { updateRoomPropertySchema } = require("../schemas/room.schema");
+
+const Joi = require("joi");
+const { validateWithSchema } = require("../utils.js");
+
+const DEBUG_MESSAGES = Boolean(process.env.DEBUG_MESSAGES ?? "false");
 
 let Room = {};
 Room.MAX_NAME_LENGTH = 20;
@@ -11,7 +19,8 @@ Room.MAX_NAME_LENGTH = 20;
 /**
  * Create a new room with a given name
  * @param { string } name
- * @returns { Promise.<object> } room object if it exists, null otherwise
+ * @returns { Promise.<object> } The newly created room object
+ * @throws When the creation fails
  */
 Room.create = async function (name) {
   let vertices = [
@@ -22,13 +31,12 @@ Room.create = async function (name) {
   ];
 
   const id = uuidv4();
-  const templateId = await Template.create(id);
+  const template = await Template.create(id);
 
-  // Don't include id yet since we'll need to use the '_id' field when inserting into mongo
   const room = {
     name,
     items: [],
-    templateId,
+    templateId: template.id,
     vertices,
   };
 
@@ -36,31 +44,40 @@ Room.create = async function (name) {
     await Database.client
       .db("dd_data")
       .collection("rooms")
-      .insertOne({ _id: id, ...room });
+      .insertOne({ ...room, _id: id });
   } catch (err) {
     throw new Error("Failed to create room: " + err);
   }
 
-  console.log(`Room ${id} has been created.`);
+  if (DEBUG_MESSAGES) console.log(`Room ${id} has been created.`);
 
-  return { id: id, ...room };
+  return { ...room, id: id };
 };
 
+/**
+ * Deletes the room with the given id.
+ * @param { string } id
+ * @returns { Promise.<object> }
+ * @throws When the delete fails
+ */
 Room.delete = async function (id) {
   try {
     await Database.client.db("dd_data").collection("rooms").deleteOne({ _id: id });
-    console.log(`Room ${id} has been deleted from the database`);
+    if (DEBUG_MESSAGES) console.log(`Room ${id} has been deleted from the database`);
   } catch (err) {
     throw new Error(`Failed to delete room ${id} ` + err);
   }
 
-  Cache.client.del(id).then((_) => console.log(`Room ${id} has been removed from the cache.`));
+  await Cache.client.del(id);
+
+  if (DEBUG_MESSAGES) console.log(`Room ${id} has been removed from the cache.`);
 };
 
 /**
  * Get the JSON data from a room at an ID. Returns the cached version if it exists, the version in the database otherwise.
  * @param { string } id
- * @returns { Promise.<object> } room object if it exists, null otherwise
+ * @returns { Promise.<object> } The room object if it exists
+ * @throws When the function fails to get the room
  */
 Room.get = async function (id) {
   // First check if room is in the cache
@@ -76,8 +93,11 @@ Room.get = async function (id) {
     throw new Error(`Failed to get room ${id}: ` + err);
   }
 
+  room.id = room._id;
+  delete room["_id"];
+
   const res = await Cache.client.set(id, JSON.stringify(room));
-  if (res === "OK") {
+  if (res === "OK" && DEBUG_MESSAGES) {
     console.log(`Added room ${id} to the cache.`);
   }
 
@@ -85,10 +105,11 @@ Room.get = async function (id) {
 };
 
 /**
- * Copy data from templateId into room with ID id
+ * Copy data from template with ID templateId into room with ID id
  * @param { string } id
  * @param { string } templateId
- * @returns { Promise.<object> } null if there is an error, returns new data otherwise
+ * @returns { Promise.<object> }
+ * @throws If either room at 'id' or the template at 'templateId' fail to be fetched
  */
 Room.copyFrom = async function (id, templateId) {
   const room = await Room.get(id);
@@ -99,66 +120,43 @@ Room.copyFrom = async function (id, templateId) {
   templateData.templateId = room.templateId;
   templateData.name = room.name;
 
-  try {
-    await Room.updateProperty(id, templateData);
-  } catch (error) {
-    console.error("Could not copy room " + templateId + " to " + id);
-    throw error;
-  }
+  await Cache.client.set(id, JSON.stringify(templateData));
 
   return templateData;
 };
 
 /**
- * Updates the given property in a room.
- * @param { string } id
- * @param { JSON } data
- * @returns { Promise.<boolean> } true if there is an error, false otherwise
+ * Updates the fields in the room with given 'id' from the corresponding fields in 'update'. If any of the fields in the update don't exist in the room, the entire update fails (unless 'allowPartial' is set to true). Note that room items cannot be updated using this function.
+ * @param { string } id The ID of the room to update
+ * @param { JSON } update The update
+ * @throws When 'update' contains a field that can't be updated in the room
  */
-Room.updateProperty = async function (id, data) {
+Room.updateProperties = async function (id, update) {
   let room = await Room.get(id);
-
-  for (const [key, value] of Object.entries(data)) {
-    if (room.hasOwnProperty(key)) {
-      room[key] = data[key];
-    }
-  }
+  validateWithSchema(update, updateRoomPropertySchema);
+  Object.assign(room, update);
 
   await Cache.client.set(id, JSON.stringify(room));
-
-  return false;
 };
 
 /**
  * Update the vertices of a given room
  * @param { string } id
  * @param { array[{ x: number, y: number }] } vertices
- * @returns { Promise.<boolean> } true if there is an error, false otherwise
+ * @throws An error if the update fails
  */
 Room.updateVertices = async function (id, vertices) {
-  try {
-    let res = await Room.updateProperty(id, { vertices });
-
-    return res;
-  } catch (error) {
-    throw error;
-  }
+  await Room.updateProperties(id, { vertices });
 };
 
 /**
  * Update the name of a given room
  * @param { string } id
  * @param { string } name
- * @returns { Promise.<boolean> } true if there is an error, false otherwise
+ * @throws An error if the update fails
  */
 Room.updateRoomName = async function (id, name) {
-  try {
-    let res = await Room.updateProperty(id, { name });
-
-    return res;
-  } catch (error) {
-    throw error;
-  }
+  await Room.updateProperties(id, { name });
 };
 
 /**
@@ -173,123 +171,83 @@ Room.updateNickname = async function (id, userId, name) {};
  * Add an item (generated by the Item model schema) to a given room
  * @param { string } id
  * @param { JSON } item
- * @returns { Promise.<object> } null if there is an error, otherwise returns the new Item
+ * @returns { Promise.<object> } the new item
+ * @throws When creating the item or adding it to the room fails
  */
 Room.addItem = async function (id, item) {
-  const itemId = uuidv4();
-
-  let room = await Room.get(id);
-
-  // construct the new array of items (if one exists)
-  let items = room.items || [];
-  item.id = itemId;
-  items.push(item);
-
+  const newItem = Item.create(item);
+  let room;
   try {
-    await Room.updateProperty(id, { items });
+    room = await Room.get(id);
   } catch (error) {
-    throw error;
+    throw new Error(`Failed to add item to room ${id}. ` + error);
   }
+  let items = room.items;
+  items.push(newItem);
 
-  return item;
+  await Cache.client.set(id, JSON.stringify(room));
+
+  return newItem;
 };
 
 /**
  * Clear the items of a given room
  * @param { string } id
- * @returns { Promise.<boolean> } true if there is an error, false otherwise
+ * @returns { Promise.<undefined> } true if there is an error, false otherwise
  */
 Room.clearItems = async function (id) {
+  let room;
   try {
-    await Room.updateProperty(id, { items: [] });
+    room = await Room.get(id);
   } catch (error) {
-    throw error;
+    throw new Error(`Failed to clear room items. ${error}`);
   }
 
-  return false;
+  await Cache.client.set(id, JSON.stringify(room));
+
+  room.items;
 };
 
 /**
  * Clear all of the items in a room
  * @param { string } id
- * @returns { Promise.<boolean> } true if there is an error, false otherwise
+ * @returns { Promise.<undefined> } true if there is an error, false otherwise
  */
-Room.removeItem = async function (id, itemID) {
+Room.removeItem = async function (id, itemId) {
+  let room;
   try {
-    let room = await Room.get(id);
-    let items = room.items || [];
-    items = items.filter((item) => item.id !== itemID);
-
-    await Room.updateProperty(id, { items });
-
-    return true;
+    await Room.get(id);
   } catch (error) {
-    const err = "Failed to remove item " + itemId + " from room " + id + ". " + error;
-
-    console.error(err);
-    throw new Error(err);
+    throw new Error(`Failed to add item to room ${id}. ` + error);
   }
+
+  room.items = room.items.filter((item) => item._id !== itemId);
+
+  await Cache.client.set(id, JSON.stringify(room));
 };
 
 /**
- * Edit the properties of a single item in a room
+ * Edit the properties multiple items in a room. If any of the updates fail, none of the updates are applied
  * @param { string } id
- * @param { string } itemId
- * @param { object } properties
- * @returns { Promise.<boolean> } true if there is an error, false otherwise
- */
-Room.updateItem = async function (id, itemId, properties) {
-  try {
-    let room = await Room.get(id);
-
-    for (let item in room) {
-      if (room[item].id === itemId) {
-        room[item] = Object.assign(properties, room[item]);
-      }
-    }
-
-    await Cache.client.set(id, JSON.stringify(room));
-
-    return false;
-  } catch (error) {
-    const err = "Failed to update item " + itemId + " in room " + id;
-
-    console.error(err);
-    throw new Error(err);
-  }
-};
-
-/**
- * Edit the properties multiple items in a room
- * @param { string } id
- * @param { object } updates Object containg updates to items. Should be of the form { itemID : updates }
- * @returns { Promise.<boolean> } true if there is an error, false otherwise
+ * @param { object } updates Object containg updates to items. Should be of the form [{ id, update }]
+ * @throws When one of the updates fails
  */
 Room.updateItems = async function (id, updates) {
-  try {
-    let room = await Room.get(id);
+  let room = await Room.get(id);
 
-    for (let item in room.items) {
-      if (room.items[item].id in updates) {
-        room.items[item] = Object.assign(room.items[item], updates[room.items[item].id]);
-      }
-    }
-
-    Cache.client.set(id, JSON.stringify(room));
-
-    return false;
-  } catch (error) {
-    const err =
-      "Failed to complete item updates " +
-      JSON.stringify(updates) +
-      " in room " +
-      id +
-      ". " +
-      error;
-
-    console.error(err);
-    throw new Error(err);
+  let updateMap = {};
+  for (let i = 0; i < updates.length; i++) {
+    updateMap[updates[i].id] = updates[i].updated;
   }
+  for (let i = 0; i < room.items.length; i++) {
+    let item = room.items[i];
+    const update = updateMap[item.id];
+    if (update !== undefined) {
+      Item.update(item, update);
+    }
+  }
+
+  Cache.client.set(id, JSON.stringify(room));
 };
 
 /* Updates the database with the content that is currently in the cache.
@@ -301,9 +259,10 @@ Room.save = async function (id) {
     room = JSON.parse(room);
   } else {
     // This could occur if the room was just fully deleted
-    console.log(
-      "Cannot push room from cache to database " + id + ". The room doesn't exist in the cache"
-    );
+    if (DEBUG_MESSAGES)
+      console.log(
+        "Cannot push room from cache to database " + id + ". The room doesn't exist in the cache"
+      );
     return;
   }
 
@@ -313,7 +272,7 @@ Room.save = async function (id) {
     throw new Error("Failed to save room from cache to db: " + err);
   }
 
-  console.log("Room " + id + " pushed from cache to database.");
+  if (DEBUG_MESSAGES) console.log("Room " + id + " pushed from cache to database.");
 };
 
 module.exports = Room;

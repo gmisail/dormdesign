@@ -67,6 +67,7 @@ class HomeRoute extends Component {
   };
 
   renderExistingRooms = () => {
+    console.log("HISTORY", this.state.roomHistory);
     return this.state.roomHistory.length > 0 ? (
       <div className="recent-rooms-card">
         <h5>Recent Rooms</h5>

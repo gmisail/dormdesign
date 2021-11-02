@@ -66,11 +66,6 @@ export default class StorageController {
   static removeRoomFromHistory(id) {
     let historyData = StorageController.getRoomsFromHistory();
 
-    console.log(
-      historyData,
-      historyData.filter((room) => room.id !== id)
-    );
-
     StorageController.set("history", JSON.stringify(historyData.filter((room) => room.id !== id)));
   }
 

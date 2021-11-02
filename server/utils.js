@@ -1,18 +1,20 @@
 const Joi = require("joi");
 
 /**
- * Validates the given request body using the given Joi schema. Throws an error with Joi message if invalid.
- * @param {string} body request body to validate
+ * Validates the given object using the given Joi schema and returns the validated object. Throws a 400 error with Joi message if invalid.
+ * @param {any} body object to validate
  * @param {Joi.ObjectSchema} schema schema to validate body with
  * @throws {Error} when body is invalid
+ * @returns {any} Validated object
  */
 const validateWithSchema = (body, schema) => {
-  const { error } = schema.validate(body);
+  const { error, value } = schema.validate(body);
   if (error) {
-    const err = new Error(error.details[0].message);
+    const err = new Error("Invalid schema: " + error.details[0].message);
     err.status = 400;
     throw err;
   }
+  return value;
 };
 
 module.exports = { validateWithSchema };

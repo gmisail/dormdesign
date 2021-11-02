@@ -35,6 +35,7 @@ services:
       - DATABASE_ADDRESS=mongodb://db:27017
       - CACHE_ADDRESS=cache
       - CHOKIDAR_USEPOLLING=true
+      - DEBUG_MESSAGES=true
     ports:
       - "8000:8000"
     depends_on:

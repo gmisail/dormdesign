@@ -4,7 +4,7 @@ services:
     image: redis:alpine
     restart: unless-stopped
     ports:
-      - 6379:6379  
+      - 6379:6379
   db:
     image: rethinkdb:latest
     restart: unless-stopped

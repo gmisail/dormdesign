@@ -7,8 +7,13 @@ export default function RoomPreview({ id }) {
 
   useEffect(() => {
     async function generatePreview() {
-      const data = await DataRequests.generatePreview(id);
-      setUrl(data.url);
+      let data;
+      try {
+        data = await DataRequests.generatePreview(id);
+        setUrl(data.url);
+      } catch (err) {
+        console.error(err);
+      }
     }
 
     generatePreview();

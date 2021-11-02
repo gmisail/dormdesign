@@ -13,7 +13,7 @@ class SocketConnection {
     };
 
     this.connection.onerror = (err) => {
-      console.error("Socket ERROR:", err);
+      console.error("Socket Error:", err);
     };
 
     this.connection.onmessage = (evt) => {
