@@ -2,15 +2,13 @@ version: "3.8"
 services:
   cache:
     image: redis:alpine
+    command: "redis-server --requirepass ${REDIS_PASSWORD} --protected-mode yes"
     restart: unless-stopped
-    ports:
-      - 6379:6379
+    volumes:
+      - ./data/redis_data:/data/redis_data
   db:
     image: rethinkdb:latest
     restart: unless-stopped
-    ports:
-      - 29015:29015
-      - 28015:28015
     volumes:
       - "./data/rethinkdb_data:/data/rethinkdb_data"
   server:
@@ -20,7 +18,9 @@ services:
     restart: unless-stopped
     environment:
       - DATABASE_ADDRESS=db
+      - REDIS_PASSWORD=$REDIS_PASSWORD
       - CACHE_ADDRESS=cache
+      - DEBUG_MESSAGES=false
     depends_on:
       - db
   frontend:

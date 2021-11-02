@@ -19,12 +19,17 @@ class HomeRoute extends Component {
     showCreateRoomModal: false,
     showJoinRoomModal: false,
     roomHistory: [],
+    roomPreviews: [],
   };
 
-  componentDidMount() {
+  async componentDidMount() {
     document.title = "DormDesign";
 
-    this.setState({ roomHistory: StorageController.getRoomsFromHistory() });
+    const roomPreviews = await this.generatePreviews(StorageController.getRoomsFromHistory());
+    this.setState({
+      roomPreviews,
+      roomHistory: StorageController.getRoomsFromHistory(),
+    });
 
     const backgroundColor = "#f4f4f4";
     const scene = new SceneController(this.backgroundCanvasRef);
@@ -50,6 +55,13 @@ class HomeRoute extends Component {
     this.grid.lineWidth = 2 * window.devicePixelRatio;
   };
 
+  generatePreviews = async (roomHistory) => {
+    const previews = roomHistory.map((room) => room.id);
+    const previewsData = await DataRequests.generatePreview(previews);
+
+    return previewsData;
+  };
+
   componentWillUnmount() {
     // Cleanup callback
     this.scene.onResize = () => {};
@@ -67,15 +79,28 @@ class HomeRoute extends Component {
   };
 
   renderExistingRooms = () => {
-    console.log("HISTORY", this.state.roomHistory);
+    const roomPreviews = this.state.roomHistory.map((room, id) => {
+      // Preview might not be loaded yet, if not just pass an empty URI ("")
+      const preview = this.state.roomPreviews[id];
+
+      if (preview == null) {
+        console.error(`Room (${room.id}) could not render a preview.`);
+      }
+
+      return (
+        <RoomPreviewCard
+          key={room.id}
+          id={room.id}
+          roomName={room.name}
+          preview={preview == undefined ? "" : preview}
+        ></RoomPreviewCard>
+      );
+    });
+
     return this.state.roomHistory.length > 0 ? (
       <div className="recent-rooms-card">
         <h5>Recent Rooms</h5>
-        <div className="recent-rooms">
-          {this.state.roomHistory.map((room, id) => (
-            <RoomPreviewCard key={room.id} id={room.id} roomName={room.name}></RoomPreviewCard>
-          ))}
-        </div>
+        <div className="recent-rooms">{roomPreviews}</div>
       </div>
     ) : null;
   };

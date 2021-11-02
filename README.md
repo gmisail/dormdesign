@@ -19,7 +19,9 @@ DormDesign allows roommates to collaboratively design and plan our their dorm ro
 1. Install `docker` and `docker-compose`
 2. Clone repository
 3. Navigate to the `/frontend` folder and run `npm install`
-4. Then from the root of the project directory run `docker-compose -f docker-compose.dev.yml up --build` to start the server. Depending on your permissions, you may need to run this command using `sudo`. The site can then be accessed at `localhost:5500`
+4. In the root directory, create a file called `.env` with the following content: `REDIS_PASSWORD=<some password here>`
+    - This ensures that the cache is password-protected and not accesible to external connections
+5. Then from the root of the project directory run `npm run dev` (if this fails, try running `sudo docker-compose --env-file ./.env -f docker-compose.dev.yml up --build`) to start the server. 
 
 ## Deployment
 
@@ -32,4 +34,4 @@ DormDesign allows roommates to collaboratively design and plan our their dorm ro
 
 ### How to start production server
 
-Run `docker-compose up --build -d`. Similar to the development environment, it may be necessary to run this command using `sudo`.
+Make sure that you have your `.env` file set up in the root of the project directory (see #4 from **Development Environment** for details.) Then, run `docker-compose --env-file ./.env up --build -d`. Similar to the development environment, it may be necessary to run this command using `sudo`.

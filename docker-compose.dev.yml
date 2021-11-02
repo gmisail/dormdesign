@@ -2,8 +2,11 @@ version: "3"
 services:
   cache:
     image: redis:alpine
+    command: "redis-server --requirepass ${REDIS_PASSWORD} --protected-mode yes"
     ports:
       - 6379:6379
+    volumes:
+      - ./redis_data:/data/redis_data
   db:
     image: mongo
     ports:
@@ -33,11 +36,12 @@ services:
       - /usr/src/app/node_modules
     environment:
       - DATABASE_ADDRESS=mongodb://db:27017
+      - REDIS_PASSWORD=$REDIS_PASSWORD
       - CACHE_ADDRESS=cache
       - CHOKIDAR_USEPOLLING=true
       - DEBUG_MESSAGES=true
     ports:
-      - "8000:8000"
+      - 8000:8000
     depends_on:
       - db
   nginx:
