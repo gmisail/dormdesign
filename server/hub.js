@@ -56,8 +56,6 @@ Hub.removeClient = async function (clientID) {
     return;
   }
 
-  // Room.save(roomID);
-
   Hub.connections.delete(clientID);
   Hub.rooms.get(roomID).delete(clientID);
 
@@ -74,7 +72,11 @@ Hub.removeClient = async function (clientID) {
   }
 
   if (Hub.rooms.get(roomID).size === 0) {
-    Room.save(roomID);
+    try {
+      Room.save(roomID);
+    } catch (error) {
+      console.error(error);
+    }
 
     Hub.rooms.delete(roomID);
 

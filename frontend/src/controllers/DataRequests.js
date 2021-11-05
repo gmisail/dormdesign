@@ -53,7 +53,7 @@ class DataRequests {
     }
 
     const response = await fetch("/api/room/clone?id=" + id + "&target_id=" + target);
-    const data = response.json();
+    const data = await response.json();
 
     if (!data.message) {
       window.location.reload();
@@ -63,8 +63,8 @@ class DataRequests {
   }
 
   static async generatePreview(ids) {
-    if (!ids) {
-      throw new Error("Can't generate preview from undefined ID.");
+    if (ids === undefined || ids.length === 0) {
+      throw new Error("'ids' is undefined or empty");
     }
 
     const response = await fetch("/api/preview", {
@@ -74,13 +74,13 @@ class DataRequests {
       },
       body: JSON.stringify(ids),
     });
+    const data = await response.json();
 
     if (!response.ok) {
       const message = `${response.status} Error generating room preview: ${data.message}`;
       throw new Error(message);
     }
 
-    const data = await response.json();
     const { previews } = data;
 
     return previews;

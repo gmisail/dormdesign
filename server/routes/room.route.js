@@ -1,6 +1,4 @@
 const { Router } = require("express");
-const Joi = require("joi");
-const { validateWithSchema } = require("../utils.js");
 let Item = require("../models/item.model");
 let Room = require("../models/room.model");
 const Users = require("../models/users.model");
@@ -8,6 +6,9 @@ const Users = require("../models/users.model");
 // Need to wrap routes in this function in order for async execptions to be handled automatically
 // See: https://github.com/Abazhenov/express-async-handler#readme
 const asyncHandler = require("express-async-handler");
+
+const Joi = require("joi");
+const { validateWithSchema } = require("../utils.js");
 
 const router = Router();
 

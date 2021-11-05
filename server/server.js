@@ -27,8 +27,8 @@ Server.setup = async function (app, port) {
   app.use(express.urlencoded({ extended: true }));
 
   app.use(express.static("public"));
-  app.use("/api/room", require("./routes/room"));
-  app.use("/api/preview", require("./routes/preview"));
+  app.use("/api/room", require("./routes/room.route"));
+  app.use("/api/preview", require("./routes/preview.route"));
 
   // Set all other undefined routes to throw an error
   app.get("*", (req, res, next) => {
@@ -48,7 +48,7 @@ Server.setup = async function (app, port) {
       error.message = "Internal server error";
     }
 
-    return res.status(error.status).json({ error: error.message ?? "Unkown error" });
+    return res.status(error.status).json({ message: error.message ?? "Unkown error" });
   });
 
   server.listen(port, () => console.log("Listening on localhost:" + port));

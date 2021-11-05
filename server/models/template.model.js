@@ -29,8 +29,12 @@ Template.get = async function (id) {
   let template;
   try {
     template = await Database.client.db("dd_data").collection("templates").findOne({ _id: id });
-  } catch (err) {
-    throw new Error(`Failed to get template ${id}: ` + err);
+  } catch (error) {
+    throw new Error(`Failed to get template ${id}.` + error);
+  }
+  if (template === null) {
+    const err = new Error(`Failed to find template with id ${id}`);
+    throw err;
   }
 
   template.id = template._id;
