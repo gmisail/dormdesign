@@ -36,8 +36,6 @@ const createItemSchema = Joi.object({
   dimensions: itemSchema.dimensions.default(),
 });
 
-const updateItemSchema = Joi.object({
-  ...itemSchema,
-});
+const updateItemSchema = Joi.object(itemSchema);
 
 module.exports = { createItemSchema, updateItemSchema };
