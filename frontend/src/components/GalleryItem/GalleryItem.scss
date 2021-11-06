@@ -1,0 +1,16 @@
+@import "../../styles/variables.scss";
+
+.gallery-card {
+  background-color: $foreground-color;
+  border-radius: $card-border-radius;
+  box-shadow: $box-shadow;
+
+  margin: 8px;
+}
+
+.gallery-card-name {
+  text-align: center;
+  height: 55px;
+
+  font-weight: 600;
+}
