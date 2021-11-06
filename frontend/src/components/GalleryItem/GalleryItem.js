@@ -1,6 +1,8 @@
 import "./GalleryItem.scss";
 
 import React from "react";
+import RoomPreview from "../RoomPreviewCard/RoomPreview";
+import { Button } from "react-bootstrap";
 
 const GalleryItem = (props) => {
   const { roomName, id, preview } = props;
@@ -9,7 +11,10 @@ const GalleryItem = (props) => {
     <div className="gallery-card">
       <a href={`/room/${id}`}>
         <span className="gallery-card-name">{roomName}</span>
+        <RoomPreview preview={preview} />
       </a>
+      <button className="custom-btn" name="cloneRoom">Preview Template</button>
+      <button className="custom-btn" name="cloneRoom">Create Room From Template</button>
     </div>
   );
 };

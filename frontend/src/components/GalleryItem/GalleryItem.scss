@@ -6,6 +6,20 @@
   box-shadow: $box-shadow;
 
   margin: 8px;
+
+  .room-preview-image {
+    display: block;
+    margin: auto;
+
+    width: 130px;
+    height: 130px;
+
+    border-radius: inherit;
+    box-shadow: inset 0px 1px 4px 3px rgba(0, 0, 0, 0.15);
+    background-image: url("../../assets/grid.svg");
+
+    padding: 12px;
+  }
 }
 
 .gallery-card-name {
