@@ -28,7 +28,7 @@ router.get(
 );
 
 const createRoomSchema = Joi.object({
-  name: Joi.string().min(1).max(30).required(),
+  name: Joi.string().min(1).max(Room.MAX_NAME_LENGTH).required(),
 });
 router.post(
   "/create",

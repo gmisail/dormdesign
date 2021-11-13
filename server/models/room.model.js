@@ -14,7 +14,7 @@ const { validateWithSchema } = require("../utils.js");
 const DEBUG_MESSAGES = Boolean(process.env.DEBUG_MESSAGES ?? "false");
 
 let Room = {};
-Room.MAX_NAME_LENGTH = 20;
+Room.MAX_NAME_LENGTH = 40;
 
 /**
  * Create a new room with a given name
