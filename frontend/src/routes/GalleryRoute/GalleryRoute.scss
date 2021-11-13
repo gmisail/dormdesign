@@ -1,11 +1,15 @@
 .gallery-container {
   padding: 16px;
-  max-width: 1200px;
   margin: auto auto 0 auto;
+
+  max-width: 1200px;
+  max-height: 100%;
+
+  overflow: auto;
 }
 
 .gallery-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 16px;
 }

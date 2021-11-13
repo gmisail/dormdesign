@@ -41,6 +41,7 @@ textarea {
 }
 
 .offset-from-navbar {
+  height: 100vh;
   padding-top: $navbar-height; /* Offsets content of page from navbar (which is fixed to top) */
 }
 

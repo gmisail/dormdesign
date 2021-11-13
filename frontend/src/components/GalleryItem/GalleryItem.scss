@@ -5,7 +5,16 @@
   border-radius: $card-border-radius;
   box-shadow: $box-shadow;
 
-  margin: 8px;
+  min-width: 160px;
+  height: 200px;
+
+  &,
+  &:hover,
+  &:visited,
+  &:active {
+    color: inherit;
+    text-decoration: none;
+  }
 
   .room-preview-image {
     display: block;
@@ -20,10 +29,31 @@
 
     padding: 12px;
   }
+
+  &:hover {
+    background-color: darken($foreground-color, 15);
+    box-shadow: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+}
+
+.gallery-card-buttons {
+  display: grid; 
+  grid-template-columns: 1fr; 
+  grid-template-rows: 1fr; 
+  gap: 0px 0px; 
+}
+
+.gallery-card-button {
+  margin: 8px;
 }
 
 .gallery-card-name {
-  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
   height: 55px;
 
   font-weight: 600;
