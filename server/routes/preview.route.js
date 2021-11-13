@@ -21,7 +21,6 @@ const getPreviewsSchema = Joi.array().items(Joi.string()).min(1);
 router.post(
   "/",
   asyncHandler(async (req, res) => {
-    console.log("BODY", req.body);
     validateWithSchema(req.body, getPreviewsSchema);
     const ids = req.body;
 
