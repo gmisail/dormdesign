@@ -6,7 +6,7 @@ services:
     restart: unless-stopped
     volumes:
       - ./data/redis_data:/data/redis_data
- server:
+  server:
     build:
       context: ./server
       dockerfile: Dockerfile
