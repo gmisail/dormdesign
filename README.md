@@ -34,4 +34,11 @@ DormDesign allows roommates to collaboratively design and plan our their dorm ro
 
 ### How to start production server
 
-Make sure that you have your `.env` file set up in the root of the project directory (see #4 from **Development Environment** for details.) Then, run `docker-compose --env-file ./.env up --build -d`. Similar to the development environment, it may be necessary to run this command using `sudo`.
+Make sure that you have your `.env` file set up to look like this:
+```
+REDIS_PASSWORD=<some password here>
+MONGO_ADDRESS=<your-mongo-db-address>
+```
+The MongoDB address should be assigned to the address of your local MongoDB instance (assuming that you're hosting your own MongoDB instance) *or* your MongoDB Atlas URL.
+
+Then, run `docker-compose --env-file ./.env up --build -d`. Similar to the development environment, it may be necessary to run this command using `sudo`.
