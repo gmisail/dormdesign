@@ -3,7 +3,6 @@ import React, { useCallback } from "react";
 import { applyMiddleware, createStore } from "redux";
 
 import DataRequests from "../controllers/DataRequests";
-import DormItem from "../models/DormItem";
 import RoomActions from "./RoomActions";
 import RoomReducer from "./RoomReducer";
 import SocketConnection from "../controllers/SocketConnection";
@@ -98,8 +97,7 @@ export const connectToRoom = (id) => async (dispatch, getState) => {
     });
 
     connection.on("itemAdded", (data) => {
-      const item = new DormItem(data);
-      dispatch({ type: RoomActions.itemAdded, payload: { item } });
+      dispatch({ type: RoomActions.itemAdded, payload: { item: data } });
     });
 
     connection.on("itemsUpdated", (data) => {
@@ -140,6 +138,10 @@ export const connectToRoom = (id) => async (dispatch, getState) => {
       StorageController.removeRoomFromHistory(id);
 
       window.location.href = "/";
+      dispatch({
+        type: RoomActions.roomDeleted,
+        payload: {},
+      });
     });
 
     connection.on("nicknamesUpdated", (data) => {
@@ -255,11 +257,6 @@ export const deleteRoom = (id) => async (dispatch, getState) => {
       id,
     },
   });
-
-  dispatch({
-    type: RoomActions.roomDeleted,
-    payload: {},
-  });
 };
 
 export const updateBounds = (bounds) => async (dispatch, getState) => {
@@ -285,13 +282,6 @@ export const updateRoomName = (id, roomName) => async (dispatch, getState) => {
     data: {
       name: roomName,
     },
-  });
-
-  StorageController.addRoomToHistory(dispatch, id, roomName);
-
-  dispatch({
-    type: RoomActions.roomNameUpdated,
-    payload: { roomName },
   });
 };
 

@@ -20,6 +20,7 @@ services:
       - DATABASE_ADDRESS=db
       - REDIS_PASSWORD=$REDIS_PASSWORD
       - CACHE_ADDRESS=cache
+      - DEBUG_MESSAGES=false
     depends_on:
       - db
   frontend:

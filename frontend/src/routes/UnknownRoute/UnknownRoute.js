@@ -8,7 +8,8 @@ export const UnknownRoute = () => {
         <h1 className="unknown_title">404</h1>
 
         <p className="unknown_desc">
-          Unfortunately, we could not find the route that you were looking for. <Link to="/">Return to the home page?</Link>
+          Unfortunately, we could not find the route that you were looking for.{" "}
+          <Link to="/">Return to the home page?</Link>
         </p>
       </div>
     </div>
