@@ -40,7 +40,7 @@ const MainRoutes = () => (
       </Route>
       <Route exact path="/gallery" component={GalleryRoute} />
       <Route exact path="/scene-test" component={SceneTestingRoute} />
-      <Route path="*" exact={true} component={UnknownRoute} />
+      <Route path="*" exact component={UnknownRoute} />
     </Switch>
   </div>
 );
