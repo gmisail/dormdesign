@@ -1,20 +1,19 @@
-version: "3.8"
+version: "3"
 services:
   cache:
     image: redis:alpine
     command: "redis-server --requirepass ${REDIS_PASSWORD} --protected-mode yes"
     ports:
-      - 127.0.0.1:6379:6379    
+      - 6379:6379
     volumes:
       - ./redis_data:/data/redis_data
   db:
-    image: rethinkdb:latest
+    image: mongo
     ports:
-      - 127.0.0.1:8080:8080
-      - 127.0.0.1:29015:29015
-      - 127.0.0.1:28015:28015
+      - "27017:27017"
+    restart: unless-stopped
     volumes:
-      - "./rethinkdb_data:/data/rethinkdb_data"
+      - dd_database:/data/db
   frontend:
     build:
       context: ./frontend
@@ -32,11 +31,15 @@ services:
     build:
       context: ./server
       dockerfile: Dockerfile.dev
+    volumes:
+      - ./server:/usr/src/app
+      - /usr/src/app/node_modules
     environment:
-      - DATABASE_ADDRESS=db
+      - DATABASE_ADDRESS=mongodb://db:27017
       - REDIS_PASSWORD=$REDIS_PASSWORD
       - CACHE_ADDRESS=cache
       - CHOKIDAR_USEPOLLING=true
+      - DEBUG_MESSAGES=true
     ports:
       - 8000:8000
     depends_on:
@@ -52,3 +55,5 @@ services:
       - server
       - db
       - cache
+volumes:
+  dd_database:

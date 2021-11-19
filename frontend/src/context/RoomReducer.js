@@ -82,7 +82,7 @@ let RoomReducer = (state, action) => {
         itemArray.push(item);
         const updated = updatedItems[item.id];
         if (updated !== undefined) {
-          item.update(updated);
+          Object.assign(item, updated);
         }
       }
 

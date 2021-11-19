@@ -14,7 +14,7 @@ Users.inRoom = async function (id) {
 };
 
 /**
- * Deletes the hashmap in the cache that stores the currently users
+ * Deletes the hashmap in the cache that stores the current users
  * @param { string } id
  */
 Users.deleteRoom = async function (id) {

@@ -1,14 +1,15 @@
-FROM node:12-slim
+FROM node:14-slim
+
+RUN mkdir -p /usr/src/app/node_modules && chown -R node:node /usr/src/app
 
 WORKDIR /usr/src/app
 
 COPY package*.json ./
 
-RUN npm install canvas
-RUN npm install 
+USER node
 
-COPY . .
+RUN npm install
 
-EXPOSE 8000
+COPY --chown=node:node . .
 
 CMD ["npm", "run", "dev"]

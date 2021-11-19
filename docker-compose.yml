@@ -6,22 +6,16 @@ services:
     restart: unless-stopped
     volumes:
       - ./data/redis_data:/data/redis_data
-  db:
-    image: rethinkdb:latest
-    restart: unless-stopped
-    volumes:
-      - "./data/rethinkdb_data:/data/rethinkdb_data"
   server:
     build:
       context: ./server
       dockerfile: Dockerfile
     restart: unless-stopped
     environment:
-      - DATABASE_ADDRESS=db
+      - DATABASE_ADDRESS=$MONGO_ADDRESS
       - REDIS_PASSWORD=$REDIS_PASSWORD
       - CACHE_ADDRESS=cache
-    depends_on:
-      - db
+      - DEBUG_MESSAGES=false
   frontend:
     build:
       context: ./frontend
@@ -42,7 +36,6 @@ services:
     depends_on:
       - frontend
       - server
-      - db
       - cache
     command: '/bin/sh -c ''while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g "daemon off;"''' # Reload auto-renewed ssl certificates
   certbot:

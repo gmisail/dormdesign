@@ -1,35 +1,27 @@
-const rethinkdb = require("rethinkdb");
+// const rethinkdb = require("rethinkdb");
+
+const { MongoClient } = require("mongodb");
 
 let Database = {};
 Database.connection = null;
 
 Database.setup = async function () {
-  let conn = await rethinkdb.connect({
-    host: process.env.DATABASE_ADDRESS,
-    port: 28015,
-  });
+  const uri = process.env.DATABASE_ADDRESS;
+  const client = new MongoClient(uri);
 
-  Database.connection = conn;
+  try {
+    // Connect the client to the server
+    await client.connect();
+    // Establish and verify connection
+    await client.db("admin").command({ ping: 1 });
+    await client.db("dd_data").command({ ping: 1 });
 
-  /*
-    Ensure that the database and required tables exist. If not, then
-    create them.
-  */
-  rethinkdb.dbCreate("dd_data").run(Database.connection, (err) => {
-    rethinkdb
-      .db("dd_data")
-      .tableCreate("rooms")
-      .run(Database.connection, (err, res) => {
-        if (!err) console.log("Successfully created table 'rooms'");
-      });
+    console.log("Connected successfully to MongoDB server");
+  } catch (err) {
+    console.error("ERROR: Failed to connect to MongoDB: " + err);
+  }
 
-    rethinkdb
-      .db("dd_data")
-      .tableCreate("templates")
-      .run(Database.connection, (err, res) => {
-        if (!err) console.log("Successfully created table 'templates'");
-      });
-  });
+  Database.client = client;
 };
 
 module.exports = Database;

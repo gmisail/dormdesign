@@ -1,0 +1,25 @@
+.unknown-wrapper {
+  max-width: 100%;
+  margin: 7.5vh auto 0 auto;
+}
+
+.unknown-container {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: max-content;
+  gap: 0px 0px;
+  grid-template-areas:
+    "unknown_title"
+    "unknown_desc";
+}
+
+.unknown_title {
+  grid-area: unknown_title;
+  justify-content: center;
+  text-align: center;
+}
+.unknown_desc {
+  grid-area: unknown_desc;
+  justify-content: center;
+  text-align: center;
+}

@@ -25,10 +25,11 @@ class HomeRoute extends Component {
   async componentDidMount() {
     document.title = "DormDesign";
 
-    const roomPreviews = await this.generatePreviews(StorageController.getRoomsFromHistory());
+    const roomHistory = StorageController.getRoomsFromHistory();
+    const roomPreviews = await this.generatePreviews(roomHistory);
     this.setState({
       roomPreviews,
-      roomHistory: StorageController.getRoomsFromHistory(),
+      roomHistory: roomHistory,
     });
 
     const backgroundColor = "#f4f4f4";
@@ -56,6 +57,9 @@ class HomeRoute extends Component {
   };
 
   generatePreviews = async (roomHistory) => {
+    if (roomHistory.length === 0) {
+      return;
+    }
     const previews = roomHistory.map((room) => room.id);
     const previewsData = await DataRequests.generatePreview(previews);
 

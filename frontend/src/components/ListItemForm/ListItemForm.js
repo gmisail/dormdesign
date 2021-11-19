@@ -11,7 +11,7 @@ class ListItemForm extends Component {
     // Name for new items should be blank
     const name = item ? item.name : "";
     if (!item) {
-      item = new DormItem();
+      item = DormItem.getDefault();
     }
 
     this.state = {

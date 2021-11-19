@@ -1,4 +1,4 @@
-const { v4: uuidv4 } = require("uuid");
+const { v4: uuidv4, validate } = require("uuid");
 const events = require("events");
 const chalk = require("chalk");
 const querystring = require("querystring");
@@ -6,6 +6,8 @@ const querystring = require("querystring");
 const Room = require("./models/room.model");
 const Cache = require("./cache");
 const Users = require("./models/users.model");
+
+const DEBUG_MESSAGES = Boolean(process.env.DEBUG_MESSAGES ?? "false");
 
 /*
   Clear the cache upon server startup
@@ -43,7 +45,7 @@ Hub.addClient = function (socket) {
 
 /*
   Remove client, and if it is the last client in a room,
-  delete the room too.
+  delete the room from the cache too.
 */
 Hub.removeClient = async function (clientID) {
   if (!Hub.connections.has(clientID)) return;
@@ -53,8 +55,6 @@ Hub.removeClient = async function (clientID) {
     console.error("Error while removing client: RoomID stored under client is invalid");
     return;
   }
-
-  Room.save(roomID);
 
   Hub.connections.delete(clientID);
   Hub.rooms.get(roomID).delete(clientID);
@@ -67,18 +67,28 @@ Hub.removeClient = async function (clientID) {
     data: { users },
   });
 
-  console.log(chalk.red(`Client ${clientID} has disconnected from roomID ${roomID}.`));
+  if (DEBUG_MESSAGES) {
+    console.log(chalk.red(`Client ${clientID} has disconnected from roomID ${roomID}.`));
+  }
 
-  if (Hub.rooms.get(roomID).size <= 0) {
+  if (Hub.rooms.get(roomID).size === 0) {
+    try {
+      Room.save(roomID);
+    } catch (error) {
+      console.error(error);
+    }
+
     Hub.rooms.delete(roomID);
 
-    Cache.client
-      .del(roomID)
-      .then((_) => console.log(`Room ${roomID} has been removed from the cache.`));
+    // del is the number of keys that were removed
+    const del = await Cache.client.del(roomID);
+    // Sometimes the room might have already been removed from the cache (e.g. when a room is fully deleted)
+    if (del > 0 && DEBUG_MESSAGES) console.log(`Room ${roomID} has been removed from the cache.`);
 
     await Users.deleteRoom(roomID);
-
-    console.log(chalk.red(`Removed roomID ${roomID} from hub.`));
+    if (DEBUG_MESSAGES) {
+      console.log(chalk.red(`Removed roomID ${roomID} from hub.`));
+    }
   }
 };
 
@@ -149,12 +159,12 @@ Hub.sendError = function (id, errorAction, errorMessage) {
 };
 
 Hub.addItem = async function ({ socket, roomID, data, sendResponse }) {
-  const item = await Room.addItem(roomID, data);
-
-  if (item === null) {
-    Hub.sendError(socket.id, "addItem", "Unable to add item to the database nor room.");
-    return;
+  if (data === undefined) {
+    const err = new Error("Item data is undefined");
+    err.status = 400;
+    throw err;
   }
+  const item = await Room.addItem(roomID, data);
 
   Hub.send(socket.id, roomID, sendResponse, {
     event: "itemAdded",
@@ -163,36 +173,31 @@ Hub.addItem = async function ({ socket, roomID, data, sendResponse }) {
 };
 
 Hub.updateItems = async function ({ socket, roomID, data, sendResponse }) {
-  if (data.items !== undefined && data.items.length > 0) {
-    // Convert array of updates to single object of form { itemID_1 : updates, itemID_2 : updates ... }
-    const items = data.items.reduce((obj, item) => ((obj[item.id] = item.updated), obj), {});
-
-    try {
-      await Room.updateItems(roomID, items);
-    } catch (error) {
-      Hub.sendError(socket.id, "updateItems", error.message);
-
-      return;
-    }
-
-    Hub.send(socket.id, roomID, sendResponse, {
-      event: "itemsUpdated",
-      data,
-    });
+  if (data?.items === undefined) {
+    const err = new Error("Array 'items' is undefined");
+    err.status = 400;
+    throw err;
   }
+
+  await Room.updateItems(roomID, data.items);
+
+  Hub.send(socket.id, roomID, sendResponse, {
+    event: "itemsUpdated",
+    data,
+  });
 };
 
 Hub.deleteItem = async function ({ socket, roomID, data, sendResponse }) {
-  if (data === undefined || data.id === undefined) {
-    Hub.sendError(socket.id, "deleteItem", "Could not delete item with undefined ID.");
-    return;
+  if (data?.id === undefined) {
+    const err = new Error("Item ID is undefined");
+    err.status = 400;
+    throw err;
   }
 
   try {
     await Room.removeItem(roomID, data.id);
   } catch (error) {
     Hub.sendError(socket.id, "deleteItem", error.message);
-
     return;
   }
 
@@ -203,23 +208,13 @@ Hub.deleteItem = async function ({ socket, roomID, data, sendResponse }) {
 };
 
 Hub.updateLayout = async function ({ socket, roomID, data, sendResponse }) {
-  if (data.vertices === undefined || data.vertices.length <= 0) {
-    Hub.sendError(
-      socket.id,
-      "updateLayout",
-      "Cannot update layout with undefined / empty vertices."
-    );
-
-    return;
+  if (data?.vertices === undefined || data.vertices.length === 0) {
+    const err = new Error("'vertices' array is empty or undefined");
+    err.status = 400;
+    throw err;
   }
 
-  try {
-    await Room.updateVertices(roomID, data.vertices);
-  } catch (error) {
-    Hub.sendError(socket.id, "updateLayout", error.message);
-
-    return;
-  }
+  await Room.updateVertices(roomID, data.vertices);
 
   Hub.send(socket.id, roomID, sendResponse, {
     event: "layoutUpdated",
@@ -228,17 +223,14 @@ Hub.updateLayout = async function ({ socket, roomID, data, sendResponse }) {
 };
 
 Hub.cloneRoom = async function ({ socket, roomID, data, sendResponse }) {
+  if (data?.target_id === undefined) {
+    const err = new Error("'target_id' is undefined");
+    err.status = 400;
+    throw err;
+  }
   const target = data.target_id;
 
-  let res = {};
-
-  try {
-    res = await Room.copyFrom(roomID, target);
-  } catch (error) {
-    Hub.sendError(socket.id, "cloneRoom", "Could not clone room successfully.");
-
-    return;
-  }
+  await Room.copyFrom(roomID, target);
 
   Hub.send(socket.id, roomID, sendResponse, {
     event: "roomCloned",
@@ -247,17 +239,15 @@ Hub.cloneRoom = async function ({ socket, roomID, data, sendResponse }) {
 };
 
 Hub.updateRoomName = async function ({ socket, roomID, data, sendResponse }) {
-  if (data === undefined || data.name === undefined || data.name.length <= 0) return;
+  if (data === undefined || data.name === undefined || data.name.length <= 0) {
+    const err = new Error("'name' string is empty or undefined");
+    err.status = 400;
+    throw err;
+  }
 
   let name = data.name.trim().substring(0, Math.min(40, data.name.length));
 
-  try {
-    await Room.updateRoomName(roomID, name);
-  } catch (error) {
-    Hub.sendError(socket.id, "updateRoomName", "Could not update room name.");
-
-    return;
-  }
+  await Room.updateRoomName(roomID, name);
 
   Hub.send(socket.id, roomID, sendResponse, {
     event: "roomNameUpdated",
@@ -280,7 +270,11 @@ Hub.deleteRoom = async function ({ socket, roomID, sendResponse }) {
   every client the array of users
 */
 Hub.updateNickname = async function ({ socket, roomID, data, sendResponse }) {
-  if (data === undefined || data.userName === undefined || data.userName.length <= 0) return;
+  if (data === undefined || data.userName === undefined || data.userName.length <= 0) {
+    const err = new Error("'userName' string is empty or undefined");
+    err.status = 400;
+    throw err;
+  }
 
   let userName = data.userName.trim();
 
@@ -306,7 +300,7 @@ Hub.onPing = function () {
       - terminate the socket connection
     */
     if (!socket.active) {
-      console.log("Connection " + socket.id + " inactive. Closing it.");
+      if (DEBUG_MESSAGES) console.log("Connection " + socket.id + " inactive. Closing it.");
       Hub.removeClient(socket.id, socket.roomID);
       return socket.terminate();
     }
@@ -369,6 +363,30 @@ Hub.onConnection = function (socket, req) {
 };
 
 /**
+ * Custom function for adding an event listener to the hub. Wraps the listener in a function that catches and handles errors.
+ * Any errors caught at this stage without a 'status' property will be interpreted as internal server errors
+ */
+Hub.addEventListener = (event, listener) => {
+  Hub.events.addListener(event, async (args) => {
+    const { socket } = args;
+    try {
+      await listener(args);
+    } catch (err) {
+      if (err.status === undefined) err.status = 500;
+      // Internal errors shouldn't be shown to client
+      if (err.status === 500) {
+        console.error(`Internal error on ${event} room event.`, err.message);
+        err.message = "Internal server error";
+      } else {
+        // For now also log non-internal errors. Probably want to remove this in the future
+        console.error(`Error on ${event} room event.`, err.message);
+      }
+      Hub.sendError(socket.id, event, err.message);
+    }
+  });
+};
+
+/**
  * Setup the socket hub, which directs incoming socket messages to the correct callback
  * @param {*} sockets
  */
@@ -379,14 +397,14 @@ Hub.setup = function (sockets) {
   Hub.events = new events.EventEmitter();
 
   /* register the socket events */
-  Hub.events.addListener("addItem", Hub.addItem);
-  Hub.events.addListener("updateItems", Hub.updateItems);
-  Hub.events.addListener("deleteItem", Hub.deleteItem);
-  Hub.events.addListener("updateLayout", Hub.updateLayout);
-  Hub.events.addListener("cloneRoom", Hub.cloneRoom);
-  Hub.events.addListener("deleteRoom", Hub.deleteRoom);
-  Hub.events.addListener("updateRoomName", Hub.updateRoomName);
-  Hub.events.addListener("updateNickname", Hub.updateNickname);
+  Hub.addEventListener("addItem", Hub.addItem);
+  Hub.addEventListener("updateItems", Hub.updateItems);
+  Hub.addEventListener("deleteItem", Hub.deleteItem);
+  Hub.addEventListener("updateLayout", Hub.updateLayout);
+  Hub.addEventListener("cloneRoom", Hub.cloneRoom);
+  Hub.addEventListener("deleteRoom", Hub.deleteRoom);
+  Hub.addEventListener("updateRoomName", Hub.updateRoomName);
+  Hub.addEventListener("updateNickname", Hub.updateNickname);
 
   sockets.on("connection", Hub.onConnection);
 

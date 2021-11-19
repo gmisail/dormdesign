@@ -27,12 +27,12 @@ export default class StorageController {
     let history = StorageController.getRoomsFromHistory();
     let duplicates = false;
 
-    history.forEach((page, id) => {
-      if (page.id === roomId) {
+    history.forEach((element, index) => {
+      if (element.id === roomId) {
         duplicates = true;
 
-        if (page.name !== name) {
-          history[id].name = name;
+        if (element.name !== name) {
+          history[index].name = name;
         }
       }
     });
@@ -65,11 +65,6 @@ export default class StorageController {
    */
   static removeRoomFromHistory(id) {
     let historyData = StorageController.getRoomsFromHistory();
-
-    console.log(
-      historyData,
-      historyData.filter((room) => room.id !== id)
-    );
 
     StorageController.set("history", JSON.stringify(historyData.filter((room) => room.id !== id)));
   }
