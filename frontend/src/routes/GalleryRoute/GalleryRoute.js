@@ -2,7 +2,7 @@ import "./GalleryRoute.scss";
 
 import React, { useCallback, useEffect } from "react";
 
-import SingleInputForm from "../../components/SingleInputForm/SingleInputForm"
+import SingleInputForm from "../../components/SingleInputForm/SingleInputForm";
 import GalleryItem from "../../components/GalleryItem/GalleryItem";
 
 export const GalleryRoute = () => {
