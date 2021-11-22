@@ -1,12 +1,17 @@
 import "./GalleryRoute.scss";
 
-import React, { useCallback, useEffect } from "react";
+import React, { useState } from "react";
 
 import SingleInputForm from "../../components/SingleInputForm/SingleInputForm";
 import GalleryItem from "../../components/GalleryItem/GalleryItem";
+import { useEffect } from "react";
 
 export const GalleryRoute = () => {
   const rooms = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+
+  const [isFeatured, setFeatured] = useState(true);
+
+  useEffect(() => console.log(isFeatured ? "featured" : "community"), [isFeatured]);
 
   return (
     <div className="gallery-container">
@@ -14,19 +19,25 @@ export const GalleryRoute = () => {
         <button
           className="custom-btn custom-btn-outline gallery-page gallery-btn-featured"
           type="submit"
+          onClick={() => {
+            if (!isFeatured) setFeatured(true);
+          }}
         >
           Featured
         </button>
         <button
           className="custom-btn custom-btn-outline gallery-page gallery-btn-community"
           type="submit"
+          onClick={() => {
+            if (isFeatured) setFeatured(false);
+          }}
         >
           Community
         </button>
       </div>
       <div className="gallery-toolbar">
         <SingleInputForm
-          initialValue={"Hello"}
+          initialValue={""}
           submitButtonText={"Search"}
           submitButtonTextSuccessful={"Search"}
           onSubmit={(content) => console.log(content)}
