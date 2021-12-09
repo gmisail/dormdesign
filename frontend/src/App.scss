@@ -35,6 +35,13 @@ textarea {
   font-family: "Arvo", serif;
 }
 
+.main-content-container {
+  min-height: 100vh;
+  display: flex;
+  flex-flow: column nowrap;
+  justify-content: space-between;
+}
+
 .offset-from-navbar {
   padding-top: $navbar-height; /* Offsets content of page from navbar (which is fixed to top) */
 }
