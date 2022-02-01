@@ -1,7 +1,8 @@
 import React, { Component } from "react";
+
 import { Col } from "react-bootstrap";
-import Form from "react-bootstrap/Form";
 import DormItem from "../../models/DormItem";
+import Form from "react-bootstrap/Form";
 
 class ListItemForm extends Component {
   constructor(props) {
@@ -164,6 +165,7 @@ class ListItemForm extends Component {
               <Form.Control
                 name="widthInputValue"
                 type="number"
+                step="0.0001"
                 value={this.state.widthInputValue}
                 placeholder="Width"
                 onChange={this.handleInputChange}
@@ -174,6 +176,7 @@ class ListItemForm extends Component {
               <Form.Control
                 name="lengthInputValue"
                 type="number"
+                step="0.0001"
                 value={this.state.lengthInputValue}
                 placeholder="Length"
                 onChange={this.handleInputChange}
