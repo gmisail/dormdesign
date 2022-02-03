@@ -87,29 +87,83 @@
       grid-area: recent-rooms;
       max-width: 100%;
 
-      .recent-rooms-card {
+      display: flex;
+      flex-flow: column nowrap;
+      align-items: center;
+      margin-top: 50px;
+      min-width: 50%;
+
+      .recent-rooms {
         display: flex;
-        flex-flow: column nowrap;
-        align-items: center;
-        margin-top: 50px;
-        min-width: 50%;
+        flex-flow: row nowrap;
+        max-width: 100%;
+        overflow-x: scroll;
+        padding: 15px;
 
-        .recent-rooms {
-          display: flex;
-          flex-flow: row nowrap;
-          max-width: 100%;
-          overflow-x: auto;
-          padding: 15px;
+        & > * {
+          flex-shrink: 0;
+        }
 
-          & > * {
-            flex-shrink: 0;
+        & > * {
+          margin-left: 25px;
+        }
+        :first-child {
+          margin-left: 0;
+        }
+
+        .recent-room {
+          position: relative;
+
+          width: 160px;
+          height: 200px;
+
+          background-color: $foreground-color;
+          border-radius: $card-border-radius;
+          box-shadow: $box-shadow;
+
+          transition: all 0.075s ease;
+
+          &:hover {
+            // Convert the shadow into a solid outline on hover
+            box-shadow: 0px 0px 0px 2px $color-secondary;
           }
 
-          & > * {
-            margin-left: 25px;
+          /* Remove default link text effects */
+          a,
+          a:hover,
+          a:visited,
+          a:active {
+            color: inherit;
+            text-decoration: none;
           }
-          :first-child {
-            margin-left: 0;
+
+          .recent-room-remove-button {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 2.25rem;
+            transition: all 0.075s ease;
+
+            &:hover {
+              color: lighten($text-color-dark, 30);
+            }
+          }
+
+          .recent-room-name {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            height: 55px;
+
+            font-weight: 600;
+          }
+
+          .recent-room-image {
+            margin: auto;
+
+            width: 130px;
+            height: 130px;
           }
         }
       }

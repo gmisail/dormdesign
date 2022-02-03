@@ -1,0 +1,10 @@
+@import "../../styles/variables.scss";
+
+.room-preview-image {
+  display: block;
+  padding: 12px;
+
+  border-radius: inherit;
+  box-shadow: inset 0px 1px 4px 3px rgba(0, 0, 0, 0.15);
+  background-image: url("../../assets/grid.svg");
+}
