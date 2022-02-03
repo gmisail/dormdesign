@@ -6,12 +6,14 @@ import DataRequests from "../../controllers/DataRequests";
 import { ReactComponent as Logo } from "../../assets/logo.svg";
 import Modal from "react-bootstrap/Modal";
 import RoomGridObject from "../../room-editor/RoomGridObject";
-import RoomPreviewCard from "../../components/RoomPreviewCard/RoomPreviewCard";
 import SceneController from "../../room-editor/SceneController";
 import SingleInputForm from "../../components/SingleInputForm/SingleInputForm";
 import StorageController from "../../controllers/StorageController";
 import Vector2 from "../../room-editor/Vector2";
 import Room from "../../models/Room";
+import IconButton from "../../components/IconButton/IconButton";
+import RoomPreview from "../../components/RoomPreview/RoomPreview";
+import { BsX } from "react-icons/bs";
 
 class HomeRoute extends Component {
   state = {
@@ -82,31 +84,42 @@ class HomeRoute extends Component {
     this.props.history.push(`/room/${roomID}`);
   };
 
-  renderExistingRooms = () => {
-    const roomPreviews = this.state.roomHistory.map((room, id) => {
+  // Removes a recent room from local storage and from local state.
+  // Takes in id of room and curent index of it in 'roomHistory' state variable
+  removeRecentRoom = (id, index) => {
+    StorageController.removeRoomFromHistory(id);
+    this.setState({
+      roomHistory: this.state.roomHistory.filter((_, i) => i != index),
+    });
+  };
+
+  renderRecentRooms = () => {
+    return this.state.roomHistory.map((room, index) => {
       // Preview might not be loaded yet, if not just pass an empty URI ("")
-      const preview = this.state.roomPreviews[id];
+      const preview = this.state.roomPreviews[index];
 
       if (preview == null) {
         console.error(`Room (${room.id}) could not render a preview.`);
       }
 
       return (
-        <RoomPreviewCard
-          key={room.id}
-          id={room.id}
-          roomName={room.name}
-          preview={preview == undefined ? "" : preview}
-        ></RoomPreviewCard>
+        <div className="recent-room" key={index}>
+          <IconButton
+            onClick={() => this.removeRecentRoom(room.id, index)}
+            className="recent-room-remove-button"
+          >
+            <BsX />
+          </IconButton>
+          <a href={`/room/${room.id}`} className="">
+            <span className="recent-room-name">{room.name}</span>
+            <RoomPreview
+              className="recent-room-image"
+              preview={preview == undefined ? "" : preview}
+            />
+          </a>
+        </div>
       );
     });
-
-    return this.state.roomHistory.length > 0 ? (
-      <div className="recent-rooms-card">
-        <h5>Recent Rooms</h5>
-        <div className="recent-rooms">{roomPreviews}</div>
-      </div>
-    ) : null;
   };
 
   render() {
@@ -134,7 +147,14 @@ class HomeRoute extends Component {
                 Join Room
               </button>
             </div>
-            <div className="recent-rooms-container">{this.renderExistingRooms()}</div>
+            <div className="recent-rooms-container">
+              {this.state.roomHistory.length > 0 ? (
+                <>
+                  <h5>Recent Rooms</h5>
+                  <div className="recent-rooms">{this.renderRecentRooms()}</div>
+                </>
+              ) : null}
+            </div>
           </div>
         </div>
 

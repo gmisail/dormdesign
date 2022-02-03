@@ -1,4 +1,5 @@
 import React from "react";
+import Vector2 from "../../room-editor/Vector2";
 
 export default function BoundsToolbar({
   room,

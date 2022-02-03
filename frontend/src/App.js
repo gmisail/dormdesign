@@ -18,11 +18,13 @@ const App = () => {
   return (
     <IconContext.Provider value={{ size: "1.6em" }}>
       <Router>
-        <Switch>
-          <Route exact path="/" component={HomeRoute} />
-          <Route component={MainRoutes} />
-        </Switch>
-        <Footer />
+        <div className="main-content-container">
+          <Switch>
+            <Route exact path="/" component={HomeRoute} />
+            <Route component={MainRoutes} />
+          </Switch>
+          <Footer />
+        </div>
       </Router>
     </IconContext.Provider>
   );
