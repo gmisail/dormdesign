@@ -1,5 +1,5 @@
 # First build the files
-FROM node:alpine AS builder
+FROM mhart/alpine-node:14 AS builder
 
 WORKDIR /app
 
