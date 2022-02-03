@@ -68,7 +68,7 @@ function RoomEditor() {
   const [locked, setLocked] = useState(false);
 
   // The variables below don't need to be stored as state
-  const boundaryPointSelected = editingBounds && room.current?.bounds.selectedPointIndex !== null;
+  const boundaryPointSelected = selectedPointX !== "" && selectedPointY !== "";
   const canDeleteSelectedPoint =
     room.current === undefined ? false : room.current?.bounds.pointsLength > 3;
 
@@ -108,8 +108,9 @@ function RoomEditor() {
         NOTE:
 
         Errors here in development mode (specifically ones that show up as 
-        warnings in console) are often caused by React repeating state updates 
-        (causing duplicate messages to be added to editorActionQueue).
+        warnings in console) are often caused by React repeating state updates
+        (which it should only do when in development mode)
+        causing duplicate messages to be added to editorActionQueue.
 
         There might be a way to avoid duplicate events in the queue (maybe some sort of ID system?) but for now its fine.
 
@@ -237,7 +238,9 @@ function RoomEditor() {
     const editing = !editingBounds;
     room.current.bounds.editing = editing;
     if (editing) {
-      // editedBounds = room.current.bounds.points;
+      // Reset selected point values when starting to edit bounds
+      setSelectedPointX("");
+      setSelectedPointY("");
     } else {
       if (saveEdits) {
         // Save the edits made by updating the bounds
