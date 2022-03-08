@@ -8,7 +8,6 @@ import { useEffect } from "react";
 import { Spinner } from "react-bootstrap";
 import Modal from "react-bootstrap/Modal";
 import RoomModel from "../../models/RoomModel";
-
 import DataRequests from "../../controllers/DataRequests";
 
 export const TemplatesRoute = () => {
@@ -33,7 +32,7 @@ export const TemplatesRoute = () => {
   const onSubmitCreateRoomModal = async (name) => {
     let roomID;
     try {
-      const roomData = await DataRequests.createRoomFromTemplate(name, selectedTemplate.templateId);
+      const roomData = await DataRequests.createRoom(name, selectedTemplate.templateId);
       roomID = roomData.id;
       history.push(`/room/${roomID}`);
     } catch (err) {
@@ -78,14 +77,28 @@ export const TemplatesRoute = () => {
         }}
       >
         <Modal.Header closeButton>
-          <Modal.Title className="custom-modal-title">Create Copy</Modal.Title>
+          <Modal.Title className="custom-modal-title">Create Copy of Template</Modal.Title>
         </Modal.Header>
-        <Modal.Body>
+        <Modal.Body className="create-room-modal-body">
+          <div className="important-info">
+            <p>
+              <b>IMPORTANT:</b> After you create a room, make sure you write down the link to the
+              room (or the room ID itself) somewhere where it won't get lost. Without it, there is
+              no way to recover your room.
+            </p>
+            <p>
+              <b>Treat the room ID and link like a password</b>. Anyone you share it with will be
+              able to edit or delete your room. If you want to share your room without allowing
+              edits, use the template ID.
+            </p>
+          </div>
+          <h5>Clone this template</h5>
+          <p>Creates a new room that exactly matches the template "{selectedTemplate?.name}"</p>
           <SingleInputForm
             initialValue={`Copy of ${selectedTemplate?.name}`}
             placeholder={"Room name"}
             onSubmit={onSubmitCreateRoomModal}
-            submitButtonText={"Create"}
+            submitButtonText={"Clone"}
             trim={true}
             maxLength={RoomModel.MAX_NAME_LENGTH}
           />

@@ -53,7 +53,7 @@ Room.create = async function (name, templateId) {
     room.data = { ...templateRoom.data };
     // If a name has been provided, use that. Otherwise append 'Copy of ' to front of template name
     if (name !== null && name !== undefined) {
-      room.data = name;
+      room.data.name = name;
     } else {
       room.data.name = "Copy of " + room.data.name;
     }
