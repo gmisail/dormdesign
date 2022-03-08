@@ -35,7 +35,6 @@ const ListItem = ({
     Note that this could be an issue if two users input the same userName
   */
   const userName = useSelector((state) => state.userName);
-  const socketConnection = useSelector((state) => state.socketConnection);
 
   const dispatch = useDispatch();
 

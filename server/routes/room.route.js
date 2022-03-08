@@ -1,7 +1,6 @@
 const { Router } = require("express");
 let Item = require("../models/item.model");
 let Room = require("../models/room.model");
-const Users = require("../models/users.model");
 
 // Need to wrap routes in this function in order for async execptions to be handled automatically
 // See: https://github.com/Abazhenov/express-async-handler#readme
@@ -28,7 +27,8 @@ router.get(
 );
 
 const createRoomSchema = Joi.object({
-  name: Joi.string().min(1).max(Room.MAX_NAME_LENGTH).required(),
+  name: Joi.string().min(1).max(Room.MAX_NAME_LENGTH).optional(),
+  templateId: Joi.string().min(1).optional(),
 });
 router.post(
   "/create",
@@ -36,21 +36,7 @@ router.post(
     validateWithSchema(req.body, createRoomSchema);
 
     const name = req.body.name;
-
-    if (name === undefined || name.length <= 0) {
-      const err = new Error("Missing room name parameter.");
-      err.status = 400;
-      throw err;
-    }
-    if (name.length > Room.MAX_NAME_LENGTH) {
-      const err = new Error(
-        `Room name exceeds maximum allowed length of ${Room.MAX_NAME_LENGTH} characters`
-      );
-      err.status = 400;
-      next(err);
-    }
-
-    const room = await Room.create(name);
+    const room = await Room.create(name, req.body.templateId);
 
     res.json(room);
   })

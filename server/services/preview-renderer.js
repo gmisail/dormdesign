@@ -137,11 +137,11 @@ PreviewRenderer.drawItems = function (items, boundingBox) {
 };
 
 /**
- * Generate a preview of the room
- * @param { { vertices: [{x: Number, y: Number}], items: [] } } room
+ * Generate a preview of the provided room data
+ * @param { { vertices: [{x: Number, y: Number}], items: [] } } roomData
  */
-PreviewRenderer.generatePreview = function (room) {
-  let { vertices, items } = room;
+PreviewRenderer.generatePreview = function (roomData) {
+  let { vertices, items } = roomData;
 
   let boundaryBox = PreviewRenderer.getBoundingBox(vertices);
 

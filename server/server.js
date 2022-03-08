@@ -29,6 +29,7 @@ Server.setup = async function (app, port) {
   app.use(express.static("public"));
   app.use("/api/room", require("./routes/room.route"));
   app.use("/api/preview", require("./routes/preview.route"));
+  app.use("/api/templates", require("./routes/templates.route"));
 
   // Set all other undefined routes to throw an error
   app.get("*", (req, res, next) => {
@@ -43,7 +44,7 @@ Server.setup = async function (app, port) {
     // Don't return actual error message to client for internal server errors
     if (error.status === 500) {
       // Log internal server errors to console (since they usually mean something went wrong)
-      console.error(error.message);
+      console.error(error);
 
       error.message = "Internal server error";
     }

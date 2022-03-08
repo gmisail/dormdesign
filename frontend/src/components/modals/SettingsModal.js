@@ -6,7 +6,7 @@ import RoomNameForm from "../RoomNameForm/RoomNameForm";
 import SingleInputForm from "../SingleInputForm/SingleInputForm";
 
 const SettingsModal = (props) => {
-  const onDeleteRoom = (evt) => {
+  const onDeleteRoom = () => {
     props.onDeleteRoom();
   };
 
@@ -26,6 +26,8 @@ const SettingsModal = (props) => {
         <SingleInputForm
           initialValue={props.userName}
           onSubmit={props.onChangeUserName}
+          submitButtonText="Save"
+          submitButtonTextSuccessful="Saved!"
           trim={true}
           allowEmptySubmit={false}
         />

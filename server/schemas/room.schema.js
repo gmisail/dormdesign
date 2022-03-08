@@ -7,9 +7,10 @@ const vertexSchema = Joi.object({
 
 // This shouldn't include the items array. Items should be updated separately.
 // We could allow items to be updated here as well but that would require a lot more complex validation
-const updateRoomPropertySchema = Joi.object({
-  name: Joi.string().min(1).max(30),
-  vertices: Joi.array().items(vertexSchema),
+const updateRoomDataSchema = Joi.object({
+  name: Joi.string().min(1).max(40),
+  // There must be at least 3 vertices in the room
+  vertices: Joi.array().min(3).items(vertexSchema),
 });
 
-module.exports = { updateRoomPropertySchema };
+module.exports = { updateRoomDataSchema };

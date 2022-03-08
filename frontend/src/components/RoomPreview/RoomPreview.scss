@@ -1,10 +1,25 @@
 @import "../../styles/variables.scss";
 
-.room-preview-image {
-  display: block;
+.room-preview {
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: center;
+  align-items: center;
   padding: 12px;
 
   border-radius: inherit;
+
   box-shadow: inset 0px 1px 4px 3px rgba(0, 0, 0, 0.15);
   background-image: url("../../assets/grid.svg");
+
+  // When the preview is loading, remove the background image and shadow
+  &.loading {
+    box-shadow: none;
+    background-image: none;
+  }
+
+  & > img {
+    width: 100%;
+    height: 100%;
+  }
 }

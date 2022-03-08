@@ -1,11 +1,11 @@
-import { Provider, useSelector } from "react-redux";
-import React, { useCallback } from "react";
+import { Provider } from "react-redux";
+import React from "react";
 import { applyMiddleware, createStore } from "redux";
 
 import DataRequests from "../controllers/DataRequests";
 import RoomActions from "./RoomActions";
 import RoomReducer from "./RoomReducer";
-import SocketConnection from "../controllers/SocketConnection";
+import RoomSocketConnection from "../controllers/RoomSocketConnection";
 import StorageController from "../controllers/StorageController";
 import initialState from "./initialState";
 import thunk from "redux-thunk";
@@ -60,22 +60,22 @@ export const connectToRoom = (id) => async (dispatch, getState) => {
       dispatch({ type: RoomActions.setUserName, payload: { userName } });
     }
 
-    const roomData = await DataRequests.getRoomData(id);
-    const connection = new SocketConnection(id, () => {
+    const roomObj = await DataRequests.getRoomData(id);
+    const connection = new RoomSocketConnection(id, () => {
       // Called when socket connection has been opened
       console.log("Successfully connected to Room");
 
       // Add this room to local history of viewed rooms
-      StorageController.addRoomToHistory(id, roomData.name);
+      StorageController.addRoomToHistory(id, roomObj.data.name);
 
       dispatch({
         type: RoomActions.connectedToRoom,
         payload: {
-          items: roomData.items,
-          templateId: roomData.templateId,
-          roomName: roomData.name,
+          items: roomObj.data.items,
+          templateId: roomObj.templateId,
+          roomName: roomObj.data.name,
+          bounds: roomObj.data.vertices,
           socketConnection: connection,
-          bounds: roomData.vertices,
         },
       });
     });
@@ -153,7 +153,7 @@ export const connectToRoom = (id) => async (dispatch, getState) => {
       });
     });
   } catch (error) {
-    console.error("Failed to connect to room: " + error);
+    console.error("Failed to connect to room: " + error.message);
     dispatch({ type: RoomActions.error, payload: { error } });
   }
 };
@@ -174,15 +174,14 @@ export const setUserName = (userName) => async (dispatch, getState) => {
   dispatch({ type: RoomActions.setUserName, payload: { userName } });
 };
 
-export const cloneRoom = (id, target) => async (dispatch, getState) => {
+export const cloneRoom = (id, templateId) => async (dispatch, getState) => {
   const { socketConnection } = getState();
 
   socketConnection.send({
     event: "cloneRoom",
     sendResponse: true,
     data: {
-      id,
-      target_id: target,
+      templateId: templateId,
     },
   });
 };

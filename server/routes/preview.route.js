@@ -1,48 +1,52 @@
 const { Router } = require("express");
 const Room = require("../models/room.model");
 const Preview = require("../models/preview.model");
-const PreviewRenderer = require("../services/preview-renderer");
 
 // Need to wrap routes in this function in order for async execptions to be handled automatically
 // See: https://github.com/Abazhenov/express-async-handler#readme
 const asyncHandler = require("express-async-handler");
 
-const Joi = require("joi");
-const { validateWithSchema } = require("../utils.js");
-
 let router = Router();
 
 /**
- *  Accepts an array of room ID's an returns an array of the same length where
- *  each element is either the preview URI or null (if the operation failed for
- *  that room)
+ * Attempts to generate a preview of the room represented by the given id.
+ * @param { string } id
+ * @param { boolean } isTemplate Set to true if the  given id is a templateId
+ * @returns Preview if successful, otherwise null
  */
-const getPreviewsSchema = Joi.array().items(Joi.string()).min(1);
-router.post(
-  "/",
+const generateRoomPreview = async (id, isTemplate = false) => {
+  const room = isTemplate ? await Room.getFromTemplateId(id) : await Room.get(id);
+  const roomPreview = await Preview.get(room);
+  return roomPreview !== null ? roomPreview.data : null;
+};
+
+router.get(
+  "/room/:id",
   asyncHandler(async (req, res) => {
-    validateWithSchema(req.body, getPreviewsSchema);
-    const ids = req.body;
+    const id = req.params.id;
+    if (id === null || id === undefined) {
+      const err = new Error("'id' is null or undefined");
+      err.status = 400;
+      throw err;
+    }
+    const preview = await generateRoomPreview(id, false);
 
-    /*
-      Since each render is asynchronous, we need to wait for 
-      all of them to finish before sending them over. 
-    */
-    const previews = await Promise.all(
-      ids.map(async (id) => {
-        let room;
-        try {
-          room = await Room.get(id);
-        } catch (error) {
-          return null;
-        }
+    res.json({ preview });
+  })
+);
 
-        const roomPreview = await Preview.get(room);
-        return roomPreview;
-      })
-    );
+router.get(
+  "/template/:id",
+  asyncHandler(async (req, res) => {
+    const id = req.params.id;
+    if (id === null || id === undefined) {
+      const err = new Error("'id' is null or undefined");
+      err.status = 400;
+      throw err;
+    }
+    const preview = await generateRoomPreview(id, true);
 
-    res.json({ previews });
+    res.json({ preview });
   })
 );
 

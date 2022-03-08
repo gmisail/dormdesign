@@ -4,41 +4,50 @@ const chalk = require("chalk");
 const querystring = require("querystring");
 
 const Room = require("./models/room.model");
-const Cache = require("./cache");
-const Users = require("./models/users.model");
 
 const DEBUG_MESSAGES = Boolean(process.env.DEBUG_MESSAGES ?? "false");
 
-/*
-  Clear the cache upon server startup
-
-  TODO: remove this once multi-core support is implemented since this
-  will clear the cache whenever a new server node is added --> could be
-  very bad.
-*/
-Cache.client.flushall();
-
-const USE_DEBUGGER = false; // print contents of every room for every ping
+const USE_DEBUGGER = true; // print contents of every room for every ping
 const PONG_TIME = 15 * 1000; // check every 15 seconds
 
 let Hub = {};
+// { socketId : socket } - Stores active socket connections
 Hub.connections = new Map();
+// { roomId : { socketId } } - Stores set of socket connection ids for each room
 Hub.rooms = new Map();
+
+/*
+  Returns an array of username strings for active sockets in a room
+*/
+Hub.getRoomUsernames = function (roomID) {
+  return [...Hub.rooms.get(roomID)].map((socketId) => {
+    return Hub.connections.get(socketId).userName;
+  });
+};
 
 /*
   If room does not exist, create it and add the client. If it does,
   just add the client to the existing room.
 */
-Hub.addClient = function (socket) {
+Hub.addClient = async function (socket) {
   Hub.connections.set(socket.id, socket);
 
   if (!Hub.rooms.has(socket.roomID)) {
-    Hub.rooms.set(socket.roomID, new Map());
+    Hub.rooms.set(socket.roomID, new Set());
   }
 
-  Hub.rooms.get(socket.roomID).set(socket.id, true);
+  const inCache = await Room.Cache.exists(socket.roomID);
+  if (!inCache) {
+    Room.Cache.add(socket.roomID);
+  }
 
-  Users.add(socket.roomID, socket.id, "?");
+  Hub.rooms.get(socket.roomID).add(socket.id);
+
+  const users = Hub.getRoomUsernames(socket.roomID);
+  Hub.sendToRoom(socket.id, true, {
+    event: "nicknamesUpdated",
+    data: { users },
+  });
 
   console.log(chalk.greenBright(`Client ${socket.id} has connected to roomID ${socket.roomID}.`));
 };
@@ -56,16 +65,15 @@ Hub.removeClient = async function (clientID) {
     return;
   }
 
-  Hub.connections.delete(clientID);
   Hub.rooms.get(roomID).delete(clientID);
-
-  await Users.remove(roomID, clientID);
-  let users = await Users.inRoom(roomID);
-
-  Hub.send(clientID, roomID, false, {
+  // It's important that the nicknames update is sent BEFORE the clientID is deleted from the connections map.
+  // Otherwise the message would fail to send since this client ID is no longer valid
+  const users = Hub.getRoomUsernames(roomID);
+  Hub.sendToRoom(clientID, false, {
     event: "nicknamesUpdated",
     data: { users },
   });
+  Hub.connections.delete(clientID);
 
   if (DEBUG_MESSAGES) {
     console.log(chalk.red(`Client ${clientID} has disconnected from roomID ${roomID}.`));
@@ -73,22 +81,16 @@ Hub.removeClient = async function (clientID) {
 
   if (Hub.rooms.get(roomID).size === 0) {
     try {
-      Room.save(roomID);
+      await Room.Cache.save(roomID);
     } catch (error) {
       console.error(error);
     }
 
     Hub.rooms.delete(roomID);
-
-    // del is the number of keys that were removed
-    const del = await Cache.client.del(roomID);
+    const removed = Room.Cache.remove(roomID);
     // Sometimes the room might have already been removed from the cache (e.g. when a room is fully deleted)
-    if (del > 0 && DEBUG_MESSAGES) console.log(`Room ${roomID} has been removed from the cache.`);
-
-    await Users.deleteRoom(roomID);
-    if (DEBUG_MESSAGES) {
-      console.log(chalk.red(`Removed roomID ${roomID} from hub.`));
-    }
+    if (removed > 0 && DEBUG_MESSAGES)
+      console.log(`Room ${roomID} has been removed from the cache.`);
   }
 };
 
@@ -110,21 +112,20 @@ Hub.sendToClient = function (id, data) {
 };
 
 /**
- * Send a socket message to an entire room, similar to broadcast.
- * @param { string } senderID
- * @param { string } roomID
+ * Send a socket message to an entire room, similar to broadcast. The message will be sent to whatever room
+ * the given `senderID` belongs to
+ * @param { string } senderID Client ID of sender.
+ * @param { boolean } includeSender If true, will also send message to sender
  * @param { object } data
  * @returns none
  */
-Hub.send = function (senderID, roomID, sendResponse, data) {
-  if (!Hub.rooms.has(roomID)) {
-    return;
-  }
+Hub.sendToRoom = function (senderID, includeSender, data) {
+  const roomID = Hub.connections.get(senderID).roomID;
 
-  Hub.rooms.get(roomID).forEach((state, client) => {
-    let socket = Hub.connections.get(client);
+  Hub.rooms.get(roomID).forEach((clientID) => {
+    let socket = Hub.connections.get(clientID);
 
-    if ((sendResponse && client === senderID) || client !== senderID) {
+    if ((includeSender && clientID === senderID) || clientID !== senderID) {
       socket.send(JSON.stringify(data));
     }
   });
@@ -164,9 +165,9 @@ Hub.addItem = async function ({ socket, roomID, data, sendResponse }) {
     err.status = 400;
     throw err;
   }
-  const item = await Room.addItem(roomID, data);
+  const item = await Room.Cache.addItem(roomID, data);
 
-  Hub.send(socket.id, roomID, sendResponse, {
+  Hub.sendToRoom(socket.id, sendResponse, {
     event: "itemAdded",
     data: item,
   });
@@ -179,9 +180,9 @@ Hub.updateItems = async function ({ socket, roomID, data, sendResponse }) {
     throw err;
   }
 
-  await Room.updateItems(roomID, data.items);
+  await Room.Cache.updateItems(roomID, data.items);
 
-  Hub.send(socket.id, roomID, sendResponse, {
+  Hub.sendToRoom(socket.id, sendResponse, {
     event: "itemsUpdated",
     data,
   });
@@ -195,13 +196,13 @@ Hub.deleteItem = async function ({ socket, roomID, data, sendResponse }) {
   }
 
   try {
-    await Room.removeItem(roomID, data.id);
+    await Room.Cache.removeItem(roomID, data.id);
   } catch (error) {
     Hub.sendError(socket.id, "deleteItem", error.message);
     return;
   }
 
-  Hub.send(socket.id, roomID, sendResponse, {
+  Hub.sendToRoom(socket.id, sendResponse, {
     event: "itemDeleted",
     data,
   });
@@ -214,25 +215,25 @@ Hub.updateLayout = async function ({ socket, roomID, data, sendResponse }) {
     throw err;
   }
 
-  await Room.updateVertices(roomID, data.vertices);
+  await Room.Cache.updateVertices(roomID, data.vertices);
 
-  Hub.send(socket.id, roomID, sendResponse, {
+  Hub.sendToRoom(socket.id, sendResponse, {
     event: "layoutUpdated",
     data,
   });
 };
 
 Hub.cloneRoom = async function ({ socket, roomID, data, sendResponse }) {
-  if (data?.target_id === undefined) {
-    const err = new Error("'target_id' is undefined");
+  if (data?.templateId === undefined) {
+    const err = new Error("'templateId' is undefined");
     err.status = 400;
     throw err;
   }
-  const target = data.target_id;
+  const templateId = data.templateId;
 
-  await Room.copyFrom(roomID, target);
+  await Room.Cache.copyFrom(roomID, templateId);
 
-  Hub.send(socket.id, roomID, sendResponse, {
+  Hub.sendToRoom(socket.id, sendResponse, {
     event: "roomCloned",
     data,
   });
@@ -245,11 +246,10 @@ Hub.updateRoomName = async function ({ socket, roomID, data, sendResponse }) {
     throw err;
   }
 
-  let name = data.name.trim().substring(0, Math.min(40, data.name.length));
+  let name = data.name.trim().substring(0, Math.min(30, data.name.length));
+  await Room.Cache.updateData(roomID, { name: name });
 
-  await Room.updateRoomName(roomID, name);
-
-  Hub.send(socket.id, roomID, sendResponse, {
+  Hub.sendToRoom(socket.id, sendResponse, {
     event: "roomNameUpdated",
     data,
   });
@@ -257,9 +257,8 @@ Hub.updateRoomName = async function ({ socket, roomID, data, sendResponse }) {
 
 Hub.deleteRoom = async function ({ socket, roomID, sendResponse }) {
   Room.delete(roomID);
-  await Users.deleteRoom(roomID);
 
-  Hub.send(socket.id, roomID, sendResponse, {
+  Hub.sendToRoom(socket.id, sendResponse, {
     event: "roomDeleted",
     data: {},
   });
@@ -276,13 +275,13 @@ Hub.updateNickname = async function ({ socket, roomID, data, sendResponse }) {
     throw err;
   }
 
-  let userName = data.userName.trim();
+  // Update socket's username
+  socket.userName = data.userName.trim();
 
-  await Users.add(socket.roomID, socket.id, userName);
+  // Get all usernames in the room
+  const users = Hub.getRoomUsernames(roomID);
 
-  let users = await Users.inRoom(socket.roomID);
-
-  Hub.send(socket.id, roomID, sendResponse, {
+  Hub.sendToRoom(socket.id, sendResponse, {
     event: "nicknamesUpdated",
     data: { users },
   });
@@ -292,7 +291,7 @@ Hub.updateNickname = async function ({ socket, roomID, data, sendResponse }) {
   Called every PONG_TIME milliseconds. This is to check if
   every socket is still alive. If not, then remove the client.
 */
-Hub.onPing = function () {
+Hub.onPing = async function () {
   for (let [id, socket] of Hub.connections) {
     /*
       If inactive:
@@ -301,8 +300,8 @@ Hub.onPing = function () {
     */
     if (!socket.active) {
       if (DEBUG_MESSAGES) console.log("Connection " + socket.id + " inactive. Closing it.");
-      Hub.removeClient(socket.id, socket.roomID);
-      return socket.terminate();
+      await Hub.removeClient(socket.id);
+      socket.terminate();
     }
 
     socket.active = false;
@@ -314,7 +313,7 @@ Hub.onPing = function () {
   if (Hub.rooms.size > 0) {
     console.log(chalk.bgGray("============== Rooms  =============="));
 
-    Hub.rooms.forEach((clients, roomID) => {
+    Hub.rooms.forEach((_, roomID) => {
       console.log(chalk.blue(roomID));
     });
   }
@@ -324,7 +323,7 @@ Hub.onPing = function () {
   Called when socket is initially connected. Used for setting
   up the socket events.
 */
-Hub.onConnection = function (socket, req) {
+Hub.onConnection = async function (socket, req) {
   const id = uuidv4();
   const url = req.url;
   const params = querystring.parse(url);
@@ -336,8 +335,9 @@ Hub.onConnection = function (socket, req) {
   socket.id = id;
   socket.roomID = params["/ws?id"];
   socket.active = true;
+  socket.userName = "User";
 
-  Hub.addClient(socket);
+  await Hub.addClient(socket);
 
   socket.on("pong", function onPing() {
     socket.active = true;
@@ -370,12 +370,25 @@ Hub.addEventListener = (event, listener) => {
   Hub.events.addListener(event, async (args) => {
     const { socket } = args;
     try {
+      /* 
+        If a room event is received when the room is not in the cache, close the connection
+
+        This handles the case where the room has been removed from the cache (e.g. when the cache has reached its memory limit), 
+        but the socket connection is still open. If we didn't do this, things would still work but the frontend's data 
+        may be out of sync (without the user realizing). Better to close the connection and force a refresh
+      */
+      const exists = await Room.Cache.exists(socket.roomID);
+      if (!exists) {
+        await Hub.removeClient(socket.id);
+        socket.terminate();
+      }
+
       await listener(args);
     } catch (err) {
       if (err.status === undefined) err.status = 500;
       // Internal errors shouldn't be shown to client
       if (err.status === 500) {
-        console.error(`Internal error on ${event} room event.`, err.message);
+        console.error(`Internal error on ${event} room event.`, err);
         err.message = "Internal server error";
       } else {
         // For now also log non-internal errors. Probably want to remove this in the future
@@ -388,7 +401,7 @@ Hub.addEventListener = (event, listener) => {
 
 /**
  * Setup the socket hub, which directs incoming socket messages to the correct callback
- * @param {*} sockets
+ * @param {*} sockets WebSocket instance
  */
 Hub.setup = function (sockets) {
   console.log("Starting socket server");
