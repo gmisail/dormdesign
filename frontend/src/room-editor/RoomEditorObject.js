@@ -183,7 +183,6 @@ class RoomEditorObject extends SceneObject {
         );
       }
     }
-    // this.size = new Vector2(roomWidth, roomHeight);
     const bbox = this.getGlobalBoundingBox();
     const globalSize = { x: bbox.p2.x - bbox.p1.x, y: bbox.p2.y - bbox.p1.y };
     let position = {

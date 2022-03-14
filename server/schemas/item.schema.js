@@ -1,14 +1,14 @@
 const Joi = require("joi");
 
 const dimensionsSchema = Joi.object({
-  width: Joi.number().allow(null).default(null),
-  height: Joi.number().allow(null).default(null),
-  length: Joi.number().allow(null).default(null),
+  width: Joi.number().allow(null).default(null).max(100).min(0),
+  height: Joi.number().allow(null).default(null).max(100).min(0),
+  length: Joi.number().allow(null).default(null).max(100).min(0),
 });
 
 const editorPositionSchema = Joi.object({
-  x: Joi.number().precision(4).default(0),
-  y: Joi.number().precision(4).default(0),
+  x: Joi.number().precision(4).default(0).min(-100).max(100),
+  y: Joi.number().precision(4).default(0).min(-100).max(100),
 });
 
 const itemSchema = {
@@ -19,7 +19,7 @@ const itemSchema = {
   dimensions: dimensionsSchema,
   editorPosition: editorPositionSchema,
   editorZIndex: Joi.number().integer(),
-  editorRotation: Joi.number().precision(4),
+  editorRotation: Joi.number().precision(4).max(360),
   editorLocked: Joi.boolean(),
 };
 
