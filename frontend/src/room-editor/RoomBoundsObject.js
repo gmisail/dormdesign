@@ -24,6 +24,12 @@ class RoomBoundsObject extends SceneObject {
     this._offsetPoints = [];
     this.points = points;
 
+    this._edgeLengths = [];
+    this._edgeLengthPositions = [];
+    this.edgeLengthDistance = 0.7;
+    this.edgeLengths = true;
+    this.edgeLengthFontSize = 0.35;
+
     this.onPointsUpdated = onPointsUpdated ?? (() => {});
     this.onPointSelected = onPointSelected ?? (() => {});
     this.selectedPointIndex = null;
@@ -67,6 +73,7 @@ class RoomBoundsObject extends SceneObject {
     this._offsetPoints = [];
 
     this._calculateOffsetPoints();
+    this._calculateEdgeLengths();
   }
   get points() {
     const copied = [];
@@ -99,6 +106,28 @@ class RoomBoundsObject extends SceneObject {
 
     if (index === this.selectedPointIndex) {
       this.selectPointAtIndex(null);
+    }
+  }
+
+  _calculateEdgeLengths() {
+    this._edgeLengths = [];
+    this._edgeLengthPositions = [];
+    for (let i = 0; i < this._points.length; i++) {
+      const p1 = this._points[i];
+      const p2 = i === this._points.length - 1 ? this._points[0] : this._points[i + 1];
+      const dx = p2.x - p1.x;
+      const dy = p2.y - p1.y;
+      let length = Math.sqrt(dx * dx + dy * dy);
+      // Round length to 2 decimal places
+      this._edgeLengths.push(Math.round((length + Number.EPSILON) * 100) / 100);
+
+      const norm = Vector2.normalized(new Vector2(dy, -dx));
+      this._edgeLengthPositions.push(
+        new Vector2(
+          p1.x + dx / 2 + norm.x * this.edgeLengthDistance,
+          p1.y + dy / 2 + norm.y * this.edgeLengthDistance
+        )
+      );
     }
   }
 
@@ -204,6 +233,8 @@ class RoomBoundsObject extends SceneObject {
       p.x = Number(newPointPos.x.toFixed(2));
       p.y = Number(newPointPos.y.toFixed(2));
       this._calculateOffsetPoints();
+      this._calculateEdgeLengths();
+
       this.onPointsUpdated(this.points);
     }
   }
@@ -420,6 +451,21 @@ class RoomBoundsObject extends SceneObject {
       const rect = this._getPointRect(this._newPointPreview, this._pointSize);
       ctx.globalAlpha = 1.0;
       ctx.fillRect(rect.p1.x, rect.p1.y, rect.p2.x - rect.p1.x, rect.p2.y - rect.p1.y);
+    }
+
+    // Draw edge lengths (always draw when in edit mode)
+    if (this.edgeLengths || this.editing) {
+      ctx.fillStyle = this.color;
+      ctx.globalAlpha = 0.8;
+      ctx.font = `bold ${this.edgeLengthFontSize}px sans-serif`;
+      ctx.textBaseline = "middle";
+      ctx.textAlign = "center";
+      for (let i = 0; i < this._edgeLengthPositions.length; i++) {
+        const length = this._edgeLengths[i].toString();
+        const pos = this._edgeLengthPositions[i];
+        ctx.fillText(length + "ft", pos.x, pos.y);
+      }
+      ctx.globalAlpha = 1.0;
     }
   }
 }

@@ -52,6 +52,7 @@ export default function BoundsToolbar({
         </div>
         <button
           className="room-editor-point-delete-btn"
+          title="Delete Point"
           onClick={onClickDeleteSelectedPoint}
           disabled={!canDeleteSelectedPoint}
         >
