@@ -463,7 +463,7 @@ class RoomBoundsObject extends SceneObject {
       for (let i = 0; i < this._edgeLengthPositions.length; i++) {
         const length = this._edgeLengths[i].toString();
         const pos = this._edgeLengthPositions[i];
-        ctx.fillText(length + "ft", pos.x, pos.y);
+        ctx.fillText(length + " ft", pos.x, pos.y);
       }
       ctx.globalAlpha = 1.0;
     }
