@@ -31,7 +31,7 @@ class RoomBoundsObject extends SceneObject {
     // Both scale and font size will affect the drawn size, but since font size can't go lower than 1px on some browsers
     // it's best to adjust scale if you want to change how large the font is drawn
     this.edgeLengthFontSize = 1;
-    this.edgeLengthScale = 0.5;
+    this.edgeLengthScale = 0.4;
     this.edgeLengthFontStyle = `bold ${this.edgeLengthFontSize}px "Source Sans Pro", sans-serif`;
 
     this.onPointsUpdated = onPointsUpdated ?? (() => {});
