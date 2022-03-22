@@ -1,7 +1,7 @@
+import Collisions from "./Collisions";
+import MouseController from "./MouseController";
 import SceneObject from "./SceneObject";
 import Vector2 from "./Vector2";
-import MouseController from "./MouseController";
-import Collisions from "./Collisions";
 
 class RoomBoundsObject extends SceneObject {
   constructor(props) {
@@ -29,6 +29,7 @@ class RoomBoundsObject extends SceneObject {
     this.edgeLengthDistance = 0.7;
     this.edgeLengths = true;
     this.edgeLengthFontSize = 0.35;
+    this.edgeLengthFontStyle = `bold ${this.edgeLengthFontSize}px "Source Sans Pro", sans-serif`;
 
     this.onPointsUpdated = onPointsUpdated ?? (() => {});
     this.onPointSelected = onPointSelected ?? (() => {});
@@ -457,9 +458,10 @@ class RoomBoundsObject extends SceneObject {
     if (this.edgeLengths || this.editing) {
       ctx.fillStyle = this.color;
       ctx.globalAlpha = 0.8;
-      ctx.font = `bold ${this.edgeLengthFontSize}px "Source Sans Pro", sans-serif`;
+      ctx.font = this.edgeLengthFontStyle;
       ctx.textBaseline = "middle";
       ctx.textAlign = "center";
+
       for (let i = 0; i < this._edgeLengthPositions.length; i++) {
         const length = this._edgeLengths[i].toString();
         const pos = this._edgeLengthPositions[i];
