@@ -60,3 +60,4 @@ services:
       - cache
 volumes:
   dd_database:
+    name: "dd_database"
