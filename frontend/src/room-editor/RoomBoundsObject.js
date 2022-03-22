@@ -1,7 +1,7 @@
+import Collisions from "./Collisions";
+import MouseController from "./MouseController";
 import SceneObject from "./SceneObject";
 import Vector2 from "./Vector2";
-import MouseController from "./MouseController";
-import Collisions from "./Collisions";
 
 class RoomBoundsObject extends SceneObject {
   constructor(props) {
@@ -32,6 +32,7 @@ class RoomBoundsObject extends SceneObject {
     // it's best to adjust scale if you want to change how large the font is drawn
     this.edgeLengthFontSize = 1;
     this.edgeLengthScale = 0.5;
+    this.edgeLengthFontStyle = `bold ${this.edgeLengthFontSize}px "Source Sans Pro", sans-serif`;
 
     this.onPointsUpdated = onPointsUpdated ?? (() => {});
     this.onPointSelected = onPointSelected ?? (() => {});
@@ -461,7 +462,7 @@ class RoomBoundsObject extends SceneObject {
     if (this.edgeLengths || this.editing) {
       ctx.fillStyle = this.color;
       ctx.globalAlpha = 0.8;
-      ctx.font = `bold ${this.edgeLengthFontSize}px sans-serif`;
+      ctx.font = this.edgeLengthFontStyle;
       ctx.textBaseline = "middle";
       ctx.textAlign = "center";
       // Using scale here to control how large the drawn font is
