@@ -28,7 +28,10 @@ class RoomBoundsObject extends SceneObject {
     this._edgeLengthPositions = [];
     this.edgeLengthDistance = 0.7;
     this.edgeLengths = true;
-    this.edgeLengthFontSize = 0.35;
+    // Both scale and font size will affect the drawn size, but since font size can't go lower than 1px on some browsers
+    // it's best to adjust scale if you want to change how large the font is drawn
+    this.edgeLengthFontSize = 1;
+    this.edgeLengthScale = 0.5;
 
     this.onPointsUpdated = onPointsUpdated ?? (() => {});
     this.onPointSelected = onPointSelected ?? (() => {});
@@ -123,9 +126,10 @@ class RoomBoundsObject extends SceneObject {
 
       const norm = Vector2.normalized(new Vector2(dy, -dx));
       this._edgeLengthPositions.push(
+        // Multiply by 1/edgeLengthScale counter the scale that will be applied when the edge lengths are drawn
         new Vector2(
-          p1.x + dx / 2 + norm.x * this.edgeLengthDistance,
-          p1.y + dy / 2 + norm.y * this.edgeLengthDistance
+          (p1.x + dx / 2 + norm.x * this.edgeLengthDistance) / this.edgeLengthScale,
+          (p1.y + dy / 2 + norm.y * this.edgeLengthDistance) / this.edgeLengthScale
         )
       );
     }
@@ -460,11 +464,16 @@ class RoomBoundsObject extends SceneObject {
       ctx.font = `bold ${this.edgeLengthFontSize}px sans-serif`;
       ctx.textBaseline = "middle";
       ctx.textAlign = "center";
+      // Using scale here to control how large the drawn font is
+      // We can't just use ctx.font since the lowest that can be on some browsers is 1px
+      ctx.scale(this.edgeLengthScale, this.edgeLengthScale);
       for (let i = 0; i < this._edgeLengthPositions.length; i++) {
         const length = this._edgeLengths[i].toString();
         const pos = this._edgeLengthPositions[i];
         ctx.fillText(length + " ft", pos.x, pos.y);
       }
+      // Reset scale to what is was previously
+      ctx.scale(1 / this.edgeLengthScale, 1 / this.edgeLengthScale);
       ctx.globalAlpha = 1.0;
     }
   }
