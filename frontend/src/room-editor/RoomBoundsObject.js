@@ -457,7 +457,7 @@ class RoomBoundsObject extends SceneObject {
     if (this.edgeLengths || this.editing) {
       ctx.fillStyle = this.color;
       ctx.globalAlpha = 0.8;
-      ctx.font = `bold ${this.edgeLengthFontSize}px sans-serif`;
+      ctx.font = `bold ${this.edgeLengthFontSize}px "Source Sans Pro", sans-serif`;
       ctx.textBaseline = "middle";
       ctx.textAlign = "center";
       for (let i = 0; i < this._edgeLengthPositions.length; i++) {
