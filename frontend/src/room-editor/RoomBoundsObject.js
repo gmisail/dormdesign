@@ -1,7 +1,7 @@
+import Collisions from "./Collisions";
+import MouseController from "./MouseController";
 import SceneObject from "./SceneObject";
 import Vector2 from "./Vector2";
-import MouseController from "./MouseController";
-import Collisions from "./Collisions";
 
 class RoomBoundsObject extends SceneObject {
   constructor(props) {
@@ -23,6 +23,16 @@ class RoomBoundsObject extends SceneObject {
     this._points = [];
     this._offsetPoints = [];
     this.points = points;
+
+    this._edgeLengths = [];
+    this._edgeLengthPositions = [];
+    this.edgeLengthDistance = 0.7;
+    this.edgeLengths = true;
+    // Both scale and font size will affect the drawn size, but since font size can't go lower than 1px on some browsers
+    // it's best to adjust scale if you want to change how large the font is drawn
+    this.edgeLengthFontSize = 1;
+    this.edgeLengthScale = 0.4;
+    this.edgeLengthFontStyle = `bold ${this.edgeLengthFontSize}px "Source Sans Pro", sans-serif`;
 
     this.onPointsUpdated = onPointsUpdated ?? (() => {});
     this.onPointSelected = onPointSelected ?? (() => {});
@@ -67,6 +77,7 @@ class RoomBoundsObject extends SceneObject {
     this._offsetPoints = [];
 
     this._calculateOffsetPoints();
+    this._calculateEdgeLengths();
   }
   get points() {
     const copied = [];
@@ -99,6 +110,29 @@ class RoomBoundsObject extends SceneObject {
 
     if (index === this.selectedPointIndex) {
       this.selectPointAtIndex(null);
+    }
+  }
+
+  _calculateEdgeLengths() {
+    this._edgeLengths = [];
+    this._edgeLengthPositions = [];
+    for (let i = 0; i < this._points.length; i++) {
+      const p1 = this._points[i];
+      const p2 = i === this._points.length - 1 ? this._points[0] : this._points[i + 1];
+      const dx = p2.x - p1.x;
+      const dy = p2.y - p1.y;
+      let length = Math.sqrt(dx * dx + dy * dy);
+      // Round length to 2 decimal places
+      this._edgeLengths.push(Math.round((length + Number.EPSILON) * 100) / 100);
+
+      const norm = Vector2.normalized(new Vector2(dy, -dx));
+      this._edgeLengthPositions.push(
+        // Multiply by 1/edgeLengthScale counter the scale that will be applied when the edge lengths are drawn
+        new Vector2(
+          (p1.x + dx / 2 + norm.x * this.edgeLengthDistance) / this.edgeLengthScale,
+          (p1.y + dy / 2 + norm.y * this.edgeLengthDistance) / this.edgeLengthScale
+        )
+      );
     }
   }
 
@@ -204,6 +238,8 @@ class RoomBoundsObject extends SceneObject {
       p.x = Number(newPointPos.x.toFixed(2));
       p.y = Number(newPointPos.y.toFixed(2));
       this._calculateOffsetPoints();
+      this._calculateEdgeLengths();
+
       this.onPointsUpdated(this.points);
     }
   }
@@ -420,6 +456,26 @@ class RoomBoundsObject extends SceneObject {
       const rect = this._getPointRect(this._newPointPreview, this._pointSize);
       ctx.globalAlpha = 1.0;
       ctx.fillRect(rect.p1.x, rect.p1.y, rect.p2.x - rect.p1.x, rect.p2.y - rect.p1.y);
+    }
+
+    // Draw edge lengths (always draw when in edit mode)
+    if (this.edgeLengths || this.editing) {
+      ctx.fillStyle = this.color;
+      ctx.globalAlpha = 0.8;
+      ctx.font = this.edgeLengthFontStyle;
+      ctx.textBaseline = "middle";
+      ctx.textAlign = "center";
+      // Using scale here to control how large the drawn font is
+      // We can't just use ctx.font since the lowest that can be on some browsers is 1px
+      ctx.scale(this.edgeLengthScale, this.edgeLengthScale);
+      for (let i = 0; i < this._edgeLengthPositions.length; i++) {
+        const length = this._edgeLengths[i].toString();
+        const pos = this._edgeLengthPositions[i];
+        ctx.fillText(length + " ft", pos.x, pos.y);
+      }
+      // Reset scale to what is was previously
+      ctx.scale(1 / this.edgeLengthScale, 1 / this.edgeLengthScale);
+      ctx.globalAlpha = 1.0;
     }
   }
 }

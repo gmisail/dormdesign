@@ -1,7 +1,8 @@
 import "./RoomEditor.scss";
 
-import { BiMinus, BiPlus } from "react-icons/bi";
-import { BsBoundingBox, BsCheck, BsX } from "react-icons/bs";
+import { BiMinus, BiPlus, BiSelection } from "react-icons/bi";
+import { BsCheck, BsX } from "react-icons/bs";
+import { RiRulerFill, RiRulerLine } from "react-icons/ri";
 import React, { useEffect, useRef, useState } from "react";
 import {
   clearEditorActionQueue,
@@ -53,6 +54,8 @@ function RoomEditor() {
   const [editingBounds, setEditingBounds] = useState(false);
   const [selectedPointX, setSelectedPointX] = useState("");
   const [selectedPointY, setSelectedPointY] = useState("");
+  // Start with edge lengths true since that is the default in RoomBoundsObject
+  const [showEdgeLengths, setShowEdgeLengths] = useState(true);
 
   const scene = useRef(null);
   const room = useRef(null);
@@ -285,7 +288,7 @@ function RoomEditor() {
                 <ItemToolbar
                   lockSelectedItem={lockSelectedItem}
                   rotateSelectedItem={rotateSelectedItem}
-                  selectedItemID={selectedItemID}
+                  hidden={selectedItemID === null}
                   locked={locked}
                 />
               )
@@ -296,6 +299,7 @@ function RoomEditor() {
               <>
                 <IconButton
                   className="room-editor-toolbar-btn room-editor-toolbar-btn-success"
+                  title="Apply Changes"
                   onClick={() => {
                     toggleEditingBounds(true);
                   }}
@@ -304,6 +308,7 @@ function RoomEditor() {
                 </IconButton>
                 <IconButton
                   className="room-editor-toolbar-btn room-editor-toolbar-btn-danger"
+                  title="Cancel Changes"
                   onClick={() => {
                     toggleEditingBounds(false);
                   }}
@@ -312,15 +317,29 @@ function RoomEditor() {
                 </IconButton>
               </>
             ) : (
-              <IconButton
-                className="room-editor-toolbar-btn"
-                onClick={() => {
-                  toggleEditingBounds();
-                }}
-                style={{ padding: "9px" }}
-              >
-                <BsBoundingBox />
-              </IconButton>
+              <>
+                <IconButton
+                  className="room-editor-toolbar-btn"
+                  title="Toggle Edge Lengths"
+                  onClick={() => {
+                    if (room.current !== undefined) {
+                      room.current.bounds.edgeLengths = !showEdgeLengths;
+                      setShowEdgeLengths(!showEdgeLengths);
+                    }
+                  }}
+                >
+                  {showEdgeLengths ? <RiRulerFill /> : <RiRulerLine />}
+                </IconButton>
+                <IconButton
+                  className="room-editor-toolbar-btn"
+                  title="Edit Room Bounds"
+                  onClick={() => {
+                    toggleEditingBounds();
+                  }}
+                >
+                  <BiSelection />
+                </IconButton>
+              </>
             )}
           </div>
         </div>
@@ -329,6 +348,7 @@ function RoomEditor() {
         </div>
         <div className="room-editor-corner-controls">
           <IconButton
+            title="Zoom In"
             onClick={() => {
               if (room.current !== undefined) {
                 // Scale about the center of the canvas
@@ -342,6 +362,7 @@ function RoomEditor() {
             <BiPlus />
           </IconButton>
           <IconButton
+            title="Center View"
             onClick={() => {
               if (room.current !== undefined) {
                 room.current.centerView();
@@ -351,6 +372,7 @@ function RoomEditor() {
             <MdFilterCenterFocus />
           </IconButton>
           <IconButton
+            title="Zoom Out"
             onClick={() => {
               if (room.current !== undefined) {
                 // Scale about the center of the canvas
