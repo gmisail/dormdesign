@@ -19,7 +19,7 @@ const DormItemList = (props) => {
   return (
     <>
       {!items || !items.length ? (
-        <h6 className="text-center mt-3">No items have been added yet.</h6>
+        <p className="text-center font-weight-bold mt-3">No items have been added yet</p>
       ) : (
         <div className="list-item-group custom-card">
           {items.map((item) => {

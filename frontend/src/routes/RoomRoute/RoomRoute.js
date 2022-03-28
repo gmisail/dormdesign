@@ -13,7 +13,7 @@ import {
   updateItems,
   updateRoomName,
 } from "../../context/RoomStore";
-import { useDispatch, useSelector } from "react-redux";
+import { connect, useDispatch, useSelector } from "react-redux";
 
 import ActiveUsersIndicator from "../../components/ActiveUsersIndicator/ActiveUsersIndicator";
 import DormItemList from "../../components/DormItemList/DormItemList";
@@ -37,8 +37,18 @@ export const RoomRoute = () => {
 
   // Called when component is first mounted
   useEffect(() => {
+    console.log("Connecting to Room...");
     dispatch(connectToRoom(id));
   }, [connectToRoom, id, dispatch]);
+
+  useEffect(() => {
+    if (socketConnection) {
+      return () => {
+        console.log("RoomRoute unmounted. Closing Socket connection");
+        socketConnection.connection.close();
+      };
+    }
+  }, [socketConnection]);
 
   /* Presents choose name modal if userName is null */
   useEffect(() => {
@@ -166,16 +176,10 @@ export const RoomRoute = () => {
   );
 
   /* 
-    If there's an error and socketConnection has been reset, connection has been 
-    lost. 
-
-    If that's true and there are no items, then then the original room data fetch failed
-
     TODO: Implement actual error types to make it easier to check what error 
     happened
   */
   const lostConnection = error !== null && socketConnection === null;
-  const dataFetchError = lostConnection; //lostConnection && items === null;
 
   return (
     <>
@@ -185,11 +189,9 @@ export const RoomRoute = () => {
             <span className="sr-only">Loading...</span> ) :
           </Spinner>
         </div>
-      ) : lostConnection || dataFetchError ? (
+      ) : lostConnection ? (
         <p className="text-center mt-5" style={{ fontSize: 20, fontWeight: 500 }}>
-          {dataFetchError
-            ? "Error fetching room data. Make sure the room ID is valid."
-            : "Lost connection to room. Please refresh your browser."}
+          Failed to connect to the room. Make sure the link is valid and try refreshing the page.
         </p>
       ) : (
         <div className="room-container">

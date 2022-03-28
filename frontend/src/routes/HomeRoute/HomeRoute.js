@@ -10,10 +10,12 @@ import SceneController from "../../room-editor/SceneController";
 import SingleInputForm from "../../components/SingleInputForm/SingleInputForm";
 import StorageController from "../../controllers/StorageController";
 import Vector2 from "../../room-editor/Vector2";
-import Room from "../../models/Room";
+import RoomModel from "../../models/RoomModel";
 import IconButton from "../../components/IconButton/IconButton";
 import RoomPreview from "../../components/RoomPreview/RoomPreview";
 import { BsX } from "react-icons/bs";
+
+import RoomInfoImg from "../../assets/room-info-location.png";
 
 class HomeRoute extends Component {
   state = {
@@ -21,16 +23,13 @@ class HomeRoute extends Component {
     showCreateRoomModal: false,
     showJoinRoomModal: false,
     roomHistory: [],
-    roomPreviews: [],
   };
 
   async componentDidMount() {
     document.title = "DormDesign";
 
     const roomHistory = StorageController.getRoomsFromHistory();
-    const roomPreviews = await this.generatePreviews(roomHistory);
     this.setState({
-      roomPreviews,
       roomHistory: roomHistory,
     });
 
@@ -58,29 +57,38 @@ class HomeRoute extends Component {
     this.grid.lineWidth = 2 * window.devicePixelRatio;
   };
 
-  generatePreviews = async (roomHistory) => {
-    if (roomHistory.length === 0) {
-      return;
-    }
-    const previews = roomHistory.map((room) => room.id);
-    const previewsData = await DataRequests.generatePreview(previews);
-
-    return previewsData;
-  };
-
   componentWillUnmount() {
     // Cleanup callback
     this.scene.onResize = () => {};
   }
 
-  onSubmitCreateRoomModal = async (name) => {
-    const roomData = await DataRequests.createRoom(name);
-    const roomID = roomData.id;
-
-    this.props.history.push(`/room/${roomID}`);
+  onSubmitCreateRoom = async (name) => {
+    let roomID;
+    try {
+      const roomData = await DataRequests.createRoom(name);
+      roomID = roomData.id;
+      this.props.history.push(`/room/${roomID}`);
+    } catch (err) {
+      this.setState({ showCreateRoomModal: false });
+      console.error(err);
+      alert(err.message);
+    }
   };
 
-  onSubmitJoinRoomModal = async (roomID) => {
+  onSubmitCloneRoom = async (templateId) => {
+    let roomID;
+    try {
+      const roomData = await DataRequests.createRoom(undefined, templateId);
+      roomID = roomData.id;
+      this.props.history.push(`/room/${roomID}`);
+    } catch (err) {
+      this.setState({ showCreateRoomModal: false });
+      console.error(err);
+      alert(err.message);
+    }
+  };
+
+  onSubmitJoinRoom = async (roomID) => {
     this.props.history.push(`/room/${roomID}`);
   };
 
@@ -95,31 +103,33 @@ class HomeRoute extends Component {
 
   renderRecentRooms = () => {
     return this.state.roomHistory.map((room, index) => {
-      // Preview might not be loaded yet, if not just pass an empty URI ("")
-      const preview = this.state.roomPreviews[index];
-
-      if (preview == null) {
-        console.error(`Room (${room.id}) could not render a preview.`);
-      }
-
       return (
-        <div className="recent-room" key={index}>
+        <div className="recent-room" key={index} title={room.name}>
           <IconButton
             onClick={() => this.removeRecentRoom(room.id, index)}
             className="recent-room-remove-button"
           >
             <BsX />
           </IconButton>
-          <a href={`/room/${room.id}`} className="">
-            <span className="recent-room-name">{room.name}</span>
-            <RoomPreview
-              className="recent-room-image"
-              preview={preview == undefined ? "" : preview}
-            />
+          <a href={`/room/${room.id}`}>
+            <p className="recent-room-name">{room.name}</p>
+            <RoomPreview id={room.id} />
           </a>
         </div>
       );
     });
+  };
+
+  renderRoomInfoLocation = (text) => {
+    return (
+      <div className="room-info-location">
+        <img src={RoomInfoImg} alt="Room info button" title="Room info button" />
+        <p>
+          {text ??
+            "A room's ID and template ID can be found by clicking the icon above on while on the room page"}
+        </p>
+      </div>
+    );
   };
 
   render() {
@@ -165,15 +175,46 @@ class HomeRoute extends Component {
           }}
         >
           <Modal.Header closeButton>
-            <Modal.Title className="custom-modal-title">Create a Room</Modal.Title>
+            <Modal.Title className="custom-modal-title">New Room</Modal.Title>
           </Modal.Header>
-          <Modal.Body>
+          <Modal.Body className="create-room-modal-body">
+            <div className="important-info">
+              <p>
+                <b>IMPORTANT:</b> After you create a room, make sure you write down the link to the
+                room (or the room ID itself) somewhere where it won't get lost. Without it, there is
+                no way to recover your room.
+              </p>
+              <p>
+                <b>Treat the room ID and link like a password</b>. Anyone you share it with will be
+                able to edit or delete your room. If you want to share your room without allowing
+                edits, use the template ID.
+              </p>
+              {this.renderRoomInfoLocation()}
+            </div>
+
+            <h5>Start from scratch</h5>
+            <p>Create an empty room:</p>
+
             <SingleInputForm
               placeholder={"Room name"}
-              onSubmit={this.onSubmitCreateRoomModal}
+              onSubmit={this.onSubmitCreateRoom}
               submitButtonText={"Create"}
               trim={true}
-              maxLength={Room.MAX_NAME_LENGTH}
+              maxLength={RoomModel.MAX_NAME_LENGTH}
+            />
+            <p name="or">
+              <b>- OR -</b>
+            </p>
+            <h5>Clone an existing room</h5>
+            <p>
+              Choose from one of our <a href="/templates">Featured Templates</a>. Otherwise, clone
+              any existing room by entering it's template ID below:
+            </p>
+            <SingleInputForm
+              placeholder={"Template ID"}
+              onSubmit={this.onSubmitCloneRoom}
+              submitButtonText={"Clone"}
+              maxLength={RoomModel.ID_LENGTH}
             />
           </Modal.Body>
         </Modal>
@@ -188,11 +229,16 @@ class HomeRoute extends Component {
             <Modal.Title className="custom-modal-title">Join a Room</Modal.Title>
           </Modal.Header>
           <Modal.Body>
+            <p>You can join a room using its link or by entering the room's ID below</p>
             <SingleInputForm
               placeholder={"Room ID"}
-              onSubmit={this.onSubmitJoinRoomModal}
+              onSubmit={this.onSubmitJoinRoom}
               submitButtonText={"Join"}
+              maxLength={RoomModel.ID_LENGTH}
             />
+            {this.renderRoomInfoLocation(
+              "A room's ID can be found by clicking the above icon while on the room page"
+            )}
           </Modal.Body>
         </Modal>
       </>

@@ -4,6 +4,7 @@ import "./App.scss";
 import { Redirect, Route, BrowserRouter as Router, Switch } from "react-router-dom";
 
 import Footer from "./components/Footer/Footer";
+import { TemplatesRoute } from "./routes/TemplatesRoute/TemplatesRoute";
 import HomeRoute from "./routes/HomeRoute/HomeRoute";
 import { IconContext } from "react-icons";
 import NavigationBar from "./components/navbar/NavigationBar";
@@ -39,8 +40,9 @@ const MainRoutes = () => (
           <RoomRoute />
         </RoomProvider>
       </Route>
+      <Route exact path="/templates" component={TemplatesRoute} />
       <Route exact path="/scene-test" component={SceneTestingRoute} />
-      <Route path="*" exact={true} component={UnknownRoute} />
+      <Route path="*" exact component={UnknownRoute} />
     </Switch>
   </div>
 );

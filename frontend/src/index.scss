@@ -17,6 +17,9 @@ button,
 [role="button"] {
   cursor: pointer;
   color: inherit;
+  background-color: inherit;
+  outline: none;
+  border: none;
 }
 
 code {
