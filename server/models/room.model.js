@@ -14,6 +14,7 @@ const DEBUG_MESSAGES = Boolean(process.env.DEBUG_MESSAGES ?? "false");
 
 let Room = {};
 Room.MAX_NAME_LENGTH = 40;
+Room.MAX_USERNAME_LENGTH = 30;
 
 /**
  * Create a new room with a given name

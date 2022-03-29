@@ -11,13 +11,12 @@ import {
   BsX,
 } from "react-icons/bs";
 import { Modal, modalTypes } from "../../components/modals/Modal";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-
+import Dropdown from "../Dropdown/Dropdown";
 import IconButton from "../IconButton/IconButton";
 import { setUserName } from "../../context/RoomStore";
 import useModal from "../../hooks/useModal";
-import { usePopper } from "react-popper";
 
 const ListItem = ({
   item,
@@ -41,16 +40,6 @@ const ListItem = ({
   const [modalProps, toggleModal] = useModal();
   const [showMenu, setShowMenu] = useState(false);
   const menuButtonRef = useRef(null);
-  const menuRef = useRef(null);
-  const { styles, attributes } = usePopper(menuButtonRef.current, menuRef.current, {
-    placement: "left-start",
-    modifiers: [
-      {
-        name: "flip",
-        enabled: true,
-      },
-    ],
-  });
 
   // Called when a button in menu is clicked. Closes the menu and calls passed callback
   const menuOptionClicked = (callback) => {
@@ -69,50 +58,44 @@ const ListItem = ({
     callback();
   };
 
-  useEffect(() => {
-    // Clicked outside of menu (and also button)
-    function handleClickOutside(event) {
-      if (
-        menuRef.current &&
-        !menuRef.current.contains(event.target) &&
-        !menuButtonRef.current.contains(event.target)
-      ) {
-        setShowMenu(false);
-      }
-    }
-    // Bind the event listener
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      // Unbind the event listener on clean up
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [menuRef]);
-
   return (
     <div className={`list-item ${className}`}>
-      <div className="list-item-content">
-        <span>
-          <span className="item-name">{item.name}</span>
-          <span className="item-quantity">{item.quantity > 1 ? ` (${item.quantity})` : null}</span>
+      <div className="list-item-content-left">
+        <span title={item.name} className="item-name">
+          {item.name}
         </span>
+        <span className="item-quantity">{item.quantity > 1 ? ` (${item.quantity})` : null}</span>
       </div>
 
-      <div className="list-item-content">
-        {item.claimedBy ? <i className="mr-3">Claimed by {item.claimedBy}</i> : null}
+      <div className="list-item-content-right">
+        {item.claimedBy ? (
+          <i title={"Claimed by " + item.claimedBy} className="item-claim">
+            Claimed by {item.claimedBy}
+          </i>
+        ) : null}
         <IconButton
+          title="Options"
           ref={menuButtonRef}
           className="item-menu-button"
           onClick={() => setShowMenu(!showMenu)}
+          circleSelectionEffect={true}
+          toggled={showMenu}
         >
           <BsThreeDots></BsThreeDots>
         </IconButton>
-        <div
-          ref={menuRef}
-          className={`item-dropdown-menu ${showMenu ? "" : "hidden"}`}
-          style={styles.popper}
-          {...attributes.popper}
+        <Dropdown
+          show={showMenu}
+          buttonRef={menuButtonRef}
+          onClickOutside={() => setShowMenu(false)}
+          placement="left-start"
+          modifiers={[
+            {
+              name: "flip",
+              enabled: true,
+            },
+          ]}
         >
-          <ul>
+          <ul className="item-menu-list">
             <li onClick={() => menuOptionClicked(onEdit)}>
               <BsPencil />
               Edit
@@ -154,7 +137,7 @@ const ListItem = ({
               Delete
             </li>
           </ul>
-        </div>
+        </Dropdown>
       </div>
       <Modal {...modalProps}></Modal>
     </div>

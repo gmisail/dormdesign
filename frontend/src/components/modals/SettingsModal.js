@@ -4,6 +4,7 @@ import ConfirmationButton from "../ConfirmationButton/ConfirmationButton";
 import Modal from "react-bootstrap/Modal";
 import RoomNameForm from "../RoomNameForm/RoomNameForm";
 import SingleInputForm from "../SingleInputForm/SingleInputForm";
+import RoomModel from "../../models/RoomModel";
 
 const SettingsModal = (props) => {
   const onDeleteRoom = () => {
@@ -30,6 +31,7 @@ const SettingsModal = (props) => {
           submitButtonTextSuccessful="Saved!"
           trim={true}
           allowEmptySubmit={false}
+          maxLength={RoomModel.MAX_USERNAME_LENGTH}
         />
 
         <br />
