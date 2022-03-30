@@ -1,15 +1,20 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Vector2 from "../../room-editor/Vector2";
 
 export default function BoundsToolbar({
-  room,
   canDeleteSelectedPoint,
-  selectedPointX,
-  selectedPointY,
-  setSelectedPointX,
-  setSelectedPointY,
+  selectedPoint,
+  onUpdateSelectedPoint,
   onClickDeleteSelectedPoint,
 }) {
+  const [xValue, setXValue] = useState(selectedPoint.x);
+  const [yValue, setYValue] = useState(selectedPoint.y);
+
+  useEffect(() => {
+    setXValue(selectedPoint.x);
+    setYValue(selectedPoint.y);
+  }, [selectedPoint]);
+
   const onPointInputChanged = (evt) => {
     let value = evt.target.value;
     const name = evt.target.name;
@@ -17,18 +22,17 @@ export default function BoundsToolbar({
       value = parseFloat(value);
       // Prevent really big/small values
       value = Math.min(Math.max(value, -500), 500);
-      const editedPoint = new Vector2(selectedPointX, selectedPointY);
-      if (name === "selectedPointX") {
+      const editedPoint = new Vector2(xValue, yValue);
+      if (name === "xValue") {
         editedPoint.x = value;
       } else {
         editedPoint.y = value;
       }
-      // Update edited point value in the scene
-      room.current.bounds.setPointAtIndex(room.current.bounds.selectedPointIndex, editedPoint);
+      onUpdateSelectedPoint(editedPoint);
     }
 
-    if (name === "selectedPointX") setSelectedPointX(value);
-    else if (name === "selectedPointY") setSelectedPointY(value);
+    if (name === "xValue") setXValue(value);
+    else if (name === "yValue") setYValue(value);
   };
 
   return (
@@ -36,16 +40,16 @@ export default function BoundsToolbar({
       <div className="room-editor-point-viewer">
         <div>
           <input
-            value={selectedPointX}
+            value={xValue}
             type="number"
-            name="selectedPointX"
+            name="xValue"
             placeholder="X"
             onChange={onPointInputChanged}
           />
           <input
-            value={selectedPointY}
+            value={yValue}
             type="number"
-            name="selectedPointY"
+            name="yValue"
             placeholder="Y"
             onChange={onPointInputChanged}
           />

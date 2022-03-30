@@ -98,9 +98,13 @@
       & > * {
         width: 40px;
       }
-      // Active users button needs to be slightly bigger since it also has the number next to it. There might be a cleaner way of doing this
+      // Active users button needs to be sized differently since it also has a number in addition to the icon. There might be a cleaner way of doing this
       .active-users-btn {
-        width: 55px;
+        width: auto;
+        .active-users-icon {
+          width: 30px;
+          height: 30px;
+        }
       }
 
       & > button {

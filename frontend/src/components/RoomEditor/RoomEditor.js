@@ -52,8 +52,7 @@ function RoomEditor() {
 
   const [lastSelectedItemID, setLastSelectedItemID] = useState(null);
   const [editingBounds, setEditingBounds] = useState(false);
-  const [selectedPointX, setSelectedPointX] = useState("");
-  const [selectedPointY, setSelectedPointY] = useState("");
+  const [selectedPoint, setSelectedPoint] = useState(null);
   // Start with edge lengths true since that is the default in RoomBoundsObject
   const [showEdgeLengths, setShowEdgeLengths] = useState(true);
 
@@ -71,7 +70,6 @@ function RoomEditor() {
   const [locked, setLocked] = useState(false);
 
   // The variables below don't need to be stored as state
-  const boundaryPointSelected = selectedPointX !== "" && selectedPointY !== "";
   const canDeleteSelectedPoint =
     room.current === undefined ? false : room.current?.bounds.pointsLength > 3;
 
@@ -219,21 +217,21 @@ function RoomEditor() {
   };
 
   const onBoundaryPointSelected = (point) => {
-    setSelectedPointX(point !== null ? point.x : "");
-    setSelectedPointY(point !== null ? point.y : "");
+    setSelectedPoint(point);
   };
 
+  const onUpdateSelectedPoints = (point) => {
+    room.current.bounds.setPointAtIndex(room.current.bounds.selectedPointIndex, point);
+  };
   const onClickDeleteSelectedPoint = () => {
     room.current.bounds.deletePointAtIndex(room.current.bounds.selectedPointIndex);
   };
 
   const onBoundsUpdated = (points) => {
     const selectedPointIndex = room.current.bounds.selectedPointIndex;
-
     if (selectedPointIndex !== null) {
       const selectedPoint = points[selectedPointIndex];
-      setSelectedPointX(selectedPoint.x);
-      setSelectedPointY(selectedPoint.y);
+      setSelectedPoint(new Vector2(selectedPoint.x, selectedPoint.y));
     }
   };
 
@@ -242,8 +240,7 @@ function RoomEditor() {
     room.current.bounds.editing = editing;
     if (editing) {
       // Reset selected point values when starting to edit bounds
-      setSelectedPointX("");
-      setSelectedPointY("");
+      setSelectedPoint(null);
     } else {
       if (saveEdits) {
         // Save the edits made by updating the bounds
@@ -273,14 +270,12 @@ function RoomEditor() {
                 default item toolbar (lock, rotate, etc.)
               */
               editingBounds ? (
-                boundaryPointSelected ? (
+                selectedPoint !== null ? (
                   <BoundsToolbar
                     room={room}
                     canDeleteSelectedPoint={canDeleteSelectedPoint}
-                    selectedPointX={selectedPointX}
-                    selectedPointY={selectedPointY}
-                    setSelectedPointX={setSelectedPointX}
-                    setSelectedPointY={setSelectedPointY}
+                    selectedPoint={selectedPoint}
+                    onUpdateSelectedPoint={onUpdateSelectedPoints}
                     onClickDeleteSelectedPoint={onClickDeleteSelectedPoint}
                   />
                 ) : null

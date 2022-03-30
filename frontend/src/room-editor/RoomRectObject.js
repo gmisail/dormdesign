@@ -121,22 +121,20 @@ class RoomRectObject extends SceneObject {
     const globalPos = this.parent.localToGlobalPoint(this.position);
 
     const fontSize = 0.325;
-    this._setContextTextStyle(ctx, fontSize);
     const lineOffset = 0.2 * this.parent.scale.x * this.scale.x;
+    this._setContextTextStyle(ctx, fontSize);
     const fitNameText = this._getEditedText(ctx, this.nameText);
     const fitDimensionsText = this._getEditedText(ctx, `${this.size.x}' x ${this.size.y}'`);
-    ctx.font = `700 ${fontSize * this.parent.scale.x * this.scale.x}px ${
-      this.fontFamily
-    }, sans-serif`;
 
     ctx.fillText(fitNameText, globalPos.x, globalPos.y - lineOffset);
-
     ctx.fillText(fitDimensionsText, globalPos.x, globalPos.y + lineOffset);
   }
 
   // Takes font size and configures the context to draw text with these styles
   _setContextTextStyle(ctx, fontSize) {
-    ctx.font = `bold ${fontSize}px sans-serif`;
+    ctx.font = `700 ${fontSize * this.parent.scale.x * this.scale.x}px ${
+      this.fontFamily
+    }, sans-serif`;
     ctx.textBaseline = "middle";
     ctx.textAlign = "center";
     ctx.fillStyle = this.textColor;
@@ -146,10 +144,11 @@ class RoomRectObject extends SceneObject {
   _getEditedText(ctx, text) {
     this._setContextTextStyle(ctx);
     const bbox = this.getLocalBoundingBox(); // Accounts for rotation
-    const size = { x: bbox.p2.x - bbox.p1.x, y: bbox.p2.y - bbox.p1.y };
-    const textPadding = size.x / 20;
+    // Again since we are drawing things globally for browser compatibility we must manually scale
+    const width = (bbox.p2.x - bbox.p1.x) * this.parent.scale.x * this.scale.x;
+    const textPadding = width / 20;
     text = text.trim();
-    while (ctx.measureText(text).width > size.x - 2 * textPadding) {
+    while (ctx.measureText(text).width > width - 2 * textPadding) {
       if (text.length <= 3) return "";
       text = text.substring(0, text.length - 4) + "...";
     }

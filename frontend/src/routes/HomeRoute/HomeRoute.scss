@@ -141,7 +141,7 @@
           border-radius: $card-border-radius;
           box-shadow: $box-shadow;
 
-          transition: all 0.075s ease;
+          transition: all 0.05s ease;
 
           &:hover {
             // Convert the shadow into a solid outline on hover
@@ -162,7 +162,6 @@
             top: 0;
             right: 0;
             width: 2.25rem;
-            transition: all 0.075s ease;
           }
 
           .recent-room-name {

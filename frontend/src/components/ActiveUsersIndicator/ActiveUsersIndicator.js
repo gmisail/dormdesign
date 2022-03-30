@@ -9,21 +9,7 @@ import IconButton from "../IconButton/IconButton";
  * Displays a list of bubbles with usernames (if more than 1 usernames exist)
  */
 function ActiveUsersIndicator() {
-  // const usernames = useSelector((state) => state.userNames);
-  const usernames = [
-    "some name",
-    "some name",
-    "some name",
-    "some name",
-    "some name",
-    "some name",
-    "some name",
-    "some name",
-    "some name",
-    "some name",
-    "some name",
-    "some name",
-  ];
+  const usernames = useSelector((state) => state.userNames);
   const [showDropdown, setShowDropdown] = useState(false);
   const buttonRef = useRef(null);
 

@@ -50,7 +50,7 @@ export const TemplatesRoute = () => {
           <div className="templates-spinner">
             <Spinner animation="border" variant="secondary" />
           </div>
-        ) : templates === null ? (
+        ) : templates === null || templates.length === 0 ? (
           <p>No templates found</p>
         ) : (
           <div className="templates-grid">
