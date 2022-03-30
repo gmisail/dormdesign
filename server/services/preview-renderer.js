@@ -30,6 +30,11 @@ class PreviewRenderer {
     this.MAX_DRAWN_CELLS = 25;
 
     /*
+      Represents the colors of the items that are being rendered. The first item is rendered using the first color, the second item uses the second, etc...
+    */
+    this.ITEM_COLORS = ["#0043E0", "#f28a00", "#C400E0", "#7EE016", "#0BE07B"];
+
+    /*
      * Set up one instance of canvas that be used for rendering the previews. Re-using
      * one canvas instance is better than creating them over and over again.
      */
@@ -48,9 +53,7 @@ class PreviewRenderer {
     let min = { x: Infinity, y: Infinity };
     let max = { x: -Infinity, y: -Infinity };
 
-    for (let i in points) {
-      const point = points[i];
-
+    for (const point of points) {
       if (point.x < min.x) min.x = point.x;
       else if (point.x > max.x) max.x = point.x;
 
@@ -167,7 +170,6 @@ class PreviewRenderer {
    */
   drawItems(items, boundingBox) {
     // borrowed from frontend
-    const objectColors = ["#0043E0", "#f28a00", "#C400E0", "#7EE016", "#0BE07B"];
     this.ctx.globalAlpha = 0.6;
 
     let xOffset = 0;
@@ -189,7 +191,7 @@ class PreviewRenderer {
             ? 1
             : item.dimensions.length;
 
-        this.ctx.fillStyle = objectColors[i % objectColors.length];
+        this.ctx.fillStyle = this.ITEM_COLORS[i % this.ITEM_COLORS.length];
 
         const x = item.editorPosition.x;
         const y = item.editorPosition.y;
