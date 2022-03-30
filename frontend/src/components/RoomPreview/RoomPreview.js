@@ -19,7 +19,7 @@ export default function RoomPreview({ id, isTemplate, className }) {
   }, [id]);
 
   return (
-    <div className={`${className} room-preview-container ${loadingPreview ? "loading" : ""}`}>
+    <div className={`${className ?? ""} room-preview ${loadingPreview ? "loading" : ""}`}>
       {loadingPreview ? (
         <Spinner animation="border" variant="secondary" />
       ) : (

@@ -17,7 +17,7 @@ PreviewRenderer.SIZE = 300;
  *
  * PADDING will NOT affect the final pixel output size of the image (specified by PreviewRenderer.SIZE), only the size of the room itself in the final render
  */
-PreviewRenderer.PADDING = 0.15;
+PreviewRenderer.PADDING = 0.12;
 // Padding must be strictly less than 0.5
 PreviewRenderer.PADDING = Math.min(0.49, PreviewRenderer.PADDING);
 
@@ -79,7 +79,7 @@ PreviewRenderer.drawGrid = function (bbox) {
     
     Note the drawback is the grid for large rooms will not represent 1ft^2.
   */
-  const maxCellsPerDimension = 30;
+  const maxCellsPerDimension = 25;
   // Calculate actual cell size taking into account preferred and max
   const cellSize = Math.max(
     preferredCellSize,

@@ -11,8 +11,13 @@
   mix-blend-mode: multiply;
 }
 
-.room-preview-container {
+.room-preview {
   box-shadow: inset 0px 0px 4px 1px rgba(0, 0, 0, 0.15);
+  border-radius: 4px;
 
-  // background-image: url("../../assets/grid.svg");
+  &.loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
 }
