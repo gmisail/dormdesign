@@ -1,176 +1,250 @@
 const { createCanvas } = require("canvas");
 
-let PreviewRenderer = {};
+class PreviewRenderer {
+  constructor() {
+    /**
+     * SIZE sets the pixel resolution of the output image
+     *
+     * Since the output is always a square, a value of SIZE = 100
+     * would result in a 100px by 100px image.
+     */
+    this.SIZE = 300;
 
-/*
-    SCALE indicates how much we want to enlarge the final render, since by default they're pretty small. Keep
-    in mind that since these are raster renders, the higher the scale the higher the resolution. I think a 
-    SVG renderer for this would be a little overkill in my opinion.
-*/
-PreviewRenderer.SCALE = 25;
+    /**
+     * PADDING (in percent of total image size) around the rendered room.
+     *
+     * Example: If the PADDING = 0.25 and SIZE = 100(px) then there will be 25px of padding on each side (left, right, top, bottom)
+     *
+     * PADDING will NOT affect the final pixel output size of the image (specified by this.SIZE), only the size of the room itself in the final render
+     */
+    this.PADDING = 0.12;
+    this.PADDING = Math.min(0.49, this.PADDING);
 
-/**
- * PADDING is the spacing around the render. The number of pixels on each size of the render is = SCALE * PADDING. By default, there are 6.25 pixels of padding on every side.
- */
-PreviewRenderer.PADDING = 0.25;
+    /**
+     * Specifies the maximum number of grid cells to draw (per dimension). It's important that this value is set to something
+     * reasonably low because for a very large room, if the grid were drawn to scale, it would probably both look bad and take
+     * signifantly more time/computing power to draw (since drawing the grid has a runtime of at least O(N^2) where N is the number of grid cells per dimension)
+     *
+     * So a value of 25 for example means that at most a grid of size 25 x 25 cells will be drawn
+     */
+    this.MAX_DRAWN_CELLS = 25;
 
-/**
- * Find the bounding box that contains all of the points
- * @param { array<{ x: Number, y: Number }>} points
- * @returns { w, h, x, y }
- */
-PreviewRenderer.getBoundingBox = function (points) {
-  if (points === undefined || points.length == 0) return { w: 0, h: 0, x: 0, y: 0 };
+    /*
+      Represents the colors of the items that are being rendered. The first item is rendered using the first color, the second item uses the second, etc...
+    */
+    this.ITEM_COLORS = ["#0043E0", "#f28a00", "#C400E0", "#7EE016", "#0BE07B"];
 
-  let min = { x: 0, y: 0 };
-  let max = { x: 0, y: 0 };
-
-  for (let i in points) {
-    const point = points[i];
-
-    if (point.x < min.x) min.x = point.x;
-    else if (point.x > max.x) max.x = point.x;
-
-    if (point.y < min.y) min.y = point.y;
-    else if (point.y > max.y) max.y = point.y;
+    /*
+     * Set up one instance of canvas that be used for rendering the previews. Re-using
+     * one canvas instance is better than creating them over and over again.
+     */
+    this.canvas = createCanvas(200, 200);
+    this.ctx = this.canvas.getContext("2d");
   }
 
-  return {
-    w: max.x - min.x,
-    h: max.y - min.y,
-    x: min.x,
-    y: min.y,
-  };
-};
+  /**
+   * Find the bounding box that contains all of the points
+   * @param { array<{ x: Number, y: Number }>} points
+   * @returns { w, h, x, y }
+   */
+  getBoundingBox(points, items) {
+    if (points === undefined || points.length == 0) return { w: 0, h: 0, x: 0, y: 0 };
 
-/**
- * Draw boundaries to canvas
- * @param {*} points
- * @param {*} boundingBox
- */
-PreviewRenderer.drawBoundaries = function (points, boundingBox) {
-  PreviewRenderer.context.beginPath();
+    let min = { x: Infinity, y: Infinity };
+    let max = { x: -Infinity, y: -Infinity };
 
-  let xOffset = 0;
-  if (boundingBox.x != 0) xOffset = boundingBox.x * -1;
+    for (const point of points) {
+      if (point.x < min.x) min.x = point.x;
+      else if (point.x > max.x) max.x = point.x;
 
-  let yOffset = 0;
-  if (boundingBox.y != 0) yOffset = boundingBox.y * -1;
-
-  for (let i = 0; i < points.length - 1; i++) {
-    const p1 = points[i];
-    const p2 = points[i + 1];
-
-    if (i === 0) {
-      PreviewRenderer.context.moveTo(
-        (xOffset + p1.x) * PreviewRenderer.SCALE,
-        (yOffset + p1.y) * PreviewRenderer.SCALE
-      );
+      if (point.y < min.y) min.y = point.y;
+      else if (point.y > max.y) max.y = point.y;
     }
-    PreviewRenderer.context.lineTo(
-      (xOffset + p2.x) * PreviewRenderer.SCALE,
-      (yOffset + p2.y) * PreviewRenderer.SCALE
-    );
+
+    /* TODO (maybe?): We also might want to consider item positions when calculating the bbox. */
+
+    const bbox = {
+      w: max.x - min.x,
+      h: max.y - min.y,
+      x: min.x,
+      y: min.y,
+    };
+
+    /* If the bbox isn't a square, we will stretch the smaller dimension to make it one */
+    if (bbox.w < bbox.h) {
+      const diff = bbox.h - bbox.w;
+      // Stretch and re-center smaller dimension
+      bbox.w += diff;
+      bbox.x -= diff / 2;
+    } else if (bbox.h < bbox.w) {
+      const diff = bbox.w - bbox.h;
+      // Stretch and re-center smaller dimension
+      bbox.h += diff;
+      bbox.y -= diff / 2;
+    }
+
+    return bbox;
   }
 
-  PreviewRenderer.context.closePath();
-  PreviewRenderer.context.strokeStyle = "black";
-  PreviewRenderer.context.lineWidth = 3;
-  PreviewRenderer.context.lineJoin = "butt";
-  PreviewRenderer.context.lineCap = "butt";
+  /**
+   * Draws a grid of square cells across the entire bbox
+   * @param {*} bbox
+   */
+  drawGrid(bbox) {
+    const preferredCellSize = 1;
+    /*
+      Set maximum number of allowed cells (per each dimension not total) to avoid too many lines being drawn (ugly and computationally expensive).
+      
+      Note the drawback is the grid for large rooms will not represent 1ft^2.
+    */
+    // Calculate actual cell size taking into account preferred and max
+    const cellSize = Math.max(
+      preferredCellSize,
+      bbox.w / this.MAX_DRAWN_CELLS,
+      bbox.h / this.MAX_DRAWN_CELLS
+    );
 
-  PreviewRenderer.context.stroke();
-};
+    const numLinesX = Math.floor(bbox.w / cellSize);
+    const numLinesY = Math.floor(bbox.h / cellSize);
 
-/**
- *
- * @param { array } items
- * @param { w, h, x, y } boundingBox
- */
-PreviewRenderer.drawItems = function (items, boundingBox) {
-  // borrowed from frontend
-  const objectColors = ["#0043E0", "#f28a00", "#C400E0", "#7EE016", "#0BE07B"];
+    // Offsets to make sure grid is centered
+    const startX = (bbox.w - numLinesX * cellSize) / 2;
+    const startY = (bbox.h - numLinesY * cellSize) / 2;
 
-  let xOffset = Math.abs(boundingBox.x);
-  let yOffset = Math.abs(boundingBox.y);
+    this.ctx.strokeStyle = "#777";
+    this.ctx.lineWidth = 0.5;
+    this.ctx.lineCap = "round";
+    for (let i = 0; i < numLinesX + 1; i++) {
+      this.ctx.beginPath();
+      const currX = startX + i * cellSize;
+      this.ctx.moveTo(currX * this.SCALE, 0);
+      this.ctx.lineTo(currX * this.SCALE, 0 + bbox.w * this.SCALE);
+      this.ctx.stroke();
+    }
+    for (let i = 0; i < numLinesY + 1; i++) {
+      this.ctx.beginPath();
+      const currY = startY + i * cellSize;
+      this.ctx.moveTo(0, currY * this.SCALE);
+      this.ctx.lineTo(0 + bbox.h * this.SCALE, currY * this.SCALE);
+      this.ctx.stroke();
+    }
+  }
 
-  for (let i in items) {
-    const item = items[i];
+  /**
+   * Draw boundaries to canvas
+   * @param {*} points
+   * @param {*} boundingBox
+   */
+  drawBoundaries(points, boundingBox) {
+    this.ctx.beginPath();
 
-    if (item.visibleInEditor) {
-      const width =
-        item.dimensions === undefined || item.dimensions.width == null ? 1 : item.dimensions.width;
-      const length =
-        item.dimensions === undefined || item.dimensions.length == null
-          ? 1
-          : item.dimensions.length;
+    let xOffset = 0;
+    if (boundingBox.x != 0) xOffset = boundingBox.x * -1;
 
-      PreviewRenderer.context.fillStyle = objectColors[i % objectColors.length];
+    let yOffset = 0;
+    if (boundingBox.y != 0) yOffset = boundingBox.y * -1;
 
-      const x = item.editorPosition.x;
-      const y = item.editorPosition.y;
+    for (let i = 0; i < points.length - 1; i++) {
+      const p1 = points[i];
+      const p2 = points[i + 1];
 
-      if (item.editorRotation !== undefined && item.editorRotation !== 0) {
-        PreviewRenderer.context.save();
-        PreviewRenderer.context.translate(
-          (x + xOffset) * PreviewRenderer.SCALE,
-          (y + yOffset) * PreviewRenderer.SCALE
+      if (i === 0) {
+        this.ctx.moveTo((xOffset + p1.x) * this.SCALE, (yOffset + p1.y) * this.SCALE);
+      }
+      this.ctx.lineTo((xOffset + p2.x) * this.SCALE, (yOffset + p2.y) * this.SCALE);
+    }
+
+    this.ctx.closePath();
+    this.ctx.strokeStyle = "#111";
+    this.ctx.lineWidth = 3;
+    this.ctx.lineJoin = "butt";
+    this.ctx.lineCap = "butt";
+
+    this.ctx.stroke();
+  }
+
+  /**
+   *
+   * @param { array } items
+   * @param { w, h, x, y } boundingBox
+   */
+  drawItems(items, boundingBox) {
+    // borrowed from frontend
+    this.ctx.globalAlpha = 0.6;
+
+    let xOffset = 0;
+    if (boundingBox.x != 0) xOffset = boundingBox.x * -1;
+
+    let yOffset = 0;
+    if (boundingBox.y != 0) yOffset = boundingBox.y * -1;
+
+    for (let i in items) {
+      const item = items[i];
+
+      if (item.visibleInEditor) {
+        const width =
+          item.dimensions === undefined || item.dimensions.width == null
+            ? 1
+            : item.dimensions.width;
+        const length =
+          item.dimensions === undefined || item.dimensions.length == null
+            ? 1
+            : item.dimensions.length;
+
+        this.ctx.fillStyle = this.ITEM_COLORS[i % this.ITEM_COLORS.length];
+
+        const x = item.editorPosition.x;
+        const y = item.editorPosition.y;
+
+        this.ctx.save();
+        this.ctx.translate((x + xOffset) * this.SCALE, (y + yOffset) * this.SCALE);
+        if (item.editorRotation !== undefined && item.editorRotation !== 0) {
+          this.ctx.rotate((item.editorRotation * Math.PI) / 180);
+        }
+        this.ctx.fillRect(
+          (-width / 2) * this.SCALE,
+          (-length / 2) * this.SCALE,
+          width * this.SCALE,
+          length * this.SCALE
         );
-        PreviewRenderer.context.rotate((item.editorRotation * Math.PI) / 180);
-        PreviewRenderer.context.fillRect(
-          (-width / 2) * PreviewRenderer.SCALE,
-          (-length / 2) * PreviewRenderer.SCALE,
-          width * PreviewRenderer.SCALE,
-          length * PreviewRenderer.SCALE
-        );
-        PreviewRenderer.context.restore();
-      } else {
-        PreviewRenderer.context.fillRect(
-          (x + xOffset - width / 2) * PreviewRenderer.SCALE,
-          (y + yOffset - length / 2) * PreviewRenderer.SCALE,
-          width * PreviewRenderer.SCALE,
-          length * PreviewRenderer.SCALE
-        );
+        this.ctx.restore();
       }
     }
+
+    // Reset global alpha
+    this.ctx.globalAlpha = 1.0;
   }
-};
 
-/**
- * Generate a preview of the provided room data
- * @param { { vertices: [{x: Number, y: Number}], items: [] } } roomData
- */
-PreviewRenderer.generatePreview = function (roomData) {
-  let { vertices, items } = roomData;
+  /**
+   * Generate a preview of the provided room data
+   * @param { { vertices: [{x: Number, y: Number}], items: [] } } roomData
+   */
+  generatePreview(roomData) {
+    let { vertices, items } = roomData;
 
-  let boundaryBox = PreviewRenderer.getBoundingBox(vertices);
+    let boundaryBox = this.getBoundingBox(vertices);
 
-  boundaryBox.x -= PreviewRenderer.PADDING;
-  boundaryBox.y -= PreviewRenderer.PADDING;
+    // Adjust the bbox to incorporate padding, which is calculated as a percentage of the total bbox size (including the padding itself)
+    const actualPadding = (this.PADDING * boundaryBox.w) / (1 - 2 * this.PADDING);
+    boundaryBox.x -= actualPadding;
+    boundaryBox.y -= actualPadding;
+    boundaryBox.w += actualPadding * 2;
+    boundaryBox.h += actualPadding * 2;
 
-  PreviewRenderer.canvas.width =
-    (boundaryBox.w + PreviewRenderer.PADDING * 2) * PreviewRenderer.SCALE;
-  PreviewRenderer.canvas.height =
-    (boundaryBox.h + PreviewRenderer.PADDING * 2) * PreviewRenderer.SCALE;
+    this.SCALE = this.SIZE / boundaryBox.w;
 
-  PreviewRenderer.context.clearRect(
-    0,
-    0,
-    (boundaryBox.w + PreviewRenderer.PADDING * 2) * PreviewRenderer.SCALE,
-    (boundaryBox.h + PreviewRenderer.PADDING * 2) * PreviewRenderer.SCALE
-  );
+    this.canvas.width = boundaryBox.w * this.SCALE;
+    this.canvas.height = boundaryBox.h * this.SCALE;
 
-  PreviewRenderer.drawBoundaries(vertices, boundaryBox);
-  PreviewRenderer.drawItems(items, boundaryBox);
+    this.ctx.fillStyle = "#fff";
+    this.ctx.fillRect(0, 0, boundaryBox.w * this.SCALE, boundaryBox.h * this.SCALE);
 
-  return PreviewRenderer.canvas.toDataURL();
-};
+    this.drawGrid(boundaryBox);
+    this.drawBoundaries(vertices, boundaryBox);
+    this.drawItems(items, boundaryBox);
 
-/* 
-    Set up one instance of canvas that be used for rendering the previews. Re-using
-    one canvas instance is better than creating them over and over again.
-*/
-PreviewRenderer.canvas = createCanvas(200, 200);
-PreviewRenderer.context = PreviewRenderer.canvas.getContext("2d");
+    return this.canvas.toDataURL();
+  }
+}
 
-module.exports = PreviewRenderer;
+module.exports = new PreviewRenderer();
