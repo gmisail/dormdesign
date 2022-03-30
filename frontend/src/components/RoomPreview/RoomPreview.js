@@ -23,7 +23,7 @@ export default function RoomPreview({ id, isTemplate, className }) {
       {loadingPreview ? (
         <Spinner animation="border" variant="secondary" />
       ) : (
-        <img src={preview} alt="Room Preview"></img>
+        <img className="room-preview-image" src={preview} alt="Room Preview"></img>
       )}
     </div>
   );

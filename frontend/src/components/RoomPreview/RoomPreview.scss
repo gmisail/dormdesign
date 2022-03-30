@@ -1,25 +1,22 @@
 @import "../../styles/variables.scss";
 
-.room-preview {
-  display: flex;
-  flex-flow: row nowrap;
-  justify-content: center;
-  align-items: center;
-  padding: 12px;
+.room-preview-image {
+  display: block;
+  width: 100%;
+  height: 100%;
 
   border-radius: inherit;
 
-  box-shadow: inset 0px 1px 4px 3px rgba(0, 0, 0, 0.15);
-  background-image: url("../../assets/grid.svg");
+  // Without this line the inset shadow on the parent container won't be visible
+  mix-blend-mode: multiply;
+}
 
-  // When the preview is loading, remove the background image and shadow
+.room-preview {
+  box-shadow: inset 0px 0px 4px 1px rgba(0, 0, 0, 0.15);
+
   &.loading {
-    box-shadow: none;
-    background-image: none;
-  }
-
-  & > img {
-    width: 100%;
-    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
 }
