@@ -19,6 +19,11 @@
       z-index: 3;
     }
 
+    [data-hidden="true"] {
+      box-shadow: none;
+      transform: scale(0);
+    }
+
     .room-editor-footer {
       position: absolute;
       color: $text-color-dark;
@@ -161,11 +166,6 @@
         @include button-background-color($color-primary);
 
         transition: transform 0.2s ease, background-color 0.2s ease;
-
-        &[data-hidden="true"] {
-          box-shadow: none;
-          transform: scale(0);
-        }
       }
     }
   }

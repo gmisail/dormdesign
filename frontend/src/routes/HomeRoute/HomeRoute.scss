@@ -9,12 +9,42 @@
   }
 }
 
+.room-info-location {
+  margin: auto;
+  margin-top: 20px;
+  max-width: 300px;
+
+  font-size: 0.8rem;
+  text-align: center;
+
+  img {
+    width: 100%;
+  }
+}
+
+.create-room-modal-body {
+  .important-info {
+    margin-bottom: 40px;
+  }
+
+  h5 {
+    font-size: 1.1rem;
+  }
+  p[name="or"] {
+    margin: 30px 0 30px 0;
+    text-align: center;
+  }
+  p {
+    margin-bottom: 10px;
+  }
+}
+
 .content-wrapper {
   overflow: auto;
   max-height: 100%;
 
   .content-container {
-    padding: 50px;
+    padding: 0 50px;
     max-width: 1200px;
     margin: 10vh auto 0 auto;
 
@@ -46,13 +76,7 @@
       opacity: 0;
     }
 
-    %fadein-animation {
-      animation: fadein 2s ease forwards;
-    }
-
     .header-container {
-      @extend %fadein-animation;
-
       grid-area: header;
       display: flex;
       justify-self: stretch;
@@ -71,8 +95,6 @@
     }
 
     .buttons-container {
-      @extend %fadein-animation;
-
       grid-area: buttons;
 
       display: flex;
@@ -82,8 +104,6 @@
     }
 
     .recent-rooms-container {
-      @extend %fadein-animation;
-
       grid-area: recent-rooms;
       max-width: 100%;
 
@@ -151,20 +171,31 @@
           }
 
           .recent-room-name {
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            width: 130px;
 
-            height: 55px;
-
+            text-align: center;
             font-weight: 600;
+
+            position: absolute;
+            top: 25px;
+            left: 15px;
+            margin: 0;
+
+            /* Hide names that are too long (displaying '...' to indicate this) */
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
           }
 
-          .recent-room-image {
-            margin: auto;
+          .room-preview {
+            position: absolute;
+            bottom: 15px;
+            left: 15px;
 
             width: 130px;
             height: 130px;
+
+            margin: auto;
           }
         }
       }

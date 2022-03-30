@@ -1,7 +1,8 @@
 import React, { Component } from "react";
 
 import { Col } from "react-bootstrap";
-import DormItem from "../../models/DormItem";
+import DormItemModel from "../../models/DormItemModel";
+import RoomModel from "../../models/RoomModel";
 import Form from "react-bootstrap/Form";
 
 class ListItemForm extends Component {
@@ -12,7 +13,7 @@ class ListItemForm extends Component {
     // Name for new items should be blank
     const name = item ? item.name : "";
     if (!item) {
-      item = DormItem.getDefault();
+      item = DormItemModel.getDefault();
     }
 
     this.state = {
@@ -38,9 +39,9 @@ class ListItemForm extends Component {
         value = Math.min(100, Math.max(1, value));
       }
     } else if (name === "nameInputValue") {
-      value = value.substring(0, 30);
+      value = value.substring(0, DormItemModel.MAX_NAME_LENGTH);
     } else if (name === "claimedByInputValue") {
-      value = value.substring(0, 30);
+      value = value.substring(0, RoomModel.MAX_USERNAME_LENGTH);
     }
 
     if (name === "widthInputValue" || name === "lengthInputValue") {

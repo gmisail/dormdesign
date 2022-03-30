@@ -1,15 +1,17 @@
 import React from "react";
-import Room from "../../models/Room";
+import RoomModel from "../../models/RoomModel";
 import SingleInputForm from "../SingleInputForm/SingleInputForm";
 
 function RoomNameForm({ roomName, onChangeRoomName }) {
   return (
     <SingleInputForm
       initialValue={roomName}
+      submitButtonText="Save"
+      submitButtonTextSuccessful="Saved!"
       onSubmit={onChangeRoomName}
       trim={true}
       allowEmptySubmit={false}
-      maxLength={Room.MAX_NAME_LENGTH}
+      maxLength={RoomModel.MAX_NAME_LENGTH}
     />
   );
 }

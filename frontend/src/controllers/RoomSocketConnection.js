@@ -1,6 +1,6 @@
 import EventController from "./EventController";
 
-class SocketConnection {
+class RoomSocketConnection {
   constructor(roomID, onOpen) {
     this.roomID = roomID;
     this.eventController = new EventController();
@@ -52,4 +52,4 @@ class SocketConnection {
   }
 }
 
-export default SocketConnection;
+export default RoomSocketConnection;

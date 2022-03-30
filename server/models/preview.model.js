@@ -3,7 +3,7 @@ const PreviewRenderer = require("../services/preview-renderer");
 
 let Preview = {};
 
-Preview.CACHE_EXPIRATION = 60 * 5;
+Preview.CACHE_EXPIRATION = 60 * 5; // Seconds
 
 /**
  * From a given Room ID, return the respective room preview (either from the cache or renderer)
@@ -13,15 +13,25 @@ Preview.CACHE_EXPIRATION = 60 * 5;
 Preview.get = async function (room) {
   const id = room.id;
 
-  let previewUrl = await client.get(`${id}:preview`);
-
-  // doesn't exist in the cache, load it in...
-  if (previewUrl === null) {
-    previewUrl = PreviewRenderer.generatePreview(room);
-    await client.set(`${id}:preview`, previewUrl, "EX", Preview.CACHE_EXPIRATION);
+  let preview;
+  try {
+    preview = JSON.parse(await client.get(`${id}:preview`));
+  } catch (err) {
+    throw new Error("Failed to parse preview data stored in cache. " + err);
   }
 
-  return previewUrl;
+  // If the preview isn't in the cache OR the cached version is outdated, render it
+  // and add it to the cache
+  if (preview === null || room.metaData.lastModified > preview.timestamp) {
+    preview = {
+      timestamp: Date.now(),
+      data: PreviewRenderer.generatePreview(room.data),
+    };
+
+    await client.set(`${id}:preview`, JSON.stringify(preview), "EX", Preview.CACHE_EXPIRATION);
+  }
+
+  return preview;
 };
 
 module.exports = Preview;

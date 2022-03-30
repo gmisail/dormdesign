@@ -45,8 +45,7 @@ const SingleInputForm = (props) => {
 
       return;
     }
-
-    setButtonText(submitButtonTextSuccessful ?? "Saved!");
+    if (submitButtonTextSuccessful !== undefined) setButtonText(submitButtonTextSuccessful);
 
     props.onSubmit(value);
   };

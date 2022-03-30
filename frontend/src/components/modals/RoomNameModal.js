@@ -1,6 +1,5 @@
 import Modal from "react-bootstrap/Modal";
 import React from "react";
-import Room from "../../models/Room";
 import RoomNameForm from "../RoomNameForm/RoomNameForm";
 import SingleInputForm from "../SingleInputForm/SingleInputForm";
 

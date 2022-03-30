@@ -1,4 +1,6 @@
-class DormItem {
+export default class DormItemModel {
+  static MAX_NAME_LENGTH = 30;
+
   static getDefault() {
     return {
       name: "New Item",
@@ -20,5 +22,3 @@ class DormItem {
     };
   }
 }
-
-export default DormItem;
