@@ -22,6 +22,15 @@ PreviewRenderer.PADDING = 0.12;
 PreviewRenderer.PADDING = Math.min(0.49, PreviewRenderer.PADDING);
 
 /**
+ * Specifies the maximum number of grid cells to draw (per dimension). It's important that this value is set to something
+ * reasonably low because for a very large room, if the grid were drawn to scale, it would probably both look bad and take
+ * signifantly more time/computing power to draw (since drawing the grid has a runtime of at least O(N^2) where N is the number of grid cells per dimension)
+ *
+ * So a value of 25 for example means that at most a grid of size 25 x 25 cells will be drawn
+ */
+PreviewRenderer.MAX_DRAWN_CELLS = 25;
+
+/**
  * Find the bounding box that contains all of the points
  * @param { array<{ x: Number, y: Number }>} points
  * @returns { w, h, x, y }
@@ -79,12 +88,11 @@ PreviewRenderer.drawGrid = function (bbox) {
     
     Note the drawback is the grid for large rooms will not represent 1ft^2.
   */
-  const maxCellsPerDimension = 25;
   // Calculate actual cell size taking into account preferred and max
   const cellSize = Math.max(
     preferredCellSize,
-    bbox.w / maxCellsPerDimension,
-    bbox.h / maxCellsPerDimension
+    bbox.w / PreviewRenderer.MAX_DRAWN_CELLS,
+    bbox.h / PreviewRenderer.MAX_DRAWN_CELLS
   );
 
   const numLinesX = Math.floor(bbox.w / cellSize);
