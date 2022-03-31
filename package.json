@@ -10,8 +10,8 @@
     "prettier:frontend": "prettier ./frontend/src --write",
     "prettier:server": "prettier ./server --write",
     "dev": "docker-compose --env-file ./.env -f docker-compose.dev.yml up --build",
-    "prepare": "husky install",
-    "clear-dev-data": "docker-compose -f docker-compose.dev.yml down && docker volume rm dd_database && rm -rf ./redis_data"
+    "clear-dev-data": "docker-compose -f docker-compose.dev.yml down && docker volume rm dd_database && rm -rf ./redis_data",
+    "prepare": "husky install"
   },
   "lint-staged": {
     "server/*.{js,jsx,ts,tsx,json,css,scss,md}": [

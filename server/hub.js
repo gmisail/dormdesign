@@ -246,7 +246,7 @@ Hub.updateRoomName = async function ({ socket, roomID, data, sendResponse }) {
     throw err;
   }
 
-  let name = data.name.trim().substring(0, Math.min(30, data.name.length));
+  let name = data.name.trim().substring(0, Math.min(Room.MAX_NAME_LENGTH, data.name.length));
   await Room.Cache.updateData(roomID, { name: name });
 
   Hub.sendToRoom(socket.id, sendResponse, {
@@ -276,7 +276,9 @@ Hub.updateNickname = async function ({ socket, roomID, data, sendResponse }) {
   }
 
   // Update socket's username
-  socket.userName = data.userName.trim();
+  socket.userName = data.userName
+    .trim()
+    .substring(0, Math.min(Room.MAX_USERNAME_LENGTH, data.userName.length));
 
   // Get all usernames in the room
   const users = Hub.getRoomUsernames(roomID);

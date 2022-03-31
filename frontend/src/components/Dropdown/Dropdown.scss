@@ -1,0 +1,15 @@
+@import "../../styles/variables.scss";
+
+.dropdown {
+  min-width: 160px;
+  background-color: $dropdown-background-color;
+  box-shadow: $box-shadow;
+  border-radius: 8px;
+  z-index: 10;
+  // Hide popper when it has "hidden" class and when item is no longer visible (e.g. it is scrolled out of view)
+  &.hidden,
+  &[data-popper-reference-hidden="true"] {
+    visibility: hidden;
+    pointer-events: none;
+  }
+}

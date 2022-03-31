@@ -1,6 +1,7 @@
 import React from "react";
 import Modal from "react-bootstrap/Modal";
 import SingleInputForm from "../SingleInputForm/SingleInputForm";
+import RoomModel from "../../models/RoomModel";
 
 const NameModal = (props) => {
   return (
@@ -14,7 +15,11 @@ const NameModal = (props) => {
           Choose a name so that other people in the room know who you are. This data will only be
           stored locally in your browser.
         </p>
-        <SingleInputForm onSubmit={props.onSubmit} submitButtonText={props.submitButtonText} />
+        <SingleInputForm
+          onSubmit={props.onSubmit}
+          submitButtonText={props.submitButtonText}
+          maxLength={RoomModel.MAX_USERNAME_LENGTH}
+        />
       </Modal.Body>
     </Modal>
   );

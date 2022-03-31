@@ -63,13 +63,22 @@
       display: flex;
       flex-flow: row nowrap;
       align-items: center;
+      margin-right: 10px;
+      min-width: 0;
 
       .room-name {
         margin: 0;
+        margin-right: 5px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        min-width: 0;
+        white-space: nowrap;
       }
       .room-name-edit-icon {
-        margin-left: 10px;
         display: none;
+        width: 30px;
+        height: 30px;
+        flex-shrink: 0;
       }
 
       &:hover {
@@ -87,10 +96,18 @@
     .room-header-buttons {
       // Set width of buttons
       & > * {
-        width: 2.75rem;
+        width: 40px;
+      }
+      // Active users button needs to be sized differently since it also has a number in addition to the icon. There might be a cleaner way of doing this
+      .active-users-btn {
+        width: auto;
+        .active-users-icon {
+          width: 30px;
+          height: 30px;
+        }
       }
 
-      * + * {
+      & > button {
         margin-left: 4px;
       }
 
@@ -123,26 +140,6 @@
 
     .add-item-button-text {
       vertical-align: middle;
-    }
-
-    @media screen and (max-width: $stack-breakpoint) {
-      padding: 10px;
-      position: fixed;
-      z-index: 1;
-      right: 30px;
-      bottom: 30px;
-      border: none;
-      border-radius: 9px;
-      background-color: $color-primary;
-      color: $text-color-light;
-      border-radius: 50px;
-      font-size: 20px;
-      font-weight: 800;
-      box-shadow: 0px 0px 10px 4px rgba(0, 0, 0, 0.2);
-
-      .add-item-button-text {
-        display: none;
-      }
     }
   }
 }

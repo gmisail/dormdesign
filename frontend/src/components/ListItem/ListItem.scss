@@ -1,15 +1,5 @@
 @import "../../styles/variables.scss";
 
-.item-menu-button {
-  max-width: 2.2rem;
-  color: $text-color-dark;
-  transition: transform 0.2s;
-
-  &:hover {
-    transform: scale(1.2);
-  }
-}
-
 .list-item {
   transition: background-color 0.1s ease-in;
   font-size: 16px;
@@ -17,20 +7,47 @@
   padding: 12px;
 
   display: flex;
-  flex-direction: row;
+  flex-flow: row nowrap;
   align-items: center;
   justify-content: space-between;
 
-  .list-item-content {
+  .list-item-content-left {
     display: flex;
     flex-flow: row nowrap;
     align-items: center;
+    margin-right: 10px;
+    max-width: 50%;
 
     .item-name {
+      margin-right: 3px;
       font-weight: 600;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      min-width: 0;
     }
     .item-quantity {
       font-weight: 500;
+      flex-shrink: 0;
+    }
+  }
+
+  .list-item-content-right {
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    min-width: 0;
+
+    .item-claim {
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+    }
+    .item-menu-button {
+      max-width: 2.2rem;
+      color: $text-color-dark;
+      margin-left: 5px;
+      flex-shrink: 0;
     }
   }
 
@@ -50,60 +67,53 @@
 
   &.item-selected {
     background-color: $selection-color-primary;
+
+    // Override the gray circle selection effect on the IconButton to a matching color
+    .item-menu-button:hover,
+    .item-menu-button.toggled {
+      background-color: darken($selection-color-primary, 6);
+    }
   }
 }
 
-.item-dropdown-menu {
-  min-width: 160px;
-  box-shadow: $box-shadow;
-  border-radius: 8px;
-  z-index: 2;
+.item-menu-list {
+  list-style-type: none;
+  background-color: $dropdown-background-color;
+  padding: 0;
+  margin: 0;
+  border: 1px solid $border-color;
+  border-radius: inherit;
 
-  // Hide popper when it has "hidden" class and when item is no longer visible (e.g. it is scrolled out of view)
-  &.hidden,
-  &[data-popper-reference-hidden="true"] {
-    visibility: hidden;
-    pointer-events: none;
-  }
+  li {
+    padding: 5px 10px;
+    color: $text-color-dark;
+    font-size: 17px;
+    line-height: 28px;
 
-  ul {
-    list-style-type: none;
-    background-color: $dropdown-background-color;
-    padding: 0;
-    margin: 0;
-    border: 1px solid $border-color;
-    border-radius: inherit;
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
 
-    li {
-      padding: 5px 10px;
-      color: $text-color-dark;
-      font-size: 17px;
-      line-height: 28px;
+    border-bottom: 1px solid;
+    border-bottom-color: $border-color;
 
-      display: flex;
-      flex-flow: row nowrap;
-      align-items: center;
+    svg {
+      max-width: 1.5rem;
+      margin: auto 0;
+      margin-right: 0.6em;
+    }
 
-      border-bottom: 1px solid;
-      border-bottom-color: $border-color;
+    &.color-danger {
+      color: $color-danger;
+    }
 
-      svg {
-        max-width: 1.5rem;
-        margin: auto 0;
-        margin-right: 0.6em;
-      }
+    &:hover {
+      cursor: pointer;
+      background-color: $border-color;
+    }
 
-      &.color-danger {
-        color: $color-danger;
-      }
-
-      &:hover {
-        background-color: $border-color;
-      }
-
-      &:last-child {
-        border-bottom: none;
-      }
+    &:last-child {
+      border-bottom: none;
     }
   }
 }

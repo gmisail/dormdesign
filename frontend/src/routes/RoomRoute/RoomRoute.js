@@ -1,6 +1,6 @@
 import "./RoomRoute.scss";
 
-import { BsBoxArrowUpRight, BsGear, BsPencil, BsPlus } from "react-icons/bs";
+import { BsGear, BsPencil, BsPlus, BsLink45Deg } from "react-icons/bs";
 import { Modal, modalTypes } from "../../components/modals/Modal";
 import React, { useCallback, useEffect } from "react";
 import {
@@ -196,7 +196,7 @@ export const RoomRoute = () => {
       ) : (
         <div className="room-container">
           <div className="room-header">
-            <div className="room-name-container">
+            <div title={roomName} className="room-name-container">
               <h2 onClick={onClickRoomName} className="room-name">
                 {roomName}
               </h2>
@@ -204,8 +204,11 @@ export const RoomRoute = () => {
             </div>
 
             <div className="room-header-buttons">
-              <ActiveUsersIndicator maxUsernames={3} />
+              <ActiveUsersIndicator />
               <IconButton
+                title="Share"
+                circleSelectionEffect={true}
+                toggled={modalProps.show && modalProps.type === modalTypes.share}
                 onClick={() => {
                   toggleModal(modalTypes.share, {
                     id: id,
@@ -214,9 +217,15 @@ export const RoomRoute = () => {
                   });
                 }}
               >
-                <BsBoxArrowUpRight />
+                <BsLink45Deg />
               </IconButton>
-              <IconButton onClick={onClickSettingsButton} style={{ fontSize: "0.97em" }}>
+              <IconButton
+                title="Settings"
+                className="circle-hover"
+                circleSelectionEffect
+                toggled={modalProps.show && modalProps.type === modalTypes.settings}
+                onClick={onClickSettingsButton}
+              >
                 <BsGear />
               </IconButton>
             </div>

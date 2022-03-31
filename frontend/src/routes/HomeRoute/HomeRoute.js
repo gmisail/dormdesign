@@ -106,8 +106,10 @@ class HomeRoute extends Component {
       return (
         <div className="recent-room" key={index} title={room.name}>
           <IconButton
+            title="Remove from history"
             onClick={() => this.removeRecentRoom(room.id, index)}
             className="recent-room-remove-button"
+            circleSelectionEffect={true}
           >
             <BsX />
           </IconButton>
