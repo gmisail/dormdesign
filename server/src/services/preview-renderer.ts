@@ -1,6 +1,16 @@
 const { createCanvas } = require("canvas");
 
 class PreviewRenderer {
+	public SIZE: any;
+	public PADDING: any;
+	public MAX_DRAWN_CELLS: any;
+	public ITEM_COLORS: any;
+	public canvas: any;
+	public ctx: any;
+	public SCALE: any;
+	public vertices: any;
+	public items: any;
+
   constructor() {
     /**
      * SIZE sets the pixel resolution of the output image
@@ -47,7 +57,7 @@ class PreviewRenderer {
    * @param { array<{ x: Number, y: Number }>} points
    * @returns { w, h, x, y }
    */
-  getBoundingBox(points, items) {
+  getBoundingBox(points, items?) {
     if (points === undefined || points.length == 0) return { w: 0, h: 0, x: 0, y: 0 };
 
     let min = { x: Infinity, y: Infinity };
