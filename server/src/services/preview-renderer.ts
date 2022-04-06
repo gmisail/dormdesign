@@ -1,15 +1,15 @@
 const { createCanvas } = require("canvas");
 
 class PreviewRenderer {
-	public SIZE: any;
-	public PADDING: any;
-	public MAX_DRAWN_CELLS: any;
-	public ITEM_COLORS: any;
-	public canvas: any;
-	public ctx: any;
-	public SCALE: any;
-	public vertices: any;
-	public items: any;
+  public SIZE: any;
+  public PADDING: any;
+  public MAX_DRAWN_CELLS: any;
+  public ITEM_COLORS: any;
+  public canvas: any;
+  public ctx: any;
+  public SCALE: any;
+  public vertices: any;
+  public items: any;
 
   constructor() {
     /**

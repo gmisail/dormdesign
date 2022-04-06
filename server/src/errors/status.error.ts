@@ -1,9 +1,8 @@
 export class StatusError extends Error {
-    statusCode: number;
+  statusCode: number;
 
-    constructor(error: string, code: number) {
-        super(error);
-        this.statusCode = code;
-    }
+  constructor(error: string, code: number) {
+    super(error);
+    this.statusCode = code;
+  }
 }
-
