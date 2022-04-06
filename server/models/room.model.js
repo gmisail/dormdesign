@@ -46,6 +46,13 @@ Room.create = async function (name, templateId) {
       featured: false,
       lastModified: Date.now(),
     },
+    /*
+      Having schemaVersion makes it easy to tell which schema version a document in the DB is using. 
+      
+      IMPORTANT: If you make ANY changes to the stucture of 'room' here, make sure you increment schemaVersion 
+      (and you'll probably need to create a new DB migration script)
+    */
+    schemaVersion: 1,
   };
 
   if (templateId !== undefined) {
