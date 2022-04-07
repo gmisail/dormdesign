@@ -3,7 +3,7 @@ import { StatusError } from "./errors/status.error";
 import chalk from "chalk";
 import express from "express";
 import querystring from "querystring";
-import uuid from "uuid";
+import { v4 as uuidv4 } from "uuid";
 import ws from "ws";
 
 const Room = require("./models/room.model");
@@ -24,40 +24,48 @@ type UserSession = {
 };
 
 type EventMessage = {
-  socket: UserSession;
+  session: UserSession;
   roomID: string;
   data: any;
   sendResponse: boolean;
 };
 
 class Hub {
-  private connections: Map<String, UserSession>;
+  private connections: Map<string, UserSession>;
   private rooms: Map<string, Set<string>>;
 
   private sockets: ws.Server;
   private events: EventEmitter;
 
   constructor(sockets: ws.Server) {
-    /* register the socket events */
-    this.addEventListener("addItem", this.addItem);
-    this.addEventListener("updateItems", this.updateItems);
-    this.addEventListener("deleteItem", this.deleteItem);
-    this.addEventListener("updateLayout", this.updateLayout);
-    this.addEventListener("cloneRoom", this.cloneRoom);
-    this.addEventListener("deleteRoom", this.deleteRoom);
-    this.addEventListener("updateRoomName", this.updateRoomName);
-    this.addEventListener("updateNickname", this.updateNickname);
+    this.events = new EventEmitter();
+    this.connections = new Map<string, UserSession>();
+    this.rooms = new Map<string, Set<string>>();
+
+    console.log("Initializing socket hub...")
+
+    /**
+      Setup event callback for socket events. Note how they're encapsulated within a lambda function;
+      this allows the callback to access the rest of the class (otherwise, `this` will be incorrect!)
+    */
+    this.addEventListener("addItem",        async (args: EventMessage) => this.addItem(args));
+    this.addEventListener("updateItems",    async (args: EventMessage) => this.updateItems(args));
+    this.addEventListener("deleteItem",     async (args: EventMessage) => this.deleteItem(args));
+    this.addEventListener("updateLayout",   async (args: EventMessage) => this.updateLayout(args));
+    this.addEventListener("cloneRoom",      async (args: EventMessage) => this.cloneRoom(args));
+    this.addEventListener("deleteRoom",     async (args: EventMessage) => this.deleteRoom(args));
+    this.addEventListener("updateRoomName", async (args: EventMessage) => this.updateRoomName(args));
+    this.addEventListener("updateNickname", async (args: EventMessage) => this.updateNickname(args));
 
     this.sockets = sockets;
-    this.sockets.on("connection", this.onConnection);
+    this.sockets.on("connection", async (socket, request) => this.onConnection(socket, request));
 
-    setInterval(this.onPing, PONG_TIME);
+    setInterval(async () => this.onPing(), PONG_TIME);
   }
 
   async onConnection(socket: ws.WebSocket, req: any) {
-    const id = uuid.v4();
-    const url = new URL(req.url);
-    const params = url.searchParams;
+    const id = uuidv4();
+    const params = new URLSearchParams(req.url);
 
     /*
       Add the id, roomID, and active properties to the UserSession object so that
@@ -66,14 +74,14 @@ class Hub {
     let session: UserSession = {
       id,
       socket,
-      roomID: params["/ws?id"],
+      roomID: params.get("/ws?id"),
       active: true,
       userName: "User",
     };
 
     await this.addClient(session);
 
-    session.socket.on("pong", function onPing() {
+    session.socket.on("pong", function onPong() {
       session.active = true;
     });
     session.socket.on("close", () => this.removeClient(session.id));
@@ -84,7 +92,7 @@ class Hub {
 
       // emit the event with the data that was sent to the server & the socket's id
       this.events.emit(event, {
-        socket,
+        session,
         roomID: session.roomID,
         sendResponse,
         id: session.id,
@@ -206,8 +214,8 @@ class Hub {
   }
 
   private addEventListener(event: string, listener: (args: EventMessage) => void): void {
-    this.events.addListener(event, async (args) => {
-      const { socket } = args;
+    this.events.addListener(event, async (args: EventMessage) => {
+      const { session } = args;
       try {
         /* 
           If a room event is received when the room is not in the cache, close the connection
@@ -216,10 +224,11 @@ class Hub {
           but the socket connection is still open. If we didn't do this, things would still work but the frontend's data 
           may be out of sync (without the user realizing). Better to close the connection and force a refresh
         */
-        const exists = await Room.Cache.exists(socket.roomID);
+        const exists = await Room.Cache.exists(session.roomID);
         if (!exists) {
-          await this.removeClient(socket.id);
-          socket.terminate();
+          await this.removeClient(session.id);
+          session.socket.terminate();
+          session.active = false;
         }
 
         await listener(args);
@@ -234,7 +243,7 @@ class Hub {
           console.error(`Error on ${event} room event.`, err.message);
         }
 
-        this.sendError(socket.id, event, err.message);
+        this.sendError(session.id, event, err.message);
       }
     });
   }
@@ -328,40 +337,46 @@ class Hub {
     Add a nickname (also referred to as usernames) to the room, or updates a name if it already exists at a given socket ID. Sends to 
     every client the array of users
   */
-  async updateNickname({ socket, roomID, data, sendResponse }: EventMessage) {
+  async updateNickname({ session, roomID, data, sendResponse }: EventMessage) {
     if (data === undefined || data.userName === undefined || data.userName.length <= 0)
-      throw new StatusError("'userName' string is empty or undefined", 400);
+      throw new StatusError("'userName' string is empty or undefined", 400);    
+
+    console.log(roomID, JSON.stringify(data), sendResponse)
 
     // Update socket's username
-    socket.userName = data.userName
+    session.userName = data.userName
       .trim()
       .substring(0, Math.min(Room.MAX_USERNAME_LENGTH, data.userName.length));
 
     // Get all usernames in the room
     const users = this.getRoomUsernames(roomID);
 
-    this.sendToRoom(socket.id, sendResponse, {
+    console.log(users)
+
+    this.sendToRoom(session.id, sendResponse, {
       event: "nicknamesUpdated",
       data: { users },
     });
   }
 
   async onPing() {
-    for (let [id, session] of this.connections) {
+    this.connections.forEach(async (session: UserSession) => {
       /*
         If inactive:
         - remove the client from the current roomID
         - terminate the socket connection
       */
       if (!session.active) {
-        if (DEBUG_MESSAGES) console.log("Connection " + session.id + " inactive. Closing it.");
+        if (DEBUG_MESSAGES) 
+          console.log("Connection " + session.id + " inactive. Closing it.");
+          
         await this.removeClient(session.id);
         session.socket.terminate();
       }
 
       session.active = false;
       session.socket.ping(() => {});
-    }
+    });
 
     if (!USE_DEBUGGER) return;
 

@@ -17,7 +17,7 @@ class Server {
   }
 
   async setup() {
-    const server = http.createServer(app);
+    const server = http.createServer(this.app);
     const sockets = new ws.Server({ clientTracking: false, noServer: true });
 
     server.on("upgrade", (request, socket, head) => {
@@ -28,18 +28,18 @@ class Server {
 
     let hub = new Hub(sockets);
 
-    app.use(express.json());
-    app.use(express.urlencoded({ extended: true }));
-    app.use(express.static("public"));
+    this.app.use(express.json());
+    this.app.use(express.urlencoded({ extended: true }));
+    this.app.use(express.static("public"));
 
-    app.use("/api/room", require("./routes/room.route"));
-    app.use("/api/preview", require("./routes/preview.route"));
-    app.use("/api/templates", require("./routes/templates.route"));
+    this.app.use("/api/room", require("./routes/room.route"));
+    this.app.use("/api/preview", require("./routes/preview.route"));
+    this.app.use("/api/templates", require("./routes/templates.route"));
 
     // Set all other undefined routes to throw an error
-    app.get("*", (req, res, next) => next(new StatusError("Not found", 404)));
+    this.app.get("*", (req, res, next) => next(new StatusError("Not found", 404)));
 
-    app.use((error, req, res, next) => {
+    this.app.use((error, req, res, next) => {
       if (!error.status) error.status = 500;
 
       // Don't return actual error message to client for internal server errors
@@ -53,7 +53,7 @@ class Server {
       return res.status(error.status).json({ message: error.message ?? "Unknown error" });
     });
 
-    server.listen(port, () => console.log("Listening on localhost:" + port));
+    server.listen(this.port, () => console.log("Listening on localhost:" + this.port));
   }
 }
 

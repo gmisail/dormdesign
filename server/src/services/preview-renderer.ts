@@ -1,15 +1,40 @@
-const { createCanvas } = require("canvas");
+import canvas, { CanvasRenderingContext2D } from 'canvas';
+
+type Point = {
+  x: number,
+  y: number
+}
+
+type BoundingBox = {
+  w: number,
+  h: number,
+  x: number,
+  y: number
+}
+
+type ItemData = {
+  visibleInEditor: boolean,
+  dimensions: { width: number, height: number, length: number },
+  editorPosition: { x: number, y: number },
+  editorZIndex: number,
+  editorRotation: number
+}
+
+type RoomData = {
+  vertices: Array<Point>,
+  items: Array<ItemData>
+}
 
 class PreviewRenderer {
-  public SIZE: any;
-  public PADDING: any;
-  public MAX_DRAWN_CELLS: any;
-  public ITEM_COLORS: any;
-  public canvas: any;
-  public ctx: any;
-  public SCALE: any;
-  public vertices: any;
-  public items: any;
+  private SIZE: number;
+  private PADDING: number;
+  private MAX_DRAWN_CELLS: number;
+  private SCALE: number;
+
+  private ITEM_COLORS: Array<string>;
+
+  private canvas: canvas.Canvas;
+  private ctx: CanvasRenderingContext2D;
 
   constructor() {
     /**
@@ -48,7 +73,7 @@ class PreviewRenderer {
      * Set up one instance of canvas that be used for rendering the previews. Re-using
      * one canvas instance is better than creating them over and over again.
      */
-    this.canvas = createCanvas(200, 200);
+    this.canvas = canvas.createCanvas(200, 200);
     this.ctx = this.canvas.getContext("2d");
   }
 
@@ -57,7 +82,7 @@ class PreviewRenderer {
    * @param { array<{ x: Number, y: Number }>} points
    * @returns { w, h, x, y }
    */
-  getBoundingBox(points, items?) {
+  getBoundingBox(points: Array<Point>, items?): BoundingBox {
     if (points === undefined || points.length == 0) return { w: 0, h: 0, x: 0, y: 0 };
 
     let min = { x: Infinity, y: Infinity };
@@ -73,7 +98,7 @@ class PreviewRenderer {
 
     /* TODO (maybe?): We also might want to consider item positions when calculating the bbox. */
 
-    const bbox = {
+    const bbox: BoundingBox = {
       w: max.x - min.x,
       h: max.y - min.y,
       x: min.x,
@@ -100,7 +125,7 @@ class PreviewRenderer {
    * Draws a grid of square cells across the entire bbox
    * @param {*} bbox
    */
-  drawGrid(bbox) {
+  drawGrid(bbox: BoundingBox): void {
     const preferredCellSize = 1;
     /*
       Set maximum number of allowed cells (per each dimension not total) to avoid too many lines being drawn (ugly and computationally expensive).
@@ -145,7 +170,7 @@ class PreviewRenderer {
    * @param {*} points
    * @param {*} boundingBox
    */
-  drawBoundaries(points, boundingBox) {
+  drawBoundaries(points: Array<Point>, boundingBox: BoundingBox): void {
     this.ctx.beginPath();
 
     let xOffset = 0;
@@ -167,8 +192,8 @@ class PreviewRenderer {
     this.ctx.closePath();
     this.ctx.strokeStyle = "#111";
     this.ctx.lineWidth = 3;
-    this.ctx.lineJoin = "butt";
-    this.ctx.lineCap = "butt";
+   // this.ctx.lineJoin = "butt";
+   // this.ctx.lineCap = "butt";
 
     this.ctx.stroke();
   }
@@ -178,7 +203,7 @@ class PreviewRenderer {
    * @param { array } items
    * @param { w, h, x, y } boundingBox
    */
-  drawItems(items, boundingBox) {
+  drawItems(items: Array<ItemData>, boundingBox: BoundingBox) {
     // borrowed from frontend
     this.ctx.globalAlpha = 0.6;
 
@@ -188,18 +213,12 @@ class PreviewRenderer {
     let yOffset = 0;
     if (boundingBox.y != 0) yOffset = boundingBox.y * -1;
 
-    for (let i in items) {
+    for (let i = 0; i < items.length - 1; i++) {
       const item = items[i];
 
       if (item.visibleInEditor) {
-        const width =
-          item.dimensions === undefined || item.dimensions.width == null
-            ? 1
-            : item.dimensions.width;
-        const length =
-          item.dimensions === undefined || item.dimensions.length == null
-            ? 1
-            : item.dimensions.length;
+        const width = 1 ?? item.dimensions.width;
+        const length = 1 ?? item.dimensions.length;
 
         this.ctx.fillStyle = this.ITEM_COLORS[i % this.ITEM_COLORS.length];
 
@@ -229,7 +248,7 @@ class PreviewRenderer {
    * Generate a preview of the provided room data
    * @param { { vertices: [{x: Number, y: Number}], items: [] } } roomData
    */
-  generatePreview(roomData) {
+  generatePreview(roomData: RoomData): string {
     let { vertices, items } = roomData;
 
     let boundaryBox = this.getBoundingBox(vertices);
