@@ -359,8 +359,6 @@ class Hub {
     // Get all usernames in the room
     const users = this.getRoomUsernames(roomID);
 
-    console.log(users);
-
     this.sendToRoom(session.id, sendResponse, {
       event: "nicknamesUpdated",
       data: { users },

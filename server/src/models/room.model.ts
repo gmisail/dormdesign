@@ -1,5 +1,6 @@
 // const rethinkdb = require("rethinkdb");
-const Database = require("../db");
+import { Database } from "../db";
+
 const { v4: uuidv4 } = require("uuid");
 const Cache = require("../cache");
 const { client } = require("../cache");
@@ -61,7 +62,7 @@ Room.create = async function (name, templateId) {
   }
 
   try {
-    await Database.client.db("dd_data").collection("rooms").insertOne(room);
+    await Database.getConnection().db("dd_data").collection("rooms").insertOne(room);
   } catch (err) {
     throw new Error("Failed to create room: " + err);
   }
@@ -82,7 +83,7 @@ Room.create = async function (name, templateId) {
  */
 Room.delete = async function (id) {
   try {
-    await Database.client.db("dd_data").collection("rooms").deleteOne({ _id: id });
+    await Database.getConnection().db("dd_data").collection("rooms").deleteOne({ _id: id });
     if (DEBUG_MESSAGES) console.log(`Room ${id} has been deleted from the database`);
   } catch (err) {
     throw new Error(`Failed to delete room ${id} ` + err);
@@ -119,7 +120,7 @@ Room.get = async function (id, idKey = "_id") {
   /* Since it is not cached, retrieve it from the database */
   let room;
   try {
-    room = await Database.client.db("dd_data").collection("rooms").findOne(filter);
+    room = await Database.getConnection().db("dd_data").collection("rooms").findOne(filter);
   } catch (err) {
     throw new Error(`Failed to get room with id '${id}'.` + err);
   }
@@ -167,7 +168,7 @@ Room.getFromTemplateId = async function (templateId) {
 Room.getFeatured = async function () {
   let rooms;
   try {
-    const cursor = await Database.client
+    const cursor = await Database.getConnection()
       .db("dd_data")
       .collection("rooms")
       .find({ "metaData.featured": true });
@@ -397,7 +398,7 @@ Room.Cache.save = async function (id) {
   }
 
   try {
-    await Database.client.db("dd_data").collection("rooms").replaceOne({ _id: id }, room);
+    await Database.getConnection().db("dd_data").collection("rooms").replaceOne({ _id: id }, room);
   } catch (err) {
     throw new Error(`Failed to save room ${id} from cache to db: ` + err);
   }

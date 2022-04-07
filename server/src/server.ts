@@ -1,11 +1,9 @@
+import { Database } from './db';
 import { Hub } from "./hub";
 import { StatusError } from "./errors/status.error";
 import express from "express";
+import http from 'http';
 import ws from "ws";
-
-const http = require("http");
-
-const database = require("./db");
 
 class Server {
   app: express.Application;
@@ -24,7 +22,7 @@ class Server {
       sockets.handleUpgrade(request, socket, head, (ws) => sockets.emit("connection", ws, request));
     });
 
-    await database.setup();
+    await Database.connect();
 
     let hub = new Hub(sockets);
 
