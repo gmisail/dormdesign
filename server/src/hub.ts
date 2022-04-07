@@ -6,6 +6,10 @@ import querystring from "querystring";
 import { v4 as uuidv4 } from "uuid";
 import ws from "ws";
 
+/**
+ * TODO: convert instances of socket to session
+ */
+
 const Room = require("./models/room.model");
 
 const DEBUG_MESSAGES = Boolean(process.env.DEBUG_MESSAGES ?? "false");
@@ -252,86 +256,86 @@ class Hub {
     });
   }
 
-  async addItem({ socket, roomID, data, sendResponse }: EventMessage) {
+  async addItem({ session, roomID, data, sendResponse }: EventMessage) {
     if (data === undefined) throw new StatusError("Item data is undefined", 400);
 
     const item = await Room.Cache.addItem(roomID, data);
 
-    this.sendToRoom(socket.id, sendResponse, {
+    this.sendToRoom(session.id, sendResponse, {
       event: "itemAdded",
       data: item,
     });
   }
 
-  async updateItems({ socket, roomID, data, sendResponse }: EventMessage) {
+  async updateItems({ session, roomID, data, sendResponse }: EventMessage) {
     if (data?.items === undefined) throw new StatusError("Array 'items' is undefined", 400);
 
     await Room.Cache.updateItems(roomID, data.items);
 
-    this.sendToRoom(socket.id, sendResponse, {
+    this.sendToRoom(session.id, sendResponse, {
       event: "itemsUpdated",
       data,
     });
   }
 
-  async deleteItem({ socket, roomID, data, sendResponse }: EventMessage) {
+  async deleteItem({ session, roomID, data, sendResponse }: EventMessage) {
     if (data?.id === undefined) throw new StatusError("Item ID is undefined", 400);
 
     try {
       await Room.Cache.removeItem(roomID, data.id);
     } catch (error) {
-      this.sendError(socket.id, "deleteItem", error.message);
+      this.sendError(session.id, "deleteItem", error.message);
       return;
     }
 
-    this.sendToRoom(socket.id, sendResponse, {
+    this.sendToRoom(session.id, sendResponse, {
       event: "itemDeleted",
       data,
     });
   }
 
-  async updateLayout({ socket, roomID, data, sendResponse }: EventMessage) {
+  async updateLayout({ session, roomID, data, sendResponse }: EventMessage) {
     if (data?.vertices === undefined || data.vertices.length === 0)
       throw new StatusError("'vertices' array is empty or undefined", 400);
 
     await Room.Cache.updateVertices(roomID, data.vertices);
 
-    this.sendToRoom(socket.id, sendResponse, {
+    this.sendToRoom(session.id, sendResponse, {
       event: "layoutUpdated",
       data,
     });
   }
 
-  async cloneRoom({ socket, roomID, data, sendResponse }: EventMessage) {
+  async cloneRoom({ session, roomID, data, sendResponse }: EventMessage) {
     if (data?.templateId === undefined) throw new StatusError("'templateId' is undefined", 400);
 
     const templateId = data.templateId;
 
     await Room.Cache.copyFrom(roomID, templateId);
 
-    this.sendToRoom(socket.id, sendResponse, {
+    this.sendToRoom(session.id, sendResponse, {
       event: "roomCloned",
       data,
     });
   }
 
-  async updateRoomName({ socket, roomID, data, sendResponse }: EventMessage) {
+  async updateRoomName({ session, roomID, data, sendResponse }: EventMessage) {
     if (data === undefined || data.name === undefined || data.name.length <= 0)
       throw new StatusError("'name' string is empty or undefined", 400);
 
     let name = data.name.trim().substring(0, Math.min(Room.MAX_NAME_LENGTH, data.name.length));
     await Room.Cache.updateData(roomID, { name: name });
 
-    this.sendToRoom(socket.id, sendResponse, {
+    this.sendToRoom(session.id, sendResponse, {
       event: "roomNameUpdated",
       data,
     });
   }
 
-  async deleteRoom({ socket, roomID, sendResponse }: EventMessage) {
+  async deleteRoom({ session, roomID, sendResponse }: EventMessage) {
     Room.delete(roomID);
 
-    this.sendToRoom(socket.id, sendResponse, {
+    this.sendToRoom(session.id, sendResponse, {
       event: "roomDeleted",
       data: {},
     });
