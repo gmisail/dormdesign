@@ -1,29 +1,29 @@
-import canvas, { CanvasRenderingContext2D } from 'canvas';
+import canvas, { CanvasRenderingContext2D } from "canvas";
 
 type Point = {
-  x: number,
-  y: number
-}
+  x: number;
+  y: number;
+};
 
 type BoundingBox = {
-  w: number,
-  h: number,
-  x: number,
-  y: number
-}
+  w: number;
+  h: number;
+  x: number;
+  y: number;
+};
 
 type ItemData = {
-  visibleInEditor: boolean,
-  dimensions: { width: number, height: number, length: number },
-  editorPosition: { x: number, y: number },
-  editorZIndex: number,
-  editorRotation: number
-}
+  visibleInEditor: boolean;
+  dimensions: { width: number; height: number; length: number };
+  editorPosition: { x: number; y: number };
+  editorZIndex: number;
+  editorRotation: number;
+};
 
 type RoomData = {
-  vertices: Array<Point>,
-  items: Array<ItemData>
-}
+  vertices: Array<Point>;
+  items: Array<ItemData>;
+};
 
 class PreviewRenderer {
   private SIZE: number;
@@ -192,8 +192,8 @@ class PreviewRenderer {
     this.ctx.closePath();
     this.ctx.strokeStyle = "#111";
     this.ctx.lineWidth = 3;
-   // this.ctx.lineJoin = "butt";
-   // this.ctx.lineCap = "butt";
+    // this.ctx.lineJoin = "butt";
+    // this.ctx.lineCap = "butt";
 
     this.ctx.stroke();
   }

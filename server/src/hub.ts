@@ -42,20 +42,24 @@ class Hub {
     this.connections = new Map<string, UserSession>();
     this.rooms = new Map<string, Set<string>>();
 
-    console.log("Initializing socket hub...")
+    console.log("Initializing socket hub...");
 
     /**
       Setup event callback for socket events. Note how they're encapsulated within a lambda function;
       this allows the callback to access the rest of the class (otherwise, `this` will be incorrect!)
     */
-    this.addEventListener("addItem",        async (args: EventMessage) => this.addItem(args));
-    this.addEventListener("updateItems",    async (args: EventMessage) => this.updateItems(args));
-    this.addEventListener("deleteItem",     async (args: EventMessage) => this.deleteItem(args));
-    this.addEventListener("updateLayout",   async (args: EventMessage) => this.updateLayout(args));
-    this.addEventListener("cloneRoom",      async (args: EventMessage) => this.cloneRoom(args));
-    this.addEventListener("deleteRoom",     async (args: EventMessage) => this.deleteRoom(args));
-    this.addEventListener("updateRoomName", async (args: EventMessage) => this.updateRoomName(args));
-    this.addEventListener("updateNickname", async (args: EventMessage) => this.updateNickname(args));
+    this.addEventListener("addItem", async (args: EventMessage) => this.addItem(args));
+    this.addEventListener("updateItems", async (args: EventMessage) => this.updateItems(args));
+    this.addEventListener("deleteItem", async (args: EventMessage) => this.deleteItem(args));
+    this.addEventListener("updateLayout", async (args: EventMessage) => this.updateLayout(args));
+    this.addEventListener("cloneRoom", async (args: EventMessage) => this.cloneRoom(args));
+    this.addEventListener("deleteRoom", async (args: EventMessage) => this.deleteRoom(args));
+    this.addEventListener("updateRoomName", async (args: EventMessage) =>
+      this.updateRoomName(args)
+    );
+    this.addEventListener("updateNickname", async (args: EventMessage) =>
+      this.updateNickname(args)
+    );
 
     this.sockets = sockets;
     this.sockets.on("connection", async (socket, request) => this.onConnection(socket, request));
@@ -339,9 +343,9 @@ class Hub {
   */
   async updateNickname({ session, roomID, data, sendResponse }: EventMessage) {
     if (data === undefined || data.userName === undefined || data.userName.length <= 0)
-      throw new StatusError("'userName' string is empty or undefined", 400);    
+      throw new StatusError("'userName' string is empty or undefined", 400);
 
-    console.log(roomID, JSON.stringify(data), sendResponse)
+    console.log(roomID, JSON.stringify(data), sendResponse);
 
     // Update socket's username
     session.userName = data.userName
@@ -351,7 +355,7 @@ class Hub {
     // Get all usernames in the room
     const users = this.getRoomUsernames(roomID);
 
-    console.log(users)
+    console.log(users);
 
     this.sendToRoom(session.id, sendResponse, {
       event: "nicknamesUpdated",
@@ -367,9 +371,8 @@ class Hub {
         - terminate the socket connection
       */
       if (!session.active) {
-        if (DEBUG_MESSAGES) 
-          console.log("Connection " + session.id + " inactive. Closing it.");
-          
+        if (DEBUG_MESSAGES) console.log("Connection " + session.id + " inactive. Closing it.");
+
         await this.removeClient(session.id);
         session.socket.terminate();
       }
