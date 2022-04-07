@@ -27,19 +27,19 @@ class Database {
 
     try {
       /**
-      * Add additional indices to the rooms collection. Indices make it more efficient to
-      * query collections based on the tracked fields (in this case 'templateId').
-      *
-      * Note that it's safe to call on every setup since Mongodb will just ignore it if the
-      * indices already exist
-      */
+       * Add additional indices to the rooms collection. Indices make it more efficient to
+       * query collections based on the tracked fields (in this case 'templateId').
+       *
+       * Note that it's safe to call on every setup since Mongodb will just ignore it if the
+       * indices already exist
+       */
       await client.db("dd_data").collection("rooms").createIndex({ templateId: 1 });
 
       /**
-      * For the 'featured' property, we can use a partial index, which is even more efficient
-      * since it only includes items in the index that satisfy the filter expression (which is
-      * 'featured' == true in this case)
-      */
+       * For the 'featured' property, we can use a partial index, which is even more efficient
+       * since it only includes items in the index that satisfy the filter expression (which is
+       * 'featured' == true in this case)
+       */
       await client
         .db("dd_data")
         .collection("rooms")

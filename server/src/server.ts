@@ -1,8 +1,8 @@
-import { Database } from './db';
+import { Database } from "./db";
 import { Hub } from "./hub";
 import { StatusError } from "./errors/status.error";
 import express from "express";
-import http from 'http';
+import http from "http";
 import ws from "ws";
 
 class Server {
