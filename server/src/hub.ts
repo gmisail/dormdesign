@@ -1,8 +1,6 @@
 import { EventEmitter } from "stream";
 import { StatusError } from "./errors/status.error";
 import chalk from "chalk";
-import express from "express";
-import querystring from "querystring";
 import { v4 as uuidv4 } from "uuid";
 import ws from "ws";
 

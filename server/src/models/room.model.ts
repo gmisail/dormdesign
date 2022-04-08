@@ -1,9 +1,9 @@
 // const rethinkdb = require("rethinkdb");
 import { Database } from "../db";
+import { Cache } from '../cache';
 
 const { v4: uuidv4 } = require("uuid");
-const Cache = require("../cache");
-const { client } = require("../cache");
+
 const Item = require("./item.model");
 
 const { updateRoomDataSchema } = require("../schemas/room.schema");
@@ -89,7 +89,7 @@ Room.delete = async function (id) {
     throw new Error(`Failed to delete room ${id} ` + err);
   }
 
-  await Cache.client.del(id);
+  await Cache.getClient().del(id);
 
   if (DEBUG_MESSAGES) console.log(`Room ${id} has been removed from the cache.`);
 };
@@ -106,7 +106,7 @@ Room.get = async function (id, idKey = "_id") {
   /* First check if room is in the cache, which we can only do here if the room is being fetched using its id. Otherwise
   we will do this check after we've queried the database and have the room ID */
   if (idKey === "_id") {
-    let cachedRoom = await client.get(id);
+    let cachedRoom = await Cache.getClient().get(id);
     if (cachedRoom !== null) {
       // Commented this deubg message since it gets spammed a lot. But it's sometimes useful
       // if (DEBUG_MESSAGES) console.log(`Get on cachedRoom ${id} used cached data.`);
@@ -137,7 +137,7 @@ Room.get = async function (id, idKey = "_id") {
   /* In the case where the room has been fetched using something other than the room id, we can now check the cache
   for the most up to date version (since we now know the room ID) */
   if (idKey !== "_id") {
-    let cachedRoom = await client.get(room.id);
+    let cachedRoom = await Cache.getClient().get(room.id);
     if (cachedRoom !== null) {
       // Commented this deubg message since it gets spammed a lot. But it's sometimes useful
       // if (DEBUG_MESSAGES) console.log(`Get on room ${cachedRoom.id} used cached data.`);
@@ -203,7 +203,7 @@ Room.Cache = {};
  */
 Room.Cache.exists = async function (id) {
   // Returns the number of matches found (in this case either 1 or 0)
-  const res = await Cache.client.exists(id);
+  const res = await Cache.getClient().exists(id);
 
   return res === 1;
 };
@@ -215,13 +215,13 @@ Room.Cache.exists = async function (id) {
  * @throws If the room under `id` already exists in the cache or if fetching the room from the DB fails.
  */
 Room.Cache.add = async function (id) {
-  const exists = await Cache.client.exists(id);
+  const exists = await Cache.getClient().exists(id);
   if (exists) {
     throw new Error("Room with given id already exists in the cache");
   }
   const room = await Room.get(id);
 
-  const res = await Cache.client.set(id, JSON.stringify(room));
+  const res = await Cache.getClient().set(id, JSON.stringify(room));
   if (res === "OK" && DEBUG_MESSAGES) {
     console.log(`Added room ${id} to the cache.`);
   }
@@ -234,7 +234,7 @@ Room.Cache.add = async function (id) {
  */
 Room.Cache.remove = async function (id) {
   // del is the number of keys the cache removed
-  const del = await Cache.client.del(id);
+  const del = await Cache.getClient().del(id);
   return del > 0;
 };
 
@@ -252,7 +252,7 @@ Room.Cache.copyFrom = async function (id, templateId) {
   room.data = templateRoom.data;
 
   room.metaData.lastModified = Date.now();
-  await Cache.client.set(id, JSON.stringify(room));
+  await Cache.getClient().set(id, JSON.stringify(room));
 
   return room;
 };
@@ -272,7 +272,7 @@ Room.Cache.updateData = async function (id, update) {
   Object.assign(room.data, update);
 
   room.metaData.lastModified = Date.now();
-  await Cache.client.set(id, JSON.stringify(room));
+  await Cache.getClient().set(id, JSON.stringify(room));
 };
 
 /**
@@ -312,7 +312,7 @@ Room.Cache.addItem = async function (id, item) {
   items.push(newItem);
 
   room.metaData.lastModified = Date.now();
-  await Cache.client.set(id, JSON.stringify(room));
+  await Cache.getClient().set(id, JSON.stringify(room));
 
   return newItem;
 };
@@ -328,7 +328,7 @@ Room.Cache.clearItems = async function (id) {
   room.data.items = [];
 
   room.metaData.lastModified = Date.now();
-  await Cache.client.set(id, JSON.stringify(room));
+  await Cache.getClient().set(id, JSON.stringify(room));
 };
 
 /**
@@ -343,7 +343,7 @@ Room.Cache.removeItem = async function (id, itemId) {
   room.data.items = room.data.items.filter((item) => item.id !== itemId);
 
   room.metaData.lastModified = Date.now();
-  await Cache.client.set(id, JSON.stringify(room));
+  await Cache.getClient().set(id, JSON.stringify(room));
 };
 
 /**
@@ -370,7 +370,7 @@ Room.Cache.updateItems = async function (id, updates) {
   }
 
   room.metaData.lastModified = Date.now();
-  Cache.client.set(id, JSON.stringify(room));
+  Cache.getClient().set(id, JSON.stringify(room));
 };
 
 /** Updates the database with the content that is currently in the cache.
@@ -379,7 +379,7 @@ Room.Cache.updateItems = async function (id, updates) {
  * @throws When there's an error updating the room in the cache to the room in the database
  */
 Room.Cache.save = async function (id) {
-  let room = await client.get(id);
+  let room = await Cache.getClient().get(id);
   if (room !== null) {
     room = JSON.parse(room);
   } else {

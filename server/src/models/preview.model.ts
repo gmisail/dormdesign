@@ -1,4 +1,4 @@
-const { client } = require("../cache");
+import { Cache } from '../cache';
 const PreviewRenderer = require("../services/preview-renderer");
 
 let Preview = {};
@@ -15,7 +15,7 @@ Preview.get = async function (room) {
 
   let preview;
   try {
-    preview = JSON.parse(await client.get(`${id}:preview`));
+    preview = JSON.parse(await Cache.getClient().get(`${id}:preview`));
   } catch (err) {
     throw new Error("Failed to parse preview data stored in cache. " + err);
   }
@@ -28,7 +28,7 @@ Preview.get = async function (room) {
       data: PreviewRenderer.generatePreview(room.data),
     };
 
-    await client.set(`${id}:preview`, JSON.stringify(preview), "EX", Preview.CACHE_EXPIRATION);
+    await Cache.getClient().set(`${id}:preview`, JSON.stringify(preview), "EX", Preview.CACHE_EXPIRATION);
   }
 
   return preview;

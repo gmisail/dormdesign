@@ -1,4 +1,5 @@
 import { Database } from "./db";
+import { Cache } from "./cache";
 import { Hub } from "./hub";
 import { StatusError } from "./errors/status.error";
 import express from "express";
@@ -22,6 +23,7 @@ class Server {
       sockets.handleUpgrade(request, socket, head, (ws) => sockets.emit("connection", ws, request));
     });
 
+    await Cache.connect();
     await Database.connect();
 
     let hub = new Hub(sockets);
