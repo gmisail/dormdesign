@@ -213,7 +213,7 @@ class PreviewRenderer {
     let yOffset = 0;
     if (boundingBox.y != 0) yOffset = boundingBox.y * -1;
 
-    for (let i = 0; i < items.length; i++) {
+    for (let i = 0; i < items.length - 1; i++) {
       const item = items[i];
 
       if (item.visibleInEditor) {
