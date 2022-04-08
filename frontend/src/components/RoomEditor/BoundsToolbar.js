@@ -21,7 +21,7 @@ export default function BoundsToolbar({
     if (value.length !== 0) {
       value = parseFloat(value);
       // Prevent really big/small values
-      value = Math.min(Math.max(value, -500), 500);
+      value = Math.min(Math.max(value, -50), 50);
       const editedPoint = new Vector2(xValue, yValue);
       if (name === "xValue") {
         editedPoint.x = value;

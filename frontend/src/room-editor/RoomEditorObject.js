@@ -22,7 +22,7 @@ class RoomEditorObject extends SceneObject {
       outsideBoundaryColor,
       onObjectsUpdated,
       onObjectSelected,
-      onBoundsUpdated,
+      onBoundsMoved,
       onBoundaryPointSelected,
       textColor,
       fontFamily,
@@ -65,7 +65,7 @@ class RoomEditorObject extends SceneObject {
       color: boundaryColor ?? "#555",
       edgeWidth: boundaryWidth ?? 0.07,
       onPointSelected: onBoundaryPointSelected,
-      onPointsUpdated: onBoundsUpdated,
+      onPointsMoved: onBoundsMoved,
     });
     this.addChild(this.bounds);
 
@@ -98,7 +98,7 @@ class RoomEditorObject extends SceneObject {
   setScale(scale) {
     const limitMinX = this.scene.canvas.width / this.size.x;
     const limitMinY = this.scene.canvas.height / this.size.y;
-    const min = 30;
+    const min = 25;
     const max = 200;
 
     this.scale = new Vector2(

@@ -1,8 +1,8 @@
 const Joi = require("joi");
 
 const vertexSchema = Joi.object({
-  x: Joi.number().precision(4).default(0),
-  y: Joi.number().precision(4).default(0),
+  x: Joi.number().precision(4).default(0).min(-50).max(50),
+  y: Joi.number().precision(4).default(0).min(-50).max(50),
 });
 
 // This shouldn't include the items array. Items should be updated separately.

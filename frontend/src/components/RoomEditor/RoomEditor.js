@@ -84,7 +84,7 @@ function RoomEditor() {
       backgroundColor: "#fff",
       onObjectsUpdated: itemsUpdatedInEditor,
       onObjectSelected: itemSelectedInEditor,
-      onBoundsUpdated: onBoundsUpdated,
+      onBoundsMoved: onBoundsMoved,
       onBoundaryPointSelected: onBoundaryPointSelected,
       selectedObjectID: undefined,
       fontFamily: "Source Sans Pro",
@@ -227,7 +227,7 @@ function RoomEditor() {
     room.current.bounds.deletePointAtIndex(room.current.bounds.selectedPointIndex);
   };
 
-  const onBoundsUpdated = (points) => {
+  const onBoundsMoved = (points) => {
     const selectedPointIndex = room.current.bounds.selectedPointIndex;
     if (selectedPointIndex !== null) {
       const selectedPoint = points[selectedPointIndex];

@@ -7,7 +7,7 @@ class RoomBoundsObject extends SceneObject {
   constructor(props) {
     super(props);
 
-    const { points, color, edgeWidth, editingColor, onPointSelected, onPointsUpdated } = props;
+    const { points, color, edgeWidth, editingColor, onPointSelected, onPointsMoved } = props;
 
     this.color = color ?? "#555";
     this.edgeWidth = edgeWidth ?? 0.07;
@@ -20,29 +20,28 @@ class RoomBoundsObject extends SceneObject {
     this._hoverPointIndex = null;
     this._movingPoint = false;
 
-    this._points = [];
+    this._points = points;
     this._offsetPoints = [];
     this.points = points;
 
     this._edgeLengths = [];
     this._edgeLengthPositions = [];
-    this.edgeLengthDistance = 0.7;
+    this.edgeLengthDistance = 0.6;
     this.edgeLengths = true;
-    // Both scale and font size will affect the drawn size, but since font size can't go lower than 1px on some browsers
-    // it's best to adjust scale if you want to change how large the font is drawn
-    this.edgeLengthFontSize = 1;
-    this.edgeLengthScale = 0.4;
-    this.edgeLengthFontStyle = `bold ${this.edgeLengthFontSize}px "Source Sans Pro", sans-serif`;
+    this.edgeLengthFontScale = 0.4;
 
-    this.onPointsUpdated = onPointsUpdated ?? (() => {});
+    /**
+     * Called when the positions of one or more points is updated by mouse movement (e.g. dragging) inside the editor
+     */
+    this.onPointsMoved = onPointsMoved ?? (() => {});
     this.onPointSelected = onPointSelected ?? (() => {});
     this.selectedPointIndex = null;
 
     this.mouseController = new MouseController({
       watchedElement: this.scene.canvas,
-      onMouseDown: this.onMouseDown.bind(this),
-      onMouseMove: this.onMouseMove.bind(this),
-      onMouseUp: this.onMouseUp.bind(this),
+      onMouseDown: this._onMouseDown.bind(this),
+      onMouseMove: this._onMouseMove.bind(this),
+      onMouseUp: this._onMouseUp.bind(this),
     });
   }
 
@@ -74,10 +73,7 @@ class RoomBoundsObject extends SceneObject {
     }
 
     this._points = copied;
-    this._offsetPoints = [];
-
-    this._calculateOffsetPoints();
-    this._calculateEdgeLengths();
+    this._onPointsUpdated();
   }
   get points() {
     const copied = [];
@@ -89,7 +85,7 @@ class RoomBoundsObject extends SceneObject {
 
   setPointAtIndex(index, value) {
     this._points[index] = new Vector2(value.x, value.y);
-    this._calculateOffsetPoints();
+    this._onPointsUpdated();
   }
 
   getPointAtIndex(index) {
@@ -111,6 +107,74 @@ class RoomBoundsObject extends SceneObject {
     if (index === this.selectedPointIndex) {
       this.selectPointAtIndex(null);
     }
+
+    // Pass calcOffset=false since we already filtered out the deleted point from offsetPoints meaning there's no need
+    // to recalc offsetPoints
+    this._onPointsUpdated(false);
+  }
+
+  // Should be called internally when this._points is updated in any way (no need to call it for the public this.points array since
+  // it's already called by the setter function)
+  _onPointsUpdated(calcOffset = true) {
+    if (calcOffset) this._calculateOffsetPoints();
+    this._calculateEdgeLengths();
+  }
+
+  _onMouseDown(position) {
+    if (!this.editing) return;
+    const localMousePos = this.globalToLocalPoint(position);
+    // Check if point has been clicked on
+    for (let i = 0; i < this._points.length; i++) {
+      const size = this._pointSelectionSize;
+      const rect = this._getPointRect(this._points[i], size);
+      if (Collisions.pointInRect(localMousePos, rect)) {
+        this._movingPoint = true;
+        this.selectPointAtIndex(i);
+        return;
+      }
+    }
+    // Check if there's a valid new point that can be created from mouse position
+    if (this.selectedPointIndex === null) {
+      const newPoint = this._getNewPointLocation(localMousePos);
+      if (newPoint !== null) {
+        const newPoints = [];
+        for (let i = 0; i < this._points.length; i++) {
+          newPoints.push(this._points[i]);
+          if (i === newPoint[1] - 1) {
+            newPoints.push(newPoint[0]);
+          }
+        }
+        this.points = newPoints;
+        this.selectPointAtIndex(newPoint[1]);
+        return;
+      }
+    }
+
+    // Otherwise deselect any selected points
+    if (this.selectedPointIndex !== null) {
+      this.selectPointAtIndex(null);
+    }
+  }
+
+  _onMouseMove(delta) {
+    if (!this.editing) return;
+    // Click and drag on selected point to move it
+    if (this.selectedPointIndex !== null && this._movingPoint) {
+      const p = this._points[this.selectedPointIndex];
+      const globalPointPos = this.localToGlobalPoint(p);
+      globalPointPos.x += delta.x;
+      globalPointPos.y += delta.y;
+      const newPointPos = this.globalToLocalPoint(globalPointPos);
+      p.x = Number(newPointPos.x.toFixed(2));
+      p.y = Number(newPointPos.y.toFixed(2));
+
+      this._onPointsUpdated();
+      this.onPointsMoved(this.points);
+    }
+  }
+
+  _onMouseUp() {
+    this._movingPoint = false;
   }
 
   _calculateEdgeLengths() {
@@ -127,10 +191,11 @@ class RoomBoundsObject extends SceneObject {
 
       const norm = Vector2.normalized(new Vector2(dy, -dx));
       this._edgeLengthPositions.push(
-        // Multiply by 1/edgeLengthScale counter the scale that will be applied when the edge lengths are drawn
         new Vector2(
-          (p1.x + dx / 2 + norm.x * this.edgeLengthDistance) / this.edgeLengthScale,
-          (p1.y + dy / 2 + norm.y * this.edgeLengthDistance) / this.edgeLengthScale
+          // We multiply the x dimension of the offset a bit more since the text is usually significantly wider
+          // than it is tall. This solution makes the text offset distance look (nearly) the same for horizontal and vertical edges
+          p1.x + dx / 2 + norm.x * 1.6 * this.edgeLengthDistance,
+          p1.y + dy / 2 + norm.y * this.edgeLengthDistance
         )
       );
     }
@@ -188,64 +253,6 @@ class RoomBoundsObject extends SceneObject {
     }
     this._offsetPoints.pop();
     this._offsetPoints.pop();
-  }
-
-  onMouseDown(position) {
-    if (!this.editing) return;
-    const localMousePos = this.globalToLocalPoint(position);
-    // Check if point has been clicked on
-    for (let i = 0; i < this._points.length; i++) {
-      const size = this._pointSelectionSize;
-      const rect = this._getPointRect(this._points[i], size);
-      if (Collisions.pointInRect(localMousePos, rect)) {
-        this._movingPoint = true;
-        this.selectPointAtIndex(i);
-        return;
-      }
-    }
-    // Check if there's a valid new point that can be created from mouse position
-    if (this.selectedPointIndex === null) {
-      const newPoint = this._getNewPointLocation(localMousePos);
-      if (newPoint !== null) {
-        const newPoints = [];
-        for (let i = 0; i < this._points.length; i++) {
-          newPoints.push(this._points[i]);
-          if (i === newPoint[1] - 1) {
-            newPoints.push(newPoint[0]);
-          }
-        }
-        this.points = newPoints;
-        this.selectPointAtIndex(newPoint[1]);
-        return;
-      }
-    }
-
-    // Otherwise deselect any selected points
-    if (this.selectedPointIndex !== null) {
-      this.selectPointAtIndex(null);
-    }
-  }
-
-  onMouseMove(delta) {
-    if (!this.editing) return;
-    // Click and drag on selected point to move it
-    if (this.selectedPointIndex !== null && this._movingPoint) {
-      const p = this._points[this.selectedPointIndex];
-      const globalPointPos = this.localToGlobalPoint(p);
-      globalPointPos.x += delta.x;
-      globalPointPos.y += delta.y;
-      const newPointPos = this.globalToLocalPoint(globalPointPos);
-      p.x = Number(newPointPos.x.toFixed(2));
-      p.y = Number(newPointPos.y.toFixed(2));
-      this._calculateOffsetPoints();
-      this._calculateEdgeLengths();
-
-      this.onPointsUpdated(this.points);
-    }
-  }
-
-  onMouseUp() {
-    this._movingPoint = false;
   }
 
   _getPointRect(point, size) {
@@ -460,21 +467,36 @@ class RoomBoundsObject extends SceneObject {
 
     // Draw edge lengths (always draw when in edit mode)
     if (this.edgeLengths || this.editing) {
+      /*
+        Clear transform so we can draw things globally
+
+        We are drawing globally since text seems to behave incosistently across browsers
+        when scaled automatically using the context's transform
+      */
+      ctx.resetTransform();
+
       ctx.fillStyle = this.color;
       ctx.globalAlpha = 0.8;
-      ctx.font = this.edgeLengthFontStyle;
+      // Make sure font size scales correctly
+      ctx.font = `bold ${
+        1 * this.scale.x * this.parent.scale.x * this.edgeLengthFontScale
+      }px "Source Sans Pro", sans-serif`;
       ctx.textBaseline = "middle";
       ctx.textAlign = "center";
-      // Using scale here to control how large the drawn font is
-      // We can't just use ctx.font since the lowest that can be on some browsers is 1px
-      ctx.scale(this.edgeLengthScale, this.edgeLengthScale);
+
       for (let i = 0; i < this._edgeLengthPositions.length; i++) {
         const length = this._edgeLengths[i].toString();
-        const pos = this._edgeLengthPositions[i];
+        // Convert position from the local coordinate system to the global one
+        const pos = this.localToGlobalPoint(this._edgeLengthPositions[i]);
+        ctx.textBaseline = "middle";
         ctx.fillText(length + " ft", pos.x, pos.y);
+
+        ctx.strokeStyle = "red";
+        ctx.beginPath();
+        ctx.moveTo(pos.x - 3, pos.y + 0);
+        ctx.lineTo(pos.x + 3, pos.y + 0);
+        ctx.stroke();
       }
-      // Reset scale to what is was previously
-      ctx.scale(1 / this.edgeLengthScale, 1 / this.edgeLengthScale);
       ctx.globalAlpha = 1.0;
     }
   }

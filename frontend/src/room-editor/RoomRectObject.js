@@ -120,7 +120,7 @@ class RoomRectObject extends SceneObject {
     // Draw text on top of object - For some reason the context using the transformation matrix seems to draw the text differently on firefox and chrome resulting in it being offset. So its being drawn by manually scaling the necessary values.
     const globalPos = this.parent.localToGlobalPoint(this.position);
 
-    const fontSize = 0.325;
+    const fontSize = 0.325 * this.parent.scale.x * this.scale.x;
     const lineOffset = 0.2 * this.parent.scale.x * this.scale.x;
     this._setContextTextStyle(ctx, fontSize);
     const fitNameText = this._getEditedText(ctx, this.nameText);
@@ -132,9 +132,7 @@ class RoomRectObject extends SceneObject {
 
   // Takes font size and configures the context to draw text with these styles
   _setContextTextStyle(ctx, fontSize) {
-    ctx.font = `700 ${fontSize * this.parent.scale.x * this.scale.x}px ${
-      this.fontFamily
-    }, sans-serif`;
+    ctx.font = `700 ${fontSize}px ${this.fontFamily}, sans-serif`;
     ctx.textBaseline = "middle";
     ctx.textAlign = "center";
     ctx.fillStyle = this.textColor;
