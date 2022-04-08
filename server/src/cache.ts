@@ -1,4 +1,4 @@
-import Redis from 'ioredis';
+import Redis from "ioredis";
 
 class Cache {
   private static client: Redis;
@@ -9,10 +9,10 @@ class Cache {
 
   static async connect() {
     this.client = new Redis({
-        host: process.env.CACHE_ADDRESS,
-        password: process.env.REDIS_PASSWORD,
+      host: process.env.CACHE_ADDRESS,
+      password: process.env.REDIS_PASSWORD,
     });
-  
+
     /*
       Clear the cache upon server startup
 
@@ -26,7 +26,7 @@ class Cache {
       starts) but I'll leave it for now just in case
     */
     await this.client.flushall();
-    
+
     this.client.on("error", function (error) {
       console.error("Redis Error: " + error);
     });

@@ -1,4 +1,4 @@
-import { Cache } from '../cache';
+import { Cache } from "../cache";
 const PreviewRenderer = require("../services/preview-renderer");
 
 let Preview = {};
@@ -28,7 +28,12 @@ Preview.get = async function (room) {
       data: PreviewRenderer.generatePreview(room.data),
     };
 
-    await Cache.getClient().set(`${id}:preview`, JSON.stringify(preview), "EX", Preview.CACHE_EXPIRATION);
+    await Cache.getClient().set(
+      `${id}:preview`,
+      JSON.stringify(preview),
+      "EX",
+      Preview.CACHE_EXPIRATION
+    );
   }
 
   return preview;

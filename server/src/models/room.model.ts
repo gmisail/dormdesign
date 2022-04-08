@@ -1,6 +1,6 @@
 // const rethinkdb = require("rethinkdb");
 import { Database } from "../db";
-import { Cache } from '../cache';
+import { Cache } from "../cache";
 
 const { v4: uuidv4 } = require("uuid");
 
