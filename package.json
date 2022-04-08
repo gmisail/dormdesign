@@ -14,9 +14,9 @@
     "dev": "docker-compose --env-file ./.env -f docker-compose.dev.yml up --build",
     "clear-dev-data": "docker-compose -f docker-compose.dev.yml down && docker volume rm dd_database && rm -rf ./redis_data",
     "prepare": "husky install",
-    "migrate:up": "migrate-mongo up -f db-migrations/migrate-mongo-config.js",
-    "migrate:down": "migrate-mongo down -f db-migrations/migrate-mongo-config.js",
-    "migrate:status": "migrate-mongo status -f db-migrations/migrate-mongo-config.js"
+    "migrate:up": "migrate-mongo up -f migrate-mongo-config.js",
+    "migrate:down": "migrate-mongo down -f migrate-mongo-config.js",
+    "migrate:status": "migrate-mongo status -f migrate-mongo-config.js"
   },
   "lint-staged": {
     "server/*.{js,jsx,ts,tsx,json,css,scss,md}": [
