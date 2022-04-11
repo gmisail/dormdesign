@@ -1,7 +1,7 @@
 import { Cache } from "../cache";
 // const rethinkdb = require("rethinkdb");
 import { Database } from "../db";
-import Joi from 'joi';
+import Joi from "joi";
 
 const { v4: uuidv4 } = require("uuid");
 

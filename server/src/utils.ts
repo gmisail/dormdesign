@@ -1,4 +1,4 @@
-import Joi from 'joi';
+import Joi from "joi";
 
 /**
  * Validates the given object using the given Joi schema and returns the validated object. Throws a 400 error with Joi message if invalid.
