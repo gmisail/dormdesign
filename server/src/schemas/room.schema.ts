@@ -1,4 +1,4 @@
-const Joi = require("joi");
+import Joi from 'joi';
 
 const vertexSchema = Joi.object({
   x: Joi.number().precision(4).default(0),

@@ -6,7 +6,7 @@ let Room = require("../models/room.model");
 // See: https://github.com/Abazhenov/express-async-handler#readme
 const asyncHandler = require("express-async-handler");
 
-const Joi = require("joi");
+import Joi from 'joi';
 const { validateWithSchema } = require("../utils.js");
 
 const router = Router();

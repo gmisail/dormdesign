@@ -1,6 +1,7 @@
+import { Cache } from "../cache";
 // const rethinkdb = require("rethinkdb");
 import { Database } from "../db";
-import { Cache } from "../cache";
+import Joi from 'joi';
 
 const { v4: uuidv4 } = require("uuid");
 
@@ -8,7 +9,6 @@ const Item = require("./item.model");
 
 const { updateRoomDataSchema } = require("../schemas/room.schema");
 
-const Joi = require("joi");
 const { validateWithSchema } = require("../utils.js");
 
 const DEBUG_MESSAGES = Boolean(process.env.DEBUG_MESSAGES ?? "false");

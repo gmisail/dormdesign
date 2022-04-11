@@ -1,4 +1,4 @@
-const Joi = require("joi");
+import Joi from 'joi';
 
 const dimensionsSchema = Joi.object({
   width: Joi.number().allow(null).default(null).max(100).min(0),
