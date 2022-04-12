@@ -169,7 +169,9 @@ class ListItemForm extends Component {
               <Form.Control
                 name="widthInputValue"
                 type="number"
-                step="0.1"
+                step="0.001"
+                min={DormItemModel.MIN_DIMESNION_SIZE}
+                max={DormItemModel.MAX_DIMENSION_SIZE}
                 value={this.state.widthInputValue}
                 placeholder="Width"
                 onChange={this.handleInputChange}
@@ -180,7 +182,9 @@ class ListItemForm extends Component {
               <Form.Control
                 name="lengthInputValue"
                 type="number"
-                step="0.1"
+                step="0.001"
+                min={DormItemModel.MIN_DIMESNION_SIZE}
+                max={DormItemModel.MAX_DIMENSION_SIZE}
                 value={this.state.lengthInputValue}
                 placeholder="Length"
                 onChange={this.handleInputChange}
