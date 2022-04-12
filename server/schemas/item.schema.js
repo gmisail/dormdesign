@@ -1,9 +1,9 @@
 const Joi = require("joi");
 
 const dimensionsSchema = Joi.object({
-  width: Joi.number().allow(null).default(null).max(50).min(0),
-  height: Joi.number().allow(null).default(null).max(50).min(0),
-  length: Joi.number().allow(null).default(null).max(50).min(0),
+  width: Joi.number().precision(4).allow(null).default(null).max(100).min(0),
+  height: Joi.number().precision(4).allow(null).default(null).max(100).min(0),
+  length: Joi.number().precision(4).allow(null).default(null).max(100).min(0),
 });
 
 const editorPositionSchema = Joi.object({

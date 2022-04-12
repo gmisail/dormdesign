@@ -3,9 +3,9 @@ const Database = require("../db");
 const { v4: uuidv4 } = require("uuid");
 const Cache = require("../cache");
 const { client } = require("../cache");
-const Item = require("./item.model");
 
 const { updateRoomDataSchema } = require("../schemas/room.schema");
+const { createItemSchema, updateItemSchema } = require("../schemas/item.schema");
 
 const Joi = require("joi");
 const { validateWithSchema } = require("../utils.js");
@@ -13,7 +13,6 @@ const { validateWithSchema } = require("../utils.js");
 const DEBUG_MESSAGES = Boolean(process.env.DEBUG_MESSAGES ?? "false");
 
 let Room = {};
-Room.MAX_NAME_LENGTH = 40;
 Room.MAX_USERNAME_LENGTH = 30;
 
 /**
@@ -261,28 +260,20 @@ Room.Cache.copyFrom = async function (id, templateId) {
  * don't exist in the room data, the entire update fails.
  * @param { string } id The ID of the room to update
  * @param { JSON } update The update
- * @returns { Promise.<void> }
+ * @returns { Promise.<object> } Validated update that was applied
  * @throws When `update` contains a field that can't be updated in the room
  */
 Room.Cache.updateData = async function (id, update) {
   const room = await Room.get(id);
-  validateWithSchema(update, updateRoomDataSchema);
+  // Use the validated value (since sometiems it will sanitize the data rather than simply denying it)
+  const value = validateWithSchema(update, updateRoomDataSchema);
 
-  Object.assign(room.data, update);
+  Object.assign(room.data, value);
 
   room.metaData.lastModified = Date.now();
   await Cache.client.set(id, JSON.stringify(room));
-};
 
-/**
- * Update the vertices of a given room
- * @param { string } id
- * @param { array[{ x: number, y: number }] } vertices
- * @returns { Promise.<void> }
- * @throws An error if the update fails
- */
-Room.Cache.updateVertices = async function (id, vertices) {
-  await Room.Cache.updateData(id, { vertices });
+  return value;
 };
 
 /**
@@ -304,7 +295,8 @@ Room.Cache.updateName = async function (id, name) {
  * @throws When creating the item or adding it to the room fails
  */
 Room.Cache.addItem = async function (id, item) {
-  const newItem = Item.create(item);
+  let newItem = validateWithSchema(item, createItemSchema);
+  newItem.id = uuidv4();
   const room = await Room.get(id);
 
   let items = room.data.items;
@@ -350,26 +342,31 @@ Room.Cache.removeItem = async function (id, itemId) {
  * @param { string } id
  * @param { object } updates Object containg updates to items. Should be of the form
  * `[{ id, update }]`
- * @returns { Promise.<void> }
+ * @returns { Promise.<array> } Array of validated updates that were applied
  * @throws When there's an error getting the room or one of the updates fails
  */
 Room.Cache.updateItems = async function (id, updates) {
   let room = await Room.get(id);
 
-  let updateMap = {};
+  let updateIndices = {};
   for (let i = 0; i < updates.length; i++) {
-    updateMap[updates[i].id] = updates[i].updated;
+    updateIndices[updates[i].id] = i;
   }
   for (let i = 0; i < room.data.items.length; i++) {
     let item = room.data.items[i];
-    const update = updateMap[item.id];
-    if (update !== undefined) {
-      Item.update(item, update);
-    }
+    const index = updateIndices[item.id];
+    if (index === undefined) continue;
+    const update = validateWithSchema(updates[index].updated, updateItemSchema);
+    Object.assign(item, update);
+    // Replace original update in array with validated update
+    updates[index].updated = update;
   }
 
   room.metaData.lastModified = Date.now();
   Cache.client.set(id, JSON.stringify(room));
+
+  // Return validated updates
+  return updates;
 };
 
 /** Updates the database with the content that is currently in the cache.

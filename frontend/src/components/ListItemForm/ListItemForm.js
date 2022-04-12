@@ -36,7 +36,7 @@ class ListItemForm extends Component {
     // Limit values for inputs
     if (name === "qtyInputValue") {
       if (value.length !== 0) {
-        value = Math.min(100, Math.max(1, value));
+        value = Math.min(DormItemModel.MAX_QUANTITY, Math.max(1, value));
       }
     } else if (name === "nameInputValue") {
       value = value.substring(0, DormItemModel.MAX_NAME_LENGTH);
@@ -46,7 +46,10 @@ class ListItemForm extends Component {
 
     if (name === "widthInputValue" || name === "lengthInputValue") {
       if (value.length !== 0) {
-        value = Math.max(0, value);
+        value = Math.max(
+          DormItemModel.MIN_DIMESNION_SIZE,
+          Math.min(DormItemModel.MAX_DIMENSION_SIZE, value)
+        );
       }
     }
 
@@ -166,7 +169,7 @@ class ListItemForm extends Component {
               <Form.Control
                 name="widthInputValue"
                 type="number"
-                step="0.0001"
+                step="0.1"
                 value={this.state.widthInputValue}
                 placeholder="Width"
                 onChange={this.handleInputChange}
@@ -177,7 +180,7 @@ class ListItemForm extends Component {
               <Form.Control
                 name="lengthInputValue"
                 type="number"
-                step="0.0001"
+                step="0.1"
                 value={this.state.lengthInputValue}
                 placeholder="Length"
                 onChange={this.handleInputChange}

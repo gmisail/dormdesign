@@ -180,11 +180,13 @@ Hub.updateItems = async function ({ socket, roomID, data, sendResponse }) {
     throw err;
   }
 
-  await Room.Cache.updateItems(roomID, data.items);
+  const itemUpdates = await Room.Cache.updateItems(roomID, data.items);
 
   Hub.sendToRoom(socket.id, sendResponse, {
     event: "itemsUpdated",
-    data,
+    data: {
+      items: itemUpdates,
+    },
   });
 };
 
@@ -215,11 +217,13 @@ Hub.updateLayout = async function ({ socket, roomID, data, sendResponse }) {
     throw err;
   }
 
-  await Room.Cache.updateVertices(roomID, data.vertices);
+  const update = await Room.Cache.updateData(roomID, data);
 
   Hub.sendToRoom(socket.id, sendResponse, {
     event: "layoutUpdated",
-    data,
+    data: {
+      vertices: update.vertices,
+    },
   });
 };
 
@@ -235,7 +239,7 @@ Hub.cloneRoom = async function ({ socket, roomID, data, sendResponse }) {
 
   Hub.sendToRoom(socket.id, sendResponse, {
     event: "roomCloned",
-    data,
+    data: {},
   });
 };
 
@@ -246,12 +250,13 @@ Hub.updateRoomName = async function ({ socket, roomID, data, sendResponse }) {
     throw err;
   }
 
-  let name = data.name.trim().substring(0, Math.min(Room.MAX_NAME_LENGTH, data.name.length));
-  await Room.Cache.updateData(roomID, { name: name });
+  const update = await Room.Cache.updateData(roomID, { name: data.name.trim() });
 
   Hub.sendToRoom(socket.id, sendResponse, {
     event: "roomNameUpdated",
-    data,
+    data: {
+      name: update.name,
+    },
   });
 };
 

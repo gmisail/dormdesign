@@ -1,5 +1,4 @@
 const { Router } = require("express");
-let Item = require("../models/item.model");
 let Room = require("../models/room.model");
 
 // Need to wrap routes in this function in order for async execptions to be handled automatically
