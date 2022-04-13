@@ -11,10 +11,9 @@ import { StatusError } from "./errors/status.error";
 const validateWithSchema = (obj, schema) => {
   // stripUnknown removes unknown fields from obj
   const { error, value } = schema.validate(obj, { stripUnknown: true });
-  
-  if (error)
-    throw new StatusError("Invalid schema: " + error.details[0].message, 400);
-    
+
+  if (error) throw new StatusError("Invalid schema: " + error.details[0].message, 400);
+
   return value;
 };
 
