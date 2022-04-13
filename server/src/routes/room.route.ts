@@ -1,4 +1,6 @@
-const { Router } = require("express");
+import Joi from "joi";
+import { Router } from "express";
+
 let Item = require("../models/item.model");
 let Room = require("../models/room.model");
 
@@ -6,7 +8,6 @@ let Room = require("../models/room.model");
 // See: https://github.com/Abazhenov/express-async-handler#readme
 const asyncHandler = require("express-async-handler");
 
-import Joi from "joi";
 const { validateWithSchema } = require("../utils.js");
 
 const router = Router();

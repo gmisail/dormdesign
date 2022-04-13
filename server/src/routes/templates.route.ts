@@ -1,4 +1,5 @@
-const { Router } = require("express");
+import { Router } from "express";
+
 const Room = require("../models/room.model");
 const asyncHandler = require("express-async-handler");
 const router = Router();
