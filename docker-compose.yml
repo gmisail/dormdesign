@@ -15,10 +15,11 @@ services:
       dockerfile: Dockerfile
     restart: unless-stopped
     environment:
-      - DATABASE_ADDRESS=$MONGO_ADDRESS
+      - MONGO_ADDRESS=$MONGO_ADDRESS
       - REDIS_PASSWORD=$REDIS_PASSWORD
       - CACHE_ADDRESS=cache
       - DEBUG_MESSAGES=false
+      - NODE_ENV=production
   frontend:
     build:
       context: ./frontend
