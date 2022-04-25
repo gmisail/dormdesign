@@ -39,6 +39,9 @@
     min-width: 0;
 
     .item-claim {
+      // Since this text is italic and overflow is hidden, some letters are visually cutoff (e.g. 'f')
+      // Some small padding on the right side solves this
+      padding-right: 5px;
       white-space: nowrap;
       text-overflow: ellipsis;
       overflow: hidden;
