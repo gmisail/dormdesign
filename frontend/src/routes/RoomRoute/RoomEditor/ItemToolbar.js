@@ -1,6 +1,6 @@
 import { BiLockAlt, BiLockOpenAlt } from "react-icons/bi";
 
-import IconButton from "../IconButton/IconButton";
+import IconButton from "../../../components/IconButton/IconButton";
 import React from "react";
 import { RiClockwiseLine } from "react-icons/ri";
 

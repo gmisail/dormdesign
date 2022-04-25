@@ -1,53 +1,51 @@
-import { Provider } from "react-redux";
 import React from "react";
+
+import { Provider } from "react-redux";
 import { applyMiddleware, createStore } from "redux";
+import thunk from "redux-thunk";
+import reduceReducers from "reduce-reducers";
+import initialState from "./initialState";
+import { templateReducer, roomReducer } from "./reducers";
+import { TemplateActions, RoomActions } from "./actions";
 
 import DataRequests from "../controllers/DataRequests";
-import RoomActions from "./RoomActions";
-import RoomReducer from "./RoomReducer";
 import RoomSocketConnection from "../controllers/RoomSocketConnection";
 import StorageController from "../controllers/StorageController";
-import initialState from "./initialState";
-import thunk from "redux-thunk";
 
-/* Handles socket error message cases. Outputs a specific error message to console and 
-  returns a string with a more presentable message (if the error was recognized) 
-  that can be displayed in the UI */
-const handleSocketErrorEvent = (data) => {
-  const action = data.action;
-  if (action === undefined) {
-    console.error("Received 'actionFailed' event with missing 'action' field in data");
-    return null;
-  }
-  switch (action) {
-    case "addItem":
-      console.error("Error adding item.", data.message);
-      return "Failed to create a new item.";
-    case "deleteItem":
-      console.error("Error deleting item.", data.message);
-      return "Failed to delete item.";
-    case "updateItems":
-      console.error("Error updating item.", data.message);
-      return "Failed to update item in editor.";
-    case "editItem":
-      console.error("Error editing item.", data.message);
-      return "Failed to edit item properties.";
-    case "updateLayout":
-      console.error("Error updating bounds. ", data.message);
-      return "Failed to update room bounds.";
-    case "cloneRoom":
-      console.error("Error cloning room. ", data.message);
-      return "Failed to clone room from given ID. Make sure you are using a valid template ID.";
-    default:
-      console.error("Unknown socket event error.", data);
-      return null;
-  }
-};
+/*
+  Combine the two separate reducers into one reducer.
+
+  reduceReducers combines the reducers under the same, flat state (as opposed to the built in combineReducers
+    function from redux that would generate nested, separate state for each reducer)
+
+  Shared state for each reducer here is convenient here since there is a lot of overlap and we can re-use lots of the dispatch
+  functions easily
+*/
+const rootReducer = reduceReducers(initialState, roomReducer, templateReducer);
 
 export const RoomProvider = ({ children }) => {
-  const store = createStore(RoomReducer, initialState, applyMiddleware(thunk));
+  const store = createStore(rootReducer, applyMiddleware(thunk));
 
   return <Provider store={store}>{children}</Provider>;
+};
+
+export const connectToTemplate = (id) => async (dispatch, getState) => {
+  dispatch({ type: TemplateActions.loading });
+  try {
+    const templateObj = await DataRequests.getTemplateData(id);
+    dispatch({
+      type: TemplateActions.connectedToRoom,
+      payload: {
+        items: templateObj.data.items,
+        templateId: templateObj.templateId,
+        roomName: templateObj.data.name,
+        bounds: templateObj.data.vertices,
+      },
+    });
+  } catch (error) {
+    console.error("Failed to connect to template: " + error.message);
+    dispatch({ type: TemplateActions.error, payload: { error: error.message } });
+  }
 };
 
 export const connectToRoom = (id) => async (dispatch, getState) => {
@@ -86,14 +84,15 @@ export const connectToRoom = (id) => async (dispatch, getState) => {
     };
 
     connection.on("actionFailed", (data) => {
-      const errorMessage = handleSocketErrorEvent(data);
-      if (errorMessage) {
-        const error = new Error(errorMessage);
-        dispatch({
-          type: RoomActions.error,
-          payload: { error },
-        });
+      if (data.action === undefined) {
+        console.error("Received invalid 'actionFailed' event");
+        return;
       }
+      console.error("Socket Action Failed: ", data);
+      dispatch({
+        type: RoomActions.socketError,
+        payload: { ...data },
+      });
     });
 
     connection.on("itemAdded", (data) => {
@@ -154,7 +153,7 @@ export const connectToRoom = (id) => async (dispatch, getState) => {
     });
   } catch (error) {
     console.error("Failed to connect to room: " + error.message);
-    dispatch({ type: RoomActions.error, payload: { error } });
+    dispatch({ type: RoomActions.error, payload: { message: error.message } });
   }
 };
 

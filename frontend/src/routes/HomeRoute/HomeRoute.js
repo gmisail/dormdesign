@@ -2,6 +2,8 @@ import "./HomeRoute.scss";
 
 import React, { Component } from "react";
 
+import { Link } from "react-router-dom";
+
 import DataRequests from "../../controllers/DataRequests";
 import { ReactComponent as Logo } from "../../assets/logo.svg";
 import Modal from "react-bootstrap/Modal";
@@ -13,9 +15,7 @@ import Vector2 from "../../room-editor/Vector2";
 import RoomModel from "../../models/RoomModel";
 import IconButton from "../../components/IconButton/IconButton";
 import RoomPreview from "../../components/RoomPreview/RoomPreview";
-import { BsX } from "react-icons/bs";
-
-import RoomInfoImg from "../../assets/room-info-location.png";
+import { BsX, BsLink45Deg } from "react-icons/bs";
 
 class HomeRoute extends Component {
   state = {
@@ -88,10 +88,6 @@ class HomeRoute extends Component {
     }
   };
 
-  onSubmitJoinRoom = async (roomID) => {
-    this.props.history.push(`/room/${roomID}`);
-  };
-
   // Removes a recent room from local storage and from local state.
   // Takes in id of room and curent index of it in 'roomHistory' state variable
   removeRecentRoom = (id, index) => {
@@ -113,25 +109,13 @@ class HomeRoute extends Component {
           >
             <BsX />
           </IconButton>
-          <a href={`/room/${room.id}`}>
+          <Link to={`/room/${room.id}`}>
             <p className="recent-room-name">{room.name}</p>
             <RoomPreview id={room.id} />
-          </a>
+          </Link>
         </div>
       );
     });
-  };
-
-  renderRoomInfoLocation = (text) => {
-    return (
-      <div className="room-info-location">
-        <img src={RoomInfoImg} alt="Room info button" title="Room info button" />
-        <p>
-          {text ??
-            "A room's ID and template ID can be found by clicking the icon above on while on the room page"}
-        </p>
-      </div>
-    );
   };
 
   render() {
@@ -144,21 +128,25 @@ class HomeRoute extends Component {
               <Logo className="logo" />
             </div>
             <div className="buttons-container">
-              <button
-                className="custom-btn custom-btn-large mr-sm-4 mr-3"
-                name="createRoomButton"
-                onClick={() => this.setState({ showCreateRoomModal: true })}
-              >
-                Create Room
-              </button>
-              <button
-                className="custom-btn custom-btn-large flex-shrink-0 ml-sm-4 ml-3"
-                name="createRoomButton"
-                onClick={() => this.setState({ showJoinRoomModal: true })}
-              >
-                Join Room
-              </button>
+              <div>
+                <button
+                  className="custom-btn custom-btn-large mr-sm-4 mr-3"
+                  name="createRoomButton"
+                  onClick={() => this.setState({ showCreateRoomModal: true })}
+                >
+                  Create Room
+                </button>
+                <button
+                  className="custom-btn custom-btn-large flex-shrink-0 ml-sm-4 ml-3"
+                  name="createRoomButton"
+                  onClick={() => this.setState({ showJoinRoomModal: true })}
+                >
+                  Join Room
+                </button>
+              </div>
+              <Link to="/templates">Room Templates</Link>
             </div>
+
             <div className="recent-rooms-container">
               {this.state.roomHistory.length > 0 ? (
                 <>
@@ -182,16 +170,19 @@ class HomeRoute extends Component {
           <Modal.Body className="create-room-modal-body">
             <div className="important-info">
               <p>
-                <b>IMPORTANT:</b> After you create a room, make sure you write down the link to the
-                room (or the room ID itself) somewhere where it won't get lost. Without it, there is
-                no way to recover your room.
+                <b>IMPORTANT:</b> After you create a room, make sure you save the link to the room
+                somewhere where it won't get lost. Without it, there is no way to recover your room.
               </p>
               <p>
-                <b>Treat the room ID and link like a password</b>. Anyone you share it with will be
-                able to edit or delete your room. If you want to share your room without allowing
-                edits, use the template ID.
+                <b>Treat the room link like a password</b>. Anyone who has either will be able to
+                edit or delete your room. If you want to share your room without allowing edits, you
+                can use the template link.
               </p>
-              {this.renderRoomInfoLocation()}
+
+              <p className="room-info-location">
+                A room's link can be found by clicking the <BsLink45Deg /> icon in the top right of
+                the room page.
+              </p>
             </div>
 
             <h5>Start from scratch</h5>
@@ -231,16 +222,14 @@ class HomeRoute extends Component {
             <Modal.Title className="custom-modal-title">Join a Room</Modal.Title>
           </Modal.Header>
           <Modal.Body>
-            <p>You can join a room using its link or by entering the room's ID below</p>
-            <SingleInputForm
-              placeholder={"Room ID"}
-              onSubmit={this.onSubmitJoinRoom}
-              submitButtonText={"Join"}
-              maxLength={RoomModel.ID_LENGTH}
-            />
-            {this.renderRoomInfoLocation(
-              "A room's ID can be found by clicking the above icon while on the room page"
-            )}
+            <p>
+              In order to modify an existing room, you need the link to that room. Whoever created
+              the room should be able to share it with you.
+            </p>
+            <p className="room-info-location">
+              A room's link can be found by clicking the <BsLink45Deg /> icon in the top right of
+              the room page.
+            </p>
           </Modal.Body>
         </Modal>
       </>

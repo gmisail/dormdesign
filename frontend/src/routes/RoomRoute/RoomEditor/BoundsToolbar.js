@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import Vector2 from "../../room-editor/Vector2";
+import Vector2 from "../../../room-editor/Vector2";
 
 export default function BoundsToolbar({
   canDeleteSelectedPoint,

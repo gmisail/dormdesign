@@ -1,7 +1,8 @@
 $color-primary: #2b7cff; //#0c69ff;
 $color-secondary: #8a8a8a;
 $color-danger: #f0353b;
-$color-success: #2ed95b;
+
+$color-success: #22c84f;
 $color-light-grey: #e0e0e0;
 
 $text-color-dark: #333;
@@ -31,7 +32,6 @@ $footer-text-color: $text-color-dark;
 @mixin button-background-color($color) {
   background-color: $color;
   border: 1px solid $color;
-  transition: border-color 0.05s ease background-color 0.05s ease;
   &:hover {
     background-color: darken($color, 7.5%);
     border-color: darken($color, 7.5%);

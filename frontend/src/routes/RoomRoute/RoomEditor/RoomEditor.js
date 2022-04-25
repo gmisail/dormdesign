@@ -1,25 +1,28 @@
 import "./RoomEditor.scss";
 
-import { BiMinus, BiPlus, BiSelection } from "react-icons/bi";
-import { BsCheck, BsX } from "react-icons/bs";
-import { RiRulerFill, RiRulerLine } from "react-icons/ri";
 import React, { useEffect, useRef, useState } from "react";
+
 import {
   clearEditorActionQueue,
   itemSelected,
   updateBounds,
   updatedItems,
-} from "../../context/RoomStore";
+} from "../../../context/RoomStore";
 import { useDispatch, useSelector } from "react-redux";
+import { RoomActions } from "../../../context/actions";
+
+import { BiMinus, BiPlus, BiSelection, BiCheck, BiX } from "react-icons/bi";
+import { BsCheck, BsX } from "react-icons/bs";
+import { RiRulerFill, RiRulerLine } from "react-icons/ri";
+import { MdFilterCenterFocus } from "react-icons/md";
 
 import BoundsToolbar from "./BoundsToolbar";
-import IconButton from "../IconButton/IconButton";
+import IconButton from "../../../components/IconButton/IconButton";
 import ItemToolbar from "./ItemToolbar";
-import { MdFilterCenterFocus } from "react-icons/md";
-import RoomActions from "../../context/RoomActions";
-import RoomEditorObject from "../../room-editor/RoomEditorObject";
-import SceneController from "../../room-editor/SceneController";
-import Vector2 from "../../room-editor/Vector2";
+
+import RoomEditorObject from "../../../room-editor/RoomEditorObject";
+import SceneController from "../../../room-editor/SceneController";
+import Vector2 from "../../../room-editor/Vector2";
 
 const itemToEditorProperties = (props) => {
   return {
@@ -294,21 +297,21 @@ function RoomEditor() {
               <>
                 <IconButton
                   className="room-editor-toolbar-btn room-editor-toolbar-btn-success"
-                  title="Apply Changes"
+                  title="Save Changes"
                   onClick={() => {
                     toggleEditingBounds(true);
                   }}
                 >
-                  <BsCheck />
+                  <BiCheck />
                 </IconButton>
                 <IconButton
-                  className="room-editor-toolbar-btn room-editor-toolbar-btn-danger"
+                  className="room-editor-toolbar-btn room-editor-toolbar-btn-secondary"
                   title="Cancel Changes"
                   onClick={() => {
                     toggleEditingBounds(false);
                   }}
                 >
-                  <BsX />
+                  <BiX />
                 </IconButton>
               </>
             ) : (

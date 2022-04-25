@@ -15,10 +15,10 @@ import {
 } from "../../context/RoomStore";
 import { connect, useDispatch, useSelector } from "react-redux";
 
-import ActiveUsersIndicator from "../../components/ActiveUsersIndicator/ActiveUsersIndicator";
+import ActiveUsersIndicator from "./ActiveUsersIndicator/ActiveUsersIndicator";
 import DormItemList from "../../components/DormItemList/DormItemList";
 import IconButton from "../../components/IconButton/IconButton";
-import RoomEditor from "../../components/RoomEditor/RoomEditor";
+import RoomEditor from "./RoomEditor/RoomEditor";
 import { Spinner } from "react-bootstrap";
 import useModal from "../../hooks/useModal";
 import { useParams } from "react-router-dom";
@@ -67,16 +67,15 @@ export const RoomRoute = () => {
   }, [loading, userName, setUserName, toggleModal, socketConnection, dispatch]);
 
   useEffect(() => {
-    /* There's an error. Only display modal if still connected to room (since there's a different case for that handled below) */
-    if (error !== null && socketConnection !== null) {
+    if (error !== null) {
       toggleModal(modalTypes.error, {
-        message: error.message,
+        message: error,
       });
     }
-  }, [error, socketConnection, toggleModal]);
+  }, [error, toggleModal]);
 
   useEffect(() => {
-    document.title = `DormDesign ${roomName ? "| " + roomName : ""}`;
+    document.title = `Room ${roomName ? "| " + roomName : ""}`;
   }, [roomName]);
 
   const onClickAddItemButton = useCallback(
@@ -210,10 +209,9 @@ export const RoomRoute = () => {
                 circleSelectionEffect={true}
                 toggled={modalProps.show && modalProps.type === modalTypes.share}
                 onClick={() => {
-                  toggleModal(modalTypes.share, {
+                  toggleModal(modalTypes.shareRoom, {
                     id: id,
                     templateId: templateId,
-                    link: window.location.href,
                   });
                 }}
               >

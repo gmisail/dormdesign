@@ -1,9 +1,9 @@
 import React, { useState, useRef } from "react";
 import "./ActiveUsersIndicator.scss";
 import { useSelector } from "react-redux";
-import Dropdown from "../Dropdown/Dropdown";
 import { BsPerson, BsPersonFill } from "react-icons/bs";
-import IconButton from "../IconButton/IconButton";
+import Dropdown from "../../../components/Dropdown/Dropdown";
+import IconButton from "../../../components/IconButton/IconButton";
 
 /**
  * Displays a list of bubbles with usernames (if more than 1 usernames exist)

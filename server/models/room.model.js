@@ -4,8 +4,11 @@ const { v4: uuidv4 } = require("uuid");
 const Cache = require("../cache");
 const { client } = require("../cache");
 
-const { updateRoomDataSchema } = require("../schemas/room.schema");
-const { createItemSchema, updateItemSchema } = require("../schemas/item.schema");
+const {
+  updateRoomDataSchema,
+  createItemSchema,
+  updateItemSchema,
+} = require("../schemas/room.schema");
 
 const Joi = require("joi");
 const { validateWithSchema } = require("../utils.js");
@@ -151,11 +154,25 @@ Room.get = async function (id, idKey = "_id") {
  * in the cache, that data will be returned. Otherwise, the data stored in the
  * database will be returned.
  * @param { string } templateId
- * @returns { Promise.<object> } The room object if it exists
+ * @returns { Promise.<object> } The room object
  * @throws When the function fails to get the room
  */
 Room.getFromTemplateId = async function (templateId) {
   return Room.get(templateId, "templateId");
+};
+
+/**
+ * Get the template version of a room at the given `templateId`. If the room is currently
+ * in the cache, that data will be returned. Otherwise, the data stored in the
+ * database will be returned.
+ * @param { string } templateId
+ * @returns { Promise.<object> } Template object (same as room  object but 'id' is removed)
+ * @throws When the function fails to get the room
+ */
+Room.getTemplate = async function (templateId) {
+  let roomObj = await Room.getFromTemplateId(templateId);
+  delete roomObj["id"];
+  return roomObj;
 };
 
 /**

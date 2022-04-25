@@ -1,11 +1,12 @@
 import "./DormItemList.scss";
 
-import ListItem from "../ListItem/ListItem";
+import ListItem from "./ListItem";
 import React from "react";
 import { useSelector } from "react-redux";
 
 const DormItemList = (props) => {
   const {
+    readOnly = false,
     onEditItem,
     onDuplicateItem,
     onClaimItem,
@@ -25,6 +26,7 @@ const DormItemList = (props) => {
           {items.map((item) => {
             return (
               <ListItem
+                readOnly={readOnly}
                 className={selectedItemID === item.id ? "item-selected" : ""}
                 key={item.id}
                 item={item}

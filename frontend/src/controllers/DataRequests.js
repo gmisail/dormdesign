@@ -18,43 +18,45 @@ class DataRequests {
     const data = await response.json();
 
     if (!response.ok) {
-      const message = `${response.status} Error creating room: ${data.message}`;
+      const message = `Error creating room: ${data.message}`;
       throw new Error(message);
     }
 
     return data;
   }
 
-  // Retrieves the Room's data from the server.
+  // Retrieves a Room's data from the server.
   static async getRoomData(id) {
     if (!id) {
       throw new Error("Can't fetch room data. Room ID is undefined");
     }
 
-    const response = await fetch(`/api/room/get?id=${id}`);
+    const response = await fetch(`/api/room/${id}`);
     const responseData = await response.json();
 
     if (!response.ok) {
-      const message = `${response.status} Error fetching room: ${responseData.message}`;
+      const message = `Error fetching room: ${responseData.message}`;
       throw new Error(message);
     }
 
     return responseData;
   }
 
-  static async cloneRoom(id, target) {
-    if (!id || !target) {
-      throw new Error("Can't clone room; either ID or target ID is undefined.");
+  // Retrieves a Template's data from the server.
+  static async getTemplateData(templateId) {
+    if (!templateId) {
+      throw new Error("Can't fetch template data. Template ID is undefined");
     }
 
-    const response = await fetch("/api/room/clone?id=" + id + "&target_id=" + target);
-    const data = await response.json();
+    const response = await fetch(`/api/template/${templateId}`);
+    const responseData = await response.json();
 
-    if (!data.message) {
-      window.location.reload();
-    } else {
-      throw new Error(data.message);
+    if (!response.ok) {
+      const message = `Error fetching template: ${responseData.message}`;
+      throw new Error(message);
     }
+
+    return responseData;
   }
 
   /**
@@ -69,16 +71,11 @@ class DataRequests {
       throw new Error("'id' is null or undefined");
     }
 
-    const response = await fetch(`/api/preview/${isTemplate ? "template" : "room"}/${id}`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
+    const response = await fetch(`/api/preview/${isTemplate ? "template" : "room"}/${id}`);
     const data = await response.json();
 
     if (!response.ok) {
-      const message = `${response.status} Error generating room preview: ${data.message}`;
+      const message = `Error generating room preview: ${data.message}`;
       throw new Error(message);
     }
 
@@ -86,16 +83,11 @@ class DataRequests {
   }
 
   static async getFeaturedTemplates() {
-    const response = await fetch("/api/templates/featured", {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
+    const response = await fetch("/api/template/featured");
     const data = await response.json();
 
     if (!response.ok) {
-      const message = `${response.status} Error getting featured templates: ${data.message}`;
+      const message = `Error getting featured templates: ${data.message}`;
       throw new Error(message);
     }
 
