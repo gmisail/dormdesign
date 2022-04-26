@@ -30,6 +30,8 @@ class RoomBoundsObject extends SceneObject {
     this.edgeLengths = true;
     this.edgeLengthFontScale = 0.4;
 
+    this._origZIndex = null;
+
     /**
      * Called when the positions of one or more points is updated by mouse movement (e.g. dragging) inside the editor
      */
@@ -48,6 +50,13 @@ class RoomBoundsObject extends SceneObject {
   set editing(value) {
     this._editing = value;
     this.selectedPointIndex = null;
+    if (value) {
+      // When editing, make sure bounds are drawn on top (i.e. set zIndex to a large number)
+      this._origZIndex = this.zIndex;
+      this.zIndex = 100000;
+    } else {
+      this.zIndex = this._origZIndex;
+    }
   }
 
   get editing() {
