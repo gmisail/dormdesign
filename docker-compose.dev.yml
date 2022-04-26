@@ -38,7 +38,7 @@ services:
       - ./server:/usr/src/app
       - /usr/src/app/node_modules
     environment:
-      - DATABASE_ADDRESS=mongodb://db:27017
+      - MONGO_ADDRESS=mongodb://db:27017
       - REDIS_PASSWORD=$REDIS_PASSWORD
       - CACHE_ADDRESS=cache
       - CHOKIDAR_USEPOLLING=true

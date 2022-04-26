@@ -9,7 +9,6 @@ import { connectToTemplate } from "../../context/RoomStore";
 import { connect, useDispatch, useSelector } from "react-redux";
 
 import { BsLink45Deg } from "react-icons/bs";
-import { FaRegClone } from "react-icons/fa";
 import { BiDuplicate } from "react-icons/bi";
 
 import { Modal, modalTypes } from "../../components/modals/Modal";

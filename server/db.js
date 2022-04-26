@@ -6,7 +6,7 @@ let Database = {};
 Database.connection = null;
 
 Database.setup = async function () {
-  const uri = process.env.DATABASE_ADDRESS;
+  const uri = process.env.MONGO_ADDRESS;
   const client = new MongoClient(uri);
 
   try {
