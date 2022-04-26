@@ -22,6 +22,7 @@ import RoomEditor from "./RoomEditor/RoomEditor";
 import { Spinner } from "react-bootstrap";
 import useModal from "../../hooks/useModal";
 import { useParams } from "react-router-dom";
+import DormItemModel from "../../models/DormItemModel";
 
 export const RoomRoute = () => {
   const socketConnection = useSelector((state) => state.socketConnection);
@@ -104,10 +105,16 @@ export const RoomRoute = () => {
     [updateItems, toggleModal, dispatch]
   );
 
-  const onClickDuplicateItemButton = useCallback((item) => dispatch(addItem(item)), [
-    addItem,
-    dispatch,
-  ]);
+  const onClickDuplicateItemButton = useCallback((item) => {
+    let newItem = DormItemModel.deepCopy(item);
+    // Offset duplicated item position slightly
+    newItem.editorPosition.x += 1;
+    newItem.editorPosition.y += 0.5;
+    // New item should be unclaimed by default
+    newItem.claimedBy = null;
+
+    dispatch(addItem(newItem)), [addItem, dispatch];
+  });
 
   const onClickClaimItemButton = useCallback(
     (item) =>

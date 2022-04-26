@@ -1,6 +1,21 @@
 import { RoomActions, TemplateActions } from "./actions";
 import initialState from "./initialState";
 
+/**
+ * Like Object.assign() but ignores 'undefined' fields
+ * @param {object} target
+ * @param {object} source
+ */
+const assignDefined = (target, source) => {
+  Object.keys(source).forEach((key) => {
+    if (source[key] !== undefined) {
+      target[key] = source[key];
+    }
+  });
+
+  return target;
+};
+
 // Reducer for RoomRoute
 export const roomReducer = (state, action) => {
   if (action.payload?.sendToEditor !== false) {
@@ -83,7 +98,7 @@ export const roomReducer = (state, action) => {
         itemArray.push(item);
         const updated = updatedItems[item.id];
         if (updated !== undefined) {
-          Object.assign(item, updated);
+          assignDefined(item, updated);
         }
       }
 

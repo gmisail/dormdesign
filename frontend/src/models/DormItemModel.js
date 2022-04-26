@@ -26,4 +26,21 @@ export default class DormItemModel {
       editorZIndex: 0,
     };
   }
+
+  /**
+   * Creates deep copy of an item
+   * @param {object} item Item to copy
+   * @returns New copied item
+   */
+  static deepCopy(item) {
+    return {
+      ...item,
+      editorPosition: {
+        ...item.editorPosition,
+      },
+      dimensions: {
+        ...item.dimensions,
+      },
+    };
+  }
 }
