@@ -1,16 +1,25 @@
 const Joi = require("joi");
 
+/**
+ * Schema for item dimensions
+ */
 const dimensionsSchema = Joi.object({
   width: Joi.number().precision(3).max(100).min(0).allow(null).default(null),
   height: Joi.number().precision(3).max(100).min(0).allow(null).default(null),
   length: Joi.number().precision(3).max(100).min(0).allow(null).default(null),
 });
 
+/**
+ * Schema for points in the room editor (e.g. item positions, boundary positions, etc.)
+ */
 const editorPositionSchema = Joi.object({
   x: Joi.number().precision(4).min(-50).max(50).default(0),
   y: Joi.number().precision(4).min(-50).max(50).default(0),
 });
 
+/**
+ * Contains item Joi objects (can be used to validate individual fields of item)
+ */
 const itemFields = {
   name: Joi.string().min(1).max(30),
   quantity: Joi.number().integer(),
@@ -22,6 +31,10 @@ const itemFields = {
   editorRotation: Joi.number().precision(4).max(360),
   editorLocked: Joi.boolean(),
 };
+
+/**
+ * Schema for validating existing items
+ */
 const itemSchema = Joi.object({
   ...itemFields,
   name: itemFields.name.required(),
@@ -35,8 +48,14 @@ const itemSchema = Joi.object({
   dimensions: itemFields.dimensions.required(),
 });
 
+/**
+ * Schema for item updates
+ */
 const updateItemSchema = Joi.object(itemFields);
 
+/**
+ * Schema for item creations
+ */
 const createItemSchema = Joi.object({
   ...itemFields,
   name: itemFields.name.required(),
@@ -50,15 +69,22 @@ const createItemSchema = Joi.object({
   dimensions: itemFields.dimensions.default(),
 });
 
+/**
+ * Contains room.data Joi objects (can be used to validate individual fields of room.data)
+ */
 const roomDataFields = {
   name: Joi.string().min(1).max(40),
   vertices: Joi.array().min(3).items(editorPositionSchema),
   items: Joi.array().items(itemSchema),
 };
-// updateRoomData doesn't include the items array here. Item updates are handled separately from room updates in the Hub
+
+/**
+ * Schema for room.data updates
+ *
+ * Doesn't include the items array. Item updates are currently handled separately in the Hub
+ */
 const updateRoomDataSchema = Joi.object({
   name: roomDataFields.name,
-  // There must be at least 3 vertices in the room
   vertices: roomDataFields.vertices,
 });
 

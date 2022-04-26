@@ -13,13 +13,9 @@ import RoomSocketConnection from "../controllers/RoomSocketConnection";
 import StorageController from "../controllers/StorageController";
 
 /*
-  Combine the two separate reducers into one reducer.
+  reduceReducers combines the reducers into one reducer that uses the same, flat state (as opposed to the built in combineReducers function from redux that would generate nested, separate state for each reducer)
 
-  reduceReducers combines the reducers under the same, flat state (as opposed to the built in combineReducers
-    function from redux that would generate nested, separate state for each reducer)
-
-  Shared state for each reducer here is convenient here since there is a lot of overlap and we can re-use lots of the dispatch
-  functions easily
+  Shared state for each reducer here is convenient since the TemplateRoute state is basically the same as the RoomRoute state, but with some fields removed
 */
 const rootReducer = reduceReducers(initialState, roomReducer, templateReducer);
 

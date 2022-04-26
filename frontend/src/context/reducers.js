@@ -1,6 +1,7 @@
 import { RoomActions, TemplateActions } from "./actions";
 import initialState from "./initialState";
 
+// Reducer for RoomRoute
 export const roomReducer = (state, action) => {
   if (action.payload?.sendToEditor !== false) {
     state.editorActionQueue = [...state.editorActionQueue, action];
@@ -144,6 +145,7 @@ export const roomReducer = (state, action) => {
   }
 };
 
+// Reducer for TemplateRoute
 export const templateReducer = (state, action) => {
   switch (action.type) {
     case TemplateActions.connectedToRoom:

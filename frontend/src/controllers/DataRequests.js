@@ -2,7 +2,13 @@
  *  Data creation / modification handler.
  */
 class DataRequests {
-  // Creates a new room and returns room ID sent back from server
+  /**
+   * Creates a new room and returns the new room's id
+   * @param {string} name Optional name for the new room
+   * @param {*} templateId Optional id of template to clone the room from
+   * @returns Room ID
+   * @throws When request fails
+   */
   static async createRoom(name, templateId) {
     const response = await fetch("/api/room/create", {
       method: "POST",
@@ -25,7 +31,12 @@ class DataRequests {
     return data;
   }
 
-  // Retrieves a Room's data from the server.
+  /**
+   * Retrieves a room's data from the server
+   * @param {string} id ID of room to fetch
+   * @returns Room object
+   * @throws When request fails
+   */
   static async getRoomData(id) {
     if (!id) {
       throw new Error("Can't fetch room data. Room ID is undefined");
@@ -42,7 +53,12 @@ class DataRequests {
     return responseData;
   }
 
-  // Retrieves a Template's data from the server.
+  /**
+   * Retrieves a template's data from the server
+   * @param {*} templateId ID of template to fetch
+   * @returns Template object
+   * @throws When request fails
+   */
   static async getTemplateData(templateId) {
     if (!templateId) {
       throw new Error("Can't fetch template data. Template ID is undefined");
@@ -82,6 +98,11 @@ class DataRequests {
     return data.preview;
   }
 
+  /**
+   * Get list of featured templates
+   * @returns Featured template list
+   * @throws When request fails
+   */
   static async getFeaturedTemplates() {
     const response = await fetch("/api/template/featured");
     const data = await response.json();
