@@ -117,22 +117,22 @@ export const roomReducer = (state, action) => {
       let errorMessage;
       switch (action.payload.action) {
         case "addItem":
-          errorMessage = "Failed to create a new item." + action.payload.message;
+          errorMessage = "Failed to create a new item. " + action.payload.message;
           break;
         case "deleteItem":
-          errorMessage = "Failed to delete item." + action.payload.message;
+          errorMessage = "Failed to delete item. " + action.payload.message;
           break;
         case "updateItems":
-          errorMessage = "Failed to update item in editor." + action.payload.message;
+          errorMessage = "Failed to update item in editor. " + action.payload.message;
           break;
         case "editItem":
-          errorMessage = "Failed to edit item properties." + action.payload.message;
+          errorMessage = "Failed to edit item properties. " + action.payload.message;
           break;
         case "updateLayout":
-          errorMessage = "Failed to update room bounds." + action.payload.message;
+          errorMessage = "Failed to update room bounds. " + action.payload.message;
           break;
         case "cloneRoom":
-          errorMessage = "Failed to clone room. Make sure the template ID is valid.";
+          errorMessage = "Failed to clone room. Make sure the template ID is valid. ";
           break;
         default:
           errorMessage = `Unknown error '${action.payload.action}. ${action.payload.message}`;
