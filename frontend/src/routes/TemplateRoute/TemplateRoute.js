@@ -31,8 +31,6 @@ export const TemplateRoute = () => {
 
   const history = useHistory();
 
-  console.log(modalProps);
-
   // Called when component is first mounted
   useEffect(() => {
     dispatch(connectToTemplate(id));
@@ -79,6 +77,7 @@ export const TemplateRoute = () => {
           <div className="room-header">
             <div title={roomName} className="room-name-container template-name-container">
               <h2 className="room-name">{roomName}</h2>
+              <p className="template-name-addon">(Template)</p>
             </div>
 
             <div className="room-header-buttons">

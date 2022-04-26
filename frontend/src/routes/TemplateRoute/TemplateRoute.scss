@@ -20,3 +20,10 @@
   cursor: default !important;
   color: $text-color-dark !important;
 }
+
+.template-name-addon {
+  font-size: 1.2rem;
+  margin-left: 6px;
+  font-weight: 600;
+  color: lighten($text-color-dark, 20%);
+}
