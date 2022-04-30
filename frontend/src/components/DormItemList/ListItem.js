@@ -11,13 +11,9 @@ import {
   BsX,
 } from "react-icons/bs";
 
-import { Modal, modalTypes } from "../../components/modals/Modal";
-import React, { useRef, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import Dropdown from "../Dropdown/Dropdown";
-import IconButton from "../IconButton/IconButton";
-import { setUserName } from "../../context/RoomStore";
-import useModal from "../../hooks/useModal";
+import React from "react";
+import { useSelector } from "react-redux";
+import DropdownMenu from "../DropdownMenu/DrowndownMenu";
 
 const ListItem = ({
   readOnly = false,
@@ -37,28 +33,7 @@ const ListItem = ({
   */
   const userName = useSelector((state) => state.userName);
 
-  const dispatch = useDispatch();
-
-  const [modalProps, toggleModal] = useModal();
-  const [showMenu, setShowMenu] = useState(false);
-  const menuButtonRef = useRef(null);
-
-  // Called when a button in menu is clicked. Closes the menu and calls passed callback
-  const menuOptionClicked = (callback) => {
-    if (callback === onClaim && userName === null) {
-      toggleModal(modalTypes.chooseName, {
-        onSubmit: (newName) => {
-          dispatch(setUserName(newName));
-          toggleModal();
-        },
-      });
-
-      return;
-    }
-
-    setShowMenu(false);
-    callback();
-  };
+  const claimedByMe = item.claimedBy !== null && item.claimedBy === userName;
 
   return (
     <div className={`list-item ${className}`}>
@@ -77,20 +52,8 @@ const ListItem = ({
         ) : null}
         {readOnly ? null : (
           <>
-            <IconButton
-              title="Options"
-              ref={menuButtonRef}
-              className="item-menu-button"
-              onClick={() => setShowMenu(!showMenu)}
-              circleSelectionEffect={true}
-              toggled={showMenu}
-            >
-              <BsThreeDots></BsThreeDots>
-            </IconButton>
-            <Dropdown
-              show={showMenu}
-              buttonRef={menuButtonRef}
-              onClickOutside={() => setShowMenu(false)}
+            <DropdownMenu
+              buttonIcon={<BsThreeDots />}
               placement="left-start"
               modifiers={[
                 {
@@ -99,53 +62,28 @@ const ListItem = ({
                 },
               ]}
             >
-              <ul className="item-menu-list">
-                <li onClick={() => menuOptionClicked(onEdit)}>
-                  <BsPencil />
-                  Edit
-                </li>
-                <li onClick={() => menuOptionClicked(onDuplicate)}>
-                  <BsFiles />
-                  Duplicate
-                </li>
-                <li onClick={() => menuOptionClicked(onClaim)}>
-                  {item.claimedBy !== null && item.claimedBy === userName ? (
-                    <>
-                      <BsPersonDash />
-                      Unclaim
-                    </>
-                  ) : (
-                    <>
-                      <BsPersonPlus />
-                      Claim
-                    </>
-                  )}
-                </li>
-                <li onClick={() => menuOptionClicked(onToggleEditorVisibility)}>
-                  {item.visibleInEditor ? (
-                    <>
-                      <BsEyeSlash />
-                      Hide
-                    </>
-                  ) : (
-                    <>
-                      <BsEye />
-                      Show
-                    </>
-                  )}{" "}
-                  in Editor
-                </li>
-
-                <li className="color-danger" onClick={() => menuOptionClicked(onDelete)}>
-                  <BsX />
-                  Delete
-                </li>
-              </ul>
-            </Dropdown>
+              <DropdownMenu.Item onClick={onEdit} icon={<BsPencil />} text="Edit" />
+              <DropdownMenu.Item onClick={onDuplicate} icon={<BsFiles />} text="Duplicate" />
+              <DropdownMenu.Item
+                onClick={onClaim}
+                icon={claimedByMe ? <BsPersonDash /> : <BsPersonPlus />}
+                text={claimedByMe ? "Unclaim" : "Claim"}
+              />
+              <DropdownMenu.Item
+                onClick={onToggleEditorVisibility}
+                icon={item.visibleInEditor ? <BsEyeSlash /> : <BsEye />}
+                text={(item.visibleInEditor ? "Hide" : "Show") + " in Editor"}
+              />
+              <DropdownMenu.Item
+                className="color-danger"
+                onClick={onDelete}
+                icon={<BsX />}
+                text="Delete"
+              />
+            </DropdownMenu>
           </>
         )}
       </div>
-      <Modal {...modalProps}></Modal>
     </div>
   );
 };

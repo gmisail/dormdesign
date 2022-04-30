@@ -1,0 +1,47 @@
+@import "../../styles/variables.scss";
+
+
+.dropdown-menu-list {
+  list-style-type: none;
+  background-color: $dropdown-background-color;
+  padding: 0;
+  margin: 0;
+  border: 1px solid $border-color;
+  border-radius: inherit;
+
+  overflow: hidden;
+
+
+  .dropdown-menu-list-item {
+    padding: 5px 10px;
+    color: $text-color-dark;
+    font-size: 17px;
+    line-height: 28px;
+
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+
+    border-bottom: 1px solid;
+    border-bottom-color: $border-color;
+
+    svg {
+      max-width: 1.5rem;
+      margin: auto 0;
+      margin-right: 0.6em;
+    }
+
+    &.color-danger {
+      color: $color-danger;
+    }
+
+    &:hover {
+      cursor: pointer;
+      background-color: $border-color;
+    }
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+}

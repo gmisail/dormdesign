@@ -3,19 +3,23 @@ import "./HomeRoute.scss";
 import React, { Component } from "react";
 
 import { Link } from "react-router-dom";
+import { BsX, BsLink45Deg, BsThreeDotsVertical } from "react-icons/bs";
+
+import { ReactComponent as Logo } from "../../assets/logo.svg";
 
 import DataRequests from "../../controllers/DataRequests";
-import { ReactComponent as Logo } from "../../assets/logo.svg";
-import Modal from "react-bootstrap/Modal";
+import StorageController from "../../controllers/StorageController";
+
+import RoomModel from "../../models/RoomModel";
+
+import SingleInputForm from "../../components/SingleInputForm/SingleInputForm";
+import DropdownMenu from "../../components/DropdownMenu/DrowndownMenu";
+import RoomThumbnail from "../../components/RoomThumbnail/RoomThumbnail";
+import RoomThumbnailGrid from "../../components/RoomThumbnailGrid/RoomThumbnailGrid";
+
+import Vector2 from "../../room-editor/Vector2";
 import RoomGridObject from "../../room-editor/RoomGridObject";
 import SceneController from "../../room-editor/SceneController";
-import SingleInputForm from "../../components/SingleInputForm/SingleInputForm";
-import StorageController from "../../controllers/StorageController";
-import Vector2 from "../../room-editor/Vector2";
-import RoomModel from "../../models/RoomModel";
-import IconButton from "../../components/IconButton/IconButton";
-import RoomPreview from "../../components/RoomPreview/RoomPreview";
-import { BsX, BsLink45Deg } from "react-icons/bs";
 
 class HomeRoute extends Component {
   state = {
@@ -91,147 +95,91 @@ class HomeRoute extends Component {
   // Removes a recent room from local storage and from local state.
   // Takes in id of room and curent index of it in 'roomHistory' state variable
   removeRecentRoom = (id, index) => {
-    StorageController.removeRoomFromHistory(id);
-    this.setState({
-      roomHistory: this.state.roomHistory.filter((_, i) => i != index),
-    });
+    const updated = StorageController.removeRoomFromHistory(id);
+    // Only update the state if an element was actually removed
+    if (updated.length !== this.state.roomHistory.length) {
+      this.setState({
+        roomHistory: this.state.roomHistory.filter((_, i) => i != index),
+      });
+    }
   };
 
   renderRecentRooms = () => {
-    return this.state.roomHistory.map((room, index) => {
-      return (
-        <div className="recent-room" key={index} title={room.name}>
-          <IconButton
-            title="Remove from history"
-            onClick={() => this.removeRecentRoom(room.id, index)}
-            className="recent-room-remove-button"
-            circleSelectionEffect={true}
-          >
-            <BsX />
-          </IconButton>
-          <Link to={`/room/${room.id}`}>
-            <p className="recent-room-name">{room.name}</p>
-            <RoomPreview id={room.id} />
-          </Link>
-        </div>
-      );
-    });
+    return (
+      <div className="home-recent-rooms custom-card">
+        <RoomThumbnailGrid header={<h5>Recent Rooms</h5>}>
+          {this.state.roomHistory.map((item, index) => {
+            return (
+              <RoomThumbnail
+                dropdownMenu={
+                  <DropdownMenu placement={"bottom-start"} buttonIcon={<BsThreeDotsVertical />}>
+                    <DropdownMenu.Item
+                      icon={<BsLink45Deg />}
+                      text={"Copy link"}
+                      onClick={() => {
+                        navigator.clipboard.writeText(`${window.location.origin}/room/${item.id}`);
+                      }}
+                    />
+                    <DropdownMenu.Item
+                      icon={<BsX />}
+                      text={"Hide"}
+                      onClick={() => this.removeRecentRoom(item.id, index)}
+                    />
+                  </DropdownMenu>
+                }
+                key={index}
+                name={item?.name ?? "Unkown Room"}
+                id={item?.id ?? null}
+              />
+            );
+          })}
+        </RoomThumbnailGrid>
+      </div>
+    );
   };
 
   render() {
     return (
       <>
         <canvas ref={(ref) => (this.backgroundCanvasRef = ref)} id="background-canvas" />
-        <div className="content-wrapper">
-          <div className="content-container">
-            <div className="header-container">
-              <Logo className="logo" />
-            </div>
-            <div className="buttons-container">
-              <div>
-                <button
-                  className="custom-btn custom-btn-large mr-sm-4 mr-3"
-                  name="createRoomButton"
-                  onClick={() => this.setState({ showCreateRoomModal: true })}
-                >
-                  Create Room
-                </button>
-                <button
-                  className="custom-btn custom-btn-large flex-shrink-0 ml-sm-4 ml-3"
-                  name="createRoomButton"
-                  onClick={() => this.setState({ showJoinRoomModal: true })}
-                >
-                  Join Room
-                </button>
-              </div>
-              <Link to="/templates">Room Templates</Link>
-            </div>
-
-            <div className="recent-rooms-container">
-              {this.state.roomHistory.length > 0 ? (
-                <>
-                  <h5>Recent Rooms</h5>
-                  <div className="recent-rooms">{this.renderRecentRooms()}</div>
-                </>
-              ) : null}
-            </div>
+        <div className="content-container">
+          <div className="header-container">
+            <Logo className="logo" />
           </div>
-        </div>
-
-        <Modal
-          show={this.state.showCreateRoomModal}
-          onHide={() => {
-            this.setState({ showCreateRoomModal: false });
-          }}
-        >
-          <Modal.Header closeButton>
-            <Modal.Title className="custom-modal-title">New Room</Modal.Title>
-          </Modal.Header>
-          <Modal.Body className="create-room-modal-body">
-            <div className="important-info">
-              <p>
-                <b>IMPORTANT:</b> After you create a room, make sure you save the link to the room
-                somewhere where it won't get lost. Without it, there is no way to recover your room.
-              </p>
-              <p>
-                <b>Treat the room link like a password</b>. Anyone who has either will be able to
-                edit or delete your room. If you want to share your room without allowing edits, you
-                can use the template link.
-              </p>
-
-              <p className="room-info-location">
-                A room's link can be found by clicking the <BsLink45Deg /> icon in the top right of
-                the room page.
-              </p>
+          <div className="home-card-create custom-card">
+            <div>
+              <h5>Create a Room</h5>
+              <p>Start a room from scratch.</p>
             </div>
-
-            <h5>Start from scratch</h5>
-            <p>Create an empty room:</p>
-
             <SingleInputForm
-              placeholder={"Room name"}
+              placeholder="Room name"
               onSubmit={this.onSubmitCreateRoom}
-              submitButtonText={"Create"}
+              submitButtonText="Create"
               trim={true}
               maxLength={RoomModel.MAX_NAME_LENGTH}
             />
-            <p name="or">
-              <b>- OR -</b>
-            </p>
-            <h5>Clone an existing room</h5>
-            <p>
-              Choose from one of our <a href="/templates">Featured Templates</a>. Otherwise, clone
-              any existing room by entering it's template ID below:
-            </p>
-            <SingleInputForm
-              placeholder={"Template ID"}
-              onSubmit={this.onSubmitCloneRoom}
-              submitButtonText={"Clone"}
-              maxLength={RoomModel.ID_LENGTH}
-            />
-          </Modal.Body>
-        </Modal>
+          </div>
+          <div className="home-card-templates custom-card">
+            <div>
+              <h5>Clone a Template</h5>
+              <p>Start from one of our featured templates.</p>
+            </div>
 
-        <Modal
-          show={this.state.showJoinRoomModal}
-          onHide={() => {
-            this.setState({ showJoinRoomModal: false });
-          }}
-        >
-          <Modal.Header closeButton>
-            <Modal.Title className="custom-modal-title">Join a Room</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            <p>
-              In order to modify an existing room, you need the link to that room. Whoever created
-              the room should be able to share it with you.
-            </p>
-            <p className="room-info-location">
-              A room's link can be found by clicking the <BsLink45Deg /> icon in the top right of
-              the room page.
-            </p>
-          </Modal.Body>
-        </Modal>
+            <Link to="/templates" className="custom-btn">
+              Explore Templates
+            </Link>
+          </div>
+          <div className="home-card-join custom-card">
+            <div>
+              <h5>Join an Existing Room</h5>
+              <p>
+                In order to modify a room, you need the room link. Ask someone with access to the
+                room to share it with you.
+              </p>
+            </div>
+          </div>
+          {this.state.roomHistory.length > 0 ? this.renderRecentRooms() : null}
+        </div>
       </>
     );
   }

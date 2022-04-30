@@ -62,7 +62,7 @@
         padding: 4px;
         color: $text-color-light;
 
-        @include button-background-color($darker-grey);
+        @include button-color($darker-grey, $text-color-light);
       }
     }
 
@@ -97,7 +97,7 @@
 
         $point-viewer-radius: 5px;
         .room-editor-point-delete-btn {
-          @include button-background-color($color-danger);
+          @include button-color($color-danger, $text-color-light);
           border: none;
           text-decoration: none;
           pointer-events: initial;
@@ -155,13 +155,13 @@
         border: none;
 
         &.room-editor-toolbar-btn-success {
-          @include button-background-color($color-success);
+          @include button-color($color-success, $text-color-light);
         }
         &.room-editor-toolbar-btn-secondary {
-          @include button-background-color($color-secondary);
+          @include button-color($color-secondary, $text-color-light);
         }
 
-        @include button-background-color($color-primary);
+        @include button-color($color-primary, $text-color-light);
 
         transition: transform 0.2s ease;
       }

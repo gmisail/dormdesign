@@ -1,18 +1,17 @@
 import "./TemplateGalleryRoute.scss";
 
 import React, { useState, useEffect } from "react";
-import { useHistory } from "react-router";
 
-import { Spinner } from "react-bootstrap";
+import { BsThreeDotsVertical, BsLink45Deg } from "react-icons/bs";
 
-import RoomPreview from "../../components/RoomPreview/RoomPreview";
 import DataRequests from "../../controllers/DataRequests";
+
+import RoomThumbnail from "../../components/RoomThumbnail/RoomThumbnail";
+import RoomThumbnailGrid from "../../components/RoomThumbnailGrid/RoomThumbnailGrid";
+import DropdownMenu from "../../components/DropdownMenu/DrowndownMenu";
 
 export const TemplateGalleryRoute = () => {
   const [templates, setTemplates] = useState(null);
-  const [loadingTemplates, setLoadingTemplates] = useState(true);
-
-  const history = useHistory();
 
   useEffect(async () => {
     document.title = `DormDesign | Templates`;
@@ -20,36 +19,43 @@ export const TemplateGalleryRoute = () => {
     try {
       const templates = await DataRequests.getFeaturedTemplates();
       setTemplates(templates);
-      setLoadingTemplates(false);
     } catch (err) {
       console.error(err);
     }
   }, []);
 
-  const onClickTemplate = (index) => {
-    history.push(`/template/${templates[index].templateId}`);
-  };
-
   return (
     <>
-      <div className="templates-container">
-        <h3>Featured Templates</h3>
-        {loadingTemplates ? (
-          <div className="templates-spinner">
-            <Spinner animation="border" variant="secondary" />
-          </div>
-        ) : templates === null || templates.length === 0 ? (
-          <p>No templates found</p>
-        ) : (
-          <div className="templates-grid">
-            {templates.map((template, index) => (
-              <button key={index} className="templates-card" onClick={() => onClickTemplate(index)}>
-                <p className="templates-card-name">{template.name}</p>
-                <RoomPreview id={template.templateId} isTemplate={true} />
-              </button>
-            ))}
-          </div>
-        )}
+      <div className="templates-container custom-card">
+        <RoomThumbnailGrid
+          loadingSpinner={true}
+          header={<h3>Featured Templates</h3>}
+          emptyMessage="Sorry, looks like we don't have any featured templates at the moment. Check back later."
+        >
+          {templates === null
+            ? null
+            : templates.map((template, index) => (
+                <RoomThumbnail
+                  dropdownMenu={
+                    <DropdownMenu placement={"bottom-start"} buttonIcon={<BsThreeDotsVertical />}>
+                      <DropdownMenu.Item
+                        icon={<BsLink45Deg />}
+                        text={"Copy link"}
+                        onClick={() => {
+                          navigator.clipboard.writeText(
+                            `${window.location.origin}/template/${template.templateId}`
+                          );
+                        }}
+                      />
+                    </DropdownMenu>
+                  }
+                  key={index}
+                  name={template.name}
+                  id={template.templateId}
+                  isTemplate={true}
+                />
+              ))}
+        </RoomThumbnailGrid>
       </div>
     </>
   );

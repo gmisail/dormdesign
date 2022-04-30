@@ -72,54 +72,10 @@
   &.item-selected {
     background-color: $selection-color-primary;
 
-    // Override the gray circle selection effect on the IconButton to a matching color
-    .item-menu-button:hover,
-    .item-menu-button.toggled {
+    // Override the gray circle selection effect on the DropdownMenu's IconButton to a matching color
+    .dropdown-menu-button:hover,
+    .dropdown-menu-button.toggled {
       background-color: darken($selection-color-primary, 6);
-    }
-  }
-}
-
-.item-menu-list {
-  list-style-type: none;
-  background-color: $dropdown-background-color;
-  padding: 0;
-  margin: 0;
-  border: 1px solid $border-color;
-  border-radius: inherit;
-
-  overflow: hidden;
-
-  li {
-    padding: 5px 10px;
-    color: $text-color-dark;
-    font-size: 17px;
-    line-height: 28px;
-
-    display: flex;
-    flex-flow: row nowrap;
-    align-items: center;
-
-    border-bottom: 1px solid;
-    border-bottom-color: $border-color;
-
-    svg {
-      max-width: 1.5rem;
-      margin: auto 0;
-      margin-right: 0.6em;
-    }
-
-    &.color-danger {
-      color: $color-danger;
-    }
-
-    &:hover {
-      cursor: pointer;
-      background-color: $border-color;
-    }
-
-    &:last-child {
-      border-bottom: none;
     }
   }
 }

@@ -1,5 +1,3 @@
-import "./TemplateEditor.scss";
-
 import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { itemSelected } from "../../../context/RoomStore";
@@ -9,6 +7,7 @@ import { RiRulerFill, RiRulerLine } from "react-icons/ri";
 import { BiMinus, BiPlus } from "react-icons/bi";
 
 import IconButton from "../../../components/IconButton/IconButton";
+
 import RoomEditorObject from "../../../room-editor/RoomEditorObject";
 import SceneController from "../../../room-editor/SceneController";
 import Vector2 from "../../../room-editor/Vector2";
@@ -33,7 +32,6 @@ const itemToEditorProperties = (props) => {
 function TemplateEditor() {
   const dispatch = useDispatch();
 
-  const [lastSelectedItemID, setLastSelectedItemID] = useState(null);
   // Start with edge lengths true since that is the default in RoomBoundsObject
   const [showEdgeLengths, setShowEdgeLengths] = useState(true);
 
@@ -44,7 +42,6 @@ function TemplateEditor() {
   const mainCanvasRef = useRef(null);
 
   const items = useSelector((state) => state.items);
-  const selectedItemID = useSelector((state) => state.selectedItemID);
   const bounds = useSelector((state) => state.bounds);
 
   useEffect(() => {
@@ -79,9 +76,6 @@ function TemplateEditor() {
 
   const itemSelectedInEditor = (obj) => {
     dispatch(itemSelected(obj === null ? null : obj.id));
-    if (obj !== null) {
-      setLastSelectedItemID(obj.id);
-    }
   };
 
   return (

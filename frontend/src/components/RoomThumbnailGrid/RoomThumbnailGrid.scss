@@ -1,0 +1,60 @@
+@import "../../styles/variables.scss";
+
+.room-thumbnail-grid-container {
+
+  $gap: 20px;
+
+  .room-thumbnail-grid {
+    display: grid;
+    gap: $gap;
+
+    .room-thumbnail-grid-header {
+      // Header is assigned the entire first row of the grid
+      grid-area: 1 / 1 / 1 / -1;
+      & > * {
+        margin: 0;
+      }
+    }
+  }
+
+  /*
+    Calculate the width of the container to correspond with number the number of thumbnails 
+    that can fit in a row of the grid at given screen sizes
+
+    Also update the number of grid columns to match
+  */
+  @mixin config-width($items-per-row, $thumbnail-width) {
+    max-width: $items-per-row * $thumbnail-width + $gap * ($items-per-row - 1);
+    .room-thumbnail-grid {  
+      grid-template-columns: repeat($items-per-row, $thumbnail-width);
+    }
+  }
+  @include config-width(4, $room-thumbnail-width);
+  @media screen and (max-width: $breakpoint-lg) {
+    @include config-width(3, $room-thumbnail-width);
+  }
+  @media screen and (max-width: $breakpoint-md) {
+    @include config-width(2, $room-thumbnail-width);
+  }
+  @media screen and (max-width: $breakpoint-sm) {
+    // The thumbnails shrink when we get to the smallest breakpoint (so we can still fit multiple per row)
+    @include config-width(2, $room-thumbnail-width-sm);
+  }
+
+  & > p {
+    font-size: 1.1rem;
+    font-weight: 500;
+    margin: 20px auto;
+  }
+
+  .room-thumbnail-grid-empty-message {
+    grid-area: 2 / 1 / 2 / -1;
+  }
+  
+  .room-thumbnail-grid-spinner {
+    grid-area: 2 / 1 / 2 / -1;
+    
+    margin: 50px;
+    justify-self: center;
+  }
+}

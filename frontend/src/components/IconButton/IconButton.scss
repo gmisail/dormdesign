@@ -6,6 +6,15 @@
   background-color: transparent;
   transition: background-color 0.05s ease;
 
+  /* 
+    Don't allow icon buttons to shrink in flexbox containers
+    Not sure if this should be a universal behavior but it's here for now
+
+    If anyone changes this, make sure you go through the site and find instances where icon buttons might be 
+    squished in flex containers and individually fix them
+  */
+  flex-shrink: 0;
+
   & > svg {
     display: block;
     width: 100%;

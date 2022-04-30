@@ -21,6 +21,7 @@ h6 {
 a {
   cursor: pointer;
   color: $color-primary;
+  text-decoration: none;
 }
 
 /* Remove default outline around buttons/inputs */
@@ -67,20 +68,19 @@ textarea {
   font-weight: $btn-font-weight;
 
   border-radius: $btn-border-radius;
-  color: $text-color-light;
   box-shadow: $box-shadow;
 
-  @include button-background-color($color-primary);
+  @include button-color($color-primary, $text-color-light);
   &.custom-btn-outline {
     @include button-outline-color($color-primary, $text-color-light);
   }
 
   &.custom-btn-secondary {
-    @include button-background-color($color-secondary);
+    @include button-color($color-secondary, $text-color-light);
   }
 
   &.custom-btn-danger {
-    @include button-background-color($color-danger);
+    @include button-color($color-danger, $text-color-light);
   }
 
   &.custom-btn-outline.custom-btn-secondary {

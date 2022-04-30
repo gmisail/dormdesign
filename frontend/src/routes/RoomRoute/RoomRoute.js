@@ -117,18 +117,38 @@ export const RoomRoute = () => {
   });
 
   const onClickClaimItemButton = useCallback(
-    (item) =>
-      dispatch(
-        updateItems([
-          {
-            id: item.id,
-            updated: {
-              claimedBy: item.claimedBy === userName ? null : userName,
-            },
+    (item) => {
+      if (userName === null) {
+        toggleModal(modalTypes.chooseName, {
+          onSubmit: (newName) => {
+            dispatch(setUserName(newName));
+            dispatch(
+              updateItems([
+                {
+                  id: item.id,
+                  updated: {
+                    claimedBy: newName,
+                  },
+                },
+              ])
+            );
+            toggleModal();
           },
-        ])
-      ),
-    [updateItems, userName, dispatch]
+        });
+      } else {
+        dispatch(
+          updateItems([
+            {
+              id: item.id,
+              updated: {
+                claimedBy: item.claimedBy === userName ? null : userName,
+              },
+            },
+          ])
+        );
+      }
+    },
+    [updateItems, userName, dispatch, toggleModal]
   );
 
   const onClickSettingsButton = useCallback(

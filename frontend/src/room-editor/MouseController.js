@@ -12,16 +12,14 @@ class MouseController {
     this.onScroll = onScroll ?? (() => {});
 
     this.watchedElement.addEventListener("touchstart", this._touchStart);
-    this.watchedElement.addEventListener("touchend", this._touchEnd);
     this.watchedElement.addEventListener("touchmove", this._touchMove);
+    this.watchedElement.addEventListener("touchend", this._touchEnd);
+    this.watchedElement.addEventListener("touchcancel", this._touchEnd);
 
     this.watchedElement.addEventListener("mousedown", this._mouseDown);
-
     this.watchedElement.addEventListener("mousemove", this._mouseMove);
     this.watchedElement.addEventListener("wheel", this._wheel);
-
     this.watchedElement.addEventListener("mouseup", this._mouseUp);
-
     this.watchedElement.addEventListener("mouseleave", this._mouseLeave);
   }
 
@@ -30,6 +28,7 @@ class MouseController {
   }
 
   _mouseDown = (e) => {
+    e.preventDefault();
     const rect = this.watchedElement.getBoundingClientRect();
     const position = new Vector2(
       (e.clientX - rect.left) * window.devicePixelRatio,
@@ -41,6 +40,7 @@ class MouseController {
   };
 
   _mouseMove = (e) => {
+    e.preventDefault();
     const rect = this.watchedElement.getBoundingClientRect();
     const posX = (e.clientX - rect.left) * window.devicePixelRatio;
     const posY = (e.clientY - rect.top) * window.devicePixelRatio;
@@ -54,6 +54,7 @@ class MouseController {
   };
 
   _mouseUp = (e) => {
+    e.preventDefault();
     this._pressed = false;
     this.onMouseUp();
   };
@@ -77,6 +78,7 @@ class MouseController {
   };
 
   _touchStart = (e) => {
+    e.preventDefault();
     const touch = e.touches[0];
     const mouseEvent = new MouseEvent("mousedown", {
       clientX: touch.clientX,
@@ -86,6 +88,7 @@ class MouseController {
   };
 
   _touchMove = (e) => {
+    e.preventDefault();
     const touch = e.touches[0];
     const mouseEvent = new MouseEvent("mousemove", {
       clientX: touch.clientX,
@@ -95,6 +98,7 @@ class MouseController {
   };
 
   _touchEnd = (e) => {
+    e.preventDefault();
     const mouseEvent = new MouseEvent("mouseup", {});
     this.watchedElement.dispatchEvent(mouseEvent);
   };
