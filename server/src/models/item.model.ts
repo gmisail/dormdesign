@@ -1,30 +1,64 @@
-const { createItemSchema, updateItemSchema } = require("../schemas/item.schema");
-const { validateWithSchema } = require("../utils.js");
-const { v4: uuidv4 } = require("uuid");
-
-let Item = {};
+import Joi from "joi";
 
 /**
- * Create an item based off of the given parameters & initialize each of the other parameters to their default values
- * @param { object } item
- * @returns Valid item
- * @throws When item is invalid
+ * Represents an Item object. Validated using Joi schemas to ensure that
+ * the data is correct.
  */
-Item.create = (item) => {
-  validated = validateWithSchema(item, createItemSchema);
-  validated.id = uuidv4();
-  return validated;
+type Item = {
+  name: string;
+  quantity: number;
+  visibleInEditor: boolean;
+  claimedBy: string;
+  dimensions: {
+    width: number;
+    height: number;
+    length: number;
+  };
+  editorPosition: {
+    x: number;
+    y: number;
+  };
+  editorZIndex: number;
+  editorRotation: number;
+  editorLocked: boolean;
 };
 
-/**
- * Apply given update to given item.
- * @param { object } item Item to update
- * @param { object } update Update to apply to item
- * @throws When update is invalid
- */
-Item.update = (item, update) => {
-  update = validateWithSchema(update, updateItemSchema);
-  Object.assign(item, update);
+const dimensionsSchema = Joi.object({
+  width: Joi.number().allow(null).default(null).max(100).min(0),
+  height: Joi.number().allow(null).default(null).max(100).min(0),
+  length: Joi.number().allow(null).default(null).max(100).min(0),
+});
+
+const editorPositionSchema = Joi.object({
+  x: Joi.number().precision(4).default(0).min(-100).max(100),
+  y: Joi.number().precision(4).default(0).min(-100).max(100),
+});
+
+const itemSchema = {
+  name: Joi.string().min(1).max(30),
+  quantity: Joi.number().integer(),
+  visibleInEditor: Joi.boolean(),
+  claimedBy: Joi.string().max(30).min(1).allow(null),
+  dimensions: dimensionsSchema,
+  editorPosition: editorPositionSchema,
+  editorZIndex: Joi.number().integer(),
+  editorRotation: Joi.number().precision(4).max(360),
+  editorLocked: Joi.boolean(),
 };
 
-module.exports = Item;
+const createItemSchema = Joi.object({
+  ...itemSchema,
+  name: itemSchema.name.required(),
+  quantity: itemSchema.quantity.default(1),
+  visibleInEditor: itemSchema.visibleInEditor.default(false),
+  claimedBy: itemSchema.claimedBy.default(null),
+  editorPosition: itemSchema.editorPosition.default(),
+  editorZIndex: itemSchema.editorZIndex.default(0),
+  editorRotation: itemSchema.editorRotation.default(0),
+  editorLocked: itemSchema.editorLocked.default(false),
+  dimensions: itemSchema.dimensions.default(),
+});
+
+const updateItemSchema = Joi.object(itemSchema);
+
+export { createItemSchema, updateItemSchema, Item };

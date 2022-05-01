@@ -1,16 +1,13 @@
 import { Cache } from "../cache";
+
 const PreviewRenderer = require("../services/preview-renderer");
-
-let Preview = {};
-
-Preview.CACHE_EXPIRATION = 60 * 5; // Seconds
 
 /**
  * From a given Room ID, return the respective room preview (either from the cache or renderer)
  * @param {*} Room ID
  * @returns URI
  */
-Preview.get = async function (room) {
+async function generatePreview(room: any) {
   const id = room.id;
 
   let preview;
@@ -28,15 +25,10 @@ Preview.get = async function (room) {
       data: PreviewRenderer.generatePreview(room.data),
     };
 
-    await Cache.getClient().set(
-      `${id}:preview`,
-      JSON.stringify(preview),
-      "EX",
-      Preview.CACHE_EXPIRATION
-    );
+    await Cache.getClient().set(`${id}:preview`, JSON.stringify(preview));
   }
 
   return preview;
-};
+}
 
-module.exports = Preview;
+module.exports = { generatePreview };
