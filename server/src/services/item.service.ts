@@ -31,4 +31,4 @@ class ItemService {
   }
 }
 
-module.exports = ItemService;
+export { ItemService };

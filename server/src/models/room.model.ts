@@ -23,6 +23,14 @@ type Room = { id: string } & RoomData;
 // RoomDocument is MongoDB's representation of a room
 type RoomDocument = { _id : ObjectId } & RoomData;
 
+type RoomUpdate = {
+  name: string,
+  vertices: Array<{
+    x: number,
+    y: number
+  }>
+};
+
 const vertexSchema = Joi.object({
   x: Joi.number().precision(4).default(0),
   y: Joi.number().precision(4).default(0),
@@ -59,4 +67,4 @@ function documentToRoom(roomDoc: RoomDocument): Room {
 }
 
 
-export { updateRoomDataSchema, roomToDocument, documentToRoom, Room, RoomDocument };
+export { updateRoomDataSchema, roomToDocument, documentToRoom, Room, RoomDocument, RoomUpdate };
