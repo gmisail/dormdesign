@@ -1,7 +1,7 @@
 import { Cache } from "../cache";
 import { Database } from "../db";
-import { Item } from "../models/item.model";
-import { Room, roomAsDocument } from "../models/room.model";
+import { Room, RoomDocument, roomToDocument, documentToRoom } from "../models/room.model";
+import { StatusError } from "../errors/status.error";
 
 const { v4: uuidv4 } = require("uuid");
 
@@ -57,108 +57,40 @@ class RoomService {
     }
 
     try {
-      await Database.getConnection().db("dd_data").collection("rooms").insertOne(roomAsDocument(room));
+      await Database.getConnection().db("dd_data").collection("rooms").insertOne(roomToDocument(room));
     } catch (err) {
       throw new Error("Failed to create room: " + err);
     }
 
-    if (DEBUG_MESSAGES) 
-        console.log(`Room ${id} has been created.`);
+    if (DEBUG_MESSAGES)
+      console.log(`Room ${id} has been created.`);
 
     return room;
   }
 
-  static async deleteRoom(id: string) {}
+  /**
+     * Deletes the room with the given id from both the database and cache
+     * @param { string } id
+     * @returns { Promise.<object> }
+     * @throws When the delete fails
+     */
+  static async deleteRoom(id: string) {
+    try {
+      await Database.getConnection().db("dd_data").collection("rooms").deleteOne({ _id: id });
 
-  static async getRoom(id: string) {}
-
-  static async getFromTemplateId(templateId: string): Room {}
-
-  static async getFeaturedRooms() {}
-}
-
-let Room = {};
-Room.MAX_NAME_LENGTH = 40;
-Room.MAX_USERNAME_LENGTH = 30;
-
-/**
- * Create a new room with a given name
- * @param { string } name
- * @param { string | undefined } templateId If specified, copys the data from this template
- * @returns { Promise.<object> } The newly created room object
- * @throws When the creation fails
- */
-Room.create = async function (name, templateId) {
-  let vertices = [
-    { x: -5, y: -5 },
-    { x: 5, y: -5 },
-    { x: 5, y: 5 },
-    { x: -5, y: 5 },
-  ];
-
-  const id = uuidv4();
-  const newTemplateId = uuidv4();
-
-  const room = {
-    _id: id,
-    templateId: newTemplateId,
-    data: {
-      name: name ?? "New Room",
-      items: [],
-      vertices,
-    },
-    metaData: {
-      featured: false,
-      lastModified: Date.now(),
-    },
-  };
-
-  if (templateId !== undefined) {
-    const templateRoom = await Room.getFromTemplateId(templateId);
-
-    room.data = { ...templateRoom.data };
-    // If a name has been provided, use that. Otherwise append 'Copy of ' to front of template name
-    if (name !== null && name !== undefined) {
-      room.data.name = name;
-    } else {
-      room.data.name = "Copy of " + room.data.name;
+      if (DEBUG_MESSAGES)
+        console.log(`Room ${id} has been deleted from the database`);
+    } catch (err) {
+      throw new Error(`Failed to delete room ${id} ` + err);
     }
+
+    await Cache.getClient().del(id);
+
+    if (DEBUG_MESSAGES)
+      console.log(`Room ${id} has been removed from the cache.`);
   }
 
-  try {
-    await Database.getConnection().db("dd_data").collection("rooms").insertOne(room);
-  } catch (err) {
-    throw new Error("Failed to create room: " + err);
-  }
-
-  if (DEBUG_MESSAGES) console.log(`Room ${id} has been created.`);
-
-  room.id = room._id;
-  delete room["_id"];
-
-  return room;
-};
-
-/**
- * Deletes the room with the given id from both the database and cache
- * @param { string } id
- * @returns { Promise.<object> }
- * @throws When the delete fails
- */
-Room.delete = async function (id) {
-  try {
-    await Database.getConnection().db("dd_data").collection("rooms").deleteOne({ _id: id });
-    if (DEBUG_MESSAGES) console.log(`Room ${id} has been deleted from the database`);
-  } catch (err) {
-    throw new Error(`Failed to delete room ${id} ` + err);
-  }
-
-  await Cache.getClient().del(id);
-
-  if (DEBUG_MESSAGES) console.log(`Room ${id} has been removed from the cache.`);
-};
-
-/**
+  /**
  * Get the JSON data from a room at an ID. Returns the cached version if it exists, the version in the
  * database otherwise.
  * @param { string } id
@@ -166,53 +98,47 @@ Room.delete = async function (id) {
  * @returns { Promise.<object> } The room object if it exists
  * @throws When the function fails to get the room
  */
-Room.get = async function (id, idKey = "_id") {
-  /* First check if room is in the cache, which we can only do here if the room is being fetched using its id. Otherwise
+  static async getRoom(id: string, idKey = "_id") {
+    /* First check if room is in the cache, which we can only do here if the room is being fetched using its id. Otherwise
     we will do this check after we've queried the database and have the room ID */
-  if (idKey === "_id") {
-    let cachedRoom = await Cache.getClient().get(id);
-    if (cachedRoom !== null) {
-      // Commented this deubg message since it gets spammed a lot. But it's sometimes useful
-      // if (DEBUG_MESSAGES) console.log(`Get on cachedRoom ${id} used cached data.`);
-      return JSON.parse(cachedRoom);
+    if (idKey === "_id") {
+      let cachedRoom = await Cache.getClient().get(id);
+
+      if (cachedRoom !== null) {
+        // Commented this deubg message since it gets spammed a lot. But it's sometimes useful
+        // if (DEBUG_MESSAGES) console.log(`Get on cachedRoom ${id} used cached data.`);
+        return JSON.parse(cachedRoom);
+      }
     }
-  }
 
-  let filter = {};
-  filter[idKey] = id;
-
-  /* Since it is not cached, retrieve it from the database */
-  let room;
-  try {
-    room = await Database.getConnection().db("dd_data").collection("rooms").findOne(filter);
-  } catch (err) {
-    throw new Error(`Failed to get room with id '${id}'.` + err);
-  }
-
-  if (room === null) {
-    const err = new Error(`Room with id '${id}' not found`);
-    err.status = 404;
-    throw err;
-  }
-
-  room.id = room._id;
-  delete room["_id"];
-
-  /* In the case where the room has been fetched using something other than the room id, we can now check the cache
-    for the most up to date version (since we now know the room ID) */
-  if (idKey !== "_id") {
-    let cachedRoom = await Cache.getClient().get(room.id);
-    if (cachedRoom !== null) {
-      // Commented this deubg message since it gets spammed a lot. But it's sometimes useful
-      // if (DEBUG_MESSAGES) console.log(`Get on room ${cachedRoom.id} used cached data.`);
-      return JSON.parse(cachedRoom);
+    /* Since it is not cached, retrieve it from the database */
+    let roomDocument: RoomDocument;
+    try {
+      roomDocument = await Database.getConnection().db("dd_data").collection("rooms").findOne({ idKey: id }) as RoomDocument;
+    } catch (err) {
+      throw new Error(`Failed to get room with id '${id}'.` + err);
     }
+
+    if (roomDocument === null)
+      throw new StatusError(`Room with id '${id}' not found`, 404);
+
+    const room = documentToRoom(roomDocument);
+
+    /* In the case where the room has been fetched using something other than the room id, we can now check the cache
+      for the most up to date version (since we now know the room ID) */
+    if (idKey !== "_id") {
+      let cachedRoom = await Cache.getClient().get(room.id);
+      if (cachedRoom !== null) {
+        // Commented this deubg message since it gets spammed a lot. But it's sometimes useful
+        // if (DEBUG_MESSAGES) console.log(`Get on room ${cachedRoom.id} used cached data.`);
+        return JSON.parse(cachedRoom);
+      }
+    }
+
+    return room;
   }
 
-  return room;
-};
-
-/**
+  /**
  * Get the JSON data from a room with given templateId. If the room is currently
  * in the cache, that data will be returned. Otherwise, the data stored in the
  * database will be returned.
@@ -220,36 +146,44 @@ Room.get = async function (id, idKey = "_id") {
  * @returns { Promise.<object> } The room object if it exists
  * @throws When the function fails to get the room
  */
-Room.getFromTemplateId = async function (templateId) {
-  return Room.get(templateId, "templateId");
-};
-
-/**
- * Returns rooms with 'featured' set to true. Returned rooms have their 'id' fields removed
- * and only include basic data (e.g. name)
- * @returns { Promise.<object> }
- */
-Room.getFeatured = async function () {
-  let rooms;
-  try {
-    const cursor = await Database.getConnection()
-      .db("dd_data")
-      .collection("rooms")
-      .find({ "metaData.featured": true });
-    rooms = await cursor.toArray();
-  } catch (error) {
-    throw new Error(`Failed to get featured rooms.` + error);
+  static async getFromTemplateId(templateId: string): Promise<Room> {
+    return RoomService.getRoom(templateId, "templateId");
   }
 
-  // Don't include room ID or any other unnecessary data in returned objects
-  for (let i = 0; i < rooms.length; i++) {
-    rooms[i]["name"] = rooms[i].data.name;
-    delete rooms[i]["_id"];
-    delete rooms[i]["data"];
-  }
+  /**
+  * Returns rooms with 'featured' set to true. Returned rooms have their 'id' fields removed
+  * and only include basic data (e.g. name)
+  * @returns { Promise.<object> }
+  */
+  static async getFeaturedRooms() {
+    let roomDocuments: Array<RoomDocument>;
 
-  return rooms;
-};
+    try {
+      const cursor = await Database.getConnection()
+        .db("dd_data")
+        .collection("rooms")
+        .find({ "metaData.featured": true });
+      roomDocuments = await cursor.toArray() as RoomDocument[];
+    } catch (error) {
+      throw new Error(`Failed to get featured rooms.` + error);
+    }
+
+    // Don't include room ID or any other unnecessary data in returned objects
+    let rooms = roomDocuments.map(room => {
+      let updatedRoom: any = { ...room };
+      updatedRoom["name"] = room.data.name;
+      delete updatedRoom["_id"];
+      delete updatedRoom.data;
+      return updatedRoom;
+    });
+
+    return rooms;
+  }
+}
+
+let Room = {};
+Room.MAX_NAME_LENGTH = 40;
+Room.MAX_USERNAME_LENGTH = 30;
 
 /**
  * Stores functions used by socket Hub to edit room. Most of these functions do not actually

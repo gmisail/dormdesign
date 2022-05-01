@@ -1,8 +1,8 @@
 import Joi, { number } from "joi";
+import { ObjectId } from "mongodb";
 import { Item } from "./item.model";
 
-type Room = {
-  id: string,
+type RoomData = {
   templateId: string;
   data: {
     name: string;
@@ -17,6 +17,11 @@ type Room = {
     lastModified: number; // data is represented in Unix time.
   };
 };
+
+type Room = { id: string } & RoomData;
+
+// RoomDocument is MongoDB's representation of a room
+type RoomDocument = { _id : ObjectId } & RoomData;
 
 const vertexSchema = Joi.object({
   x: Joi.number().precision(4).default(0),
@@ -36,10 +41,22 @@ const updateRoomDataSchema = Joi.object({
  * simply prepares the internal Room model for use in MongoDB.
  * @param room 
  */
-function roomAsDocument(room: Room): any {
+function roomToDocument(room: Room): RoomDocument {
   let document: any = { ...room, _id: room.id };
   delete document.id;
   return document;
 }
 
-export { updateRoomDataSchema, roomAsDocument, Room };
+/**
+ * Converts MongoDB document to Room.
+ * @param roomDoc 
+ * @returns 
+ */
+function documentToRoom(roomDoc: RoomDocument): Room {
+  let document: any = { ...roomDoc, id: roomDoc._id };
+  delete document._id;
+  return document;
+}
+
+
+export { updateRoomDataSchema, roomToDocument, documentToRoom, Room, RoomDocument };
