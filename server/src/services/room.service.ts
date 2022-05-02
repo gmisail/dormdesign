@@ -408,4 +408,4 @@ class RoomCacheService {
 
 }
 
-export { Room };
+export { RoomService, RoomCacheService };

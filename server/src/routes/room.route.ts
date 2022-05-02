@@ -1,10 +1,10 @@
 import Joi from "joi";
 import { Router } from "express";
 
-let Item = require("../models/item.model");
-let Room = require("../models/room.model");
+import { RoomService } from "../services/room.service";
+import { MAX_NAME_LENGTH } from "../constants/room.constants";
 
-// Need to wrap routes in this function in order for async execptions to be handled automatically
+// Need to wrap routes in this function in order for async exceptions to be handled automatically
 // See: https://github.com/Abazhenov/express-async-handler#readme
 const asyncHandler = require("express-async-handler");
 
@@ -19,16 +19,16 @@ router.get(
   "/get",
   asyncHandler(async (req, res) => {
     validateWithSchema(req.query, getRoomSchema);
-    const id = req.query.id;
 
-    let room = await Room.get(id);
+    const id = req.query.id as string;
+    let room = await RoomService.getRoom(id);
 
     res.json(room);
   })
 );
 
 const createRoomSchema = Joi.object({
-  name: Joi.string().min(1).max(Room.MAX_NAME_LENGTH).optional(),
+  name: Joi.string().min(1).max(MAX_NAME_LENGTH).optional(),
   templateId: Joi.string().min(1).optional(),
 });
 router.post(
@@ -36,8 +36,8 @@ router.post(
   asyncHandler(async (req, res, next) => {
     validateWithSchema(req.body, createRoomSchema);
 
-    const name = req.body.name;
-    const room = await Room.create(name, req.body.templateId);
+    const name = req.body.name as string;
+    const room = await RoomService.createRoom(name, req.body.templateId);
 
     res.json(room);
   })

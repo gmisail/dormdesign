@@ -1,14 +1,13 @@
 import { Router } from "express";
+import {RoomService} from "../services/room.service";
 
-const Room = require("../models/room.model");
 const asyncHandler = require("express-async-handler");
 const router = Router();
 
 router.get(
   "/featured",
   asyncHandler(async (req, res) => {
-    const templates = await Room.getFeatured();
-
+    const templates = await RoomService.getFeaturedRooms();
     return res.json({ templates });
   })
 );
