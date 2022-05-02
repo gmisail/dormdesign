@@ -1,7 +1,6 @@
 import { Cache } from "../cache";
 import {Room} from "../models/room.model";
-
-const PreviewRenderer = require("../services/preview-renderer");
+import { Renderer } from "./renderer.service";
 
 class PreviewService {
     /**
@@ -26,7 +25,7 @@ class PreviewService {
         if (preview === null || room.metaData.lastModified > preview.timestamp) {
             preview = {
                 timestamp: Date.now(),
-                data: PreviewRenderer.generatePreview(room.data),
+                data: Renderer.generatePreview(room.data),
             };
 
             await Cache.getClient().set(`${id}:preview`, JSON.stringify(preview));

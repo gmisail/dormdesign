@@ -25,32 +25,31 @@ type RoomData = {
   items: Array<ItemData>;
 };
 
-class PreviewRenderer {
-  private SIZE: number;
-  private PADDING: number;
-  private MAX_DRAWN_CELLS: number;
+class RendererService {
+  /**
+   * SIZE sets the pixel resolution of the output image
+   *
+   * Since the output is always a square, a value of SIZE = 100
+   * would result in a 100px by 100px image.
+   */
+  private SIZE: number = 300;
   private SCALE: number;
 
-  private ITEM_COLORS: Array<string>;
+  readonly PADDING: number;
+  readonly MAX_DRAWN_CELLS: number;
+  readonly ITEM_COLORS: Array<string>;
 
   private canvas: canvas.Canvas;
   private ctx: CanvasRenderingContext2D;
 
   constructor() {
-    /**
-     * SIZE sets the pixel resolution of the output image
-     *
-     * Since the output is always a square, a value of SIZE = 100
-     * would result in a 100px by 100px image.
-     */
-    this.SIZE = 300;
 
     /**
      * PADDING (in percent of total image size) around the rendered room.
      *
      * Example: If the PADDING = 0.25 and SIZE = 100(px) then there will be 25px of padding on each side (left, right, top, bottom)
      *
-     * PADDING will NOT affect the final pixel output size of the image (specified by this.SIZE), only the size of the room itself in the final render
+     * PADDING will NOT affect the final pixel output size of the image (specified by this. SIZE), only the size of the room itself in the final render
      */
     this.PADDING = 0.12;
     this.PADDING = Math.min(0.49, this.PADDING);
@@ -58,7 +57,8 @@ class PreviewRenderer {
     /**
      * Specifies the maximum number of grid cells to draw (per dimension). It's important that this value is set to something
      * reasonably low because for a very large room, if the grid were drawn to scale, it would probably both look bad and take
-     * signifantly more time/computing power to draw (since drawing the grid has a runtime of at least O(N^2) where N is the number of grid cells per dimension)
+     * significantly more time/computing power to draw (since drawing the grid has a runtime of at least O(N^2) where N
+     * is the number of grid cells per dimension)
      *
      * So a value of 25 for example means that at most a grid of size 25 x 25 cells will be drawn
      */
@@ -78,7 +78,7 @@ class PreviewRenderer {
   }
 
   /**
-   * Find the bounding box that contains all of the points
+   * Find the bounding box that contains all the points
    * @param { array<{ x: Number, y: Number }>} points
    * @returns { w, h, x, y }
    */
@@ -153,14 +153,14 @@ class PreviewRenderer {
       this.ctx.beginPath();
       const currX = startX + i * cellSize;
       this.ctx.moveTo(currX * this.SCALE, 0);
-      this.ctx.lineTo(currX * this.SCALE, 0 + bbox.w * this.SCALE);
+      this.ctx.lineTo(currX * this.SCALE, bbox.w * this.SCALE);
       this.ctx.stroke();
     }
     for (let i = 0; i < numLinesY + 1; i++) {
       this.ctx.beginPath();
       const currY = startY + i * cellSize;
       this.ctx.moveTo(0, currY * this.SCALE);
-      this.ctx.lineTo(0 + bbox.h * this.SCALE, currY * this.SCALE);
+      this.ctx.lineTo(bbox.h * this.SCALE, currY * this.SCALE);
       this.ctx.stroke();
     }
   }
@@ -276,4 +276,6 @@ class PreviewRenderer {
   }
 }
 
-module.exports = new PreviewRenderer();
+const Renderer = new RendererService();
+
+export { Renderer };
