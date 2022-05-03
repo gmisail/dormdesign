@@ -1,6 +1,5 @@
 @import "../../styles/variables.scss";
 
-
 .dropdown-menu-list {
   list-style-type: none;
   background-color: $dropdown-background-color;
@@ -11,10 +10,9 @@
 
   overflow: hidden;
 
-
   .dropdown-menu-list-item {
+    font-weight: 500;
     padding: 5px 10px;
-    color: $text-color-dark;
     font-size: 17px;
     line-height: 28px;
 
@@ -25,19 +23,19 @@
     border-bottom: 1px solid;
     border-bottom-color: $border-color;
 
+    &.bold {
+      font-weight: 600;
+    }
+
     svg {
       max-width: 1.5rem;
       margin: auto 0;
       margin-right: 0.6em;
     }
 
-    &.color-danger {
-      color: $color-danger;
-    }
-
     &:hover {
       cursor: pointer;
-      background-color: $border-color;
+      background-color: lighten($border-color, 4%);
     }
 
     &:last-child {

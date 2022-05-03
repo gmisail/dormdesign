@@ -3,7 +3,7 @@ import "./HomeRoute.scss";
 import React, { Component } from "react";
 
 import { Link } from "react-router-dom";
-import { BsX, BsLink45Deg, BsThreeDotsVertical } from "react-icons/bs";
+import { BsX, BsLink45Deg, BsThreeDotsVertical, BsStarFill, BsStar } from "react-icons/bs";
 
 import { ReactComponent as Logo } from "../../assets/logo.svg";
 
@@ -32,13 +32,11 @@ class HomeRoute extends Component {
   async componentDidMount() {
     document.title = "DormDesign";
 
-    const roomHistory = StorageController.getRoomsFromHistory();
-    this.setState({
-      roomHistory: roomHistory,
-    });
+    const roomHistory = StorageController.historyGetRooms();
+    this.updateRoomHistory(roomHistory);
 
     const backgroundColor = "#f4f4f4";
-    const scene = new SceneController(this.backgroundCanvasRef);
+    const scene = new SceneController(this.backgroundCanvasRef, { manualRenders: true });
     scene.backgroundColor = backgroundColor;
     const grid = new RoomGridObject({
       scene: scene,
@@ -53,18 +51,53 @@ class HomeRoute extends Component {
 
     this.fitGridToWindow();
     scene.onResize = this.fitGridToWindow;
+    window.addEventListener("resize", this.onWindowResized);
+    scene.render();
   }
+
+  componentWillUnmount() {
+    // Cleanup callback
+    this.scene.onResize = () => {};
+
+    window.removeEventListener("resize", this.onWindowResized);
+  }
+
+  onWindowResized = () => {
+    this.scene.render();
+  };
+
+  updateRoomHistory = (history) => {
+    /*
+      We need to re-order history array so favorites are at front while still ensuring that most
+      recently accessed rooms are first
+    */
+
+    // First add favorites in order
+    let favoritesFirst = Array(history.length);
+    let index = 0;
+    for (let i = 0; i < history.length; i++) {
+      if (history[i].favorite) {
+        favoritesFirst[index] = history[i];
+        index += 1;
+      }
+    }
+    // Now add non-favorites in order
+    for (let i = 0; i < history.length; i++) {
+      if (!history[i].favorite) {
+        favoritesFirst[index] = history[i];
+        index += 1;
+      }
+    }
+    this.setState({
+      roomHistory: favoritesFirst,
+    });
+  };
 
   fitGridToWindow = () => {
     this.grid.size = new Vector2(this.backgroundCanvasRef.width, this.backgroundCanvasRef.height);
     this.grid.cellSize = 80 * window.devicePixelRatio;
     this.grid.lineWidth = 2 * window.devicePixelRatio;
   };
-
-  componentWillUnmount() {
-    // Cleanup callback
-    this.scene.onResize = () => {};
-  }
 
   onSubmitCreateRoom = async (name) => {
     let roomID;
@@ -92,49 +125,53 @@ class HomeRoute extends Component {
     }
   };
 
-  // Removes a recent room from local storage and from local state.
-  // Takes in id of room and curent index of it in 'roomHistory' state variable
-  removeRecentRoom = (id, index) => {
+  // Removes a recent room from local storage and updates local state
+  removeRecentRoom = (id) => {
     const updated = StorageController.removeRoomFromHistory(id);
-    // Only update the state if an element was actually removed
-    if (updated.length !== this.state.roomHistory.length) {
-      this.setState({
-        roomHistory: this.state.roomHistory.filter((_, i) => i != index),
-      });
-    }
+    this.updateRoomHistory(updated);
   };
 
-  renderRecentRooms = () => {
+  renderRecentRoom = (room, key) => {
     return (
-      <div className="home-recent-rooms custom-card">
-        <RoomThumbnailGrid header={<h5>Recent Rooms</h5>}>
-          {this.state.roomHistory.map((item, index) => {
-            return (
-              <RoomThumbnail
-                dropdownMenu={
-                  <DropdownMenu placement={"bottom-start"} buttonIcon={<BsThreeDotsVertical />}>
-                    <DropdownMenu.Item
-                      icon={<BsLink45Deg />}
-                      text={"Copy link"}
-                      onClick={() => {
-                        navigator.clipboard.writeText(`${window.location.origin}/room/${item.id}`);
-                      }}
-                    />
-                    <DropdownMenu.Item
-                      icon={<BsX />}
-                      text={"Hide"}
-                      onClick={() => this.removeRecentRoom(item.id, index)}
-                    />
-                  </DropdownMenu>
-                }
-                key={index}
-                name={item?.name ?? "Unkown Room"}
-                id={item?.id ?? null}
-              />
-            );
-          })}
-        </RoomThumbnailGrid>
-      </div>
+      <RoomThumbnail
+        dropdownMenu={
+          <DropdownMenu placement={"bottom-start"} buttonIcon={<BsThreeDotsVertical />}>
+            <DropdownMenu.Item
+              className={`${room.favorite ? "color-primary" : ""}`}
+              icon={
+                room.favorite ? (
+                  <BsStarFill style={{ transform: "scale(0.75)" }} />
+                ) : (
+                  <BsStar style={{ transform: "scale(0.8)" }} />
+                )
+              }
+              text={room.favorite ? "Favorited" : "Favorite"}
+              onClick={() => {
+                const updated = room.favorite
+                  ? StorageController.historyUnfavoriteRoom(room.id)
+                  : StorageController.historyFavoriteRoom(room.id);
+                this.updateRoomHistory(updated);
+              }}
+            />
+            <DropdownMenu.Item
+              icon={<BsLink45Deg />}
+              text={"Copy link"}
+              onClick={() => {
+                navigator.clipboard.writeText(`${window.location.origin}/room/${room.id}`);
+              }}
+            />
+            <DropdownMenu.Item
+              icon={<BsX />}
+              text={"Hide"}
+              onClick={() => this.removeRecentRoom(room.id)}
+            />
+          </DropdownMenu>
+        }
+        sticker={room.favorite ? <BsStarFill className="color-primary" /> : null}
+        key={key}
+        name={room?.name ?? "Unkown Room"}
+        id={room?.id ?? null}
+      />
     );
   };
 
@@ -178,7 +215,18 @@ class HomeRoute extends Component {
               </p>
             </div>
           </div>
-          {this.state.roomHistory.length > 0 ? this.renderRecentRooms() : null}
+          {/* {this.state.favoriteRooms.length > 0 || this.state.recentRooms.length > 0 ? ( */}
+          {this.state.roomHistory.length > 0 ? (
+            <div className="home-recent-rooms custom-card">
+              <RoomThumbnailGrid header={<h5>Recent Rooms</h5>}>
+                {/* {this.state.favoriteRooms.map((room, index) =>
+                  this.renderRecentRoom(room, room.id)
+                )} */}
+                {/* {this.state.recentRooms.map((room, index) => this.renderRecentRoom(room, room.id))} */}
+                {this.state.roomHistory.map((room) => this.renderRecentRoom(room, room.id))}
+              </RoomThumbnailGrid>
+            </div>
+          ) : null}
         </div>
       </>
     );

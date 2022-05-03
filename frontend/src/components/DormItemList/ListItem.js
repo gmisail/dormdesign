@@ -62,8 +62,16 @@ const ListItem = ({
                 },
               ]}
             >
-              <DropdownMenu.Item onClick={onEdit} icon={<BsPencil />} text="Edit" />
-              <DropdownMenu.Item onClick={onDuplicate} icon={<BsFiles />} text="Duplicate" />
+              <DropdownMenu.Item
+                onClick={onEdit}
+                icon={<BsPencil style={{ transform: "scale(0.9) translate(-1px,0)" }} />}
+                text="Edit"
+              />
+              <DropdownMenu.Item
+                onClick={onDuplicate}
+                icon={<BsFiles style={{ transform: "scale(0.9) translate(-3px,0)" }} />}
+                text="Duplicate"
+              />
               <DropdownMenu.Item
                 onClick={onClaim}
                 icon={claimedByMe ? <BsPersonDash /> : <BsPersonPlus />}

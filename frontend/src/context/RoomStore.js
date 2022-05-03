@@ -60,7 +60,7 @@ export const connectToRoom = (id) => async (dispatch, getState) => {
       console.log("Successfully connected to Room");
 
       // Add this room to local history of viewed rooms
-      StorageController.addRoomToHistory(id, roomObj.data.name);
+      StorageController.historyAddRoom(id, roomObj.data.name);
 
       dispatch({
         type: RoomActions.connectedToRoom,
@@ -117,7 +117,9 @@ export const connectToRoom = (id) => async (dispatch, getState) => {
     });
 
     connection.on("roomNameUpdated", (data) => {
-      StorageController.addRoomToHistory(id, data.name);
+      let update = {};
+      update[id] = data.name;
+      StorageController.historyUpdateRoomNames(update);
 
       dispatch({
         type: RoomActions.roomNameUpdated,
@@ -130,7 +132,7 @@ export const connectToRoom = (id) => async (dispatch, getState) => {
     });
 
     connection.on("roomDeleted", (data) => {
-      StorageController.removeRoomFromHistory(id);
+      StorageController.historyRemoveRoom(id);
 
       window.location.href = "/";
       dispatch({

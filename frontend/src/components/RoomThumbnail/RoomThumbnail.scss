@@ -1,9 +1,19 @@
 @import "../../styles/variables.scss";
 
-
 .room-thumbnail {
   position: relative;
 
+  background-color: $foreground-color;
+  // background-color: red;
+  border-radius: $card-border-radius;
+  border: 1px solid lighten($color-secondary, 25%);
+  &:hover {
+    $border-color-hover: lighten($color-secondary, 10%);
+    // Use a solid shadow instead of changing width of border so elements inside thumbnail don't move
+    box-shadow: 0px 0px 0px 1px $border-color-hover;
+    // Update color of border to match
+    border: 1px solid $border-color-hover;
+  }
 
   $width: $room-thumbnail-width;
   $width-sm: $room-thumbnail-width-sm;
@@ -15,10 +25,26 @@
     width: $width;
     height: $width * 1.22;
 
+    // Dropdown menu button (if it exists). If other buttons are added to thumbnail this might need to be more specific
     button {
       width: 16.5%;
+      top: 0.5%;
+      right: 0;
+    }
+
+    .room-thumbnail-sticker {
+      position: absolute;
+      padding: 5px;
+      width: 14%;
       top: 1%;
-      right: 0%;
+      left: 1%;
+      // right: 14%;
+
+      svg {
+        display: block;
+        width: 100%;
+        height: 100%;
+      }
     }
 
     .room-thumbnail-link {
@@ -54,7 +80,7 @@
       .dropdown-menu-button {
         width: 22%;
       }
-  
+
       .room-thumbnail-link {
         .room-preview {
           width: $element-size-sm;
@@ -69,13 +95,6 @@
     }
   }
 
-  background-color: $foreground-color;
-  border-radius: $card-border-radius;
-  outline: 1px solid #ccc;
-  &:hover {
-    outline: 2px solid $color-secondary;
-  }
-
   .dropdown-menu-button {
     z-index: 1;
     position: absolute;
@@ -87,7 +106,7 @@
     position: relative;
     width: 100%;
     height: 100%;
-  
+
     &,
     &:hover,
     &:visited,
@@ -95,21 +114,21 @@
       color: inherit;
       text-decoration: none;
     }
-  
+
     .room-preview {
       position: absolute;
 
       background-color: $foreground-color;
       box-shadow: inset 0px 0px 4px 1px rgba(0, 0, 0, 0.15);
     }
-  
+
     .room-thumbnail-name {
-      text-align: center; 
+      text-align: center;
       font-weight: 600;
 
       position: absolute;
       margin: 0;
-  
+
       /* Hide names that are too long (displaying '...' to indicate this) */
       white-space: nowrap;
       overflow: hidden;

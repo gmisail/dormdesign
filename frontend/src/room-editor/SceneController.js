@@ -1,7 +1,9 @@
 import SceneObject from "./SceneObject";
 
 class SceneController {
-  constructor(canvas) {
+  constructor(canvas, options = {}) {
+    const { manualRenders = false } = options;
+
     this.canvas = canvas;
     this.ctx = canvas.getContext("2d");
     this.resizeCanvas(canvas);
@@ -23,20 +25,14 @@ class SceneController {
     // Callback that is called when canvas has been resized
     this.onResize = () => {};
 
-    this.init();
-  }
-
-  init() {
-    this.mainLoop(); // Start main update/render loop
-  }
-
-  mainLoop(currentTime) {
-    requestAnimationFrame(this.mainLoop.bind(this));
-
-    this.resized = this.resizeCanvas(this.canvas);
-    if (this.resized) {
-      this.onResize();
+    if (!manualRenders) {
+      // Start render loop
+      this.renderLoop();
     }
+  }
+
+  renderLoop(currentTime) {
+    requestAnimationFrame(this.renderLoop.bind(this));
 
     // Calculate time since last frame. Measured in seconds
     if (!currentTime) currentTime = performance.now(); // Needed because currentTime is undefined on first frame
@@ -44,6 +40,15 @@ class SceneController {
     const deltaMilliSeconds = Math.max(0, currentTime - this._lastFrameTime);
     this.deltaTime = deltaMilliSeconds / 1000; // Convert to seconds
     this._lastFrameTime = currentTime;
+
+    this.render();
+  }
+
+  render() {
+    this.resized = this.resizeCanvas(this.canvas);
+    if (this.resized) {
+      this.onResize();
+    }
 
     this._rootObject._update();
 

@@ -1,20 +1,22 @@
 @import "../../styles/variables.scss";
 
-.room-preview-image {
-  display: block;
-  width: 100%;
-  height: 100%;
-
-  border-radius: inherit;
-
-  // Without this line the inset shadow on the parent container won't be visible
-  mix-blend-mode: multiply;
-}
-
 .room-preview {
-  &.loading {
+  &.loading,
+  &.room-preview-error {
     display: flex;
+    flex-flow: column nowrap;
     justify-content: center;
     align-items: center;
+  }
+
+  .room-preview-image {
+    display: block;
+    width: 100%;
+    height: 100%;
+
+    border-radius: inherit;
+
+    // Without this line the inset shadow on the parent container won't be visible
+    mix-blend-mode: multiply;
   }
 }

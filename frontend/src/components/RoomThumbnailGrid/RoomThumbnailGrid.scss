@@ -1,7 +1,6 @@
 @import "../../styles/variables.scss";
 
 .room-thumbnail-grid-container {
-
   $gap: 20px;
 
   .room-thumbnail-grid {
@@ -25,7 +24,7 @@
   */
   @mixin config-width($items-per-row, $thumbnail-width) {
     max-width: $items-per-row * $thumbnail-width + $gap * ($items-per-row - 1);
-    .room-thumbnail-grid {  
+    .room-thumbnail-grid {
       grid-template-columns: repeat($items-per-row, $thumbnail-width);
     }
   }
@@ -50,10 +49,10 @@
   .room-thumbnail-grid-empty-message {
     grid-area: 2 / 1 / 2 / -1;
   }
-  
+
   .room-thumbnail-grid-spinner {
     grid-area: 2 / 1 / 2 / -1;
-    
+
     margin: 50px;
     justify-self: center;
   }

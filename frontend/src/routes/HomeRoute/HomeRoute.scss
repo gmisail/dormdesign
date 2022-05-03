@@ -1,16 +1,12 @@
 @import "../../styles/variables.scss";
 
-
 .content-container {
-  max-height: 100%;
-  overflow: visible;
-
   padding: 0 25px;
   max-width: 1200px;
   margin: 45px auto 15px auto;
 
   display: grid;
-  grid-template-rows: max-content;
+  // grid-template-rows: auto;
   // Need minmax(0, 1fr) to prevent items from overflowing grid column (if it was just 1fr) - https://css-tricks.com/preventing-a-grid-blowout/
   grid-template-columns: 1fr 1fr 1fr;
 
@@ -28,29 +24,20 @@
     row-gap: 20px;
     grid-template-columns: minmax(0, 1fr);
     grid-template-areas:
-    "header"
-    "card-create"
-    "card-templates "
-    "card-join"
-    "recent-rooms";
+      "header"
+      "card-create"
+      "card-templates "
+      "card-join"
+      "recent-rooms";
   }
-
-
 
   .header-container {
     grid-area: header;
-    display: flex;
-    justify-self: stretch;
-    justify-content: center;
-    align-items: center;
-
+    width: 100%;
+    max-width: 800px;
     margin-bottom: 20px;
 
     .logo {
-      flex-grow: 1;
-      grid-area: logo;
-      max-width: 800px;
-
       path {
         fill: $text-color-dark;
       }
@@ -66,7 +53,7 @@
     @media screen and (max-width: $breakpoint-lg) {
       padding: 20px 15px 20px 15px;
     }
-  } 
+  }
 
   .home-card-create {
     grid-area: card-create;
@@ -77,17 +64,16 @@
   }
   .home-card-templates {
     grid-area: card-templates;
-  }      
+  }
   .home-card-join {
     grid-area: card-join;
     p {
       margin: 0;
     }
   }
-  .home-card-create, 
+  .home-card-create,
   .home-card-templates,
   .home-card-join {
-    
     justify-content: space-between;
     align-items: flex-start;
 
