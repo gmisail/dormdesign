@@ -21,6 +21,7 @@ router.get(
     validateWithSchema(req.query, getRoomSchema);
 
     const id = req.query.id as string;
+
     let room = await RoomService.getRoom(id);
 
     res.json(room);

@@ -2,14 +2,29 @@ FROM node:14-slim
 
 RUN mkdir -p /usr/src/app/node_modules && chown -R node:node /usr/src/app
 
-WORKDIR /usr/src/app
 
+# WORKDIR /usr/src/app
+
+# COPY package*.json ./
+# COPY tsconfig.json ./
+
+# USER node
+
+# COPY src ./src
+
+# RUN npm install
+# RUN npm run build
+
+# RUN ls -a
+
+# COPY /usr/src/app/dist .
+
+# COPY --chown=node:node . .
+
+WORKDIR /srv/app
 COPY package*.json ./
-
-USER node
-
 RUN npm install
-
-COPY --chown=node:node . .
+COPY . .
+RUN npm run build
 
 CMD ["npm", "run", "dev"]

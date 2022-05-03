@@ -3,18 +3,10 @@ import { StatusError } from "./errors/status.error";
 import chalk from "chalk";
 import { v4 as uuidv4 } from "uuid";
 import ws from "ws";
-import {RoomCacheService} from "./services/room.service";
-import {MAX_NAME_LENGTH} from "./constants/room.constants";
-
-/**
- * TODO: convert instances of socket to session
- */
-
-const Room = require("./models/room.model");
-
-const DEBUG_MESSAGES = Boolean(process.env.DEBUG_MESSAGES ?? "false");
-const USE_DEBUGGER = true; // print contents of every room for every ping
-const PONG_TIME = 15 * 1000; // check every 15 seconds
+import { RoomCacheService, RoomService } from "./services/room.service";
+import { MAX_NAME_LENGTH, MAX_USERNAME_LENGTH } from "./constants/room.constants";
+import { IncomingMessage } from "http";
+import { DEBUG_MESSAGES, USE_DEBUGGER, PONG_TIME } from "./constants/hub.constants";
 
 /**
  *  Data associated with a socket connection
@@ -71,8 +63,12 @@ class Hub {
     setInterval(async () => this.onPing(), PONG_TIME);
   }
 
-
-  async onConnection(socket: ws.WebSocket, req: any) {
+  /**
+   * Called when a socket is initially connected. User for setting up the socket events.
+   * @param socket Socket connection.
+   * @param req
+   */
+  async onConnection(socket: ws.WebSocket, req: IncomingMessage) {
     const id = uuidv4();
     const params = new URLSearchParams(req.url);
 
@@ -110,6 +106,10 @@ class Hub {
     });
   }
 
+  /**
+   * Adds a client to a given room from a user session.
+   * @param session User session.
+   */
   async addClient(session: UserSession): Promise<void> {
     this.connections.set(session.id, session);
 
@@ -136,6 +136,10 @@ class Hub {
     );
   }
 
+  /**
+   * From a given ID, remove a client from the hub.
+   * @param clientID Client ID.
+   */
   async removeClient(clientID: string): Promise<void> {
     if (!this.connections.has(clientID)) return;
 
@@ -173,8 +177,7 @@ class Hub {
       const removed = await RoomCacheService.removeRoom(roomID);
 
       // Sometimes the room might have already been removed from the cache (e.g. when a room is fully deleted)
-      if (removed && DEBUG_MESSAGES)
-        console.log(`Room ${roomID} has been removed from the cache.`);
+      if (removed && DEBUG_MESSAGES) console.log(`Room ${roomID} has been removed from the cache.`);
     }
   }
 
@@ -194,6 +197,13 @@ class Hub {
     session.socket.send(JSON.stringify(data));
   }
 
+  /**
+   * Send a message to a specific room.
+   * @param senderID Client sending the message.
+   * @param includeSender Determines if the message should be sent *back* to the sender.
+   * @param data Payload.
+   * @private
+   */
   private sendToRoom(senderID: string, includeSender: boolean, data: any) {
     const roomID = this.connections.get(senderID).roomID;
 
@@ -206,6 +216,13 @@ class Hub {
     });
   }
 
+  /**
+   * Sends an error to a client.
+   * @param id User ID.
+   * @param errorAction Error Action.
+   * @param errorMessage Error Message.
+   * @private
+   */
   private sendError(id: string, errorAction: string, errorMessage: string) {
     if (id === undefined) {
       console.error("Cannot send error to client: invalid ID.");
@@ -228,6 +245,12 @@ class Hub {
     this.sendToClient(id, response);
   }
 
+  /**
+   * Adds an event listener callback, i.e. set a callback to run given an event.
+   * @param event
+   * @param listener
+   * @private
+   */
   private addEventListener(event: string, listener: (args: EventMessage) => void): void {
     this.events.addListener(event, async (args: EventMessage) => {
       const { session } = args;
@@ -264,6 +287,13 @@ class Hub {
     });
   }
 
+  /**
+   * Adds an item to a room.
+   * @param session
+   * @param roomID
+   * @param data
+   * @param sendResponse
+   */
   async addItem({ session, roomID, data, sendResponse }: EventMessage) {
     if (data === undefined) throw new StatusError("Item data is undefined", 400);
 
@@ -275,6 +305,13 @@ class Hub {
     });
   }
 
+  /**
+   * Update multiple items in a room.
+   * @param session
+   * @param roomID
+   * @param data
+   * @param sendResponse
+   */
   async updateItems({ session, roomID, data, sendResponse }: EventMessage) {
     if (data?.items === undefined) throw new StatusError("Array 'items' is undefined", 400);
 
@@ -286,6 +323,13 @@ class Hub {
     });
   }
 
+  /**
+   * Delete an item in a room.
+   * @param session
+   * @param roomID
+   * @param data
+   * @param sendResponse
+   */
   async deleteItem({ session, roomID, data, sendResponse }: EventMessage) {
     if (data?.id === undefined) throw new StatusError("Item ID is undefined", 400);
 
@@ -302,6 +346,13 @@ class Hub {
     });
   }
 
+  /**
+   * Updates the layout of a given room.
+   * @param session
+   * @param roomID
+   * @param data
+   * @param sendResponse
+   */
   async updateLayout({ session, roomID, data, sendResponse }: EventMessage) {
     if (data?.vertices === undefined || data.vertices.length === 0)
       throw new StatusError("'vertices' array is empty or undefined", 400);
@@ -314,6 +365,13 @@ class Hub {
     });
   }
 
+  /**
+   * Clones a room from a given template.
+   * @param session
+   * @param roomID
+   * @param data
+   * @param sendResponse
+   */
   async cloneRoom({ session, roomID, data, sendResponse }: EventMessage) {
     if (data?.templateId === undefined) throw new StatusError("'templateId' is undefined", 400);
 
@@ -327,6 +385,13 @@ class Hub {
     });
   }
 
+  /**
+   * Updates the name of a room.
+   * @param session
+   * @param roomID
+   * @param data
+   * @param sendResponse
+   */
   async updateRoomName({ session, roomID, data, sendResponse }: EventMessage) {
     if (data === undefined || data.name === undefined || data.name.length <= 0)
       throw new StatusError("'name' string is empty or undefined", 400);
@@ -340,8 +405,14 @@ class Hub {
     });
   }
 
+  /**
+   * Deletes a room.
+   * @param session
+   * @param roomID
+   * @param sendResponse
+   */
   async deleteRoom({ session, roomID, sendResponse }: EventMessage) {
-    Room.delete(roomID);
+    await RoomService.deleteRoom(roomID);
 
     this.sendToRoom(session.id, sendResponse, {
       event: "roomDeleted",
@@ -362,7 +433,7 @@ class Hub {
     // Update socket's username
     session.userName = data.userName
       .trim()
-      .substring(0, Math.min(Room.MAX_USERNAME_LENGTH, data.userName.length));
+      .substring(0, Math.min(MAX_USERNAME_LENGTH, data.userName.length));
 
     // Get all usernames in the room
     const users = this.getRoomUsernames(roomID);
@@ -373,23 +444,30 @@ class Hub {
     });
   }
 
+  /**
+   * Check each connected session to see if a connection can still be established.
+   * If not, then kill the connection and remove the client.
+   */
   async onPing() {
-    this.connections.forEach(async (session: UserSession) => {
-      /*
-        If inactive:
-        - remove the client from the current roomID
-        - terminate the socket connection
-      */
-      if (!session.active) {
-        if (DEBUG_MESSAGES) console.log("Connection " + session.id + " inactive. Closing it.");
+    // instead of running sequentially, ping each client in parallel.
+    await Promise.all(
+      Array.from(this.connections.values()).map(async (session) => {
+        /*
+              If inactive:
+              - remove the client from the current roomID
+              - terminate the socket connection
+            */
+        if (!session.active) {
+          if (DEBUG_MESSAGES) console.log("Connection " + session.id + " inactive. Closing it.");
 
-        await this.removeClient(session.id);
-        session.socket.terminate();
-      }
+          await this.removeClient(session.id);
+          session.socket.terminate();
+        }
 
-      session.active = false;
-      session.socket.ping(() => {});
-    });
+        session.active = false;
+        session.socket.ping(() => {});
+      })
+    );
 
     if (!USE_DEBUGGER) return;
 
@@ -402,60 +480,15 @@ class Hub {
     }
   }
 
+  /**
+   * Get usernames from a given room.
+   * @param roomID
+   */
   public getRoomUsernames(roomID: string): Array<string> {
     return [...this.rooms.get(roomID)].map((socketId) => {
       return this.connections.get(socketId).userName;
     });
   }
 }
-
-
-/*
-  Remove client, and if it is the last client in a room,
-  delete the room from the cache too.
-*/
-
-/**
- * Send a socket message to a client by ID
- * @param { string } id
- * @param { object } data
- * @returns none
- */
-
-/**
- * Send a socket message to an entire room, similar to broadcast. The message will be sent to whatever room
- * the given `senderID` belongs to
- * @param { string } senderID Client ID of sender.
- * @param { boolean } includeSender If true, will also send message to sender
- * @param { object } data
- * @returns none
- */
-
-/**
- * Sends an error message to a client by ID
- * @param { string } id
- * @param { string } errorAction
- * @param { string } errorMessage
- */
-
-/*
-  Called every PONG_TIME milliseconds. This is to check if
-  every socket is still alive. If not, then remove the client.
-*/
-
-/*
-  Called when socket is initially connected. Used for setting
-  up the socket events.
-*/
-
-/**
- * Custom function for adding an event listener to the hub. Wraps the listener in a function that catches and handles errors.
- * Any errors caught at this stage without a 'status' property will be interpreted as internal server errors
- */
-
-/**
- * Set up the socket hub, which directs incoming socket messages to the correct callback
- * @param {*} sockets WebSocket instance
- */
 
 export { Hub };

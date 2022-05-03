@@ -112,10 +112,13 @@ class RoomService {
       }
     }
 
+    let filter = {};
+    filter[idKey] = id;
+
     /* Since it is not cached, retrieve it from the database */
     let roomDocument: RoomDocument;
     try {
-      roomDocument = await Database.getConnection().db("dd_data").collection("rooms").findOne({ idKey: id }) as RoomDocument;
+      roomDocument = await Database.getConnection().db("dd_data").collection("rooms").findOne(filter) as RoomDocument;
     } catch (err) {
       throw new Error(`Failed to get room with id '${id}'.` + err);
     }
@@ -131,7 +134,8 @@ class RoomService {
       let cachedRoom = await Cache.getClient().get(room.id);
       if (cachedRoom !== null) {
         // Commented this debug message since it gets spammed a lot. But it's sometimes useful
-        // if (DEBUG_MESSAGES) console.log(`Get on room ${cachedRoom.id} used cached data.`);
+        if (DEBUG_MESSAGES) console.log(`Get on room ${JSON.parse(cachedRoom).id} used cached data.`);
+
         return JSON.parse(cachedRoom);
       }
     }
@@ -351,17 +355,19 @@ class RoomCacheService {
    * @returns { Promise.<void> }
    * @throws When there's an error getting the room or one of the updates fails
    */
-  static async updateItems(id: string, updates: Array<{ id: string, update: Partial<Item> }>) {
+  static async updateItems(id: string, updates: Array<{ id: string, updated: Partial<Item> }>) {
     let room = await RoomService.getRoom(id);
 
-    let updateMap = {};
+    let updateMapping = {};
 
     for(let itemUpdate of updates) {
-      updateMap[itemUpdate.id] = itemUpdate.update;
+      updateMapping[itemUpdate.id] = itemUpdate.updated;
     }
 
-    for(let item of room.data.items) {
-      const update = updateMap[item.id];
+    for(let i = 0; i < room.data.items.length; i++) {
+      let item = room.data.items[i];
+
+      const update = updateMapping[item.id];
       if (update !== undefined) {
         ItemService.updateItem(item, update);
       }
@@ -390,12 +396,11 @@ class RoomCacheService {
     }
 
     const room: Room = JSON.parse(serializedRoom) as Room;
-    const roomDocument: RoomDocument = roomToDocument(room);
 
     try {
       await Database.getConnection().db("dd_data")
           .collection("rooms")
-          .replaceOne({ _id: id }, roomDocument);
+          .replaceOne({ _id: id }, roomToDocument(room));
     } catch (err) {
       throw new Error(`Failed to save room ${id} from cache to db: ` + err);
     }
