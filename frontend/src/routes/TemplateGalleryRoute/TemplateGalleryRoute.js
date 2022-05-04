@@ -9,6 +9,7 @@ import DataRequests from "../../controllers/DataRequests";
 import RoomThumbnail from "../../components/RoomThumbnail/RoomThumbnail";
 import RoomThumbnailGrid from "../../components/RoomThumbnailGrid/RoomThumbnailGrid";
 import DropdownMenu from "../../components/DropdownMenu/DrowndownMenu";
+import GridBackground from "../../components/GridBackground/GridBackground";
 
 export const TemplateGalleryRoute = () => {
   const [templates, setTemplates] = useState(null);
@@ -26,6 +27,7 @@ export const TemplateGalleryRoute = () => {
 
   return (
     <>
+      <GridBackground />
       <div className="templates-container custom-card">
         <RoomThumbnailGrid
           loadingSpinner={true}

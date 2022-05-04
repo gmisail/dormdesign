@@ -6,8 +6,7 @@
   margin: 45px auto 15px auto;
 
   display: grid;
-  // grid-template-rows: auto;
-  // Need minmax(0, 1fr) to prevent items from overflowing grid column (if it was just 1fr) - https://css-tricks.com/preventing-a-grid-blowout/
+
   grid-template-columns: 1fr 1fr 1fr;
 
   grid-template-areas:
@@ -22,7 +21,7 @@
     margin-top: 20px;
     padding: 15px;
     row-gap: 20px;
-    grid-template-columns: minmax(0, 1fr);
+    grid-template-columns: 1fr;
     grid-template-areas:
       "header"
       "card-create"
@@ -89,12 +88,3 @@
   }
 }
 
-#background-canvas {
-  position: fixed;
-  width: 100vw;
-  height: 100vh;
-  left: 0;
-  top: 0;
-  z-index: -10;
-  border: none;
-}

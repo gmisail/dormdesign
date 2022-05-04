@@ -16,10 +16,9 @@ import SingleInputForm from "../../components/SingleInputForm/SingleInputForm";
 import DropdownMenu from "../../components/DropdownMenu/DrowndownMenu";
 import RoomThumbnail from "../../components/RoomThumbnail/RoomThumbnail";
 import RoomThumbnailGrid from "../../components/RoomThumbnailGrid/RoomThumbnailGrid";
+import GridBackground from "../../components/GridBackground/GridBackground";
 
 import Vector2 from "../../room-editor/Vector2";
-import RoomGridObject from "../../room-editor/RoomGridObject";
-import SceneController from "../../room-editor/SceneController";
 
 class HomeRoute extends Component {
   state = {
@@ -34,42 +33,12 @@ class HomeRoute extends Component {
 
     const roomHistory = StorageController.historyGetRooms();
     this.updateRoomHistory(roomHistory);
-
-    const backgroundColor = "#f4f4f4";
-    const scene = new SceneController(this.backgroundCanvasRef, { manualRenders: true });
-    scene.backgroundColor = backgroundColor;
-    const grid = new RoomGridObject({
-      scene: scene,
-      lineColor: "#e0e0e0",
-      lineWidth: 2,
-      backgroundColor: backgroundColor,
-    });
-    scene.addChild(grid);
-
-    this.scene = scene;
-    this.grid = grid;
-
-    this.fitGridToWindow();
-    scene.onResize = this.fitGridToWindow;
-    window.addEventListener("resize", this.onWindowResized);
-    scene.render();
   }
-
-  componentWillUnmount() {
-    // Cleanup callback
-    this.scene.onResize = () => {};
-
-    window.removeEventListener("resize", this.onWindowResized);
-  }
-
-  onWindowResized = () => {
-    this.scene.render();
-  };
 
   updateRoomHistory = (history) => {
     /*
-      We need to re-order history array so favorites are at front while still ensuring that most
-      recently accessed rooms are first
+      We need to re-order history array so favorites are at front while still maintaining inherit
+      room history order (where the most recent rooms are first)
     */
 
     // First add favorites in order
@@ -91,12 +60,6 @@ class HomeRoute extends Component {
     this.setState({
       roomHistory: favoritesFirst,
     });
-  };
-
-  fitGridToWindow = () => {
-    this.grid.size = new Vector2(this.backgroundCanvasRef.width, this.backgroundCanvasRef.height);
-    this.grid.cellSize = 80 * window.devicePixelRatio;
-    this.grid.lineWidth = 2 * window.devicePixelRatio;
   };
 
   onSubmitCreateRoom = async (name) => {
@@ -161,8 +124,9 @@ class HomeRoute extends Component {
               }}
             />
             <DropdownMenu.Item
+              title="Test"
               icon={<BsX />}
-              text={"Hide"}
+              text={"Remove"}
               onClick={() => this.removeRecentRoom(room.id)}
             />
           </DropdownMenu>
@@ -178,7 +142,7 @@ class HomeRoute extends Component {
   render() {
     return (
       <>
-        <canvas ref={(ref) => (this.backgroundCanvasRef = ref)} id="background-canvas" />
+        <GridBackground />
         <div className="content-container">
           <div className="header-container">
             <Logo className="logo" />
@@ -215,14 +179,9 @@ class HomeRoute extends Component {
               </p>
             </div>
           </div>
-          {/* {this.state.favoriteRooms.length > 0 || this.state.recentRooms.length > 0 ? ( */}
           {this.state.roomHistory.length > 0 ? (
             <div className="home-recent-rooms custom-card">
               <RoomThumbnailGrid header={<h5>Recent Rooms</h5>}>
-                {/* {this.state.favoriteRooms.map((room, index) =>
-                  this.renderRecentRoom(room, room.id)
-                )} */}
-                {/* {this.state.recentRooms.map((room, index) => this.renderRecentRoom(room, room.id))} */}
                 {this.state.roomHistory.map((room) => this.renderRecentRoom(room, room.id))}
               </RoomThumbnailGrid>
             </div>

@@ -11,7 +11,6 @@ export default function RoomPreview({ id, isTemplate, className }) {
   const [loadingPreview, setLoadingPreview] = useState(true);
 
   useEffect(async () => {
-    console.log("HERE");
     try {
       const value = await DataRequests.generatePreview(id, isTemplate === true);
       setPreview(value);

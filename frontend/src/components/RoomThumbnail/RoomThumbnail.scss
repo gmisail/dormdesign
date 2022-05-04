@@ -4,7 +4,6 @@
   position: relative;
 
   background-color: $foreground-color;
-  // background-color: red;
   border-radius: $card-border-radius;
   border: 1px solid lighten($color-secondary, 25%);
   &:hover {
@@ -38,7 +37,6 @@
       width: 14%;
       top: 1%;
       left: 1%;
-      // right: 14%;
 
       svg {
         display: block;
