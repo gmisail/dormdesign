@@ -1,13 +1,12 @@
 FROM node:14-slim
 
-WORKDIR /usr/src/app
+WORKDIR /usr/src/
 
 COPY package*.json ./
 
-RUN npm install canvas
 RUN npm install
-
 COPY . .
+RUN npm run build
 
 EXPOSE 8000
 

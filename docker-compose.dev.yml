@@ -35,8 +35,7 @@ services:
       context: ./server
       dockerfile: Dockerfile.dev
     volumes:
-      - ./server:/usr/src/app
-      - /usr/src/app/node_modules
+      - ./server:/usr/server
     environment:
       - DATABASE_ADDRESS=mongodb://db:27017
       - REDIS_PASSWORD=$REDIS_PASSWORD

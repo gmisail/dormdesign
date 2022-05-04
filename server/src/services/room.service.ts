@@ -1,12 +1,18 @@
 import {Cache} from "../cache";
 import {Database} from "../db";
-import {documentToRoom, Room, RoomDocument, roomToDocument, RoomUpdate} from "../models/room.model";
+import {
+  documentToRoom,
+  Room,
+  RoomDocument,
+  roomToDocument,
+  RoomUpdate,
+  updateRoomDataSchema
+} from "../models/room.model";
 import {StatusError} from "../errors/status.error";
 import {Item} from "../models/item.model";
 import {ItemService} from "./item.service";
 import { v4 as uuidv4 } from "uuid";
 
-const { updateRoomDataSchema } = require("../schemas/room.schema");
 const { validateWithSchema } = require("../utils.js");
 
 const DEBUG_MESSAGES = Boolean(process.env.DEBUG_MESSAGES ?? "false");
