@@ -41,7 +41,7 @@ export const roomReducer = (state, action) => {
         selectedItemID: null,
         loading: false,
         socketConnection: null,
-        error: new Error("Connection to room lost"),
+        error: "Connection to room lost",
       };
 
     case RoomActions.clearEditorActionQueue:
