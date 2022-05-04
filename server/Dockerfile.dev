@@ -1,22 +1,3 @@
-# FROM node:14-slim
-
-# WORKDIR /usr/server
-
-# COPY package*.json ./
-
-# RUN npm install
-# RUN npm install canvas
-
-# COPY . .
-
-# RUN npm run build
-
-# CMD ["npm", "run", "dev"]
-
-#
-#
-#
-
 FROM node:14-slim as compilation
 
 COPY package.json ./
@@ -36,6 +17,4 @@ FROM node:14-slim
 COPY --from=compilation ./node_modules ./node_modules
 COPY --from=compilation /bin /bin
 
-EXPOSE 8000
-
-CMD ["bin/index.js"]
+CMD ["node", "bin/index.js"]
