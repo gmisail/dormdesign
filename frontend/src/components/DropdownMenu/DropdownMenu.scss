@@ -1,5 +1,10 @@
 @import "../../styles/variables.scss";
 
+
+.dropdown-menu-button {
+  max-width: 35px;
+}
+
 .dropdown-menu-list {
   list-style-type: none;
   background-color: $dropdown-background-color;

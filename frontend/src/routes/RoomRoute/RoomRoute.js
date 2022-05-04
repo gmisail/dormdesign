@@ -70,7 +70,7 @@ export const RoomRoute = () => {
   useEffect(() => {
     if (error !== null) {
       toggleModal(modalTypes.error, {
-        message: error,
+        message: error.message,
       });
     }
   }, [error, toggleModal]);
@@ -154,8 +154,10 @@ export const RoomRoute = () => {
   const onClickSettingsButton = useCallback(
     () =>
       toggleModal(modalTypes.settings, {
-        onClone: (target) => {
-          dispatch(cloneRoom(id, target));
+        onClone: (templateUrl) => {
+          // Extract template ID from portion of url string after last '/'
+          const templateId = templateUrl.substring(templateUrl.lastIndexOf("/") + 1);
+          dispatch(cloneRoom(id, templateId));
         },
         userName: userName,
         onChangeUserName: (name) => {

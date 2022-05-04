@@ -46,12 +46,7 @@
       white-space: nowrap;
       text-overflow: ellipsis;
       overflow: hidden;
-    }
-    .item-menu-button {
-      max-width: 2.2rem;
-      color: $text-color-dark;
-      margin-left: 5px;
-      flex-shrink: 0;
+      margin-right: 3px;
     }
   }
 

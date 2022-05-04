@@ -40,7 +40,7 @@ export const connectToTemplate = (id) => async (dispatch, getState) => {
     });
   } catch (error) {
     console.error("Failed to connect to template: " + error.message);
-    dispatch({ type: TemplateActions.error, payload: { error: error.message } });
+    dispatch({ type: TemplateActions.error, payload: { message: error.message } });
   }
 };
 

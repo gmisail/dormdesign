@@ -36,10 +36,9 @@ export const TemplateRoute = () => {
   }, [connectToTemplate, id, dispatch]);
 
   useEffect(() => {
-    /* There's an error. Only display modal if still connected to room (since there's a different case for that handled below) */
     if (error !== null) {
       toggleModal(modalTypes.error, {
-        message: error,
+        message: error.message,
       });
     }
   }, [error, toggleModal]);
@@ -55,6 +54,7 @@ export const TemplateRoute = () => {
       history.push(`/room/${roomData.id}`);
     } catch (err) {
       console.error(err);
+      // TODO: replace alert with ErrorModal
       alert(err.message);
     }
   };

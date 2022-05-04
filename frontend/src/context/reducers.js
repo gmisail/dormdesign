@@ -41,7 +41,7 @@ export const roomReducer = (state, action) => {
         selectedItemID: null,
         loading: false,
         socketConnection: null,
-        error: "Connection to room lost",
+        error: new Error("Connection to room lost"),
       };
 
     case RoomActions.clearEditorActionQueue:
@@ -127,7 +127,7 @@ export const roomReducer = (state, action) => {
         roomName: action.payload.roomName,
       };
     case RoomActions.error:
-      return { ...state, loading: false, error: action.payload.message };
+      return { ...state, loading: false, error: new Error(action.payload.message) };
 
     case RoomActions.socketError:
       let errorMessage;
@@ -153,7 +153,7 @@ export const roomReducer = (state, action) => {
         default:
           errorMessage = `Unknown error '${action.payload.action}. ${action.payload.message}`;
       }
-      return { ...state, error: errorMessage };
+      return { ...state, error: new Error(errorMessage) };
 
     default:
       return state;
@@ -181,7 +181,7 @@ export const templateReducer = (state, action) => {
       return initialState;
 
     case TemplateActions.error:
-      return { ...state, loading: false, error: action.payload.error };
+      return { ...state, loading: false, error: new Error(action.payload.message) };
 
     default:
       return state;

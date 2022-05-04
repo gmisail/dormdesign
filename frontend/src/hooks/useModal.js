@@ -24,7 +24,10 @@ const useModal = () => {
         ...props,
         show: true,
         type: type,
-        onHide: () => toggleModal(),
+        onHide: () => {
+          if (props.onHide) props.onHide();
+          toggleModal();
+        },
       });
     } else {
       /* 
