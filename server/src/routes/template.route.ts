@@ -1,5 +1,6 @@
-import { Router } from "express";
 import {RoomService} from "../services/room.service";
+import { Router } from "express";
+import { StatusError } from "../errors/status.error";
 
 const asyncHandler = require("express-async-handler");
 const router = Router();
@@ -17,11 +18,9 @@ router.get(
   asyncHandler(async (req, res) => {
     const id = req.params.id;
     if (id === null || id === undefined) {
-      const err = new Error("'id' is null or undefined");
-      err.status = 400;
-      throw err;
+      throw new StatusError("'id' is null or undefined", 400);
     }
-    const template = await Room.getFromTemplateId(id);
+    const template = await RoomService.getFromTemplateId(id);
 
     res.json(template);
   })

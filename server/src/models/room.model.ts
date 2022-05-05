@@ -1,6 +1,7 @@
 import Joi, { number } from "joi";
-import { ObjectId } from "mongodb";
+
 import { Item } from "./item.model";
+import { ObjectId } from "mongodb";
 
 type RoomData = {
   templateId: string;
@@ -65,6 +66,5 @@ function documentToRoom(roomDoc: RoomDocument): Room {
   delete document._id;
   return document;
 }
-
 
 export { updateRoomDataSchema, roomToDocument, documentToRoom, Room, RoomDocument, RoomUpdate };
