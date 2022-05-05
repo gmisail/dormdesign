@@ -2,14 +2,14 @@ import {Cache} from "../cache";
 import {Database} from "../db";
 import {
   documentToRoom,
-  Room,
+  Room, RoomData,
   RoomDocument,
   roomToDocument,
   RoomUpdate,
   updateRoomDataSchema
 } from "../models/room.model";
 import {StatusError} from "../errors/status.error";
-import {Item} from "../models/item.model";
+import { Item } from "../models/item.model";
 import {ItemService} from "./item.service";
 import { v4 as uuidv4 } from "uuid";
 
@@ -159,6 +159,21 @@ class RoomService {
  */
   static async getFromTemplateId(templateId: string): Promise<Room> {
     return RoomService.getRoom(templateId, "templateId");
+  }
+
+  /**
+   * Get the template version of a room at the given `templateId`. If the room is currently
+   * in the cache, that data will be returned. Otherwise, the data stored in the
+   * database will be returned.
+   * @param { string } templateId
+   * @returns { Promise.<object> } Template object (same as room  object but 'id' is removed)
+   * @throws When the function fails to get the room
+   */
+  static async getTemplate(templateId: string): Promise<RoomData> {
+    const room: Room = await RoomService.getFromTemplateId(templateId);
+    const { id, ...roomData } = room;
+
+    return roomData as RoomData;
   }
 
   /**

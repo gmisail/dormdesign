@@ -2,6 +2,7 @@ import Joi, { number } from "joi";
 
 import { Item } from "./item.model";
 import { ObjectId } from "mongodb";
+import { PositionSchema } from "./position.model";
 
 type RoomData = {
   templateId: string;
@@ -32,17 +33,14 @@ type RoomUpdate = {
   }>
 };
 
-const vertexSchema = Joi.object({
-  x: Joi.number().precision(4).default(0),
-  y: Joi.number().precision(4).default(0),
-});
+const RoomNameSchema = Joi.string().min(1).max(40);
 
 // This shouldn't include the items array. Items should be updated separately.
 // We could allow items to be updated here as well but that would require a lot more complex validation
 const updateRoomDataSchema = Joi.object({
-  name: Joi.string().min(1).max(40),
+  name: RoomNameSchema,
   // There must be at least 3 vertices in the room
-  vertices: Joi.array().min(3).items(vertexSchema),
+  vertices: Joi.array().min(3).items(PositionSchema),
 });
 
 /**
@@ -67,4 +65,4 @@ function documentToRoom(roomDoc: RoomDocument): Room {
   return document;
 }
 
-export { updateRoomDataSchema, roomToDocument, documentToRoom, Room, RoomDocument, RoomUpdate };
+export { updateRoomDataSchema, roomToDocument, documentToRoom, Room, RoomDocument, RoomUpdate, RoomData, RoomNameSchema };

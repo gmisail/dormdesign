@@ -17,6 +17,8 @@ services:
     restart: unless-stopped
     volumes:
       - dd_database:/data/db
+    logging:
+      driver: "none"
   frontend:
     build:
       context: ./frontend

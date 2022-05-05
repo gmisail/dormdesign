@@ -8,7 +8,7 @@ class Database {
   }
 
   static async connect() {
-    const uri = process.env.DATABASE_ADDRESS;
+    const uri = process.env.MONGO_ADDRESS;
     const client = new MongoClient(uri);
 
     try {

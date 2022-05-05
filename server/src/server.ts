@@ -1,5 +1,5 @@
-import { Database } from "./db";
 import { Cache } from "./cache";
+import { Database } from "./db";
 import { Hub } from "./hub";
 import { StatusError } from "./errors/status.error";
 import express from "express";
@@ -34,7 +34,7 @@ class Server {
 
     this.app.use("/api/room", require("./routes/room.route"));
     this.app.use("/api/preview", require("./routes/preview.route"));
-    this.app.use("/api/templates", require("./routes/templates.route"));
+    this.app.use("/api/template", require("./routes/template.route"));
 
     // Set all other undefined routes to throw an error
     this.app.get("*", (req, res, next) => next(new StatusError("Not found", 404)));

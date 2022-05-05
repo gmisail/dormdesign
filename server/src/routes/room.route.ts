@@ -1,5 +1,6 @@
 import Joi from "joi";
 import { MAX_NAME_LENGTH } from "../constants/room.constants";
+import { RoomNameSchema } from "../models/room.model";
 import { RoomService } from "../services/room.service";
 import { Router } from "express";
 import { StatusError } from "../errors/status.error";
@@ -16,9 +17,11 @@ router.get(
   "/:id",
   asyncHandler(async (req, res) => {
     const id = req.params.id;
+
     if (id === null || id === undefined) {
       throw new StatusError("'id' is null or undefined", 400);
     }
+    
     let room = await RoomService.getRoom(id);
 
     res.json(room);
@@ -26,7 +29,7 @@ router.get(
 );
 
 const createRoomSchema = Joi.object({
-  name: Joi.string().min(1).max(MAX_NAME_LENGTH).optional(),
+  name: RoomNameSchema.optional(),
   templateId: Joi.string().min(1).optional(),
 });
 router.post(

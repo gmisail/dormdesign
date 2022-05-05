@@ -1,4 +1,5 @@
 import Joi from "joi";
+import { PositionSchema } from "./position.model";
 
 /**
  * Represents an Item object. Validated using Joi schemas to ensure that
@@ -23,15 +24,10 @@ type Item = {
   editorLocked: boolean;
 };
 
-const dimensionsSchema = Joi.object({
+const DimensionsSchema = Joi.object({
   width: Joi.number().allow(null).default(null).max(100).min(0),
   height: Joi.number().allow(null).default(null).max(100).min(0),
   length: Joi.number().allow(null).default(null).max(100).min(0),
-});
-
-const editorPositionSchema = Joi.object({
-  x: Joi.number().precision(4).default(0).min(-100).max(100),
-  y: Joi.number().precision(4).default(0).min(-100).max(100),
 });
 
 const itemSchema = {
@@ -39,8 +35,8 @@ const itemSchema = {
   quantity: Joi.number().integer(),
   visibleInEditor: Joi.boolean(),
   claimedBy: Joi.string().max(30).min(1).allow(null),
-  dimensions: dimensionsSchema,
-  editorPosition: editorPositionSchema,
+  dimensions: DimensionsSchema,
+  editorPosition: PositionSchema,
   editorZIndex: Joi.number().integer(),
   editorRotation: Joi.number().precision(4).max(360),
   editorLocked: Joi.boolean(),
@@ -61,4 +57,6 @@ const createItemSchema = Joi.object({
 
 const updateItemSchema = Joi.object(itemSchema);
 
-export { createItemSchema, updateItemSchema, Item };
+const ItemListSchema = Joi.array().items(itemSchema);
+
+export { createItemSchema, updateItemSchema, itemSchema, ItemListSchema, Item };
