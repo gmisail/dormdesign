@@ -1,4 +1,6 @@
 FROM node:alpine
+RUN chown node:node ./
+USER node
 
 WORKDIR /app
 
@@ -6,11 +8,12 @@ WORKDIR /app
 COPY package*.json ./
 
 # install dependencies
-RUN npm install
+RUN npm ci && npm cache clean --force
 
 # copy everything over to environment
 COPY . .
 
-EXPOSE 3000
+RUN chown node:node ./
+USER node
 
 CMD ["npm", "start"]

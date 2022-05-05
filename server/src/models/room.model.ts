@@ -23,21 +23,25 @@ type RoomData = {
 type Room = { id: string } & RoomData;
 
 // RoomDocument is MongoDB's representation of a room
-type RoomDocument = { _id : ObjectId } & RoomData;
+type RoomDocument = { _id: ObjectId } & RoomData;
 
 type RoomUpdate = {
-  name: string,
+  name: string;
   vertices: Array<{
-    x: number,
-    y: number
-  }>
+    x: number;
+    y: number;
+  }>;
 };
 
 const RoomNameSchema = Joi.string().min(1).max(40);
 
-// This shouldn't include the items array. Items should be updated separately.
-// We could allow items to be updated here as well but that would require a lot more complex validation
-const updateRoomDataSchema = Joi.object({
+/**
+ * Schema to validate updates on the `data` field of a Room. (Note that updates to the `data.items` array are not included
+ * in this schemas as those updates are handled separately)
+ */
+const UpdateRoomDataSchema = Joi.object({
+  // This shouldn't include the items array. Items should be updated separately.
+  // We could allow items to be updated here as well but that would require a lot more complex validation
   name: RoomNameSchema,
   // There must be at least 3 vertices in the room
   vertices: Joi.array().min(3).items(PositionSchema),
@@ -46,7 +50,7 @@ const updateRoomDataSchema = Joi.object({
 /**
  * MongoDB requires documents to use _id as an identifier, while internally it uses id. This
  * simply prepares the internal Room model for use in MongoDB.
- * @param room 
+ * @param room
  */
 function roomToDocument(room: Room): RoomDocument {
   let document: any = { ...room, _id: room.id };
@@ -56,8 +60,8 @@ function roomToDocument(room: Room): RoomDocument {
 
 /**
  * Converts MongoDB document to Room.
- * @param roomDoc 
- * @returns 
+ * @param roomDoc
+ * @returns
  */
 function documentToRoom(roomDoc: RoomDocument): Room {
   let document: any = { ...roomDoc, id: roomDoc._id };
@@ -65,4 +69,13 @@ function documentToRoom(roomDoc: RoomDocument): Room {
   return document;
 }
 
-export { updateRoomDataSchema, roomToDocument, documentToRoom, Room, RoomDocument, RoomUpdate, RoomData, RoomNameSchema };
+export {
+  UpdateRoomDataSchema,
+  roomToDocument,
+  documentToRoom,
+  Room,
+  RoomDocument,
+  RoomUpdate,
+  RoomData,
+  RoomNameSchema,
+};

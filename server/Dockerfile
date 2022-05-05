@@ -1,10 +1,10 @@
 FROM node:14-slim as compilation
+WORKDIR /usr/local/app
 
-COPY package.json ./
+COPY package*.json ./
 
-RUN npm install
-
-# RUN npm ci --production
+RUN npm install -g typescript
+RUN npm ci --production && npm cache clean --force
 
 # Copy source
 COPY src ./src
@@ -14,12 +14,14 @@ COPY tsconfig.json ./tsconfig.json
 RUN npm run build
 
 FROM node:14-slim
+WORKDIR /usr/local/app
 
 # Copy node modules and build directory
-COPY --from=compilation ./node_modules ./node_modules
-COPY --from=compilation /bin /bin
+COPY --from=compilation /usr/local/app/node_modules ./node_modules
+COPY --from=compilation /usr/local/app/bin ./bin
 
-EXPOSE 8000
+RUN chown node:node ./
+USER node
 
 CMD ["node", "bin/index.js"]
 

@@ -67,8 +67,9 @@ class Hub {
    * Called when a socket is initially connected. User for setting up the socket events.
    * @param socket Socket connection.
    * @param req
+   * @private
    */
-  async onConnection(socket: ws.WebSocket, req: IncomingMessage) {
+  private async onConnection(socket: ws.WebSocket, req: IncomingMessage) {
     const id = uuidv4();
     const params = new URLSearchParams(req.url);
 
@@ -109,8 +110,9 @@ class Hub {
   /**
    * Adds a client to a given room from a user session.
    * @param session User session.
+   * @private
    */
-  async addClient(session: UserSession): Promise<void> {
+  private async addClient(session: UserSession) {
     this.connections.set(session.id, session);
 
     if (!this.rooms.has(session.roomID)) {
@@ -139,8 +141,9 @@ class Hub {
   /**
    * From a given ID, remove a client from the hub.
    * @param clientID Client ID.
+   * @private
    */
-  async removeClient(clientID: string): Promise<void> {
+  private async removeClient(clientID: string) {
     if (!this.connections.has(clientID)) return;
 
     const roomID = this.connections.get(clientID).roomID;
@@ -187,7 +190,7 @@ class Hub {
    * @param { object } data
    * @returns none
    */
-  private sendToClient(id: string, data: any): void {
+  private sendToClient(id: string, data: any) {
     if (id === undefined || !this.connections.has(id)) {
       console.error("Error while sending data to client: invalid ID.");
       return;
@@ -251,7 +254,7 @@ class Hub {
    * @param listener
    * @private
    */
-  private addEventListener(event: string, listener: (args: EventMessage) => void): void {
+  private addEventListener(event: string, listener: (args: EventMessage) => void) {
     this.events.addListener(event, async (args: EventMessage) => {
       const { session } = args;
       try {
@@ -288,175 +291,19 @@ class Hub {
   }
 
   /**
-   * Adds an item to a room.
-   * @param session
-   * @param roomID
-   * @param data
-   * @param sendResponse
-   */
-  async addItem({ session, roomID, data, sendResponse }: EventMessage) {
-    if (data === undefined) throw new StatusError("Item data is undefined", 400);
-
-    const item = await RoomCacheService.addItem(roomID, data);
-
-    this.sendToRoom(session.id, sendResponse, {
-      event: "itemAdded",
-      data: item,
-    });
-  }
-
-  /**
-   * Update multiple items in a room.
-   * @param session
-   * @param roomID
-   * @param data
-   * @param sendResponse
-   */
-  async updateItems({ session, roomID, data, sendResponse }: EventMessage) {
-    if (data?.items === undefined) throw new StatusError("Array 'items' is undefined", 400);
-
-    await RoomCacheService.updateItems(roomID, data.items);
-
-    this.sendToRoom(session.id, sendResponse, {
-      event: "itemsUpdated",
-      data,
-    });
-  }
-
-  /**
-   * Delete an item in a room.
-   * @param session
-   * @param roomID
-   * @param data
-   * @param sendResponse
-   */
-  async deleteItem({ session, roomID, data, sendResponse }: EventMessage) {
-    if (data?.id === undefined) throw new StatusError("Item ID is undefined", 400);
-
-    try {
-      await RoomCacheService.removeItem(roomID, data.id);
-    } catch (error) {
-      this.sendError(session.id, "deleteItem", error.message);
-      return;
-    }
-
-    this.sendToRoom(session.id, sendResponse, {
-      event: "itemDeleted",
-      data,
-    });
-  }
-
-  /**
-   * Updates the layout of a given room.
-   * @param session
-   * @param roomID
-   * @param data
-   * @param sendResponse
-   */
-  async updateLayout({ session, roomID, data, sendResponse }: EventMessage) {
-    if (data?.vertices === undefined || data.vertices.length === 0)
-      throw new StatusError("'vertices' array is empty or undefined", 400);
-
-    await RoomCacheService.updateRoomVertices(roomID, data.vertices);
-
-    this.sendToRoom(session.id, sendResponse, {
-      event: "layoutUpdated",
-      data,
-    });
-  }
-
-  /**
-   * Clones a room from a given template.
-   * @param session
-   * @param roomID
-   * @param data
-   * @param sendResponse
-   */
-  async cloneRoom({ session, roomID, data, sendResponse }: EventMessage) {
-    if (data?.templateId === undefined) throw new StatusError("'templateId' is undefined", 400);
-
-    const templateId = data.templateId;
-
-    await RoomCacheService.copyRoomFrom(roomID, templateId);
-
-    this.sendToRoom(session.id, sendResponse, {
-      event: "roomCloned",
-      data,
-    });
-  }
-
-  /**
-   * Updates the name of a room.
-   * @param session
-   * @param roomID
-   * @param data
-   * @param sendResponse
-   */
-  async updateRoomName({ session, roomID, data, sendResponse }: EventMessage) {
-    if (data === undefined || data.name === undefined || data.name.length <= 0)
-      throw new StatusError("'name' string is empty or undefined", 400);
-
-    let name = data.name.trim().substring(0, Math.min(MAX_NAME_LENGTH, data.name.length));
-    await RoomCacheService.updateRoomData(roomID, { name: name });
-
-    this.sendToRoom(session.id, sendResponse, {
-      event: "roomNameUpdated",
-      data,
-    });
-  }
-
-  /**
-   * Deletes a room.
-   * @param session
-   * @param roomID
-   * @param sendResponse
-   */
-  async deleteRoom({ session, roomID, sendResponse }: EventMessage) {
-    await RoomService.deleteRoom(roomID);
-
-    this.sendToRoom(session.id, sendResponse, {
-      event: "roomDeleted",
-      data: {},
-    });
-  }
-
-  /*
-    Add a nickname (also referred to as usernames) to the room, or updates a name if it already exists at a given socket ID. Sends to 
-    every client the array of users
-  */
-  async updateNickname({ session, roomID, data, sendResponse }: EventMessage) {
-    if (data === undefined || data.userName === undefined || data.userName.length <= 0)
-      throw new StatusError("'userName' string is empty or undefined", 400);
-
-    console.log(roomID, JSON.stringify(data), sendResponse);
-
-    // Update socket's username
-    session.userName = data.userName
-      .trim()
-      .substring(0, Math.min(MAX_USERNAME_LENGTH, data.userName.length));
-
-    // Get all usernames in the room
-    const users = this.getRoomUsernames(roomID);
-
-    this.sendToRoom(session.id, sendResponse, {
-      event: "nicknamesUpdated",
-      data: { users },
-    });
-  }
-
-  /**
    * Check each connected session to see if a connection can still be established.
    * If not, then kill the connection and remove the client.
+   * @private
    */
-  async onPing() {
+  private async onPing() {
     // instead of running sequentially, ping each client in parallel.
     await Promise.all(
       Array.from(this.connections.values()).map(async (session) => {
         /*
-              If inactive:
-              - remove the client from the current roomID
-              - terminate the socket connection
-            */
+                If inactive:
+                - remove the client from the current roomID
+                - terminate the socket connection
+              */
         if (!session.active) {
           if (DEBUG_MESSAGES) console.log("Connection " + session.id + " inactive. Closing it.");
 
@@ -483,10 +330,149 @@ class Hub {
   /**
    * Get usernames from a given room.
    * @param roomID
+   * @private
    */
-  public getRoomUsernames(roomID: string): Array<string> {
+  private getRoomUsernames(roomID: string): Array<string> {
     return [...this.rooms.get(roomID)].map((socketId) => {
       return this.connections.get(socketId).userName;
+    });
+  }
+
+  /**
+   * Adds an item to a room.
+   * @private
+   */
+  private async addItem({ session, roomID, data, sendResponse }: EventMessage) {
+    if (data === undefined) throw new StatusError("Item data is undefined", 400);
+
+    const item = await RoomCacheService.addItem(roomID, data);
+
+    this.sendToRoom(session.id, sendResponse, {
+      event: "itemAdded",
+      data: item,
+    });
+  }
+
+  /**
+   * Update multiple items in a room.
+   * @private
+   */
+  private async updateItems({ session, roomID, data, sendResponse }: EventMessage) {
+    if (data?.items === undefined) throw new StatusError("Array 'items' is undefined", 400);
+
+    await RoomCacheService.updateItems(roomID, data.items);
+
+    this.sendToRoom(session.id, sendResponse, {
+      event: "itemsUpdated",
+      data,
+    });
+  }
+
+  /**
+   * Delete an item in a room.
+   * @private
+   */
+  private async deleteItem({ session, roomID, data, sendResponse }: EventMessage) {
+    if (data?.id === undefined) throw new StatusError("Item ID is undefined", 400);
+
+    try {
+      await RoomCacheService.removeItem(roomID, data.id);
+    } catch (error) {
+      this.sendError(session.id, "deleteItem", error.message);
+      return;
+    }
+
+    this.sendToRoom(session.id, sendResponse, {
+      event: "itemDeleted",
+      data,
+    });
+  }
+
+  /**
+   * Updates the layout of a given room.
+   * @private
+   */
+  private async updateLayout({ session, roomID, data, sendResponse }: EventMessage) {
+    if (data?.vertices === undefined || data.vertices.length === 0)
+      throw new StatusError("'vertices' array is empty or undefined", 400);
+
+    await RoomCacheService.updateRoomVertices(roomID, data.vertices);
+
+    this.sendToRoom(session.id, sendResponse, {
+      event: "layoutUpdated",
+      data,
+    });
+  }
+
+  /**
+   * Clones a room from a given template.
+   * @private
+   */
+  private async cloneRoom({ session, roomID, data, sendResponse }: EventMessage) {
+    if (data?.templateId === undefined) throw new StatusError("'templateId' is undefined", 400);
+
+    const templateId = data.templateId;
+
+    await RoomCacheService.copyRoomFrom(roomID, templateId);
+
+    this.sendToRoom(session.id, sendResponse, {
+      event: "roomCloned",
+      data,
+    });
+  }
+
+  /**
+   * Updates the name of a room.
+   * @private
+   */
+  private async updateRoomName({ session, roomID, data, sendResponse }: EventMessage) {
+    if (data === undefined || data.name === undefined || data.name.length <= 0)
+      throw new StatusError("'name' string is empty or undefined", 400);
+
+    let name = data.name.trim().substring(0, Math.min(MAX_NAME_LENGTH, data.name.length));
+    await RoomCacheService.updateRoomData(roomID, { name: name });
+
+    this.sendToRoom(session.id, sendResponse, {
+      event: "roomNameUpdated",
+      data,
+    });
+  }
+
+  /**
+   * Deletes a room.
+   * @private
+   */
+  private async deleteRoom({ session, roomID, sendResponse }: EventMessage) {
+    await RoomService.deleteRoom(roomID);
+
+    this.sendToRoom(session.id, sendResponse, {
+      event: "roomDeleted",
+      data: {},
+    });
+  }
+
+  /*
+    Add a nickname (also referred to as usernames) to the room, or updates a name if it already exists at a given socket ID. Sends to 
+    every client the array of users
+    @private
+  */
+  private async updateNickname({ session, roomID, data, sendResponse }: EventMessage) {
+    if (data === undefined || data.userName === undefined || data.userName.length <= 0)
+      throw new StatusError("'userName' string is empty or undefined", 400);
+
+    console.log(roomID, JSON.stringify(data), sendResponse);
+
+    // Update socket's username
+    session.userName = data.userName
+      .trim()
+      .substring(0, Math.min(MAX_USERNAME_LENGTH, data.userName.length));
+
+    // Get all usernames in the room
+    const users = this.getRoomUsernames(roomID);
+
+    this.sendToRoom(session.id, sendResponse, {
+      event: "nicknamesUpdated",
+      data: { users },
     });
   }
 }

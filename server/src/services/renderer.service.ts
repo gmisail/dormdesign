@@ -43,7 +43,6 @@ class RendererService {
   private ctx: CanvasRenderingContext2D;
 
   constructor() {
-
     /**
      * PADDING (in percent of total image size) around the rendered room.
      *

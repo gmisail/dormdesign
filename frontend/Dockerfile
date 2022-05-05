@@ -7,7 +7,7 @@ WORKDIR /app
 COPY package*.json ./
 
 # install dependencies (excluding devDependencies)
-RUN npm ci --production
+RUN npm ci --production && npm cache clean --force
 
 # copy everything over to environment
 COPY . .
@@ -24,7 +24,8 @@ RUN npm install -g serve
 # Copy files over from builder
 COPY --from=builder /app/build ./build
 
-EXPOSE 3000
+RUN chown node:node ./
+USER node
 
 CMD ["serve", "-s", "build", "-l", "3000"]
 

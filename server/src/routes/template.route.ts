@@ -1,4 +1,4 @@
-import {RoomService} from "../services/room.service";
+import { RoomService } from "../services/room.service";
 import { Router } from "express";
 import { StatusError } from "../errors/status.error";
 
@@ -20,7 +20,7 @@ router.get(
     if (id === null || id === undefined) {
       throw new StatusError("'id' is null or undefined", 400);
     }
-    const template = await RoomService.getFromTemplateId(id);
+    const template = await RoomService.getTemplate(id);
 
     res.json(template);
   })

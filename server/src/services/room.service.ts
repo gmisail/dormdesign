@@ -1,19 +1,19 @@
-import {Cache} from "../cache";
-import {Database} from "../db";
+import { Cache } from "../cache";
+import { Database } from "../db";
 import {
   documentToRoom,
-  Room, RoomData,
+  Room,
+  RoomData,
   RoomDocument,
   roomToDocument,
   RoomUpdate,
-  updateRoomDataSchema
+  UpdateRoomDataSchema,
 } from "../models/room.model";
-import {StatusError} from "../errors/status.error";
+import { StatusError } from "../errors/status.error";
 import { Item } from "../models/item.model";
-import {ItemService} from "./item.service";
+import { ItemService } from "./item.service";
 import { v4 as uuidv4 } from "uuid";
-
-const { validateWithSchema } = require("../utils.js");
+import { validateWithSchema } from "../utils";
 
 const DEBUG_MESSAGES = Boolean(process.env.DEBUG_MESSAGES ?? "false");
 
@@ -22,7 +22,7 @@ class RoomService {
    * Create a new room with a given name
    * @param { string } name
    * @param { string | undefined } templateId If specified, copies the data from this template
-   * @returns { Promise.<object> } The newly created room object
+   * @returns { Promise.<Room> } The newly created room object
    * @throws When the creation fails
    */
   static async createRoom(name: string, templateId: string = undefined): Promise<Room> {
@@ -64,48 +64,47 @@ class RoomService {
     }
 
     try {
-      await Database.getConnection().db("dd_data").collection("rooms").insertOne(roomToDocument(room));
+      await Database.getConnection()
+        .db("dd_data")
+        .collection("rooms")
+        .insertOne(roomToDocument(room));
     } catch (err) {
       throw new Error("Failed to create room: " + err);
     }
 
-    if (DEBUG_MESSAGES)
-      console.log(`Room ${id} has been created.`);
+    if (DEBUG_MESSAGES) console.log(`Room ${id} has been created.`);
 
     return room;
   }
 
   /**
-     * Deletes the room with the given id from both the database and cache
-     * @param { string } id
-     * @returns { Promise.<object> }
-     * @throws When delete fails
-     */
+   * Deletes the room with the given id from both the database and cache
+   * @param { string } id
+   * @throws When delete fails
+   */
   static async deleteRoom(id: string) {
     try {
       await Database.getConnection().db("dd_data").collection("rooms").deleteOne({ _id: id });
 
-      if (DEBUG_MESSAGES)
-        console.log(`Room ${id} has been deleted from the database`);
+      if (DEBUG_MESSAGES) console.log(`Room ${id} has been deleted from the database`);
     } catch (err) {
       throw new Error(`Failed to delete room ${id} ` + err);
     }
 
     await Cache.getClient().del(id);
 
-    if (DEBUG_MESSAGES)
-      console.log(`Room ${id} has been removed from the cache.`);
+    if (DEBUG_MESSAGES) console.log(`Room ${id} has been removed from the cache.`);
   }
 
   /**
- * Get the JSON data from a room at an ID. Returns the cached version if it exists, the version in the
- * database otherwise.
- * @param { string } id
- * @param { string } idKey The key used in the MongoDB query filter. Defaults to "_id"
- * @returns { Promise.<object> } The room object if it exists
- * @throws When the function fails to get the room
- */
-  static async getRoom(id: string, idKey = "_id") {
+   * Get the JSON data from a room at an ID. Returns the cached version if it exists, the version in the
+   * database otherwise.
+   * @param { string } id
+   * @param { string } idKey The key used in the MongoDB query filter. Defaults to "_id"
+   * @returns { Promise.<Room> } The room object if it exists
+   * @throws When the function fails to get the room
+   */
+  static async getRoom(id: string, idKey: string = "_id"): Promise<Room> {
     /* First check if room is in the cache, which we can only do here if the room is being fetched using its id.
       Otherwise, we will do this check after we've queried the database and have the room ID */
     if (idKey === "_id") {
@@ -124,13 +123,15 @@ class RoomService {
     /* Since it is not cached, retrieve it from the database */
     let roomDocument: RoomDocument;
     try {
-      roomDocument = await Database.getConnection().db("dd_data").collection("rooms").findOne(filter) as RoomDocument;
+      roomDocument = (await Database.getConnection()
+        .db("dd_data")
+        .collection("rooms")
+        .findOne(filter)) as RoomDocument;
     } catch (err) {
       throw new Error(`Failed to get room with id '${id}'.` + err);
     }
 
-    if (roomDocument === null)
-      throw new StatusError(`Room with id '${id}' not found`, 404);
+    if (roomDocument === null) throw new StatusError(`Room with id '${id}' not found`, 404);
 
     const room = documentToRoom(roomDocument);
 
@@ -140,7 +141,8 @@ class RoomService {
       let cachedRoom = await Cache.getClient().get(room.id);
       if (cachedRoom !== null) {
         // Commented this debug message since it gets spammed a lot. But it's sometimes useful
-        if (DEBUG_MESSAGES) console.log(`Get on room ${JSON.parse(cachedRoom).id} used cached data.`);
+        if (DEBUG_MESSAGES)
+          console.log(`Get on room ${JSON.parse(cachedRoom).id} used cached data.`);
 
         return JSON.parse(cachedRoom);
       }
@@ -150,13 +152,13 @@ class RoomService {
   }
 
   /**
- * Get the JSON data from a room with given templateId. If the room is currently
- * in the cache, that data will be returned. Otherwise, the data stored in the
- * database will be returned.
- * @param { string } templateId
- * @returns { Promise.<object> } The room object if it exists
- * @throws When the function fails to get the room
- */
+   * Get the JSON data from a room with given templateId. If the room is currently
+   * in the cache, that data will be returned. Otherwise, the data stored in the
+   * database will be returned.
+   * @param { string } templateId
+   * @returns { Promise.<Room> } The room object if it exists
+   * @throws When the function fails to get the room
+   */
   static async getFromTemplateId(templateId: string): Promise<Room> {
     return RoomService.getRoom(templateId, "templateId");
   }
@@ -166,21 +168,21 @@ class RoomService {
    * in the cache, that data will be returned. Otherwise, the data stored in the
    * database will be returned.
    * @param { string } templateId
-   * @returns { Promise.<object> } Template object (same as room  object but 'id' is removed)
+   * @returns { Promise.<Partial<Room>> } Template object (same as Room object but 'id' field is removed)
    * @throws When the function fails to get the room
    */
-  static async getTemplate(templateId: string): Promise<RoomData> {
+  static async getTemplate(templateId: string): Promise<Partial<Room>> {
     const room: Room = await RoomService.getFromTemplateId(templateId);
-    const { id, ...roomData } = room;
+    delete room["id"];
 
-    return roomData as RoomData;
+    return room;
   }
 
   /**
-  * Returns rooms with 'featured' set to true. Returned rooms have their 'id' fields removed
-  * and only include basic data (e.g. name).
-  * @returns { Promise.<Array<Partial<Room>>> }
-  */
+   * Returns rooms with 'featured' set to true. Returned rooms have their 'id' fields removed
+   * and only include basic data (e.g. name).
+   * @returns { Promise.<Array<Partial<Room>>> }
+   */
   static async getFeaturedRooms(): Promise<Array<Partial<Room>>> {
     let roomDocuments: Array<RoomDocument>;
 
@@ -189,14 +191,14 @@ class RoomService {
         .db("dd_data")
         .collection("rooms")
         .find({ "metaData.featured": true });
-      roomDocuments = await cursor.toArray() as RoomDocument[];
+      roomDocuments = (await cursor.toArray()) as RoomDocument[];
     } catch (error) {
       throw new Error(`Failed to get featured rooms.` + error);
     }
 
     // Don't include room ID or any other unnecessary data in returned objects
-    return roomDocuments.map(room => {
-      let updatedRoom: any = {...room};
+    return roomDocuments.map((room) => {
+      let updatedRoom: any = { ...room };
       updatedRoom["name"] = room.data.name;
 
       delete updatedRoom["_id"];
@@ -230,25 +232,22 @@ class RoomCacheService {
   /**
    * Adds a copy of a room from the database to the cache
    * @param { string } id
-   * @returns { Promise.<void> }
    * @throws If the room under `id` already exists in the cache or if fetching the room from the DB fails.
    */
   static async addRoom(id: string) {
     const exists = await Cache.getClient().exists(id);
 
-    if (exists)
-      throw new Error("Room with given id already exists in the cache");
+    if (exists) throw new Error("Room with given id already exists in the cache");
 
     const room = await RoomService.getRoom(id);
     const res = await Cache.getClient().set(id, JSON.stringify(room));
 
-    if (res === "OK" && DEBUG_MESSAGES)
-      console.log(`Added room ${id} to the cache.`);
+    if (res === "OK" && DEBUG_MESSAGES) console.log(`Added room ${id} to the cache.`);
   }
 
   /**
    * Removes room from the cache
-   * @param {*} id ID of room
+   * @param {string} id ID of room
    * @returns true if the cache successfully removed the key, false if no key was removed
    */
   static async removeRoom(id: string): Promise<boolean> {
@@ -261,7 +260,6 @@ class RoomCacheService {
    * Copy data from room at `templateId` into room at `id`
    * @param { string } id
    * @param { string } templateId
-   * @returns { Promise.<object> }
    * @throws If either room at `id` or the room at `templateId` fail to be fetched
    */
   static async copyRoomFrom(id: string, templateId: string): Promise<Room> {
@@ -280,14 +278,13 @@ class RoomCacheService {
    * Updates fields within the 'data' property of a room with the given `id` from the corresponding fields in `update`. If any of the fields in the update
    * don't exist in the room data, the entire update fails.
    * @param { string } id The ID of the room to update
-   * @param updates
-   * @returns { Promise.<void> }
+   * @param { Partial<RoomUpdate> } updates
    * @throws When `update` contains a field that can't be updated in the room
    */
   static async updateRoomData(id: string, updates: Partial<RoomUpdate>) {
     const room = await RoomService.getRoom(id);
 
-    validateWithSchema(updates, updateRoomDataSchema);
+    validateWithSchema(updates, UpdateRoomDataSchema);
     Object.assign(room.data, updates);
 
     room.metaData.lastModified = Date.now();
@@ -299,10 +296,9 @@ class RoomCacheService {
    * Update the vertices of a given room
    * @param { string } id
    * @param { array[{ x: number, y: number }] } vertices
-   * @returns { Promise.<void> }
    * @throws An error if the update fails
    */
-  static async updateRoomVertices(id: string, vertices: Array<{x: number, y: number }>) {
+  static async updateRoomVertices(id: string, vertices: Array<{ x: number; y: number }>) {
     await RoomCacheService.updateRoomData(id, { vertices });
   }
 
@@ -310,7 +306,6 @@ class RoomCacheService {
    * Update the name of a given room
    * @param { string } id
    * @param { string } name
-   * @returns { Promise.<void> }
    * @throws An error if the update fails
    */
   static async updateRoomName(id: string, name: string) {
@@ -340,7 +335,6 @@ class RoomCacheService {
   /**
    * Clear the items of a given room
    * @param { string } id
-   * @returns { Promise.<void> }
    * @throws When there's an error getting the room with `id` (e.g. the room doesn't exist)
    */
   static async clearItems(id: string) {
@@ -355,8 +349,7 @@ class RoomCacheService {
   /**
    * Remove item from a room
    * @param { string } id
-   * @param itemId
-   * @returns { Promise.<void> }
+   * @param { string } itemId
    * @throws When there's an error getting the room with `id` (e.g. the room doesn't exist)
    */
   static async removeItem(id: string, itemId: string) {
@@ -373,19 +366,18 @@ class RoomCacheService {
    * @param { string } id
    * @param { object } updates Object containing updates to items. Should be of the form
    * `[{ id, update }]`
-   * @returns { Promise.<void> }
    * @throws When there's an error getting the room or one of the updates fails
    */
-  static async updateItems(id: string, updates: Array<{ id: string, updated: Partial<Item> }>) {
+  static async updateItems(id: string, updates: Array<{ id: string; updated: Partial<Item> }>) {
     let room = await RoomService.getRoom(id);
 
     let updateMapping = {};
 
-    for(let itemUpdate of updates) {
+    for (let itemUpdate of updates) {
       updateMapping[itemUpdate.id] = itemUpdate.updated;
     }
 
-    for(let i = 0; i < room.data.items.length; i++) {
+    for (let i = 0; i < room.data.items.length; i++) {
       let item = room.data.items[i];
 
       const update = updateMapping[item.id];
@@ -407,11 +399,11 @@ class RoomCacheService {
   static async save(id: string): Promise<boolean> {
     let serializedRoom = await Cache.getClient().get(id);
 
-    if(serializedRoom == null) {
+    if (serializedRoom == null) {
       // This could occur if the room was just fully deleted
       if (DEBUG_MESSAGES)
         console.log(
-            `Cannot push room ${id} from cache to database. The room doesn't exist in the cache`
+          `Cannot push room ${id} from cache to database. The room doesn't exist in the cache`
         );
       return false;
     }
@@ -419,19 +411,18 @@ class RoomCacheService {
     const room: Room = JSON.parse(serializedRoom) as Room;
 
     try {
-      await Database.getConnection().db("dd_data")
-          .collection("rooms")
-          .replaceOne({ _id: id }, roomToDocument(room));
+      await Database.getConnection()
+        .db("dd_data")
+        .collection("rooms")
+        .replaceOne({ _id: id }, roomToDocument(room));
     } catch (err) {
       throw new Error(`Failed to save room ${id} from cache to db: ` + err);
     }
 
-    if (DEBUG_MESSAGES)
-      console.log("Room " + id + " pushed from cache to database.");
+    if (DEBUG_MESSAGES) console.log("Room " + id + " pushed from cache to database.");
 
     return true;
   }
-
 }
 
 export { RoomService, RoomCacheService };

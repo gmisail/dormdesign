@@ -6,6 +6,7 @@ import { PositionSchema } from "./position.model";
  * the data is correct.
  */
 type Item = {
+  id: string;
   name: string;
   quantity: number;
   visibleInEditor: boolean;
@@ -30,7 +31,11 @@ const DimensionsSchema = Joi.object({
   length: Joi.number().allow(null).default(null).max(100).min(0),
 });
 
-const itemSchema = {
+/**
+ * Object containing schemas for each individual field of an Item. Note that this object is not a schema itself, just
+ * a wrapper around the schemas for each individual field.
+ */
+const ItemFieldSchemas = {
   name: Joi.string().min(1).max(30),
   quantity: Joi.number().integer(),
   visibleInEditor: Joi.boolean(),
@@ -42,21 +47,25 @@ const itemSchema = {
   editorLocked: Joi.boolean(),
 };
 
-const createItemSchema = Joi.object({
-  ...itemSchema,
-  name: itemSchema.name.required(),
-  quantity: itemSchema.quantity.default(1),
-  visibleInEditor: itemSchema.visibleInEditor.default(false),
-  claimedBy: itemSchema.claimedBy.default(null),
-  editorPosition: itemSchema.editorPosition.default(),
-  editorZIndex: itemSchema.editorZIndex.default(0),
-  editorRotation: itemSchema.editorRotation.default(0),
-  editorLocked: itemSchema.editorLocked.default(false),
-  dimensions: itemSchema.dimensions.default(),
+/**
+ * Schema for creating a new Item
+ */
+const CreateItemSchema = Joi.object({
+  ...ItemFieldSchemas,
+  name: ItemFieldSchemas.name.required(),
+  quantity: ItemFieldSchemas.quantity.default(1),
+  visibleInEditor: ItemFieldSchemas.visibleInEditor.default(false),
+  claimedBy: ItemFieldSchemas.claimedBy.default(null),
+  editorPosition: ItemFieldSchemas.editorPosition.default(),
+  editorZIndex: ItemFieldSchemas.editorZIndex.default(0),
+  editorRotation: ItemFieldSchemas.editorRotation.default(0),
+  editorLocked: ItemFieldSchemas.editorLocked.default(false),
+  dimensions: ItemFieldSchemas.dimensions.default(),
 });
 
-const updateItemSchema = Joi.object(itemSchema);
+/**
+ * Schema for updating an item
+ */
+const UpdateItemSchema = Joi.object(ItemFieldSchemas);
 
-const ItemListSchema = Joi.array().items(itemSchema);
-
-export { createItemSchema, updateItemSchema, itemSchema, ItemListSchema, Item };
+export { CreateItemSchema, UpdateItemSchema, ItemFieldSchemas, Item };

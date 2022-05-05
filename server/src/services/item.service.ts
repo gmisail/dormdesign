@@ -1,5 +1,5 @@
-import { createItemSchema, updateItemSchema, Item } from "../models/item.model";
-const { validateWithSchema } = require("../utils.js");
+import { CreateItemSchema, UpdateItemSchema, Item } from "../models/item.model";
+import { validateWithSchema } from "../utils";
 const { v4: uuidv4 } = require("uuid");
 
 /**
@@ -14,7 +14,7 @@ class ItemService {
    * @throws When item is invalid
    */
   static createItem(item: any): Item {
-    let validated = validateWithSchema(item, createItemSchema);
+    let validated = validateWithSchema(item, CreateItemSchema);
     validated.id = uuidv4();
     return validated;
   }
@@ -26,7 +26,7 @@ class ItemService {
    * @throws When update is invalid
    */
   static updateItem(item: Item, updates: Item) {
-    const validatedUpdates: Item = validateWithSchema(updates, updateItemSchema);
+    const validatedUpdates: Item = validateWithSchema(updates, UpdateItemSchema);
     Object.assign(item, validatedUpdates);
   }
 }

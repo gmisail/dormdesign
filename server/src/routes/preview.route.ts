@@ -1,8 +1,7 @@
 import { Router } from "express";
-import {StatusError} from "../errors/status.error";
-import {PreviewService} from "../services/preview.service";
-import { Room } from "../models/room.model";
-import {RoomService} from "../services/room.service";
+import { StatusError } from "../errors/status.error";
+import { PreviewService } from "../services/preview.service";
+import { RoomService } from "../services/room.service";
 
 // Need to wrap routes in this function in order for async exceptions to be handled automatically
 // See: https://github.com/Abazhenov/express-async-handler#readme
@@ -14,9 +13,9 @@ let router = Router();
  * Attempts to generate a preview of the room represented by the given id.
  * @param { string } id
  * @param { boolean } isTemplate Set to true if the  given id is a templateId
- * @returns Preview if successful, otherwise null
+ * @returns Preview data if successful, otherwise null
  */
-const generateRoomPreview = async (id: string, isTemplate: boolean = false) => {
+const generateRoomPreview = async (id: string, isTemplate: boolean = false): Promise<string> => {
   const room = isTemplate ? await RoomService.getFromTemplateId(id) : await RoomService.getRoom(id);
   const roomPreview = await PreviewService.generatePreview(room);
   return roomPreview !== null ? roomPreview.data : null;
