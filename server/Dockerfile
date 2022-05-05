@@ -4,6 +4,8 @@ COPY package.json ./
 
 RUN npm install
 
+# RUN npm ci --production
+
 # Copy source
 COPY src ./src
 COPY tsconfig.json ./tsconfig.json

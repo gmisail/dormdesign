@@ -12,4 +12,19 @@ router.get(
   })
 );
 
+router.get(
+  "/:id",
+  asyncHandler(async (req, res) => {
+    const id = req.params.id;
+    if (id === null || id === undefined) {
+      const err = new Error("'id' is null or undefined");
+      err.status = 400;
+      throw err;
+    }
+    const template = await Room.getFromTemplateId(id);
+
+    res.json(template);
+  })
+);
+
 module.exports = router;

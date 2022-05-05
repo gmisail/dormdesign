@@ -15,13 +15,14 @@ import {
 } from "../../context/RoomStore";
 import { connect, useDispatch, useSelector } from "react-redux";
 
-import ActiveUsersIndicator from "../../components/ActiveUsersIndicator/ActiveUsersIndicator";
+import ActiveUsersIndicator from "./ActiveUsersIndicator/ActiveUsersIndicator";
 import DormItemList from "../../components/DormItemList/DormItemList";
 import IconButton from "../../components/IconButton/IconButton";
-import RoomEditor from "../../components/RoomEditor/RoomEditor";
+import RoomEditor from "./RoomEditor/RoomEditor";
 import { Spinner } from "react-bootstrap";
 import useModal from "../../hooks/useModal";
 import { useParams } from "react-router-dom";
+import DormItemModel from "../../models/DormItemModel";
 
 export const RoomRoute = () => {
   const socketConnection = useSelector((state) => state.socketConnection);
@@ -67,16 +68,15 @@ export const RoomRoute = () => {
   }, [loading, userName, setUserName, toggleModal, socketConnection, dispatch]);
 
   useEffect(() => {
-    /* There's an error. Only display modal if still connected to room (since there's a different case for that handled below) */
-    if (error !== null && socketConnection !== null) {
+    if (error !== null) {
       toggleModal(modalTypes.error, {
         message: error.message,
       });
     }
-  }, [error, socketConnection, toggleModal]);
+  }, [error, toggleModal]);
 
   useEffect(() => {
-    document.title = `DormDesign ${roomName ? "| " + roomName : ""}`;
+    document.title = `Room ${roomName ? "| " + roomName : ""}`;
   }, [roomName]);
 
   const onClickAddItemButton = useCallback(
@@ -105,31 +105,59 @@ export const RoomRoute = () => {
     [updateItems, toggleModal, dispatch]
   );
 
-  const onClickDuplicateItemButton = useCallback((item) => dispatch(addItem(item)), [
-    addItem,
-    dispatch,
-  ]);
+  const onClickDuplicateItemButton = useCallback((item) => {
+    let newItem = DormItemModel.deepCopy(item);
+    // Offset duplicated item position slightly
+    newItem.editorPosition.x += 1;
+    newItem.editorPosition.y += 0.5;
+    // New item should be unclaimed by default
+    newItem.claimedBy = null;
+
+    dispatch(addItem(newItem)), [addItem, dispatch];
+  });
 
   const onClickClaimItemButton = useCallback(
-    (item) =>
-      dispatch(
-        updateItems([
-          {
-            id: item.id,
-            updated: {
-              claimedBy: item.claimedBy === userName ? null : userName,
-            },
+    (item) => {
+      if (userName === null) {
+        toggleModal(modalTypes.chooseName, {
+          onSubmit: (newName) => {
+            dispatch(setUserName(newName));
+            dispatch(
+              updateItems([
+                {
+                  id: item.id,
+                  updated: {
+                    claimedBy: newName,
+                  },
+                },
+              ])
+            );
+            toggleModal();
           },
-        ])
-      ),
-    [updateItems, userName, dispatch]
+        });
+      } else {
+        dispatch(
+          updateItems([
+            {
+              id: item.id,
+              updated: {
+                claimedBy: item.claimedBy === userName ? null : userName,
+              },
+            },
+          ])
+        );
+      }
+    },
+    [updateItems, userName, dispatch, toggleModal]
   );
 
   const onClickSettingsButton = useCallback(
     () =>
       toggleModal(modalTypes.settings, {
-        onClone: (target) => {
-          dispatch(cloneRoom(id, target));
+        onClone: (templateUrl) => {
+          // Extract template ID from portion of url string after last '/'
+          const templateId = templateUrl.substring(templateUrl.lastIndexOf("/") + 1);
+          dispatch(cloneRoom(id, templateId));
         },
         userName: userName,
         onChangeUserName: (name) => {
@@ -210,10 +238,9 @@ export const RoomRoute = () => {
                 circleSelectionEffect={true}
                 toggled={modalProps.show && modalProps.type === modalTypes.share}
                 onClick={() => {
-                  toggleModal(modalTypes.share, {
+                  toggleModal(modalTypes.shareRoom, {
                     id: id,
                     templateId: templateId,
-                    link: window.location.href,
                   });
                 }}
               >

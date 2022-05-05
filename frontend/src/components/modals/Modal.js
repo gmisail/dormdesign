@@ -1,12 +1,14 @@
 import React from "react";
 
-import AddModal from "../../components/modals/AddModal";
-import EditModal from "../../components/modals/EditModal";
-import NameModal from "../../components/modals/NameModal";
-import SettingsModal from "../../components/modals/SettingsModal";
-import ShareRoomModal from "../../components/modals/ShareRoomModal/ShareRoomModal";
-import ErrorModal from "../../components/modals/ErrorModal";
-import RoomNameModal from "../../components/modals/RoomNameModal";
+import AddModal from "./AddModal";
+import EditModal from "./EditModal";
+import NameModal from "./NameModal";
+import SettingsModal from "./SettingsModal";
+import ShareRoomModal from "./ShareRoomModal";
+import ErrorModal from "./ErrorModal";
+import RoomNameModal from "./RoomNameModal";
+import ShareTemplateModal from "./ShareTemplateModal";
+import CloneTemplateModal from "./CloneTemplateModal/CloneTemplateModal";
 
 export const modalTypes = {
   add: "ADD",
@@ -15,7 +17,9 @@ export const modalTypes = {
   updateRoomName: "UPDATE_ROOM_NAME",
   error: "ERROR",
   settings: "SETTINGS",
-  share: "SHARE",
+  shareRoom: "SHARE_ROOM",
+  shareTemplate: "SHARE_TEMPLATE",
+  cloneTemplate: "CLONE_TEMPLATE",
 };
 
 // Modal component that returns a modal based on the passed 'type' prop and passes all props to that modal
@@ -33,8 +37,12 @@ export const Modal = (props) => {
       return <ErrorModal {...props} />;
     case modalTypes.settings:
       return <SettingsModal {...props} />;
-    case modalTypes.share:
+    case modalTypes.shareRoom:
       return <ShareRoomModal {...props} />;
+    case modalTypes.shareTemplate:
+      return <ShareTemplateModal {...props} />;
+    case modalTypes.cloneTemplate:
+      return <CloneTemplateModal {...props} />;
     default:
       return null;
   }

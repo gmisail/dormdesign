@@ -1,8 +1,8 @@
 import Joi from "joi";
-import { Router } from "express";
-
-import { RoomService } from "../services/room.service";
 import { MAX_NAME_LENGTH } from "../constants/room.constants";
+import { RoomService } from "../services/room.service";
+import { Router } from "express";
+import { StatusError } from "../errors/status.error";
 
 // Need to wrap routes in this function in order for async exceptions to be handled automatically
 // See: https://github.com/Abazhenov/express-async-handler#readme
@@ -12,16 +12,13 @@ const { validateWithSchema } = require("../utils.js");
 
 const router = Router();
 
-const getRoomSchema = Joi.object({
-  id: Joi.string().min(1).required(),
-});
 router.get(
-  "/get",
+  "/:id",
   asyncHandler(async (req, res) => {
-    validateWithSchema(req.query, getRoomSchema);
-
-    const id = req.query.id as string;
-
+    const id = req.params.id;
+    if (id === null || id === undefined) {
+      throw new StatusError("'id' is null or undefined", 400);
+    }
     let room = await RoomService.getRoom(id);
 
     res.json(room);

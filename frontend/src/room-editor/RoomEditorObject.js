@@ -22,7 +22,7 @@ class RoomEditorObject extends SceneObject {
       outsideBoundaryColor,
       onObjectsUpdated,
       onObjectSelected,
-      onBoundsUpdated,
+      onBoundsMoved,
       onBoundaryPointSelected,
       textColor,
       fontFamily,
@@ -65,7 +65,7 @@ class RoomEditorObject extends SceneObject {
       color: boundaryColor ?? "#555",
       edgeWidth: boundaryWidth ?? 0.07,
       onPointSelected: onBoundaryPointSelected,
-      onPointsUpdated: onBoundsUpdated,
+      onPointsMoved: onBoundsMoved,
     });
     this.addChild(this.bounds);
 
@@ -98,7 +98,7 @@ class RoomEditorObject extends SceneObject {
   setScale(scale) {
     const limitMinX = this.scene.canvas.width / this.size.x;
     const limitMinY = this.scene.canvas.height / this.size.y;
-    const min = 30;
+    const min = 25;
     const max = 200;
 
     this.scale = new Vector2(
@@ -249,7 +249,7 @@ class RoomEditorObject extends SceneObject {
     if (clicked.length > 0) {
       for (let i = 0; i < clicked.length; i++) {
         const obj = this.children[clicked[i]];
-        if (this.roomItems.has(obj.id) && !this.bounds.editing) {
+        if (!this.bounds.editing && this.roomItems.has(obj.id)) {
           // Clicked room item (don't allow if bounds are being edited)
           this.selectItem(obj.id);
           return;
@@ -460,19 +460,6 @@ class RoomEditorObject extends SceneObject {
       this._needNormalizeItemZIndexes = false;
     }
 
-    // Send updates to selected object position if any exist
-    if (this._selectedObjectPositionUpdated) {
-      this.onObjectsUpdated([
-        {
-          id: this.selectedObject.id,
-          updated: {
-            position: this.selectedObject.position,
-          },
-        },
-      ]);
-      this._selectedObjectPositionUpdated = false;
-    }
-
     // Prevent grid from panning out of view
     const bbox = this.getBoundingBox();
     const actualSize = new Vector2(bbox.p2.x - bbox.p1.x, bbox.p2.y - bbox.p1.y);
@@ -517,7 +504,7 @@ class RoomEditorObject extends SceneObject {
         !Vector2.floatEquals(restrictedPosition.x, obj.position.x) ||
         !Vector2.floatEquals(restrictedPosition.y, obj.position.y)
       ) {
-        obj.position = restrictedPosition;
+        obj.setPosition(restrictedPosition);
       }
 
       // Check for collisions. Currently only checks if object collides with one of the room boundary edges.
@@ -537,6 +524,19 @@ class RoomEditorObject extends SceneObject {
           }
         }
       }
+    }
+
+    // Send updates to selected object position if any exist
+    if (this._selectedObjectPositionUpdated) {
+      this.onObjectsUpdated([
+        {
+          id: this.selectedObject.id,
+          updated: {
+            position: this.selectedObject.position,
+          },
+        },
+      ]);
+      this._selectedObjectPositionUpdated = false;
     }
   }
 

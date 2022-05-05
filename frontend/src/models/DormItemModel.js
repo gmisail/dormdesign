@@ -1,5 +1,10 @@
 export default class DormItemModel {
   static MAX_NAME_LENGTH = 30;
+  static MAX_QUANTITY = 1000;
+
+  // Max/min values for width & length
+  static MAX_DIMENSION_SIZE = 100;
+  static MIN_DIMESNION_SIZE = 0;
 
   static getDefault() {
     return {
@@ -19,6 +24,23 @@ export default class DormItemModel {
       editorRotation: 0,
       editorLocked: false,
       editorZIndex: 0,
+    };
+  }
+
+  /**
+   * Creates deep copy of an item
+   * @param {object} item Item to copy
+   * @returns New copied item
+   */
+  static deepCopy(item) {
+    return {
+      ...item,
+      editorPosition: {
+        ...item.editorPosition,
+      },
+      dimensions: {
+        ...item.dimensions,
+      },
     };
   }
 }

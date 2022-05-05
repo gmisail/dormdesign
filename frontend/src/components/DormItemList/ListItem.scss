@@ -1,0 +1,76 @@
+@import "../../styles/variables.scss";
+
+.list-item {
+  transition: background-color 0.1s ease-in;
+  font-size: 16px;
+  color: $text-color-dark;
+  padding: 12px;
+  height: 60px;
+
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: center;
+  justify-content: space-between;
+
+  .list-item-content-left {
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    margin-right: 10px;
+    max-width: 50%;
+
+    .item-name {
+      margin-right: 3px;
+      font-weight: 600;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      min-width: 0;
+    }
+    .item-quantity {
+      font-weight: 500;
+      flex-shrink: 0;
+    }
+  }
+
+  .list-item-content-right {
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    min-width: 0;
+
+    .item-claim {
+      // Since this text is italic and overflow is hidden, some letters are visually cutoff (e.g. 'f')
+      // Some small padding on the right side solves this
+      padding-right: 5px;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      margin-right: 3px;
+    }
+  }
+
+  &:first-child {
+    border-top-left-radius: inherit;
+    border-top-right-radius: inherit;
+  }
+
+  & + & {
+    border-top: 1px solid $border-color;
+  }
+
+  &:last-child {
+    border-bottom-left-radius: inherit;
+    border-bottom-right-radius: inherit;
+  }
+
+  &.item-selected {
+    background-color: $selection-color-primary;
+
+    // Override the gray circle selection effect on the DropdownMenu's IconButton to a matching color
+    .dropdown-menu-button:hover,
+    .dropdown-menu-button.toggled {
+      background-color: darken($selection-color-primary, 6);
+    }
+  }
+}

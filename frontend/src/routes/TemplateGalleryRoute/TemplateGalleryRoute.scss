@@ -1,0 +1,13 @@
+@import "../../styles/variables.scss";
+
+.templates-container {
+  width: max-content;
+  margin: 15px auto;
+  padding: 25px 20px 25px 20px;
+
+  @media screen and (max-width: $breakpoint-sm) {
+    h3 {
+      font-size: 1.2rem;
+    }
+  }
+}

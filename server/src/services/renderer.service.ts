@@ -146,7 +146,7 @@ class RendererService {
     const startX = (bbox.w - numLinesX * cellSize) / 2;
     const startY = (bbox.h - numLinesY * cellSize) / 2;
 
-    this.ctx.strokeStyle = "#777";
+    this.ctx.strokeStyle = "#999";
     this.ctx.lineWidth = 0.5;
     this.ctx.lineCap = "round";
     for (let i = 0; i < numLinesX + 1; i++) {

@@ -1,0 +1,29 @@
+@import "../../styles/variables.scss";
+
+.template-clone-btn {
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: center;
+  align-items: center;
+  margin-left: 10px;
+
+  & > svg {
+    width: 20px;
+    height: 20px;
+    margin-right: 5px;
+  }
+}
+
+// Override hover effect on room-name-container (since template name isn't editable).
+// Might be a cleaner way to do this without using !important
+.template-name-container:hover {
+  cursor: default !important;
+  color: $text-color-dark !important;
+}
+
+.template-name-addon {
+  font-size: 1.2rem;
+  margin-left: 6px;
+  font-weight: 600;
+  color: lighten($text-color-dark, 20%);
+}
