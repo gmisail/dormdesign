@@ -1,0 +1,36 @@
+@import "../../styles/variables.scss";
+
+.clipboard-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  color: $text-color-dark;
+  padding: 3px 5px;
+  background-color: #ddd;
+  border-radius: 4px;
+  font-size: 0.86rem;
+
+  .clipboard-link-text {
+    overflow-wrap: break-word;
+    // font-size: 0.85rem;
+
+    min-width: 0;
+
+    // vertical-align: middle;
+    // overflow: hidden;
+    // text-overflow: ellipsis;
+    // min-width: 0;
+    // white-space: nowrap;
+  }
+
+  .clipboard-link-btn {
+    padding: 6px;
+    width: 30px;
+    flex-shrink: 0;
+
+    &:hover {
+      background-color: #ccc;
+    }
+  }
+}

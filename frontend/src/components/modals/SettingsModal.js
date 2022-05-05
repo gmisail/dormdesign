@@ -7,10 +7,6 @@ import SingleInputForm from "../SingleInputForm/SingleInputForm";
 import RoomModel from "../../models/RoomModel";
 
 const SettingsModal = (props) => {
-  const onDeleteRoom = () => {
-    props.onDeleteRoom();
-  };
-
   return (
     <Modal show={props.show} onHide={props.onHide} centered={props.centered}>
       <Modal.Header closeButton>
@@ -21,8 +17,8 @@ const SettingsModal = (props) => {
         <h5>User Settings</h5>
         <b>My Name</b>
         <p className="mb-3">
-          Choose a name so that other people in the room know who you are. This data will only be
-          stored locally in your browser.
+          Choose a name so that other people in the room know who you are. This data is only stored
+          locally in your browser.
         </p>
         <SingleInputForm
           initialValue={props.userName}
@@ -43,18 +39,17 @@ const SettingsModal = (props) => {
 
         <br />
 
-        <b>Clone Room</b>
+        <b>Clone Template</b>
         <p>
-          Template cloning allows you to copy the layout, furniture, and properties from another
-          room into your room. Note that once you clone a room, changes only apply to your copy, not
-          the original.
-          <strong> This is not reversible.</strong>
+          Replace the contents of this room with the contents from a room template.{" "}
+          <strong>This is not reversible.</strong> All existing room data will be overwritten and
+          lost.
         </p>
         <SingleInputForm
           initialValue=""
           onSubmit={props.onClone}
           submitButtonText="Clone"
-          placeholder="Room Template ID"
+          placeholder="Template URL"
         />
 
         <br />
@@ -64,7 +59,7 @@ const SettingsModal = (props) => {
             <b>Delete Room</b>
             <p>Once a room is deleted, it cannot be recovered.</p>
           </div>
-          <ConfirmationButton label="Delete" onConfirm={onDeleteRoom} />
+          <ConfirmationButton label="Delete" onConfirm={props.onDeleteRoom} />
         </div>
       </Modal.Body>
     </Modal>

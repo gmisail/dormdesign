@@ -1,16 +1,17 @@
 import "../node_modules/bootstrap/dist/css/bootstrap.min.css";
 import "./App.scss";
 
-import { Redirect, Route, BrowserRouter as Router, Switch } from "react-router-dom";
+import { Route, BrowserRouter as Router, Switch } from "react-router-dom";
 
 import Footer from "./components/Footer/Footer";
-import { TemplatesRoute } from "./routes/TemplatesRoute/TemplatesRoute";
+import { TemplateGalleryRoute } from "./routes/TemplateGalleryRoute/TemplateGalleryRoute";
 import HomeRoute from "./routes/HomeRoute/HomeRoute";
 import { IconContext } from "react-icons";
-import NavigationBar from "./components/navbar/NavigationBar";
+import NavigationBar from "./components/NavigationBar/NavigationBar";
 import React from "react";
 import { RoomProvider } from "./context/RoomStore";
 import { RoomRoute } from "./routes/RoomRoute/RoomRoute";
+import { TemplateRoute } from "./routes/TemplateRoute/TemplateRoute";
 import SceneTestingRoute from "./routes/SceneTestingRoute/SceneTestingRoute";
 import { UnknownRoute } from "./routes/UnknownRoute/UnknownRoute";
 
@@ -32,17 +33,21 @@ const App = () => {
 
 const MainRoutes = () => (
   <div className="offset-from-navbar">
-    <NavigationBar></NavigationBar>
+    <NavigationBar />
     <Switch>
-      <Redirect from="/room/" to="/" exact />
       <Route exact path="/room/:id">
         <RoomProvider>
           <RoomRoute />
         </RoomProvider>
       </Route>
-      <Route exact path="/templates" component={TemplatesRoute} />
+      <Route exact path="/template/:id">
+        <RoomProvider>
+          <TemplateRoute />
+        </RoomProvider>
+      </Route>
+      <Route exact path="/templates" component={TemplateGalleryRoute} />
       <Route exact path="/scene-test" component={SceneTestingRoute} />
-      <Route path="*" exact component={UnknownRoute} />
+      <Route component={UnknownRoute} />
     </Switch>
   </div>
 );

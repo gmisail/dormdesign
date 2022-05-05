@@ -29,7 +29,7 @@ Server.setup = async function (app, port) {
   app.use(express.static("public"));
   app.use("/api/room", require("./routes/room.route"));
   app.use("/api/preview", require("./routes/preview.route"));
-  app.use("/api/templates", require("./routes/templates.route"));
+  app.use("/api/template", require("./routes/template.route"));
 
   // Set all other undefined routes to throw an error
   app.get("*", (req, res, next) => {

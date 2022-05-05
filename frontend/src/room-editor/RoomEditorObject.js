@@ -249,7 +249,7 @@ class RoomEditorObject extends SceneObject {
     if (clicked.length > 0) {
       for (let i = 0; i < clicked.length; i++) {
         const obj = this.children[clicked[i]];
-        if (this.roomItems.has(obj.id) && !this.bounds.editing) {
+        if (!this.bounds.editing && this.roomItems.has(obj.id)) {
           // Clicked room item (don't allow if bounds are being edited)
           this.selectItem(obj.id);
           return;

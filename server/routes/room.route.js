@@ -8,17 +8,19 @@ const asyncHandler = require("express-async-handler");
 const Joi = require("joi");
 const { validateWithSchema } = require("../utils.js");
 
+const { roomDataFields } = require("../schemas/room.schema");
+
 const router = Router();
 
-const getRoomSchema = Joi.object({
-  id: Joi.string().min(1).required(),
-});
 router.get(
-  "/get",
+  "/:id",
   asyncHandler(async (req, res) => {
-    validateWithSchema(req.query, getRoomSchema);
-    const id = req.query.id;
-
+    const id = req.params.id;
+    if (id === null || id === undefined) {
+      const err = new Error("'id' is null or undefined");
+      err.status = 400;
+      throw err;
+    }
     let room = await Room.get(id);
 
     res.json(room);
@@ -26,7 +28,7 @@ router.get(
 );
 
 const createRoomSchema = Joi.object({
-  name: Joi.string().min(1).max(40).optional(),
+  name: roomDataFields.name.optional(),
   templateId: Joi.string().min(1).optional(),
 });
 router.post(

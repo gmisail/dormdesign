@@ -24,7 +24,10 @@ const useModal = () => {
         ...props,
         show: true,
         type: type,
-        onHide: () => toggleModal(),
+        onHide: () => {
+          if (props.onHide) props.onHide();
+          toggleModal();
+        },
       });
     } else {
       /* 
@@ -32,9 +35,10 @@ const useModal = () => {
           since we still want that modal to be rendered (so the Bootstrap modal hide animation has time to be shown)
         */
       setModalProps((prevState) => ({
-        ...initialModalState,
+        // Keep the previous state (except for 'show') so props persist throughout modal close animation
+        ...prevState,
+        show: false,
         type: prevState.type,
-        onHide: () => toggleModal(),
       }));
     }
   }, []);

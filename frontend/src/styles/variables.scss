@@ -1,8 +1,10 @@
 $color-primary: #2b7cff; //#0c69ff;
 $color-secondary: #8a8a8a;
 $color-danger: #f0353b;
-$color-success: #2ed95b;
+$color-success: #22c84f;
 $color-light-grey: #e0e0e0;
+// $color-light-grey: #d9d9d9;
+$color-gold: #f0c735;
 
 $text-color-dark: #333;
 $text-color-light: #fff;
@@ -28,13 +30,22 @@ $navbar-height: 56px;
 $footer-height: 50px;
 $footer-text-color: $text-color-dark;
 
-@mixin button-background-color($color) {
+$room-thumbnail-width: 175px;
+$room-thumbnail-width-sm: 125px;
+
+$breakpoint-lg: 900px;
+$breakpoint-md: 675px;
+$breakpoint-sm: 430px;
+
+@mixin button-color($color, $text-color) {
+  color: $text-color;
   background-color: $color;
   border: 1px solid $color;
-  transition: border-color 0.05s ease background-color 0.05s ease;
   &:hover {
     background-color: darken($color, 7.5%);
     border-color: darken($color, 7.5%);
+    text-decoration: none;
+    color: $text-color;
   }
 
   &:disabled {
@@ -55,6 +66,7 @@ $footer-text-color: $text-color-dark;
   &:hover {
     background-color: $color;
     color: $text-color;
+    text-decoration: none;
   }
 
   &:disabled {
