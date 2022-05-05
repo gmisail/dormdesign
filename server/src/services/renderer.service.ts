@@ -191,8 +191,6 @@ class RendererService {
     this.ctx.closePath();
     this.ctx.strokeStyle = "#111";
     this.ctx.lineWidth = 3;
-    // this.ctx.lineJoin = "butt";
-    // this.ctx.lineCap = "butt";
 
     this.ctx.stroke();
   }
@@ -216,8 +214,8 @@ class RendererService {
       const item = items[i];
 
       if (item.visibleInEditor) {
-        const width = 1 ?? item.dimensions.width;
-        const length = 1 ?? item.dimensions.length;
+        const width = item.dimensions.width ?? 1;
+        const length = item.dimensions.length ?? 1;
 
         this.ctx.fillStyle = this.ITEM_COLORS[i % this.ITEM_COLORS.length];
 

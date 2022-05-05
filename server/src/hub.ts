@@ -300,10 +300,10 @@ class Hub {
     await Promise.all(
       Array.from(this.connections.values()).map(async (session) => {
         /*
-                If inactive:
-                - remove the client from the current roomID
-                - terminate the socket connection
-              */
+          If inactive:
+          - remove the client from the current roomID
+          - terminate the socket connection
+        */
         if (!session.active) {
           if (DEBUG_MESSAGES) console.log("Connection " + session.id + " inactive. Closing it.");
 
@@ -459,8 +459,6 @@ class Hub {
   private async updateNickname({ session, roomID, data, sendResponse }: EventMessage) {
     if (data === undefined || data.userName === undefined || data.userName.length <= 0)
       throw new StatusError("'userName' string is empty or undefined", 400);
-
-    console.log(roomID, JSON.stringify(data), sendResponse);
 
     // Update socket's username
     session.userName = data.userName
