@@ -2,17 +2,14 @@ import Joi, { number } from "joi";
 
 import { Item } from "./item.model";
 import { ObjectId } from "mongodb";
-import { PositionSchema } from "./position.model";
+import { Position, PositionSchema } from "./position.model";
 
 type RoomData = {
   templateId: string;
   data: {
     name: string;
     items: Array<Item>;
-    vertices: Array<{
-      x: number;
-      y: number;
-    }>;
+    vertices: Array<Position>;
   };
   metaData: {
     featured: boolean;
@@ -27,10 +24,7 @@ type RoomDocument = { _id: ObjectId } & RoomData;
 
 type RoomUpdate = {
   name: string;
-  vertices: Array<{
-    x: number;
-    y: number;
-  }>;
+  vertices: Array<Position>;
 };
 
 const RoomNameSchema = Joi.string().min(1).max(40);

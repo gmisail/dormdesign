@@ -1,5 +1,5 @@
 import Joi from "joi";
-import { PositionSchema } from "./position.model";
+import { Position, PositionSchema } from "./position.model";
 
 /**
  * Represents an Item object. Validated using Joi schemas to ensure that
@@ -16,10 +16,7 @@ type Item = {
     height: number;
     length: number;
   };
-  editorPosition: {
-    x: number;
-    y: number;
-  };
+  editorPosition: Position;
   editorZIndex: number;
   editorRotation: number;
   editorLocked: boolean;

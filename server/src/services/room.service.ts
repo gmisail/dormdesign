@@ -14,6 +14,7 @@ import { Item } from "../models/item.model";
 import { ItemService } from "./item.service";
 import { v4 as uuidv4 } from "uuid";
 import { validateWithSchema } from "../utils";
+import { Position } from "../models/position.model";
 
 const DEBUG_MESSAGES = Boolean(process.env.DEBUG_MESSAGES ?? "false");
 
@@ -295,10 +296,10 @@ class RoomCacheService {
   /**
    * Update the vertices of a given room
    * @param { string } id
-   * @param { array[{ x: number, y: number }] } vertices
+   * @param { array[Position] } vertices
    * @throws An error if the update fails
    */
-  static async updateRoomVertices(id: string, vertices: Array<{ x: number; y: number }>) {
+  static async updateRoomVertices(id: string, vertices: Array<Position>) {
     await RoomCacheService.updateRoomData(id, { vertices });
   }
 

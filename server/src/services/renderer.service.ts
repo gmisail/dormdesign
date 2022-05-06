@@ -1,9 +1,5 @@
 import canvas, { CanvasRenderingContext2D } from "canvas";
-
-type Point = {
-  x: number;
-  y: number;
-};
+import { Position } from "../models/position.model";
 
 type BoundingBox = {
   w: number;
@@ -21,7 +17,7 @@ type ItemData = {
 };
 
 type RoomData = {
-  vertices: Array<Point>;
+  vertices: Array<Position>;
   items: Array<ItemData>;
 };
 
@@ -81,7 +77,7 @@ class RendererService {
    * @param { array<{ x: Number, y: Number }>} points
    * @returns { w, h, x, y }
    */
-  getBoundingBox(points: Array<Point>, items?): BoundingBox {
+  getBoundingBox(points: Array<Position>, items?): BoundingBox {
     if (points === undefined || points.length == 0) return { w: 0, h: 0, x: 0, y: 0 };
 
     let min = { x: Infinity, y: Infinity };
@@ -169,7 +165,7 @@ class RendererService {
    * @param {*} points
    * @param {*} boundingBox
    */
-  drawBoundaries(points: Array<Point>, boundingBox: BoundingBox): void {
+  drawBoundaries(points: Array<Position>, boundingBox: BoundingBox): void {
     this.ctx.beginPath();
 
     let xOffset = 0;

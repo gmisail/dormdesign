@@ -15,7 +15,7 @@ class Server {
     this.port = port;
   }
 
-  async setup() {
+  async setup(): Promise<void> {
     const server = http.createServer(this.app);
     const sockets = new ws.Server({ clientTracking: false, noServer: true });
 
@@ -26,7 +26,7 @@ class Server {
     await Cache.connect();
     await Database.connect();
 
-    let hub = new Hub(sockets);
+    const hub = new Hub(sockets);
 
     this.app.use(express.json());
     this.app.use(express.urlencoded({ extended: true }));
