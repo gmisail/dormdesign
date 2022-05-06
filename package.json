@@ -9,8 +9,7 @@
     "redux-devtools-extension": "^2.13.9"
   },
   "scripts": {
-    "prettier:frontend": "prettier ./frontend/src --write",
-    "prettier:server": "prettier ./server --write",
+    "prettier": "prettier --write .",
     "dev": "docker-compose --env-file ./.env -f docker-compose.dev.yml up --build",
     "clear-dev-data": "docker-compose -f docker-compose.dev.yml down && docker volume rm dd_database && rm -rf ./redis_data",
     "prepare": "husky install",
@@ -19,12 +18,7 @@
     "migrate:status": "migrate-mongo status -f migrate-mongo-config.js"
   },
   "lint-staged": {
-    "server/*.{js,jsx,ts,tsx,json,css,scss,md}": [
-      "npm run prettier:server"
-    ],
-    "frontend/src/*.{js,jsx,ts,tsx,json,css,scss,md}": [
-      "npm run prettier:frontend"
-    ]
+    "*.{js,jsx,ts,tsx,json,css,scss,md}": "prettier --write"
   },
   "husky": {
     "hooks": {

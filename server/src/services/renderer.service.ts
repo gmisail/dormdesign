@@ -1,21 +1,50 @@
-const { createCanvas } = require("canvas");
+import canvas, { CanvasRenderingContext2D } from "canvas";
+import { Position } from "../models/position.model";
 
-class PreviewRenderer {
+type BoundingBox = {
+  w: number;
+  h: number;
+  x: number;
+  y: number;
+};
+
+type ItemData = {
+  visibleInEditor: boolean;
+  dimensions: { width: number; height: number; length: number };
+  editorPosition: { x: number; y: number };
+  editorZIndex: number;
+  editorRotation: number;
+};
+
+type RoomData = {
+  vertices: Array<Position>;
+  items: Array<ItemData>;
+};
+
+class RendererService {
+  /**
+   * SIZE sets the pixel resolution of the output image
+   *
+   * Since the output is always a square, a value of SIZE = 100
+   * would result in a 100px by 100px image.
+   */
+  private SIZE: number = 300;
+  private SCALE: number;
+
+  readonly PADDING: number;
+  readonly MAX_DRAWN_CELLS: number;
+  readonly ITEM_COLORS: Array<string>;
+
+  private canvas: canvas.Canvas;
+  private ctx: CanvasRenderingContext2D;
+
   constructor() {
-    /**
-     * SIZE sets the pixel resolution of the output image
-     *
-     * Since the output is always a square, a value of SIZE = 100
-     * would result in a 100px by 100px image.
-     */
-    this.SIZE = 300;
-
     /**
      * PADDING (in percent of total image size) around the rendered room.
      *
      * Example: If the PADDING = 0.25 and SIZE = 100(px) then there will be 25px of padding on each side (left, right, top, bottom)
      *
-     * PADDING will NOT affect the final pixel output size of the image (specified by this.SIZE), only the size of the room itself in the final render
+     * PADDING will NOT affect the final pixel output size of the image (specified by this. SIZE), only the size of the room itself in the final render
      */
     this.PADDING = 0.12;
     this.PADDING = Math.min(0.49, this.PADDING);
@@ -23,7 +52,8 @@ class PreviewRenderer {
     /**
      * Specifies the maximum number of grid cells to draw (per dimension). It's important that this value is set to something
      * reasonably low because for a very large room, if the grid were drawn to scale, it would probably both look bad and take
-     * signifantly more time/computing power to draw (since drawing the grid has a runtime of at least O(N^2) where N is the number of grid cells per dimension)
+     * significantly more time/computing power to draw (since drawing the grid has a runtime of at least O(N^2) where N
+     * is the number of grid cells per dimension)
      *
      * So a value of 25 for example means that at most a grid of size 25 x 25 cells will be drawn
      */
@@ -38,16 +68,16 @@ class PreviewRenderer {
      * Set up one instance of canvas that be used for rendering the previews. Re-using
      * one canvas instance is better than creating them over and over again.
      */
-    this.canvas = createCanvas(200, 200);
+    this.canvas = canvas.createCanvas(200, 200);
     this.ctx = this.canvas.getContext("2d");
   }
 
   /**
-   * Find the bounding box that contains all of the points
+   * Find the bounding box that contains all the points
    * @param { array<{ x: Number, y: Number }>} points
    * @returns { w, h, x, y }
    */
-  getBoundingBox(points, items) {
+  getBoundingBox(points: Array<Position>, items?): BoundingBox {
     if (points === undefined || points.length == 0) return { w: 0, h: 0, x: 0, y: 0 };
 
     let min = { x: Infinity, y: Infinity };
@@ -63,7 +93,7 @@ class PreviewRenderer {
 
     /* TODO (maybe?): We also might want to consider item positions when calculating the bbox. */
 
-    const bbox = {
+    const bbox: BoundingBox = {
       w: max.x - min.x,
       h: max.y - min.y,
       x: min.x,
@@ -90,7 +120,7 @@ class PreviewRenderer {
    * Draws a grid of square cells across the entire bbox
    * @param {*} bbox
    */
-  drawGrid(bbox) {
+  drawGrid(bbox: BoundingBox): void {
     const preferredCellSize = 1;
     /*
       Set maximum number of allowed cells (per each dimension not total) to avoid too many lines being drawn (ugly and computationally expensive).
@@ -118,14 +148,14 @@ class PreviewRenderer {
       this.ctx.beginPath();
       const currX = startX + i * cellSize;
       this.ctx.moveTo(currX * this.SCALE, 0);
-      this.ctx.lineTo(currX * this.SCALE, 0 + bbox.w * this.SCALE);
+      this.ctx.lineTo(currX * this.SCALE, bbox.w * this.SCALE);
       this.ctx.stroke();
     }
     for (let i = 0; i < numLinesY + 1; i++) {
       this.ctx.beginPath();
       const currY = startY + i * cellSize;
       this.ctx.moveTo(0, currY * this.SCALE);
-      this.ctx.lineTo(0 + bbox.h * this.SCALE, currY * this.SCALE);
+      this.ctx.lineTo(bbox.h * this.SCALE, currY * this.SCALE);
       this.ctx.stroke();
     }
   }
@@ -135,7 +165,7 @@ class PreviewRenderer {
    * @param {*} points
    * @param {*} boundingBox
    */
-  drawBoundaries(points, boundingBox) {
+  drawBoundaries(points: Array<Position>, boundingBox: BoundingBox): void {
     this.ctx.beginPath();
 
     let xOffset = 0;
@@ -157,8 +187,6 @@ class PreviewRenderer {
     this.ctx.closePath();
     this.ctx.strokeStyle = "#111";
     this.ctx.lineWidth = 3;
-    this.ctx.lineJoin = "butt";
-    this.ctx.lineCap = "butt";
 
     this.ctx.stroke();
   }
@@ -168,7 +196,7 @@ class PreviewRenderer {
    * @param { array } items
    * @param { w, h, x, y } boundingBox
    */
-  drawItems(items, boundingBox) {
+  drawItems(items: Array<ItemData>, boundingBox: BoundingBox) {
     // borrowed from frontend
     this.ctx.globalAlpha = 0.6;
 
@@ -178,18 +206,12 @@ class PreviewRenderer {
     let yOffset = 0;
     if (boundingBox.y != 0) yOffset = boundingBox.y * -1;
 
-    for (let i in items) {
+    for (let i = 0; i < items.length; i++) {
       const item = items[i];
 
       if (item.visibleInEditor) {
-        const width =
-          item.dimensions === undefined || item.dimensions.width == null
-            ? 1
-            : item.dimensions.width;
-        const length =
-          item.dimensions === undefined || item.dimensions.length == null
-            ? 1
-            : item.dimensions.length;
+        const width = item.dimensions.width ?? 1;
+        const length = item.dimensions.length ?? 1;
 
         this.ctx.fillStyle = this.ITEM_COLORS[i % this.ITEM_COLORS.length];
 
@@ -219,7 +241,7 @@ class PreviewRenderer {
    * Generate a preview of the provided room data
    * @param { { vertices: [{x: Number, y: Number}], items: [] } } roomData
    */
-  generatePreview(roomData) {
+  generatePreview(roomData: RoomData): string {
     let { vertices, items } = roomData;
 
     let boundaryBox = this.getBoundingBox(vertices);
@@ -247,4 +269,6 @@ class PreviewRenderer {
   }
 }
 
-module.exports = new PreviewRenderer();
+const Renderer = new RendererService();
+
+export { Renderer };

@@ -5,7 +5,7 @@ services:
     # '--save "" and --appendonly no' should disable all data persistence
     # '--maxmemory-policy allkeys-lru' makes Redis act like an LRU cache when memory is exceeded,
     #     removing the LRU keys to make room for new ones
-    command: "redis-server --requirepass ${REDIS_PASSWORD} --protected-mode yes --maxmemory 100mb --maxmemory-policy allkeys-lru --save \"\" --appendonly no"
+    command: 'redis-server --requirepass ${REDIS_PASSWORD} --protected-mode yes --maxmemory 100mb --maxmemory-policy allkeys-lru --save "" --appendonly no'
     ports:
       - 6379:6379
     volumes:
@@ -17,13 +17,15 @@ services:
     restart: unless-stopped
     volumes:
       - dd_database:/data/db
+    logging:
+      driver: "none"
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile.dev
     stdin_open: true
     volumes:
-      # Bind code in container to local src code to support hot-reloading
+      # Bind code in container to local src files to support hot-reloading
       - "./frontend/src:/app/src"
       - "./frontend/public:/app/public"
     environment:
@@ -35,8 +37,9 @@ services:
       context: ./server
       dockerfile: Dockerfile.dev
     volumes:
-      - ./server:/usr/src/app
-      - /usr/src/app/node_modules
+      # Bind code in container to local src files to support hot-reloading
+      - ./server/src:/usr/local/app/src
+      - ./server/.tsconfig.json:/usr/local/app/.tsconfig.json
     environment:
       - MONGO_ADDRESS=mongodb://db:27017
       - REDIS_PASSWORD=$REDIS_PASSWORD
