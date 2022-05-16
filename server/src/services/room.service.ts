@@ -270,6 +270,10 @@ class RoomCacheService {
     room.data = templateRoom.data;
     room.metaData.lastModified = Date.now();
 
+    /*
+      TODO: increment the number of clones
+    */
+
     await Cache.getClient().set(id, JSON.stringify(room));
 
     return room;

@@ -14,6 +14,7 @@ type RoomData = {
   metaData: {
     featured: boolean;
     lastModified: number; // data is represented in Unix time.
+    totalClones: number; // number of times this room has been cloned
   };
 };
 
