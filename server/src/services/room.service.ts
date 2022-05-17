@@ -5,9 +5,11 @@ import {
   Room,
   RoomData,
   RoomDocument,
+  RoomMetadata,
   roomToDocument,
   RoomUpdate,
   UpdateRoomDataSchema,
+  UpdateRoomMetadataSchema,
 } from "../models/room.model";
 import { StatusError } from "../errors/status.error";
 import { Item } from "../models/item.model";
@@ -46,6 +48,7 @@ class RoomService {
       },
       metaData: {
         featured: false,
+        totalClones: 0,
         lastModified: Date.now(),
       },
     };
@@ -55,6 +58,10 @@ class RoomService {
       const templateRoom: Room = await RoomService.getFromTemplateId(templateId);
 
       room.data = { ...templateRoom.data };
+
+      await RoomService.updateMetadata(templateRoom.id, {
+        totalClones: templateRoom.metaData.totalClones + 1,
+      });
 
       // If a name has been provided, use that. Otherwise, append 'Copy of ' to front of template name
       if (name !== null && name !== undefined) {
@@ -208,6 +215,40 @@ class RoomService {
       return updatedRoom;
     });
   }
+
+  /**
+   * Updates the metadata of a given room. Since some metadata properties can be
+   * modified while the room is not cached (i.e. number of clones), it does not
+   * belong to the RoomCacheService. That being said, it *will* update the
+   * cached version instead if it is available.
+   * @param id {string} ID of the room that's being modified.
+   * @param updates {Partial<RoomMetadata>} Metadata that is being changed.
+   */
+  static async updateMetadata(id: string, updates: Partial<RoomMetadata>) {
+    const room = await RoomService.getRoom(id);
+
+    validateWithSchema(updates, UpdateRoomMetadataSchema);
+    Object.assign(room.metaData, updates);
+
+    const isCached = await RoomCacheService.roomExists(id);
+
+    /**
+     * If cached, update the cached version. Otherwise, update the
+     * version that is saved in the database.
+     */
+    if (isCached) {
+      Cache.getClient().set(id, JSON.stringify(room));
+    } else {
+      try {
+        await Database.getConnection()
+          .db("dd_data")
+          .collection("rooms")
+          .replaceOne({ _id: id }, roomToDocument(room));
+      } catch (err) {
+        throw new Error(`Failed to update metadata of room with ID ${id}: ` + err);
+      }
+    }
+  }
 }
 
 /**
@@ -270,9 +311,14 @@ class RoomCacheService {
     room.data = templateRoom.data;
     room.metaData.lastModified = Date.now();
 
-    /*
-      TODO: increment the number of clones
-    */
+    console.log("copying room");
+
+    /**
+     * Increment the number of clones on the template room.
+     */
+    await RoomService.updateMetadata(templateId, {
+      totalClones: templateRoom.metaData.totalClones + 1,
+    });
 
     await Cache.getClient().set(id, JSON.stringify(room));
 
