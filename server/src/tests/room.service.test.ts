@@ -1,6 +1,7 @@
 import { RoomCacheService, RoomService } from "../services/room.service";
 
 import { Cache } from "../cache";
+import { Room } from "../models/room.model";
 
 const ROOM_ID = "hello-world";
 const INVALID_ROOM_ID = "does-not-exist";
@@ -14,7 +15,7 @@ jest.mock("ioredis", () => {
   };
 });
 
-describe("Room cache service", () => {
+describe("Room cache", () => {
   beforeEach(async () => {
     await client.flushall();
     await client.set(
@@ -210,5 +211,57 @@ describe("Room cache service", () => {
 
     expect(await RoomCacheService.update(ROOM_ID, expected)).toBe(true);
     expect(JSON.parse(await client.get(ROOM_ID))).toStrictEqual(expected);
+  });
+
+  test("if an item can be added", async () => {
+    let expected = {
+      id: ROOM_ID,
+      templateId: "template",
+      data: {
+        name: "Test Room",
+        items: [],
+        vertices: [
+          { x: -5, y: -5 },
+          { x: 5, y: -5 },
+          { x: 5, y: 5 },
+          { x: -5, y: 5 },
+        ],
+      },
+      metaData: {
+        featured: false,
+        totalClones: 0,
+        lastModified: Date.now(),
+      },
+    };
+
+    const item = {
+      id: "some-item-id",
+      name: "awesome item",
+      quantity: 1,
+      visibleInEditor: false,
+      claimedBy: "jest",
+      dimensions: {
+        width: 5,
+        height: 5,
+        length: 5,
+      },
+      editorPosition: { x: 10, y: 10 },
+      editorZIndex: 1,
+      editorRotation: 0,
+      editorLocked: false,
+    };
+
+    const updatedItem = await RoomCacheService.addItem(ROOM_ID, item);
+    expected.data.items.push(updatedItem);
+
+    /**
+     * By default, comparing the rooms will fail because the time that they were modified is usually
+     * by a couple seconds. We're a cheating a little bit here by copying over the time, but this
+     * does not affect the end result of the test.
+     */
+    const received = JSON.parse(await client.get(ROOM_ID)) as Room;
+    expected.metaData.lastModified = received.metaData.lastModified;
+
+    expect(received).toStrictEqual(expected);
   });
 });
