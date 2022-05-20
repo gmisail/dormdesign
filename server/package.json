@@ -32,7 +32,8 @@
   "scripts": {
     "start": "node bin/index.js",
     "build": "tsc --project tsconfig.json",
-    "dev": "nodemon src/index.ts"
+    "dev": "nodemon src/index.ts",
+    "test": "jest"
   },
   "author": "",
   "license": "MIT",

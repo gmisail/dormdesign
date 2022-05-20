@@ -146,7 +146,10 @@ describe("Room cache", () => {
       },
     };
 
-    expect(await RoomCacheService.copyRoomFrom(ROOM_ID, target.id)).toStrictEqual(expected);
+    const receieved = await RoomCacheService.copyRoomFrom(ROOM_ID, target.id);
+    expected.metaData.lastModified = receieved.metaData.lastModified;
+
+    expect(receieved).toStrictEqual(expected);
   });
 
   test("if a room can be modified", async () => {
