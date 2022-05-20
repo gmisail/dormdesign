@@ -186,4 +186,29 @@ describe("Room cache service", () => {
 
     expect(JSON.parse(await client.get(ROOM_ID)).data).toStrictEqual(expected.data);
   });
+
+  test("if a room can be updated", async () => {
+    let expected = {
+      id: ROOM_ID,
+      templateId: "template",
+      data: {
+        name: "Updated Room Name",
+        items: [],
+        vertices: [
+          { x: -10, y: -10 },
+          { x: 10, y: -10 },
+          { x: 10, y: 10 },
+          { x: -10, y: 10 },
+        ],
+      },
+      metaData: {
+        featured: false,
+        totalClones: 0,
+        lastModified: Date.now(),
+      },
+    };
+
+    expect(await RoomCacheService.update(ROOM_ID, expected)).toBe(true);
+    expect(JSON.parse(await client.get(ROOM_ID))).toStrictEqual(expected);
+  });
 });
