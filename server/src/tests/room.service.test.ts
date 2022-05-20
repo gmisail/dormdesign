@@ -151,6 +151,12 @@ describe("Room cache service", () => {
   test("if a room can be modified", async () => {
     const changes = {
       name: "Updated Room Name",
+      vertices: [
+        { x: -10, y: -10 },
+        { x: 10, y: -10 },
+        { x: 10, y: 10 },
+        { x: -10, y: 10 },
+      ],
     };
 
     let expected = {
@@ -160,10 +166,10 @@ describe("Room cache service", () => {
         name: "Updated Room Name",
         items: [],
         vertices: [
-          { x: -5, y: -5 },
-          { x: 5, y: -5 },
-          { x: 5, y: 5 },
-          { x: -5, y: 5 },
+          { x: -10, y: -10 },
+          { x: 10, y: -10 },
+          { x: 10, y: 10 },
+          { x: -10, y: 10 },
         ],
       },
       metaData: {
