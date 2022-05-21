@@ -1,18 +1,17 @@
-import "../node_modules/bootstrap/dist/css/bootstrap.min.css";
 import "./App.scss";
 
 import { Route, BrowserRouter as Router, Switch } from "react-router-dom";
 
 import Footer from "./components/Footer/Footer";
-import { TemplateGalleryRoute } from "./routes/TemplateGalleryRoute/TemplateGalleryRoute";
 import HomeRoute from "./routes/HomeRoute/HomeRoute";
 import { IconContext } from "react-icons";
 import NavigationBar from "./components/NavigationBar/NavigationBar";
 import React from "react";
 import { RoomProvider } from "./context/RoomStore";
 import { RoomRoute } from "./routes/RoomRoute/RoomRoute";
-import { TemplateRoute } from "./routes/TemplateRoute/TemplateRoute";
 import SceneTestingRoute from "./routes/SceneTestingRoute/SceneTestingRoute";
+import { TemplateGalleryRoute } from "./routes/TemplateGalleryRoute/TemplateGalleryRoute";
+import { TemplateRoute } from "./routes/TemplateRoute/TemplateRoute";
 import { UnknownRoute } from "./routes/UnknownRoute/UnknownRoute";
 
 const App = () => {
