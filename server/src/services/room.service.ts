@@ -1,22 +1,23 @@
-import { Cache } from "../cache";
-import { Database } from "../db";
 import {
-  documentToRoom,
   Room,
   RoomData,
   RoomDocument,
   RoomMetadata,
-  roomToDocument,
   RoomUpdate,
   UpdateRoomDataSchema,
   UpdateRoomMetadataSchema,
+  documentToRoom,
+  roomToDocument,
 } from "../models/room.model";
-import { StatusError } from "../errors/status.error";
+
+import { Cache } from "../cache";
+import { Database } from "../db";
 import { Item } from "../models/item.model";
 import { ItemService } from "./item.service";
+import { Position } from "../models/position.model";
+import { StatusError } from "../errors/status.error";
 import { v4 as uuidv4 } from "uuid";
 import { validateWithSchema } from "../utils";
-import { Position } from "../models/position.model";
 
 const DEBUG_MESSAGES = Boolean(process.env.DEBUG_MESSAGES ?? "false");
 
@@ -225,10 +226,11 @@ class RoomService {
   }
 
   /**
-   * Updates the metadata of a given room. Since some metadata properties can be
-   * modified while the room is not cached (i.e. number of clones), it does not
-   * belong to the RoomCacheService. That being said, it *will* update the
-   * cached version instead if it is available.
+   * Updates the metadata of a given room. This is a helper function that will
+   * retrieve a room, update the metadata, and then replace the room in either
+   * the cache or database. While it does validate the metadata, it is not
+   * recommended to use this function if the room is already loaded into memory
+   * since you would be loading the same room twice.
    * @param id {string} ID of the room that's being modified.
    * @param updates {Partial<RoomMetadata>} Metadata that is being changed.
    */
