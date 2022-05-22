@@ -4,6 +4,12 @@ import { Item } from "./item.model";
 import { ObjectId } from "mongodb";
 import { Position, PositionSchema } from "./position.model";
 
+type RoomMetadata = {
+  featured: boolean;
+  lastModified: number; // data is represented in Unix time.
+  totalClones: number; // number of times this room has been cloned
+};
+
 type RoomData = {
   templateId: string;
   data: {
@@ -11,10 +17,7 @@ type RoomData = {
     items: Array<Item>;
     vertices: Array<Position>;
   };
-  metaData: {
-    featured: boolean;
-    lastModified: number; // data is represented in Unix time.
-  };
+  metaData: RoomMetadata;
 };
 
 type Room = { id: string } & RoomData;
@@ -42,6 +45,16 @@ const UpdateRoomDataSchema = Joi.object({
 });
 
 /**
+ * Schema to validate updates to the metadata. Ensures that changes to the metadata are valid,
+ * i.e. setting totalClones to -100 would throw an error.
+ */
+const UpdateRoomMetadataSchema = Joi.object({
+  featured: Joi.boolean(),
+  lastModified: Joi.date().timestamp("unix"),
+  totalClones: Joi.number().min(0),
+});
+
+/**
  * MongoDB requires documents to use _id as an identifier, while internally it uses id. This
  * simply prepares the internal Room model for use in MongoDB.
  * @param room
@@ -65,11 +78,13 @@ function documentToRoom(roomDoc: RoomDocument): Room {
 
 export {
   UpdateRoomDataSchema,
+  UpdateRoomMetadataSchema,
   roomToDocument,
   documentToRoom,
   Room,
   RoomDocument,
   RoomUpdate,
   RoomData,
+  RoomMetadata,
   RoomNameSchema,
 };

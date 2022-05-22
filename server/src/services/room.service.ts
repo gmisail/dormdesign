@@ -1,20 +1,23 @@
-import { Cache } from "../cache";
-import { Database } from "../db";
 import {
-  documentToRoom,
   Room,
   RoomData,
   RoomDocument,
-  roomToDocument,
+  RoomMetadata,
   RoomUpdate,
   UpdateRoomDataSchema,
+  UpdateRoomMetadataSchema,
+  documentToRoom,
+  roomToDocument,
 } from "../models/room.model";
-import { StatusError } from "../errors/status.error";
+
+import { Cache } from "../cache";
+import { Database } from "../db";
 import { Item } from "../models/item.model";
 import { ItemService } from "./item.service";
+import { Position } from "../models/position.model";
+import { StatusError } from "../errors/status.error";
 import { v4 as uuidv4 } from "uuid";
 import { validateWithSchema } from "../utils";
-import { Position } from "../models/position.model";
 
 const DEBUG_MESSAGES = Boolean(process.env.DEBUG_MESSAGES ?? "false");
 
@@ -46,6 +49,7 @@ class RoomService {
       },
       metaData: {
         featured: false,
+        totalClones: 0,
         lastModified: Date.now(),
       },
     };
@@ -55,6 +59,10 @@ class RoomService {
       const templateRoom: Room = await RoomService.getFromTemplateId(templateId);
 
       room.data = { ...templateRoom.data };
+
+      await RoomService.updateMetadata(templateRoom.id, {
+        totalClones: templateRoom.metaData.totalClones + 1,
+      });
 
       // If a name has been provided, use that. Otherwise, append 'Copy of ' to front of template name
       if (name !== null && name !== undefined) {
@@ -197,6 +205,14 @@ class RoomService {
       throw new Error(`Failed to get featured rooms.` + error);
     }
 
+    /**
+     * More popular rooms, i.e. rooms that are downloaded more, are at the
+     * "front" of the array.
+     */
+    roomDocuments.sort((a: RoomDocument, b: RoomDocument) => {
+      return b.metaData.totalClones - a.metaData.totalClones;
+    });
+
     // Don't include room ID or any other unnecessary data in returned objects
     return roomDocuments.map((room) => {
       let updatedRoom: any = { ...room };
@@ -207,6 +223,51 @@ class RoomService {
 
       return updatedRoom;
     });
+  }
+
+  /**
+   * Updates the metadata of a given room. This is a helper function that will
+   * retrieve a room, update the metadata, and then replace the room in either
+   * the cache or database. While it does validate the metadata, it is not
+   * recommended to use this function if the room is already loaded into memory
+   * since you would be loading the same room twice.
+   * @param id {string} ID of the room that's being modified.
+   * @param updates {Partial<RoomMetadata>} Metadata that is being changed.
+   */
+  static async updateMetadata(id: string, updates: Partial<RoomMetadata>) {
+    const room = await RoomService.getRoom(id);
+
+    validateWithSchema(updates, UpdateRoomMetadataSchema);
+    Object.assign(room.metaData, updates);
+
+    const isCached = await RoomCacheService.roomExists(id);
+
+    /**
+     * If cached, update the cached version. Otherwise, update the
+     * version that is saved in the database.
+     */
+    if (isCached) {
+      await RoomCacheService.update(id, room);
+    } else {
+      await RoomService.update(id, room);
+    }
+  }
+
+  /**
+   * Updates the room with ID with the given data. Saves data to the datebase,
+   * not the cache.
+   * @param id {string} Room ID.
+   * @param room {Room} Updated room.
+   */
+  static async update(id: string, room: Room) {
+    try {
+      await Database.getConnection()
+        .db("dd_data")
+        .collection("rooms")
+        .replaceOne({ _id: id }, roomToDocument(room));
+    } catch (err) {
+      throw new Error(`Failed to update room with ID ${id}: ` + err);
+    }
   }
 }
 
@@ -241,9 +302,9 @@ class RoomCacheService {
     if (exists) throw new Error("Room with given id already exists in the cache");
 
     const room = await RoomService.getRoom(id);
-    const res = await Cache.getClient().set(id, JSON.stringify(room));
+    const updated = await RoomCacheService.update(id, room);
 
-    if (res === "OK" && DEBUG_MESSAGES) console.log(`Added room ${id} to the cache.`);
+    if (updated && DEBUG_MESSAGES) console.log(`Added room ${id} to the cache.`);
   }
 
   /**
@@ -270,7 +331,14 @@ class RoomCacheService {
     room.data = templateRoom.data;
     room.metaData.lastModified = Date.now();
 
-    await Cache.getClient().set(id, JSON.stringify(room));
+    /**
+     * Increment the number of clones on the template room.
+     */
+    await RoomService.updateMetadata(templateId, {
+      totalClones: templateRoom.metaData.totalClones + 1,
+    });
+
+    await RoomCacheService.update(id, room);
 
     return room;
   }
@@ -290,7 +358,7 @@ class RoomCacheService {
 
     room.metaData.lastModified = Date.now();
 
-    await Cache.getClient().set(id, JSON.stringify(room));
+    await RoomCacheService.update(id, room);
   }
 
   /**
@@ -328,7 +396,8 @@ class RoomCacheService {
     items.push(newItem);
 
     room.metaData.lastModified = Date.now();
-    await Cache.getClient().set(id, JSON.stringify(room));
+
+    await RoomCacheService.update(id, room);
 
     return newItem;
   }
@@ -344,7 +413,7 @@ class RoomCacheService {
     room.data.items = [];
     room.metaData.lastModified = Date.now();
 
-    await Cache.getClient().set(id, JSON.stringify(room));
+    await RoomCacheService.update(id, room);
   }
 
   /**
@@ -359,7 +428,7 @@ class RoomCacheService {
     room.data.items = room.data.items.filter((item) => item.id !== itemId);
     room.metaData.lastModified = Date.now();
 
-    await Cache.getClient().set(id, JSON.stringify(room));
+    await RoomCacheService.update(id, room);
   }
 
   /**
@@ -389,7 +458,7 @@ class RoomCacheService {
 
     room.metaData.lastModified = Date.now();
 
-    await Cache.getClient().set(id, JSON.stringify(room));
+    await RoomCacheService.update(id, room);
   }
 
   /** Updates the database with the content that is currently in the cache.
@@ -412,10 +481,7 @@ class RoomCacheService {
     const room: Room = JSON.parse(serializedRoom) as Room;
 
     try {
-      await Database.getConnection()
-        .db("dd_data")
-        .collection("rooms")
-        .replaceOne({ _id: id }, roomToDocument(room));
+      await RoomService.update(id, room);
     } catch (err) {
       throw new Error(`Failed to save room ${id} from cache to db: ` + err);
     }
@@ -423,6 +489,17 @@ class RoomCacheService {
     if (DEBUG_MESSAGES) console.log("Room " + id + " pushed from cache to database.");
 
     return true;
+  }
+
+  /**
+   * Updates the room with ID with the given data. Saves to the cache instead
+   * of the database. Abstracts away any direct modifications with the cache.
+   * @param id {string} Room ID.
+   * @param room {Room} Updated room.
+   * @returns {boolean} Returns if the room was successfully updated.
+   */
+  static async update(id: string, room: Room): Promise<boolean> {
+    return (await Cache.getClient().set(id, JSON.stringify(room))) === "OK";
   }
 }
 
