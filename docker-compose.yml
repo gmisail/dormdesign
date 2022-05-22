@@ -20,6 +20,20 @@ services:
       - CACHE_ADDRESS=cache
       - DEBUG_MESSAGES=false
       - NODE_ENV=production
+  nginx:
+    image: nginx:alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./data/certbot/conf:/etc/letsencrypt
+      - ./data/certbot/www:/var/www/certbot
+    depends_on:
+      - server
+      - cache
+    command: '/bin/sh -c ''while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g "daemon off;"''' # Reload auto-renewed ssl certificates
   certbot:
     image: certbot/certbot
     volumes:
