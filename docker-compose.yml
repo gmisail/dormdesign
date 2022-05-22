@@ -20,15 +20,6 @@ services:
       - CACHE_ADDRESS=cache
       - DEBUG_MESSAGES=false
       - NODE_ENV=production
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    restart: unless-stopped
-    environment:
-      - NODE_ENV=production
-    depends_on:
-      - server
   nginx:
     image: nginx:alpine
     restart: unless-stopped
