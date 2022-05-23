@@ -16,14 +16,13 @@ const DropdownMenu = ({ buttonIcon, children, placement, modifiers }) => {
 
   // Modify Item children with necessary props and remove non-Items
   const menuItemElements = React.Children.map(children, (child) => {
-    console.log(child, child.type, child.type.name)
     return React.cloneElement(child, {
-          onClick: () => {
-            // Wrap the item's onClick function in the onClickMenuItem so we can do additional stuff
-            // when an item is clicked
-            onClickMenuItem(child.props.onClick);
-          },
-        });
+      onClick: () => {
+        // Wrap the item's onClick function in the onClickMenuItem so we can do additional stuff
+        // when an item is clicked
+        onClickMenuItem(child.props.onClick);
+      },
+    });
   });
 
   return (
