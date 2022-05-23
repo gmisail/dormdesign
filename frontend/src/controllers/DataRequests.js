@@ -107,6 +107,8 @@ class DataRequests {
     const response = await fetch("https://api.dormdesign.app/api/template/featured");
     const data = await response.json();
 
+    console.log(data)
+
     if (!response.ok) {
       const message = `Error getting featured templates: ${data.message}`;
       throw new Error(message);
