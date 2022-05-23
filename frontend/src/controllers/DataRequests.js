@@ -10,7 +10,7 @@ class DataRequests {
    * @throws When request fails
    */
   static async createRoom(name, templateId) {
-    const response = await fetch("/api/room/create", {
+    const response = await fetch("https://api.dormdesign.app/api/room/create", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -42,7 +42,7 @@ class DataRequests {
       throw new Error("Can't fetch room data. Room ID is undefined");
     }
 
-    const response = await fetch(`/api/room/${id}`);
+    const response = await fetch(`https://api.dormdesign.app/api/room/${id}`);
     const responseData = await response.json();
 
     if (!response.ok) {
@@ -64,7 +64,7 @@ class DataRequests {
       throw new Error("Can't fetch template data. Template ID is undefined");
     }
 
-    const response = await fetch(`/api/template/${templateId}`);
+    const response = await fetch(`https://api.dormdesign.app/api/template/${templateId}`);
     const responseData = await response.json();
 
     if (!response.ok) {
@@ -87,7 +87,7 @@ class DataRequests {
       throw new Error("'id' is null or undefined");
     }
 
-    const response = await fetch(`/api/preview/${isTemplate ? "template" : "room"}/${id}`);
+    const response = await fetch(`https://api.dormdesign.app/api/preview/${isTemplate ? "template" : "room"}/${id}`);
     const data = await response.json();
 
     if (!response.ok) {
@@ -104,7 +104,7 @@ class DataRequests {
    * @throws When request fails
    */
   static async getFeaturedTemplates() {
-    const response = await fetch("/api/template/featured");
+    const response = await fetch("https://api.dormdesign.app/api/template/featured");
     const data = await response.json();
 
     if (!response.ok) {

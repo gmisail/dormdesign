@@ -26,7 +26,6 @@
     "eject": "react-scripts eject",
     "test": "react-scripts test"
   },
-  "proxy": "https://api.dormdesign.app/",
   "browserslist": {
     "production": [
       ">0.2%",
