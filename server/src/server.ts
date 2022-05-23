@@ -30,9 +30,11 @@ class Server {
     const hub = new Hub(sockets);
 
     // only accept requests from the given domains
-    this.app.use(cors({
+    /*this.app.use(cors({
       origin: ["https://dormdesign.app", "https://www.dormdesign.app"]
-    }));
+    }));*/
+
+    this.app.use(cors());
 
     this.app.use(express.json());
     this.app.use(express.urlencoded({ extended: true }));
