@@ -34,7 +34,7 @@ class Server {
       origin: ["https://dormdesign.app", "https://www.dormdesign.app"]
     }));*/
 
-    this.app.use(cors());
+    this.app.options('*', cors());
 
     this.app.use(express.json());
     this.app.use(express.urlencoded({ extended: true }));
