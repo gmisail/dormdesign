@@ -5,7 +5,7 @@ class RoomSocketConnection {
     this.roomID = roomID;
     this.eventController = new EventController();
     const protocol = window.location.protocol === "https:" ? "wss" : "ws";
-    this.connection = new WebSocket(`${protocol}://${window.location.host}/ws?id=${this.roomID}`);
+    this.connection = new WebSocket(`${protocol}://api.dormdesign.app/ws?id=${this.roomID}`);
     this.connection.onopen = () => {
       if (onOpen !== undefined) {
         onOpen();

@@ -1,12 +1,13 @@
+import { DEBUG_MESSAGES, PONG_TIME, USE_DEBUGGER } from "./constants/hub.constants";
+import { MAX_NAME_LENGTH, MAX_USERNAME_LENGTH } from "./constants/room.constants";
+import { RoomCacheService, RoomService } from "./services/room.service";
+
 import { EventEmitter } from "stream";
+import { IncomingMessage } from "http";
 import { StatusError } from "./errors/status.error";
 import chalk from "chalk";
 import { v4 as uuidv4 } from "uuid";
 import ws from "ws";
-import { RoomCacheService, RoomService } from "./services/room.service";
-import { MAX_NAME_LENGTH, MAX_USERNAME_LENGTH } from "./constants/room.constants";
-import { IncomingMessage } from "http";
-import { DEBUG_MESSAGES, USE_DEBUGGER, PONG_TIME } from "./constants/hub.constants";
 
 /**
  *  Data associated with a socket connection
