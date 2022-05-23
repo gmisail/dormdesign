@@ -2,6 +2,7 @@ import { Cache } from "./cache";
 import { Database } from "./db";
 import { Hub } from "./hub";
 import { StatusError } from "./errors/status.error";
+import cors from "cors";
 import express from "express";
 import http from "http";
 import ws from "ws";
@@ -27,6 +28,11 @@ class Server {
     await Database.connect();
 
     const hub = new Hub(sockets);
+
+    // only accept requests from the given domains
+    this.app.use(cors({
+      origin: ["https://dormdesign.app", "https://www.dormdesign.app"]
+    }));
 
     this.app.use(express.json());
     this.app.use(express.urlencoded({ extended: true }));
