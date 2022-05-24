@@ -1,5 +1,5 @@
 # First build the files
-FROM node:alpine AS builder
+FROM node:16-slim AS builder
 
 WORKDIR /app
 
@@ -7,7 +7,7 @@ WORKDIR /app
 COPY package*.json ./
 
 # install dependencies (excluding devDependencies)
-RUN npm ci --production && npm cache clean --force
+RUN npm install && npm cache clean --force
 
 # copy everything over to environment
 COPY . .

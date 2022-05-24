@@ -1,6 +1,6 @@
 import "./DropdownMenu.scss";
 
-import React, { useState, useRef } from "react";
+import React, { useRef, useState } from "react";
 
 import Dropdown from "../Dropdown/Dropdown";
 import IconButton from "../IconButton/IconButton";
@@ -16,15 +16,13 @@ const DropdownMenu = ({ buttonIcon, children, placement, modifiers }) => {
 
   // Modify Item children with necessary props and remove non-Items
   const menuItemElements = React.Children.map(children, (child) => {
-    return child.type.name === "Item"
-      ? React.cloneElement(child, {
-          onClick: () => {
-            // Wrap the item's onClick function in the onClickMenuItem so we can do additional stuff
-            // when an item is clicked
-            onClickMenuItem(child.props.onClick);
-          },
-        })
-      : null;
+    return React.cloneElement(child, {
+      onClick: () => {
+        // Wrap the item's onClick function in the onClickMenuItem so we can do additional stuff
+        // when an item is clicked
+        onClickMenuItem(child.props.onClick);
+      },
+    });
   });
 
   return (

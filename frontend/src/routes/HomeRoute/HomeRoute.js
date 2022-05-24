@@ -13,7 +13,7 @@ import StorageController from "../../controllers/StorageController";
 import RoomModel from "../../models/RoomModel";
 
 import SingleInputForm from "../../components/SingleInputForm/SingleInputForm";
-import DropdownMenu from "../../components/DropdownMenu/DrowndownMenu";
+import DropdownMenu from "../../components/DropdownMenu/DropdownMenu";
 import RoomThumbnail from "../../components/RoomThumbnail/RoomThumbnail";
 import RoomThumbnailGrid from "../../components/RoomThumbnailGrid/RoomThumbnailGrid";
 import GridBackground from "../../components/GridBackground/GridBackground";

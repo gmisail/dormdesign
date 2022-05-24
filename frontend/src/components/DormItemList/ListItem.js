@@ -13,7 +13,7 @@ import {
 
 import React from "react";
 import { useSelector } from "react-redux";
-import DropdownMenu from "../DropdownMenu/DrowndownMenu";
+import DropdownMenu from "../DropdownMenu/DropdownMenu";
 
 const ListItem = ({
   readOnly = false,
