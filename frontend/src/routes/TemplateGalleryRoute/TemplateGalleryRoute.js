@@ -8,7 +8,7 @@ import DataRequests from "../../controllers/DataRequests";
 
 import RoomThumbnail from "../../components/RoomThumbnail/RoomThumbnail";
 import RoomThumbnailGrid from "../../components/RoomThumbnailGrid/RoomThumbnailGrid";
-import DropdownMenu from "../../components/DropdownMenu/DrowndownMenu";
+import DropdownMenu from "../../components/DropdownMenu/DropdownMenu";
 import GridBackground from "../../components/GridBackground/GridBackground";
 
 export const TemplateGalleryRoute = () => {
