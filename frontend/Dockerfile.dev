@@ -1,6 +1,4 @@
 FROM node:alpine
-RUN chown node:node ./
-USER node
 
 WORKDIR /app
 
@@ -12,8 +10,5 @@ RUN npm ci && npm cache clean --force
 
 # copy everything over to environment
 COPY . .
-
-RUN chown node:node ./
-USER node
 
 CMD ["npm", "start"]
